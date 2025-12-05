@@ -1,0 +1,36 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false,
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+
+    // ✅ Ajout pour que TS reconnaisse import.meta.env
+    "types": ["vite/client"]
+  },
+  "include": [
+    "src",
+    "src/env.d.ts"
+, "api/config.ts"  ],
+  "exclude": [
+    "scripts/convert-historique.js"   // ✅ exclu pour éviter le conflit d’émission
+  ]
+}
+
