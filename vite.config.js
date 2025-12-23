@@ -9,7 +9,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+
   server: {
+    host: true,                      // Écoute sur 0.0.0.0 (accès externe)
+    port: 5173,                      // Port du dev server
+    allowedHosts: ['app.top14pronos.org'], // Autorise ton domaine Cloudflare Tunnel
+
     proxy: {
       '/api': {
         target: 'https://top14-api.vercel.app',
@@ -19,3 +24,4 @@ export default defineConfig({
     },
   },
 });
+

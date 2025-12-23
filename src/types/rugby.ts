@@ -15,11 +15,18 @@ export interface Match {
   equipe_domicile: string;
   equipe_exterieure: string;
 
-  // ✅ Scores fixes issus du fichier Excel
-  score_domicile: number;
-  score_exterieur: number;
-  score_ht_domicile?: number;
-  score_ht_exterieur?: number;
+  // ✅ Scores (peuvent être null si pas encore calculés)
+  score_domicile: number | null;
+  score_exterieur: number | null;
+  score_ht_domicile?: number | null;
+  score_ht_exterieur?: number | null;
+  
+  // ✅ Confiance
+  confiance_ft?: number | null;
+  confiance_ht?: number | null;
+  
+  // ✅ Objet score pour compatibilité
+  score_ht?: Score | null;
 }
 
 // ✅ Match historique avec résultats réels
@@ -38,10 +45,27 @@ export interface MatchHistorique {
 
 // ✅ Statistiques par équipe (issues du JSON statique)
 export interface EquipeStats {
-  equipe: string;
   rang: number;
-  elo?: number;                 // optionnel si ton JSON contient encore ce champ
-  variation?: number;           // optionnel
+  equipe: string;
+  points_classement?: number;  // Points officiels du championnat
+  saison?: string;
+  matchs_joues: number;
+  victoires: number;
+  nuls: number;
+  defaites: number;
+  points_pour: number;
+  points_contre: number;
+  differentiel: number;
+  points_moy_pour?: number;
+  points_moy_contre?: number;
+  taux_victoires?: number;
+  pct_victoires_domicile?: number;
+  pct_victoires_exterieur?: number;
+  serie_en_cours?: string;
+  victoires_consecutives?: number;
+  defaites_consecutives?: number;
+  regularite?: number;
+  forme?: string[]; // ['V', 'V', 'D', 'V', 'N']
 }
 
 // ✅ Configuration globale de l’application

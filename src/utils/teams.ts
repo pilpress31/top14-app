@@ -49,11 +49,35 @@ export const TEAMS_DATA = {
   'SU AGEN': { logo: '/logos/agen.svg', name: 'Agen' },
 
   // --- PRO D2 ---
+  
+  'US DAX': { logo: '/logos/dax.svg', name: 'Dax' },
+  'DAX': { logo: '/logos/dax.svg', name: 'Dax' },
+  'US DAX RUGBY': { logo: '/logos/dax.svg', name: 'Dax' },
+  
+  
+  'MONT DE MARSAN': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
+  'STADE MONTOIS': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
+  'STADE MONTOIS RUGBY': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
+  'MONT-DE-MARSAN': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
+ 
+  'BOURGOIN': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
+  'BOURGOIN-JALLIEU': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
+  'CS BOURGOIN-JALLIEU': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
+  'CSBJ': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
+  
+  
+  'AUCH': { logo: '/logos/auch.svg', name: 'Auch' },
+  'RC AUCH': { logo: '/logos/auch.svg', name: 'Auch' },
+  
+  'BRIVE': { logo: '/logos/brive.svg', name: 'Brive' },
+  'CA BRIVE': { logo: '/logos/brive.svg', name: 'Brive' },
+  
   'VANNES': { logo: '/logos/vannes.svg', name: 'Vannes' },
   'RC VANNES': { logo: '/logos/vannes.svg', name: 'Vannes' },
 
   'BIARRITZ': { logo: '/logos/biarritz.svg', name: 'Biarritz' },
   'BIARRITZ OLYMPIQUE': { logo: '/logos/biarritz.svg', name: 'Biarritz' },
+  'BIARRITZ OLYMPIQUE PB': { logo: '/logos/biarritz.svg', name: 'Biarritz' },
 
   'COLOMIERS': { logo: '/logos/colomiers.svg', name: 'Colomiers' },
   'COLOMIERS RUGBY': { logo: '/logos/colomiers.svg', name: 'Colomiers' },

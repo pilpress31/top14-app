@@ -1,40 +1,64 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
 <svg
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   version="1.0"
-   width="800"
-   height="1000"
-   id="svg2">
-  <defs
-     id="defs4" />
-  <g
-     id="layer1">
-    <path
-       d="M 398.63497,979.87908 L 782.67813,248.29422 L 663.07721,18.411949 L 134.19273,18.411949 L 14.591808,248.29422 L 398.63497,979.87908 z"
-       id="path3481"
-       style="fill:#ffffff;fill-rule:evenodd;stroke:#df0028;stroke-width:8.69824886px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <path
-       d="M 152.83186,16.858703 L 281.75234,16.858703 L 281.75234,757.76321 L 152.83186,507.68852 L 152.83186,16.858703 z"
-       id="rect3472"
-       style="fill:#df0028;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1" />
-    <path
-       d="M 513.96452,16.858703 L 642.88501,16.858703 L 642.88501,510.79501 L 513.96452,754.65672 L 513.96452,16.858703 z"
-       id="rect3474"
-       style="fill:#df0028;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1" />
-    <path
-       d="M 333.3981,16.858703 L 462.3185,16.858703 L 462.3185,855.61851 L 399.76148,978.37185 L 333.3981,852.51202 L 333.3981,16.858703 z"
-       id="rect3476"
-       style="fill:#df0028;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1" />
-    <path
-       d="M 714.38626,378.38714 L 782.67813,248.29422 L 723.5136,134.57541 L 76.160534,129.95438 L 14.591808,248.29422 L 82.076648,376.84981 L 714.38626,378.38714 z"
-       id="path3468"
-       style="fill:#ffffff;fill-rule:evenodd;stroke:#df0028;stroke-width:8.69824886px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <path
-       d="M 520.09983,159.33132 C 481.74795,159.33158 451.70211,167.45922 429.8555,183.52332 C 408.0089,199.58786 396.96534,221.81162 396.96525,250.11929 C 396.96525,278.34902 408.0089,300.37916 429.8555,316.44343 C 451.70211,332.50779 481.74786,340.63544 520.09983,340.63544 C 558.55836,340.63544 588.55087,332.50797 610.34416,316.44343 C 632.13719,300.37907 643.23407,278.34902 643.23442,250.11929 C 643.23407,221.81171 632.13736,199.58794 610.34416,183.52332 C 588.55079,167.45905 558.55827,159.33141 520.09983,159.33132 z M 120.52404,162.59316 L 120.52404,337.10177 L 222.72846,337.10177 C 254.56353,337.10177 278.34819,333.13589 293.94537,324.86986 C 309.5422,316.60374 317.32148,303.93109 317.32191,287.08684 C 317.32156,276.09139 313.71318,266.92561 306.4491,259.36118 C 299.18441,251.79692 288.98006,246.40305 275.73341,243.5956 C 286.09564,240.71031 293.93337,236.51392 299.38177,230.54823 C 304.82992,224.58271 307.53604,217.30271 307.53638,208.80261 C 307.53621,192.66031 300.14974,180.79642 285.24712,173.46597 C 270.34424,166.13578 246.16685,162.59325 212.94293,162.59316 L 120.52404,162.59316 z M 520.09983,172.10687 C 554.82437,172.10678 583.16214,206.20401 583.16214,248.21655 C 583.16222,290.229 554.82446,324.32622 520.09983,324.32622 C 485.37512,324.32613 457.30935,290.22909 457.30935,248.21655 C 457.30926,206.20392 485.37521,172.10687 520.09983,172.10687 z M 182.22724,193.03703 L 216.20477,193.03703 C 225.92611,193.03721 233.47297,194.77172 238.49403,197.9298 C 243.51484,201.08822 245.83309,205.51632 245.83318,211.52081 C 245.83309,217.6035 243.51492,222.26428 238.49403,225.38364 C 233.47288,228.50301 225.92611,230.00468 216.20477,230.00459 L 182.22724,230.00459 L 182.22724,193.03703 z M 182.22724,260.72028 L 218.37933,260.72028 C 230.8782,260.72037 240.18054,262.64642 246.37682,266.4285 C 252.57285,270.21076 255.61854,275.9891 255.61871,283.55318 C 255.61854,291.27349 252.62617,296.85663 246.37682,300.67786 C 240.12722,304.499 230.77129,306.38617 218.37933,306.38608 L 182.22724,306.38608 L 182.22724,260.72028 z"
-       id="text3455"
-       style="font-size:32.23545456px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#df0028;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans Bold" />
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <!-- Hexagone -->
+    <clipPath id="bo-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Dégradé rouge -> blanc BO -->
+    <linearGradient id="bo-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D00000" /> <!-- rouge BO -->
+      <stop offset="100%" stop-color="#FFFFFF" /> <!-- blanc -->
+    </linearGradient>
+  </defs>
+
+  <!-- Fond rouge BO -->
+  <g clip-path="url(#bo-hex-clip)">
+    <rect width="200" height="200" fill="#D00000" />
   </g>
+
+  <!-- Contour extérieur noir -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Liseré intérieur blanc -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Abréviation BO -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="central"
+    fill="url(#bo-grad)"
+    stroke="#FFFFFF"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="72"
+  >
+    BO
+  </text>
 </svg>

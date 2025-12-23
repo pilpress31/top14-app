@@ -1,21 +1,10 @@
 {
   "version": "1.0.0",
-  "derniere_mise_a_jour": "2025-12-03T09:40:01.016050",
-  "nombre_matchs_historique": 3651,
-  "nombre_matchs_futurs": 105,
-  "nombre_equipes": 0,
-  "parametres_elo": {
-    "elo_initial": 1500,
+  "derniere_mise_a_jour": "2025-12-22T13:24:52.726770",
+  "source": "Top14_statistiques_complet_pronostics.xlsm",
+  "elo": {
     "diviseur": 500,
     "bonus_domicile": 80,
-    "bonus_serie_par_victoire": 15,
-    "plafond_bonus_serie": 60,
-    "regression_saisonniere": 0.8,
-    "k_anciennes_saisons": 15,
-    "k_saison_courante": 20,
-    "k_dernieres_journees": 30
-  },
-  "parametres_regression": {
-    "variance_facteur": 0.4
+    "regression_saisonniere": 0.8
   }
 }

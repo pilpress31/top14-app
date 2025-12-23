@@ -5,16 +5,25 @@ function PronoCard({ match }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
-  // ✅ Utilisation directe des champs Excel JSON
-  const scoreFinalText = `${match.score_domicile} - ${match.score_exterieur}`;
-  const scoreHtText =
-    match.score_ht_domicile !== undefined && match.score_ht_exterieur !== undefined
-      ? `${match.score_ht_domicile} - ${match.score_ht_exterieur}`
-      : null;
+  // ✅ Scores finaux - CORRIGÉ pour utiliser prono_ft
+  const scoreDom = match.prono_ft?.domicile ?? 0;
+  const scoreExt = match.prono_ft?.exterieur ?? 0;
+  const scoreFinalText = `${scoreDom} - ${scoreExt}`;
 
-  // 👉 Plus de logique Elo : on supprime la "confiance"
-  // Tu peux garder une barre fixe ou la retirer complètement
-  const confiance = 1; // valeur fixe pour conserver le design
+  // ✅ Mi-temps - CORRIGÉ pour utiliser prono_ht
+  const scoreHtDom = match.prono_ht?.domicile ?? null;
+  const scoreHtExt = match.prono_ht?.exterieur ?? null;
+  const scoreHtText = (scoreHtDom !== null && scoreHtExt !== null) 
+    ? `${scoreHtDom} - ${scoreHtExt}` 
+    : null;
+
+  const confianceFT = match.confiance_algo ?? match.confiance ?? 0;
+  const confidencePct = Math.round(confianceFT);
+
+  const confianceMT = match.confiance_mt_algo ?? 0;
+  const confidenceMTPct = Math.round(confianceMT);
+
+
 
   const journee = match.journee ? `JOURNÉE ${match.journee}` : '';
 
@@ -27,8 +36,8 @@ function PronoCard({ match }) {
       }).toUpperCase()
     : 'À VENIR';
 
-  const confidencePct = Math.round(confiance * 100);
   const [animatedWidth, setAnimatedWidth] = useState(0);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimatedWidth(confidencePct);
@@ -36,12 +45,28 @@ function PronoCard({ match }) {
     return () => clearTimeout(timer);
   }, [confidencePct]);
 
+
+  const [animatedWidthMT, setAnimatedWidthMT] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedWidthMT(confidenceMTPct);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [confidenceMTPct]);
+
+
+
+
+
+  console.log("animatedWidth =", animatedWidth, "confidencePct =", confidencePct);
+
   const teamDomData = getTeamData(equipeDom);
   const teamExtData = getTeamData(equipeExt);
-
+  console.log("DEBUG PRONO CARD", match);
   return (
     <div className="w-full bg-white rounded-none shadow-sm hover:shadow-md transition-shadow py-4 mb-4 border-t border-b border-gray-200">
-      {/* Ligne entête : journée à gauche, date complète à droite */}
+      {/* Ligne entête */}
       <div className="flex justify-between items-center px-2 mb-3">
         <div className="text-xs text-rugby-orange font-bold uppercase tracking-wide">
           {journee}
@@ -51,7 +76,7 @@ function PronoCard({ match }) {
         </div>
       </div>
 
-      {/* Ligne équipes + scores alignés */}
+      {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-2 mb-2">
         {/* Équipe domicile */}
         <div className="flex flex-col items-center text-center">
@@ -68,7 +93,7 @@ function PronoCard({ match }) {
           </div>
         </div>
 
-        {/* Scores alignés horizontalement */}
+        {/* Scores */}
         <div className="flex flex-col items-center justify-center gap-1">
           <div className="flex items-center gap-2 text-2xl font-semibold text-rugby-orange">
             {scoreFinalText}
@@ -96,24 +121,24 @@ function PronoCard({ match }) {
         </div>
       </div>
 
-      {/* Barre de confiance (optionnelle) */}
+      {/* Barre de confiance */}
       <div className="mt-2 px-2">
         <div className="flex justify-between text-xs text-gray-600 mb-1">
           <span>Confiance</span>
           <span className="font-semibold">{confidencePct}%</span>
         </div>
 
-        <div className="relative w-full bg-gray-200 rounded-full h-4">
-          <div className="absolute top-0 left-1/4 w-px h-4 bg-gray-300"></div>
-          <div className="absolute top-0 left-1/2 w-px h-4 bg-gray-300"></div>
-          <div className="absolute top-0 left-3/4 w-px h-4 bg-gray-300"></div>
+        <div className="relative w-full bg-gray-200 rounded-full h-2">
+          <div className="absolute top-0 left-1/4 w-px h-2 bg-gray-300"></div>
+          <div className="absolute top-0 left-1/2 w-px h-2 bg-gray-300"></div>
+          <div className="absolute top-0 left-3/4 w-px h-2 bg-gray-300"></div>
 
-          <div className="absolute -bottom-4 left-1/4 text-[10px] text-gray-400">25%</div>
-          <div className="absolute -bottom-4 left-1/2 text-[10px] text-gray-400">50%</div>
-          <div className="absolute -bottom-4 left-3/4 text-[10px] text-gray-400">75%</div>
+          <div className="absolute -bottom-3 left-1/4 text-[9px] text-gray-400">25%</div>
+          <div className="absolute -bottom-3 left-1/2 text-[9px] text-gray-400">50%</div>
+          <div className="absolute -bottom-3 left-3/4 text-[9px] text-gray-400">75%</div>
 
           <div
-            className="h-4 rounded-full transition-all duration-700 ease-out"
+            className="h-2 rounded-full transition-all duration-700 ease-out"
             style={{
               width: `${animatedWidth}%`,
               background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
