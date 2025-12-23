@@ -1,1262 +1,2158 @@
 [
   {
-    "id": "2025-2026_12_STADE FRANÇAIS PARIS_RACING 92",
-    "date": "2025-12-20T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "STADE FRANÇAIS PARIS",
-    "equipe_exterieure": "RACING 92",
-    "prono_score_final": "21 --- 18",
-    "prono_score_ht": "6 --- 11",
-    "confiance_ft": 1.7896775728647254e-08,
-    "confiance_ht": 1.7896775728647254e-08
-  },
-  {
-    "id": "2025-2026_12_MONTPELLIER HÉRAULT RUGBY_CASTRES OLYMPIQUE",
-    "date": "2025-12-20T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
-    "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "21 --- 16",
-    "prono_score_ht": "16 --- 9",
-    "confiance_ft": 0.4666762071526614,
-    "confiance_ht": 0.4666762071526614
-  },
-  {
-    "id": "2025-2026_12_STADE ROCHELAIS_AVIRON BAYONNAIS",
-    "date": "2025-12-20T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "STADE ROCHELAIS",
-    "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "31 --- 15",
-    "prono_score_ht": "14 --- 10",
-    "confiance_ft": 0.9999934107531452,
-    "confiance_ht": 0.9999934107531452
-  },
-  {
-    "id": "2025-2026_12_US MONTAUBAN_SECTION PALOISE",
-    "date": "2025-12-20T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "US MONTAUBAN",
-    "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "23 --- 19",
-    "prono_score_ht": "11 --- 11",
-    "confiance_ft": 1.3771098566333727e-08,
-    "confiance_ht": 1.3771098566333727e-08
-  },
-  {
-    "id": "2025-2026_12_USA PERPIGNAN_ASM CLERMONT",
-    "date": "2025-12-20T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "USA PERPIGNAN",
-    "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "25 --- 14",
-    "prono_score_ht": "8 --- 10",
-    "confiance_ft": 0.941434553782911,
-    "confiance_ht": 0.941434553782911
-  },
-  {
-    "id": "2025-2026_12_LYON OU_STADE TOULOUSAIN",
-    "date": "2025-12-20T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "LYON OU",
-    "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "28 --- 22",
-    "prono_score_ht": "11 --- 9",
-    "confiance_ft": 5.125900247032692e-09,
-    "confiance_ht": 5.125900247032692e-09
-  },
-  {
-    "id": "2025-2026_12_BORDEAUX BÈGLES_RC TOULON",
-    "date": "2025-12-21T00:00:00",
-    "saison": "2025-2026",
-    "journee": 12,
-    "equipe_domicile": "BORDEAUX BÈGLES",
-    "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "26 --- 16",
-    "prono_score_ht": "10 --- 10",
-    "confiance_ft": 0.9964093146280639,
-    "confiance_ht": 0.9964093146280639
-  },
-  {
-    "id": "2025-2026_13_RACING 92_US MONTAUBAN",
-    "date": "2025-12-27T00:00:00",
+    "id": "2025-2026_13_RACING_92_US_MONTAUBAN",
+    "date": "2025-12-27T14:00:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "28 --- 14",
-    "prono_score_ht": "15 --- 7",
-    "confiance_ft": 0.9999999999978454,
-    "confiance_ht": 0.9999999999978454
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8165472835219585,
+    "confiance_mt_algo": 0.6539065142039721,
+    "prono_ft": {
+      "domicile": 39,
+      "exterieur": 5
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 5
+    },
+    "prono_text": "39 --- 5",
+    "prono_ht_text": "12 --- 5"
   },
   {
-    "id": "2025-2026_13_CASTRES OLYMPIQUE_LYON OU",
-    "date": "2025-12-27T00:00:00",
+    "id": "2025-2026_13_CASTRES_OLYMPIQUE_LYON_OU",
+    "date": "2025-12-27T16:00:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "30 --- 13",
-    "prono_score_ht": "13 --- 10",
-    "confiance_ft": 0.9976595299836923,
-    "confiance_ht": 0.9976595299836923
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.8217555675202649,
+    "prono_ft": {
+      "domicile": 29,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 3
+    },
+    "prono_text": "29 --- 14",
+    "prono_ht_text": "17 --- 3"
   },
   {
-    "id": "2025-2026_13_AVIRON BAYONNAIS_STADE FRANÇAIS PARIS",
-    "date": "2025-12-27T00:00:00",
+    "id": "2025-2026_13_AVIRON_BAYONNAIS_STADE_FRANÇAIS_PARIS",
+    "date": "2025-12-27T18:00:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "24 --- 16",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 0.36425901398600274,
-    "confiance_ht": 0.36425901398600274
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.42160324661308884,
+    "confiance_mt_algo": 0.39991860158168485,
+    "prono_ft": {
+      "domicile": 26,
+      "exterieur": 18
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 10
+    },
+    "prono_text": "26 --- 18",
+    "prono_ht_text": "13 --- 10"
   },
   {
-    "id": "2025-2026_13_ASM CLERMONT_BORDEAUX BÈGLES",
-    "date": "2025-12-27T00:00:00",
+    "id": "2025-2026_13_ASM_CLERMONT_BORDEAUX_BÈGLES",
+    "date": "2025-12-27T21:00:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "28 --- 27",
-    "prono_score_ht": "8 --- 10",
-    "confiance_ft": 0.005883023809893719,
-    "confiance_ht": 0.005883023809893719
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 22,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 13
+    },
+    "prono_text": "22 --- 19",
+    "prono_ht_text": "13 --- 13"
   },
   {
-    "id": "2025-2026_13_SECTION PALOISE_MONTPELLIER HÉRAULT RUGBY",
-    "date": "2025-12-28T00:00:00",
+    "id": "2025-2026_13_SECTION_PALOISE_MONTPELLIER_HÉRAULT_RUGBY",
+    "date": "2025-12-28T16:00:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "31 --- 21",
-    "prono_score_ht": "12 --- 5",
-    "confiance_ft": 0.996662244522235,
-    "confiance_ht": 0.996662244522235
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.830716698174101,
+    "confiance_mt_algo": 0.6909115563484053,
+    "prono_ft": {
+      "domicile": 32,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 16,
+      "exterieur": 8
+    },
+    "prono_text": "32 --- 14",
+    "prono_ht_text": "16 --- 8"
   },
   {
-    "id": "2025-2026_13_RC TOULON_USA PERPIGNAN",
-    "date": "2025-12-28T00:00:00",
+    "id": "2025-2026_13_RC_TOULON_USA_PERPIGNAN",
+    "date": "2025-12-28T18:00:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "23 --- 14",
-    "prono_score_ht": "17 --- 9",
-    "confiance_ft": 0.1418953140622998,
-    "confiance_ht": 0.1418953140622998
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.3540199793497036,
+    "confiance_mt_algo": 0.30826024215681264,
+    "prono_ft": {
+      "domicile": 29,
+      "exterieur": 9
+    },
+    "prono_ht": {
+      "domicile": 8,
+      "exterieur": 9
+    },
+    "prono_text": "29 --- 9",
+    "prono_ht_text": "8 --- 9"
   },
   {
-    "id": "2025-2026_13_STADE TOULOUSAIN_STADE ROCHELAIS",
-    "date": "2025-12-28T00:00:00",
+    "id": "2025-2026_13_STADE_TOULOUSAIN_STADE_ROCHELAIS",
+    "date": "2025-12-28T21:05:00",
     "saison": "2025-2026",
     "journee": 13,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "42 --- 17",
-    "prono_score_ht": "11 --- 7",
-    "confiance_ft": 0.9998573828012978,
-    "confiance_ht": 0.9998573828012978
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7985035667393389,
+    "prono_ft": {
+      "domicile": 48,
+      "exterieur": 10
+    },
+    "prono_ht": {
+      "domicile": 28,
+      "exterieur": 5
+    },
+    "prono_text": "48 --- 10",
+    "prono_ht_text": "28 --- 5"
   },
   {
-    "id": "2025-2026_14_USA PERPIGNAN_STADE TOULOUSAIN",
-    "date": "2026-01-03T00:00:00",
+    "id": "2025-2026_14_USA_PERPIGNAN_STADE_TOULOUSAIN",
+    "date": "2026-01-03T14:30:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "18 --- 18",
-    "prono_score_ht": "13 --- 7",
-    "confiance_ft": 8.14599970303621e-08,
-    "confiance_ht": 8.14599970303621e-08
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 15,
+      "exterieur": 43
+    },
+    "prono_ht": {
+      "domicile": 3,
+      "exterieur": 33
+    },
+    "prono_text": "15 --- 43",
+    "prono_ht_text": "3 --- 33"
   },
   {
-    "id": "2025-2026_14_LYON OU_SECTION PALOISE",
-    "date": "2026-01-03T00:00:00",
+    "id": "2025-2026_14_LYON_OU_SECTION_PALOISE",
+    "date": "2026-01-03T16:35:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "24 --- 21",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 3.919092515723134e-05,
-    "confiance_ht": 3.919092515723134e-05
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.30437576945064426,
+    "prono_ft": {
+      "domicile": 23,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 11
+    },
+    "prono_text": "23 --- 19",
+    "prono_ht_text": "14 --- 11"
   },
   {
-    "id": "2025-2026_14_MONTPELLIER HÉRAULT RUGBY_AVIRON BAYONNAIS",
-    "date": "2026-01-03T00:00:00",
+    "id": "2025-2026_14_MONTPELLIER_HÉRAULT_RUGBY_AVIRON_BAYONNAIS",
+    "date": "2026-01-03T16:35:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "29 --- 15",
-    "prono_score_ht": "12 --- 9",
-    "confiance_ft": 0.997858749749709,
-    "confiance_ht": 0.997858749749709
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7719069207817862,
+    "confiance_mt_algo": 0.6111637299976614,
+    "prono_ft": {
+      "domicile": 29,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 20,
+      "exterieur": 8
+    },
+    "prono_text": "29 --- 14",
+    "prono_ht_text": "20 --- 8"
   },
   {
-    "id": "2025-2026_14_STADE FRANÇAIS PARIS_CASTRES OLYMPIQUE",
-    "date": "2026-01-03T00:00:00",
+    "id": "2025-2026_14_STADE_FRANÇAIS_PARIS_CASTRES_OLYMPIQUE",
+    "date": "2026-01-03T16:35:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "29 --- 15",
-    "prono_score_ht": "10 --- 11",
-    "confiance_ft": 0.006800322834899188,
-    "confiance_ht": 0.006800322834899188
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.34030323442454297,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 9
+    },
+    "prono_text": "28 --- 16",
+    "prono_ht_text": "12 --- 9"
   },
   {
-    "id": "2025-2026_14_US MONTAUBAN_ASM CLERMONT",
-    "date": "2026-01-03T00:00:00",
+    "id": "2025-2026_14_US_MONTAUBAN_ASM_CLERMONT",
+    "date": "2026-01-03T16:35:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "20 --- 16",
-    "prono_score_ht": "10 --- 12",
-    "confiance_ft": 0.000355292575525366,
-    "confiance_ht": 0.000355292575525366
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 7,
+      "exterieur": 10
+    },
+    "prono_text": "18 --- 15",
+    "prono_ht_text": "7 --- 10"
   },
   {
-    "id": "2025-2026_14_BORDEAUX BÈGLES_RACING 92",
-    "date": "2026-01-03T00:00:00",
+    "id": "2025-2026_14_BORDEAUX_BÈGLES_RACING_92",
+    "date": "2026-01-03T21:00:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "RACING 92",
-    "prono_score_final": "11 --- 22",
-    "prono_score_ht": "7 --- 10",
-    "confiance_ft": 4.471601632946329e-06,
-    "confiance_ht": 4.471601632946329e-06
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3405454091366575,
+    "prono_ft": {
+      "domicile": 26,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 8
+    },
+    "prono_text": "26 --- 17",
+    "prono_ht_text": "14 --- 8"
   },
   {
-    "id": "2025-2026_14_STADE ROCHELAIS_RC TOULON",
-    "date": "2026-01-04T00:00:00",
+    "id": "2025-2026_14_STADE_ROCHELAIS_RC_TOULON",
+    "date": "2026-01-04T21:05:00",
     "saison": "2025-2026",
     "journee": 14,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "36 --- 22",
-    "prono_score_ht": "14 --- 8",
-    "confiance_ft": 0.9999783663915128,
-    "confiance_ht": 0.9999783663915128
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.9138866830145799,
+    "confiance_mt_algo": 0.6702939627933546,
+    "prono_ft": {
+      "domicile": 27,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 19,
+      "exterieur": 16
+    },
+    "prono_text": "27 --- 16",
+    "prono_ht_text": "19 --- 16"
   },
   {
-    "id": "2025-2026_15_ASM CLERMONT_STADE ROCHELAIS",
+    "id": "2025-2026_15_ASM_CLERMONT_STADE_ROCHELAIS",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "26 --- 17",
-    "prono_score_ht": "10 --- 11",
-    "confiance_ft": 3.552601333636667e-05,
-    "confiance_ht": 3.552601333636667e-05
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.34967961693205973,
+    "prono_ft": {
+      "domicile": 20,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 3
+    },
+    "prono_text": "20 --- 13",
+    "prono_ht_text": "12 --- 3"
   },
   {
-    "id": "2025-2026_15_AVIRON BAYONNAIS_CASTRES OLYMPIQUE",
+    "id": "2025-2026_15_AVIRON_BAYONNAIS_CASTRES_OLYMPIQUE",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "18 --- 18",
-    "prono_score_ht": "9 --- 10",
-    "confiance_ft": 0.0027067362734274126,
-    "confiance_ht": 0.0027067362734274126
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.31225592419134895,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 10
+    },
+    "prono_text": "25 --- 16",
+    "prono_ht_text": "14 --- 10"
   },
   {
-    "id": "2025-2026_15_RACING 92_LYON OU",
+    "id": "2025-2026_15_RACING_92_LYON_OU",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "39 --- 14",
-    "prono_score_ht": "16 --- 6",
-    "confiance_ft": 0.9999999938679941,
-    "confiance_ht": 0.9999999938679941
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8089908172668382,
+    "confiance_mt_algo": 0.6572087959761566,
+    "prono_ft": {
+      "domicile": 33,
+      "exterieur": 12
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 3
+    },
+    "prono_text": "33 --- 12",
+    "prono_ht_text": "14 --- 3"
   },
   {
-    "id": "2025-2026_15_RC TOULON_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_15_RC_TOULON_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "20 --- 16",
-    "prono_score_ht": "11 --- 5",
-    "confiance_ft": 0.014506144504380123,
-    "confiance_ht": 0.014506144504380123
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3158033132959664,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 18,
+      "exterieur": 9
+    },
+    "prono_text": "28 --- 15",
+    "prono_ht_text": "18 --- 9"
   },
   {
-    "id": "2025-2026_15_STADE TOULOUSAIN_SECTION PALOISE",
+    "id": "2025-2026_15_STADE_TOULOUSAIN_SECTION_PALOISE",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "28 --- 18",
-    "prono_score_ht": "14 --- 8",
-    "confiance_ft": 0.9999095250563026,
-    "confiance_ht": 0.9999095250563026
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.8265985153644502,
+    "prono_ft": {
+      "domicile": 46,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 27,
+      "exterieur": 0
+    },
+    "prono_text": "46 --- 16",
+    "prono_ht_text": "27 --- 0"
   },
   {
-    "id": "2025-2026_15_BORDEAUX BÈGLES_STADE FRANÇAIS PARIS",
+    "id": "2025-2026_15_BORDEAUX_BÈGLES_STADE_FRANÇAIS_PARIS",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "28 --- 18",
-    "prono_score_ht": "14 --- 7",
-    "confiance_ft": 0.9972387298860532,
-    "confiance_ht": 0.9972387298860532
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8951948589714829,
+    "confiance_mt_algo": 0.6592967918014812,
+    "prono_ft": {
+      "domicile": 32,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 8,
+      "exterieur": 5
+    },
+    "prono_text": "32 --- 17",
+    "prono_ht_text": "8 --- 5"
   },
   {
-    "id": "2025-2026_15_USA PERPIGNAN_US MONTAUBAN",
+    "id": "2025-2026_15_USA_PERPIGNAN_US_MONTAUBAN",
     "date": "2026-01-24T00:00:00",
     "saison": "2025-2026",
     "journee": 15,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "29 --- 18",
-    "prono_score_ht": "11 --- 6",
-    "confiance_ft": 0.9999847037441065,
-    "confiance_ht": 0.9999847037441065
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8041441188615893,
+    "confiance_mt_algo": 0.6780192533954819,
+    "prono_ft": {
+      "domicile": 20,
+      "exterieur": 8
+    },
+    "prono_ht": {
+      "domicile": 9,
+      "exterieur": 3
+    },
+    "prono_text": "20 --- 8",
+    "prono_ht_text": "9 --- 3"
   },
   {
-    "id": "2025-2026_16_CASTRES OLYMPIQUE_ASM CLERMONT",
+    "id": "2025-2026_16_CASTRES_OLYMPIQUE_ASM_CLERMONT",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "23 --- 9",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 0.996658873959241,
-    "confiance_ht": 0.996658873959241
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7869627115319067,
+    "prono_ft": {
+      "domicile": 29,
+      "exterieur": 11
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 5
+    },
+    "prono_text": "29 --- 11",
+    "prono_ht_text": "12 --- 5"
   },
   {
-    "id": "2025-2026_16_MONTPELLIER HÉRAULT RUGBY_STADE FRANÇAIS PARIS",
+    "id": "2025-2026_16_MONTPELLIER_HÉRAULT_RUGBY_STADE_FRANÇAIS_PARIS",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "25 --- 19",
-    "prono_score_ht": "7 --- 9",
-    "confiance_ft": 0.9946157700275855,
-    "confiance_ht": 0.9946157700275855
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7511689804256793,
+    "confiance_mt_algo": 0.6309790607423329,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 3
+    },
+    "prono_text": "28 --- 17",
+    "prono_ht_text": "14 --- 3"
   },
   {
-    "id": "2025-2026_16_RACING 92_USA PERPIGNAN",
+    "id": "2025-2026_16_RACING_92_USA_PERPIGNAN",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "37 --- 20",
-    "prono_score_ht": "19 --- 6",
-    "confiance_ft": 0.9999999025511318,
-    "confiance_ht": 0.9999999025511318
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8131777080866051,
+    "confiance_mt_algo": 0.643591517199745,
+    "prono_ft": {
+      "domicile": 32,
+      "exterieur": 6
+    },
+    "prono_ht": {
+      "domicile": 18,
+      "exterieur": 6
+    },
+    "prono_text": "32 --- 6",
+    "prono_ht_text": "18 --- 6"
   },
   {
-    "id": "2025-2026_16_SECTION PALOISE_RC TOULON",
+    "id": "2025-2026_16_SECTION_PALOISE_RC_TOULON",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "32 --- 17",
-    "prono_score_ht": "10 --- 7",
-    "confiance_ft": 0.9999658972203948,
-    "confiance_ht": 0.9999658972203948
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8321027323595143,
+    "confiance_mt_algo": 0.6752281157240061,
+    "prono_ft": {
+      "domicile": 33,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 8
+    },
+    "prono_text": "33 --- 16",
+    "prono_ht_text": "13 --- 8"
   },
   {
-    "id": "2025-2026_16_STADE ROCHELAIS_LYON OU",
+    "id": "2025-2026_16_STADE_ROCHELAIS_LYON_OU",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "29 --- 18",
-    "prono_score_ht": "19 --- 9",
-    "confiance_ft": 0.999988100433495,
-    "confiance_ht": 0.999988100433495
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.9295666414000764,
+    "confiance_mt_algo": 0.711773328999756,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 23,
+      "exterieur": 5
+    },
+    "prono_text": "28 --- 13",
+    "prono_ht_text": "23 --- 5"
   },
   {
-    "id": "2025-2026_16_STADE TOULOUSAIN_AVIRON BAYONNAIS",
+    "id": "2025-2026_16_STADE_TOULOUSAIN_AVIRON_BAYONNAIS",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "24 --- 17",
-    "prono_score_ht": "11 --- 7",
-    "confiance_ft": 0.9999999986414598,
-    "confiance_ht": 0.9999999986414598
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7560387407740562,
+    "prono_ft": {
+      "domicile": 50,
+      "exterieur": 12
+    },
+    "prono_ht": {
+      "domicile": 37,
+      "exterieur": 5
+    },
+    "prono_text": "50 --- 12",
+    "prono_ht_text": "37 --- 5"
   },
   {
-    "id": "2025-2026_16_US MONTAUBAN_BORDEAUX BÈGLES",
+    "id": "2025-2026_16_US_MONTAUBAN_BORDEAUX_BÈGLES",
     "date": "2026-01-31T00:00:00",
     "saison": "2025-2026",
     "journee": 16,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "27 --- 19",
-    "prono_score_ht": "16 --- 11",
-    "confiance_ft": 1.4551338554166133e-06,
-    "confiance_ht": 1.4551338554166133e-06
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3150039455630551,
+    "prono_ft": {
+      "domicile": 16,
+      "exterieur": 21
+    },
+    "prono_ht": {
+      "domicile": 10,
+      "exterieur": 9
+    },
+    "prono_text": "16 --- 21",
+    "prono_ht_text": "10 --- 9"
   },
   {
-    "id": "2025-2026_17_AVIRON BAYONNAIS_RACING 92",
+    "id": "2025-2026_17_AVIRON_BAYONNAIS_RACING_92",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "RACING 92",
-    "prono_score_final": "23 --- 22",
-    "prono_score_ht": "13 --- 3",
-    "confiance_ft": 7.0942239971460945e-09,
-    "confiance_ht": 7.0942239971460945e-09
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 20,
+      "exterieur": 18
+    },
+    "prono_ht": {
+      "domicile": 5,
+      "exterieur": 12
+    },
+    "prono_text": "20 --- 18",
+    "prono_ht_text": "5 --- 12"
   },
   {
-    "id": "2025-2026_17_LYON OU_US MONTAUBAN",
+    "id": "2025-2026_17_LYON_OU_US_MONTAUBAN",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "23 --- 14",
-    "prono_score_ht": "16 --- 8",
-    "confiance_ft": 0.9997569696587525,
-    "confiance_ht": 0.9997569696587525
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8840642534314769,
+    "confiance_mt_algo": 0.6971764947065934,
+    "prono_ft": {
+      "domicile": 32,
+      "exterieur": 9
+    },
+    "prono_ht": {
+      "domicile": 10,
+      "exterieur": 6
+    },
+    "prono_text": "32 --- 9",
+    "prono_ht_text": "10 --- 6"
   },
   {
-    "id": "2025-2026_17_RC TOULON_ASM CLERMONT",
+    "id": "2025-2026_17_RC_TOULON_ASM_CLERMONT",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "27 --- 20",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 0.6477605274460888,
-    "confiance_ht": 0.6477605274460888
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6853208629272258,
+    "confiance_mt_algo": 0.5486246531127419,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 10
+    },
+    "prono_text": "30 --- 13",
+    "prono_ht_text": "12 --- 10"
   },
   {
-    "id": "2025-2026_17_STADE FRANÇAIS PARIS_STADE TOULOUSAIN",
+    "id": "2025-2026_17_STADE_FRANÇAIS_PARIS_STADE_TOULOUSAIN",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "22 --- 19",
-    "prono_score_ht": "11 --- 13",
-    "confiance_ft": 7.160484088877213e-09,
-    "confiance_ht": 7.160484088877213e-09
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 23,
+      "exterieur": 39
+    },
+    "prono_ht": {
+      "domicile": 9,
+      "exterieur": 22
+    },
+    "prono_text": "23 --- 39",
+    "prono_ht_text": "9 --- 22"
   },
   {
-    "id": "2025-2026_17_STADE ROCHELAIS_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_17_STADE_ROCHELAIS_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "24 --- 22",
-    "prono_score_ht": "13 --- 9",
-    "confiance_ft": 0.9978800840734238,
-    "confiance_ht": 0.9978800840734238
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.9230556884062113,
+    "confiance_mt_algo": 0.7143663995543172,
+    "prono_ft": {
+      "domicile": 26,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 9,
+      "exterieur": 6
+    },
+    "prono_text": "26 --- 14",
+    "prono_ht_text": "9 --- 6"
   },
   {
-    "id": "2025-2026_17_BORDEAUX BÈGLES_CASTRES OLYMPIQUE",
+    "id": "2025-2026_17_BORDEAUX_BÈGLES_CASTRES_OLYMPIQUE",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "27 --- 15",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 0.6310966122790348,
-    "confiance_ht": 0.6310966122790348
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6392116907721906,
+    "confiance_mt_algo": 0.5055264178664117,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 24,
+      "exterieur": 15
+    },
+    "prono_text": "30 --- 15",
+    "prono_ht_text": "24 --- 15"
   },
   {
-    "id": "2025-2026_17_USA PERPIGNAN_SECTION PALOISE",
+    "id": "2025-2026_17_USA_PERPIGNAN_SECTION_PALOISE",
     "date": "2026-02-14T00:00:00",
     "saison": "2025-2026",
     "journee": 17,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "23 --- 24",
-    "prono_score_ht": "15 --- 9",
-    "confiance_ft": 0.0006224527604155307,
-    "confiance_ht": 0.0006224527604155307
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 6,
+      "exterieur": 9
+    },
+    "prono_text": "18 --- 19",
+    "prono_ht_text": "6 --- 9"
   },
   {
-    "id": "2025-2026_18_ASM CLERMONT_AVIRON BAYONNAIS",
+    "id": "2025-2026_18_ASM_CLERMONT_AVIRON_BAYONNAIS",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "18 --- 18",
-    "prono_score_ht": "12 --- 7",
-    "confiance_ft": 0.7885890497355184,
-    "confiance_ht": 0.7885890497355184
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7073183404833399,
+    "confiance_mt_algo": 0.5938645725237359,
+    "prono_ft": {
+      "domicile": 24,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 7
+    },
+    "prono_text": "24 --- 15",
+    "prono_ht_text": "17 --- 7"
   },
   {
-    "id": "2025-2026_18_CASTRES OLYMPIQUE_STADE ROCHELAIS",
+    "id": "2025-2026_18_CASTRES_OLYMPIQUE_STADE_ROCHELAIS",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "27 --- 16",
-    "prono_score_ht": "8 --- 8",
-    "confiance_ft": 0.007278518693989597,
-    "confiance_ht": 0.007278518693989597
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.32768504942766846,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 3
+    },
+    "prono_text": "25 --- 13",
+    "prono_ht_text": "12 --- 3"
   },
   {
-    "id": "2025-2026_18_LYON OU_RC TOULON",
+    "id": "2025-2026_18_LYON_OU_RC_TOULON",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "26 --- 15",
-    "prono_score_ht": "9 --- 8",
-    "confiance_ft": 0.4429144452044293,
-    "confiance_ht": 0.4429144452044293
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.4404943342314859,
+    "confiance_mt_algo": 0.34321103701435585,
+    "prono_ft": {
+      "domicile": 27,
+      "exterieur": 18
+    },
+    "prono_ht": {
+      "domicile": 5,
+      "exterieur": 7
+    },
+    "prono_text": "27 --- 18",
+    "prono_ht_text": "5 --- 7"
   },
   {
-    "id": "2025-2026_18_MONTPELLIER HÉRAULT RUGBY_RACING 92",
+    "id": "2025-2026_18_MONTPELLIER_HÉRAULT_RUGBY_RACING_92",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
     "equipe_exterieure": "RACING 92",
-    "prono_score_final": "26 --- 21",
-    "prono_score_ht": "12 --- 10",
-    "confiance_ft": 2.2872074125042723e-06,
-    "confiance_ht": 2.2872074125042723e-06
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.30459540716170375,
+    "prono_ft": {
+      "domicile": 22,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 10
+    },
+    "prono_text": "22 --- 17",
+    "prono_ht_text": "12 --- 10"
   },
   {
-    "id": "2025-2026_18_SECTION PALOISE_BORDEAUX BÈGLES",
+    "id": "2025-2026_18_SECTION_PALOISE_BORDEAUX_BÈGLES",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "27 --- 20",
-    "prono_score_ht": "14 --- 5",
-    "confiance_ft": 0.9934952470115449,
-    "confiance_ht": 0.9934952470115449
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8237971038604194,
+    "confiance_mt_algo": 0.684447627181124,
+    "prono_ft": {
+      "domicile": 31,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 20,
+      "exterieur": 6
+    },
+    "prono_text": "31 --- 17",
+    "prono_ht_text": "20 --- 6"
   },
   {
-    "id": "2025-2026_18_STADE FRANÇAIS PARIS_USA PERPIGNAN",
+    "id": "2025-2026_18_STADE_FRANÇAIS_PARIS_USA_PERPIGNAN",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "28 --- 19",
-    "prono_score_ht": "11 --- 7",
-    "confiance_ft": 0.11273328250766704,
-    "confiance_ht": 0.11273328250766704
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35255705349800015,
+    "confiance_mt_algo": 0.33179668082078545,
+    "prono_ft": {
+      "domicile": 29,
+      "exterieur": 9
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 3
+    },
+    "prono_text": "29 --- 9",
+    "prono_ht_text": "13 --- 3"
   },
   {
-    "id": "2025-2026_18_STADE TOULOUSAIN_US MONTAUBAN",
+    "id": "2025-2026_18_STADE_TOULOUSAIN_US_MONTAUBAN",
     "date": "2026-02-28T00:00:00",
     "saison": "2025-2026",
     "journee": 18,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "31 --- 10",
-    "prono_score_ht": "16 --- 5",
-    "confiance_ft": 0.9999999999991379,
-    "confiance_ht": 0.9999999999991379
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7513220287458766,
+    "prono_ft": {
+      "domicile": 52,
+      "exterieur": 6
+    },
+    "prono_ht": {
+      "domicile": 36,
+      "exterieur": 3
+    },
+    "prono_text": "52 --- 6",
+    "prono_ht_text": "36 --- 3"
   },
   {
-    "id": "2025-2026_19_ASM CLERMONT_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_19_ASM_CLERMONT_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "33 --- 19",
-    "prono_score_ht": "10 --- 7",
-    "confiance_ft": 0.011437360604457826,
-    "confiance_ht": 0.011437360604457826
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 22,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 11
+    },
+    "prono_text": "22 --- 16",
+    "prono_ht_text": "17 --- 11"
   },
   {
-    "id": "2025-2026_19_RACING 92_CASTRES OLYMPIQUE",
+    "id": "2025-2026_19_RACING_92_CASTRES_OLYMPIQUE",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "21 --- 14",
-    "prono_score_ht": "15 --- 10",
-    "confiance_ft": 0.9999981916559677,
-    "confiance_ht": 0.9999981916559677
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8016694627754732,
+    "confiance_mt_algo": 0.6094840021291565,
+    "prono_ft": {
+      "domicile": 31,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 20,
+      "exterieur": 13
+    },
+    "prono_text": "31 --- 13",
+    "prono_ht_text": "20 --- 13"
   },
   {
-    "id": "2025-2026_19_RC TOULON_STADE FRANÇAIS PARIS",
+    "id": "2025-2026_19_RC_TOULON_STADE_FRANÇAIS_PARIS",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "35 --- 17",
-    "prono_score_ht": "15 --- 8",
-    "confiance_ft": 0.6529197051766102,
-    "confiance_ht": 0.6529197051766102
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6597274774301026,
+    "confiance_mt_algo": 0.48306828790214884,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 20
+    },
+    "prono_ht": {
+      "domicile": 18,
+      "exterieur": 17
+    },
+    "prono_text": "30 --- 20",
+    "prono_ht_text": "18 --- 17"
   },
   {
-    "id": "2025-2026_19_STADE ROCHELAIS_SECTION PALOISE",
+    "id": "2025-2026_19_STADE_ROCHELAIS_SECTION_PALOISE",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "28 --- 16",
-    "prono_score_ht": "9 --- 10",
-    "confiance_ft": 0.6949908544358636,
-    "confiance_ht": 0.6949908544358636
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6359377955074369,
+    "confiance_mt_algo": 0.615321341168266,
+    "prono_ft": {
+      "domicile": 24,
+      "exterieur": 18
+    },
+    "prono_ht": {
+      "domicile": 15,
+      "exterieur": 6
+    },
+    "prono_text": "24 --- 18",
+    "prono_ht_text": "15 --- 6"
   },
   {
-    "id": "2025-2026_19_BORDEAUX BÈGLES_STADE TOULOUSAIN",
+    "id": "2025-2026_19_BORDEAUX_BÈGLES_STADE_TOULOUSAIN",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "34 --- 21",
-    "prono_score_ht": "11 --- 8",
-    "confiance_ft": 1.7890886256573508e-06,
-    "confiance_ht": 1.7890886256573508e-06
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 37
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 19
+    },
+    "prono_text": "25 --- 37",
+    "prono_ht_text": "12 --- 19"
   },
   {
-    "id": "2025-2026_19_US MONTAUBAN_AVIRON BAYONNAIS",
+    "id": "2025-2026_19_US_MONTAUBAN_AVIRON_BAYONNAIS",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "21 --- 17",
-    "prono_score_ht": "8 --- 7",
-    "confiance_ft": 0.000916358838536931,
-    "confiance_ht": 0.000916358838536931
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 5,
+      "exterieur": 6
+    },
+    "prono_text": "18 --- 17",
+    "prono_ht_text": "5 --- 6"
   },
   {
-    "id": "2025-2026_19_USA PERPIGNAN_LYON OU",
+    "id": "2025-2026_19_USA_PERPIGNAN_LYON_OU",
     "date": "2026-03-21T00:00:00",
     "saison": "2025-2026",
     "journee": 19,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "25 --- 23",
-    "prono_score_ht": "9 --- 9",
-    "confiance_ft": 0.9582824070443486,
-    "confiance_ht": 0.9582824070443486
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.694973356156872,
+    "confiance_mt_algo": 0.5891093725199221,
+    "prono_ft": {
+      "domicile": 19,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 9
+    },
+    "prono_text": "19 --- 14",
+    "prono_ht_text": "11 --- 9"
   },
   {
-    "id": "2025-2026_20_AVIRON BAYONNAIS_STADE ROCHELAIS",
+    "id": "2025-2026_20_AVIRON_BAYONNAIS_STADE_ROCHELAIS",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "25 --- 19",
-    "prono_score_ht": "11 --- 8",
-    "confiance_ft": 1.3766789145890038e-05,
-    "confiance_ht": 1.3766789145890038e-05
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3360582734482923,
+    "prono_ft": {
+      "domicile": 23,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 3
+    },
+    "prono_text": "23 --- 14",
+    "prono_ht_text": "13 --- 3"
   },
   {
-    "id": "2025-2026_20_CASTRES OLYMPIQUE_US MONTAUBAN",
+    "id": "2025-2026_20_CASTRES_OLYMPIQUE_US_MONTAUBAN",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "34 --- 14",
-    "prono_score_ht": "15 --- 7",
-    "confiance_ft": 0.9999991756978652,
-    "confiance_ht": 0.9999991756978652
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7244964359009133,
+    "prono_ft": {
+      "domicile": 31,
+      "exterieur": 7
+    },
+    "prono_ht": {
+      "domicile": 8,
+      "exterieur": 0
+    },
+    "prono_text": "31 --- 7",
+    "prono_ht_text": "8 --- 0"
   },
   {
-    "id": "2025-2026_20_LYON OU_BORDEAUX BÈGLES",
+    "id": "2025-2026_20_LYON_OU_BORDEAUX_BÈGLES",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "30 --- 22",
-    "prono_score_ht": "8 --- 8",
-    "confiance_ft": 0.004124228201724184,
-    "confiance_ht": 0.004124228201724184
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 3,
+      "exterieur": 14
+    },
+    "prono_text": "25 --- 19",
+    "prono_ht_text": "3 --- 14"
   },
   {
-    "id": "2025-2026_20_SECTION PALOISE_RACING 92",
+    "id": "2025-2026_20_SECTION_PALOISE_RACING_92",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "RACING 92",
-    "prono_score_final": "24 --- 21",
-    "prono_score_ht": "11 --- 8",
-    "confiance_ft": 0.0004722749140614078,
-    "confiance_ht": 0.0004722749140614078
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.326714598923992,
+    "prono_ft": {
+      "domicile": 27,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 3
+    },
+    "prono_text": "27 --- 16",
+    "prono_ht_text": "14 --- 3"
   },
   {
-    "id": "2025-2026_20_STADE FRANÇAIS PARIS_ASM CLERMONT",
+    "id": "2025-2026_20_STADE_FRANÇAIS_PARIS_ASM_CLERMONT",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "26 --- 15",
-    "prono_score_ht": "14 --- 7",
-    "confiance_ft": 0.5855806206128822,
-    "confiance_ht": 0.5855806206128822
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.5993614052531101,
+    "confiance_mt_algo": 0.45750518054143696,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 12
+    },
+    "prono_ht": {
+      "domicile": 15,
+      "exterieur": 12
+    },
+    "prono_text": "30 --- 12",
+    "prono_ht_text": "15 --- 12"
   },
   {
-    "id": "2025-2026_20_STADE TOULOUSAIN_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_20_STADE_TOULOUSAIN_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "24 --- 19",
-    "prono_score_ht": "17 --- 7",
-    "confiance_ft": 0.9999995620001755,
-    "confiance_ht": 0.9999995620001755
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7565367164693217,
+    "prono_ft": {
+      "domicile": 46,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 31,
+      "exterieur": 9
+    },
+    "prono_text": "46 --- 14",
+    "prono_ht_text": "31 --- 9"
   },
   {
-    "id": "2025-2026_20_USA PERPIGNAN_RC TOULON",
+    "id": "2025-2026_20_USA_PERPIGNAN_RC_TOULON",
     "date": "2026-03-28T00:00:00",
     "saison": "2025-2026",
     "journee": 20,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "26 --- 18",
-    "prono_score_ht": "11 --- 10",
-    "confiance_ft": 0.9266588590230335,
-    "confiance_ht": 0.9266588590230335
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.5886623629130694,
+    "confiance_mt_algo": 0.5795153330677925,
+    "prono_ft": {
+      "domicile": 20,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 15,
+      "exterieur": 10
+    },
+    "prono_text": "20 --- 17",
+    "prono_ht_text": "15 --- 10"
   },
   {
-    "id": "2025-2026_21_ASM CLERMONT_LYON OU",
+    "id": "2025-2026_21_ASM_CLERMONT_LYON_OU",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "29 --- 14",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 0.6737891417125597,
-    "confiance_ht": 0.6737891417125597
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6315353808651004,
+    "confiance_mt_algo": 0.52800902813365,
+    "prono_ft": {
+      "domicile": 24,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 8
+    },
+    "prono_text": "24 --- 15",
+    "prono_ht_text": "17 --- 8"
   },
   {
-    "id": "2025-2026_21_AVIRON BAYONNAIS_SECTION PALOISE",
+    "id": "2025-2026_21_AVIRON_BAYONNAIS_SECTION_PALOISE",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "21 --- 18",
-    "prono_score_ht": "9 --- 7",
-    "confiance_ft": 2.1701784296676128e-05,
-    "confiance_ht": 2.1701784296676128e-05
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 23,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 7,
+      "exterieur": 10
+    },
+    "prono_text": "23 --- 19",
+    "prono_ht_text": "7 --- 10"
   },
   {
-    "id": "2025-2026_21_CASTRES OLYMPIQUE_STADE TOULOUSAIN",
+    "id": "2025-2026_21_CASTRES_OLYMPIQUE_STADE_TOULOUSAIN",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "24 --- 21",
-    "prono_score_ht": "9 --- 9",
-    "confiance_ft": 1.5116413724540003e-06,
-    "confiance_ht": 1.5116413724540003e-06
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 22,
+      "exterieur": 39
+    },
+    "prono_ht": {
+      "domicile": 10,
+      "exterieur": 25
+    },
+    "prono_text": "22 --- 39",
+    "prono_ht_text": "10 --- 25"
   },
   {
-    "id": "2025-2026_21_MONTPELLIER HÉRAULT RUGBY_USA PERPIGNAN",
+    "id": "2025-2026_21_MONTPELLIER_HÉRAULT_RUGBY_USA_PERPIGNAN",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "27 --- 13",
-    "prono_score_ht": "12 --- 6",
-    "confiance_ft": 0.9419882729693485,
-    "confiance_ht": 0.9419882729693485
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7417159177433701,
+    "confiance_mt_algo": 0.5973146577075058,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 8
+    },
+    "prono_ht": {
+      "domicile": 12,
+      "exterieur": 8
+    },
+    "prono_text": "28 --- 8",
+    "prono_ht_text": "12 --- 8"
   },
   {
-    "id": "2025-2026_21_RACING 92_STADE FRANÇAIS PARIS",
+    "id": "2025-2026_21_RACING_92_STADE_FRANÇAIS_PARIS",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "31 --- 20",
-    "prono_score_ht": "13 --- 10",
-    "confiance_ft": 0.9999999914340645,
-    "confiance_ht": 0.9999999914340645
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7974800683702326,
+    "confiance_mt_algo": 0.6327766243418061,
+    "prono_ft": {
+      "domicile": 33,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 6
+    },
+    "prono_text": "33 --- 15",
+    "prono_ht_text": "11 --- 6"
   },
   {
-    "id": "2025-2026_21_STADE ROCHELAIS_BORDEAUX BÈGLES",
+    "id": "2025-2026_21_STADE_ROCHELAIS_BORDEAUX_BÈGLES",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "25 --- 15",
-    "prono_score_ht": "11 --- 7",
-    "confiance_ft": 0.9958638265260799,
-    "confiance_ht": 0.9958638265260799
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8861534693211651,
+    "confiance_mt_algo": 0.6302912412507296,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 17
+    },
+    "prono_ht": {
+      "domicile": 3,
+      "exterieur": 3
+    },
+    "prono_text": "25 --- 17",
+    "prono_ht_text": "3 --- 3"
   },
   {
-    "id": "2025-2026_21_US MONTAUBAN_RC TOULON",
+    "id": "2025-2026_21_US_MONTAUBAN_RC_TOULON",
     "date": "2026-04-18T00:00:00",
     "saison": "2025-2026",
     "journee": 21,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "24 --- 15",
-    "prono_score_ht": "13 --- 8",
-    "confiance_ft": 0.0002792818392882089,
-    "confiance_ht": 0.0002792818392882089
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 21
+    },
+    "prono_ht": {
+      "domicile": 5,
+      "exterieur": 6
+    },
+    "prono_text": "18 --- 21",
+    "prono_ht_text": "5 --- 6"
   },
   {
-    "id": "2025-2026_22_LYON OU_CASTRES OLYMPIQUE",
+    "id": "2025-2026_22_LYON_OU_CASTRES_OLYMPIQUE",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "27 --- 14",
-    "prono_score_ht": "7 --- 8",
-    "confiance_ft": 0.004877499934407242,
-    "confiance_ht": 0.004877499934407242
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3095916274410921,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 10,
+      "exterieur": 3
+    },
+    "prono_text": "25 --- 16",
+    "prono_ht_text": "10 --- 3"
   },
   {
-    "id": "2025-2026_22_RC TOULON_AVIRON BAYONNAIS",
+    "id": "2025-2026_22_RC_TOULON_AVIRON_BAYONNAIS",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "18 --- 22",
-    "prono_score_ht": "10 --- 7",
-    "confiance_ft": 0.8259566174100315,
-    "confiance_ht": 0.8259566174100315
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.82312425641189,
+    "confiance_mt_algo": 0.6992175634431396,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 6
+    },
+    "prono_text": "30 --- 15",
+    "prono_ht_text": "17 --- 6"
   },
   {
-    "id": "2025-2026_22_STADE FRANÇAIS PARIS_SECTION PALOISE",
+    "id": "2025-2026_22_STADE_FRANÇAIS_PARIS_SECTION_PALOISE",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "23 --- 19",
-    "prono_score_ht": "9 --- 12",
-    "confiance_ft": 5.474582371558009e-05,
-    "confiance_ht": 5.474582371558009e-05
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.31615456702582934,
+    "prono_ft": {
+      "domicile": 26,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 6
+    },
+    "prono_text": "26 --- 19",
+    "prono_ht_text": "11 --- 6"
   },
   {
-    "id": "2025-2026_22_STADE TOULOUSAIN_ASM CLERMONT",
+    "id": "2025-2026_22_STADE_TOULOUSAIN_ASM_CLERMONT",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "37 --- 14",
-    "prono_score_ht": "8 --- 7",
-    "confiance_ft": 0.9999999964941305,
-    "confiance_ht": 0.9999999964941305
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7863806641921238,
+    "prono_ft": {
+      "domicile": 48,
+      "exterieur": 9
+    },
+    "prono_ht": {
+      "domicile": 21,
+      "exterieur": 0
+    },
+    "prono_text": "48 --- 9",
+    "prono_ht_text": "21 --- 0"
   },
   {
-    "id": "2025-2026_22_BORDEAUX BÈGLES_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_22_BORDEAUX_BÈGLES_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "25 --- 16",
-    "prono_score_ht": "11 --- 7",
-    "confiance_ft": 0.7386243544275438,
-    "confiance_ht": 0.7386243544275438
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7028886086575139,
+    "confiance_mt_algo": 0.5656009532497822,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 11
+    },
+    "prono_text": "30 --- 16",
+    "prono_ht_text": "13 --- 11"
   },
   {
-    "id": "2025-2026_22_US MONTAUBAN_RACING 92",
+    "id": "2025-2026_22_US_MONTAUBAN_RACING_92",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "RACING 92",
-    "prono_score_final": "30 --- 23",
-    "prono_score_ht": "9 --- 11",
-    "confiance_ft": 4.5016178604197485e-12,
-    "confiance_ht": 4.5016178604197485e-12
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 12,
+      "exterieur": 22
+    },
+    "prono_ht": {
+      "domicile": 5,
+      "exterieur": 8
+    },
+    "prono_text": "12 --- 22",
+    "prono_ht_text": "5 --- 8"
   },
   {
-    "id": "2025-2026_22_USA PERPIGNAN_STADE ROCHELAIS",
+    "id": "2025-2026_22_USA_PERPIGNAN_STADE_ROCHELAIS",
     "date": "2026-04-25T00:00:00",
     "saison": "2025-2026",
     "journee": 22,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "29 --- 19",
-    "prono_score_ht": "12 --- 10",
-    "confiance_ft": 0.0003949471861620435,
-    "confiance_ht": 0.0003949471861620435
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.31710226548244264,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 7,
+      "exterieur": 8
+    },
+    "prono_text": "18 --- 13",
+    "prono_ht_text": "7 --- 8"
   },
   {
-    "id": "2025-2026_23_ASM CLERMONT_USA PERPIGNAN",
+    "id": "2025-2026_23_ASM_CLERMONT_USA_PERPIGNAN",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "29 --- 21",
-    "prono_score_ht": "11 --- 9",
-    "confiance_ft": 0.11502267549145113,
-    "confiance_ht": 0.11502267549145113
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 23,
+      "exterieur": 9
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 9
+    },
+    "prono_text": "23 --- 9",
+    "prono_ht_text": "14 --- 9"
   },
   {
-    "id": "2025-2026_23_AVIRON BAYONNAIS_BORDEAUX BÈGLES",
+    "id": "2025-2026_23_AVIRON_BAYONNAIS_BORDEAUX_BÈGLES",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "18 --- 20",
-    "prono_score_ht": "8 --- 8",
-    "confiance_ft": 0.002287942327139554,
-    "confiance_ht": 0.002287942327139554
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.30912605440117824,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 10,
+      "exterieur": 7
+    },
+    "prono_text": "25 --- 19",
+    "prono_ht_text": "10 --- 7"
   },
   {
-    "id": "2025-2026_23_MONTPELLIER HÉRAULT RUGBY_US MONTAUBAN",
+    "id": "2025-2026_23_MONTPELLIER_HÉRAULT_RUGBY_US_MONTAUBAN",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "30 --- 15",
-    "prono_score_ht": "14 --- 7",
-    "confiance_ft": 0.9999986383625401,
-    "confiance_ht": 0.9999986383625401
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.780031963741932,
+    "confiance_mt_algo": 0.6472872279801044,
+    "prono_ft": {
+      "domicile": 32,
+      "exterieur": 7
+    },
+    "prono_ht": {
+      "domicile": 16,
+      "exterieur": 0
+    },
+    "prono_text": "32 --- 7",
+    "prono_ht_text": "16 --- 0"
   },
   {
-    "id": "2025-2026_23_RACING 92_STADE ROCHELAIS",
+    "id": "2025-2026_23_RACING_92_STADE_ROCHELAIS",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "37 --- 9",
-    "prono_score_ht": "14 --- 5",
-    "confiance_ft": 0.9996436215294369,
-    "confiance_ht": 0.9996436215294369
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8072113187652521,
+    "confiance_mt_algo": 0.6615785772581679,
+    "prono_ft": {
+      "domicile": 29,
+      "exterieur": 11
+    },
+    "prono_ht": {
+      "domicile": 15,
+      "exterieur": 0
+    },
+    "prono_text": "29 --- 11",
+    "prono_ht_text": "15 --- 0"
   },
   {
-    "id": "2025-2026_23_RC TOULON_STADE TOULOUSAIN",
+    "id": "2025-2026_23_RC_TOULON_STADE_TOULOUSAIN",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "19 --- 21",
-    "prono_score_ht": "9 --- 10",
-    "confiance_ft": 9.319062003239685e-09,
-    "confiance_ht": 9.319062003239685e-09
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 24,
+      "exterieur": 40
+    },
+    "prono_ht": {
+      "domicile": 15,
+      "exterieur": 25
+    },
+    "prono_text": "24 --- 40",
+    "prono_ht_text": "15 --- 25"
   },
   {
-    "id": "2025-2026_23_SECTION PALOISE_CASTRES OLYMPIQUE",
+    "id": "2025-2026_23_SECTION_PALOISE_CASTRES_OLYMPIQUE",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "29 --- 19",
-    "prono_score_ht": "12 --- 8",
-    "confiance_ft": 0.9944984392110814,
-    "confiance_ht": 0.9944984392110814
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8326659553341046,
+    "confiance_mt_algo": 0.6306072530618506,
+    "prono_ft": {
+      "domicile": 31,
+      "exterieur": 14
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 0
+    },
+    "prono_text": "31 --- 14",
+    "prono_ht_text": "11 --- 0"
   },
   {
-    "id": "2025-2026_23_STADE FRANÇAIS PARIS_LYON OU",
+    "id": "2025-2026_23_STADE_FRANÇAIS_PARIS_LYON_OU",
     "date": "2026-05-09T00:00:00",
     "saison": "2025-2026",
     "journee": 23,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "33 --- 21",
-    "prono_score_ht": "11 --- 7",
-    "confiance_ft": 0.66878281063624,
-    "confiance_ht": 0.66878281063624
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6627529254313437,
+    "confiance_mt_algo": 0.5633325533077786,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 13,
+      "exterieur": 9
+    },
+    "prono_text": "30 --- 15",
+    "prono_ht_text": "13 --- 9"
   },
   {
-    "id": "2025-2026_24_CASTRES OLYMPIQUE_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_24_CASTRES_OLYMPIQUE_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "25 --- 10",
-    "prono_score_ht": "14 --- 9",
-    "confiance_ft": 0.7048123393393522,
-    "confiance_ht": 0.7048123393393522
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.6985071126836938,
+    "confiance_mt_algo": 0.5347748778991385,
+    "prono_ft": {
+      "domicile": 27,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 20,
+      "exterieur": 15
+    },
+    "prono_text": "27 --- 15",
+    "prono_ht_text": "20 --- 15"
   },
   {
-    "id": "2025-2026_24_LYON OU_AVIRON BAYONNAIS",
+    "id": "2025-2026_24_LYON_OU_AVIRON_BAYONNAIS",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "31 --- 11",
-    "prono_score_ht": "12 --- 7",
-    "confiance_ft": 0.723018048994327,
-    "confiance_ht": 0.723018048994327
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.660786033746285,
+    "confiance_mt_algo": 0.545006296792138,
+    "prono_ft": {
+      "domicile": 27,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 3
+    },
+    "prono_text": "27 --- 15",
+    "prono_ht_text": "11 --- 3"
   },
   {
-    "id": "2025-2026_24_RACING 92_RC TOULON",
+    "id": "2025-2026_24_RACING_92_RC_TOULON",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "25 --- 15",
-    "prono_score_ht": "12 --- 3",
-    "confiance_ft": 0.9999999888518034,
-    "confiance_ht": 0.9999999888518034
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7979309689649332,
+    "confiance_mt_algo": 0.6537992506101626,
+    "prono_ft": {
+      "domicile": 33,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 22,
+      "exterieur": 7
+    },
+    "prono_text": "33 --- 15",
+    "prono_ht_text": "22 --- 7"
   },
   {
-    "id": "2025-2026_24_SECTION PALOISE_ASM CLERMONT",
+    "id": "2025-2026_24_SECTION_PALOISE_ASM_CLERMONT",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "28 --- 14",
-    "prono_score_ht": "12 --- 7",
-    "confiance_ft": 0.999973194958123,
-    "confiance_ht": 0.999973194958123
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8493503123523112,
+    "confiance_mt_algo": 0.6921469705645314,
+    "prono_ft": {
+      "domicile": 33,
+      "exterieur": 11
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 6
+    },
+    "prono_text": "33 --- 11",
+    "prono_ht_text": "17 --- 6"
   },
   {
-    "id": "2025-2026_24_STADE ROCHELAIS_STADE TOULOUSAIN",
+    "id": "2025-2026_24_STADE_ROCHELAIS_STADE_TOULOUSAIN",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "21 --- 18",
-    "prono_score_ht": "12 --- 9",
-    "confiance_ft": 0.00029792327835656416,
-    "confiance_ht": 0.00029792327835656416
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 21,
+      "exterieur": 40
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 30
+    },
+    "prono_text": "21 --- 40",
+    "prono_ht_text": "11 --- 30"
   },
   {
-    "id": "2025-2026_24_BORDEAUX BÈGLES_USA PERPIGNAN",
+    "id": "2025-2026_24_BORDEAUX_BÈGLES_USA_PERPIGNAN",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "29 --- 18",
-    "prono_score_ht": "15 --- 7",
-    "confiance_ft": 0.9694618640974637,
-    "confiance_ht": 0.9694618640974637
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8935464809322204,
+    "confiance_mt_algo": 0.7356077690467872,
+    "prono_ft": {
+      "domicile": 31,
+      "exterieur": 8
+    },
+    "prono_ht": {
+      "domicile": 16,
+      "exterieur": 0
+    },
+    "prono_text": "31 --- 8",
+    "prono_ht_text": "16 --- 0"
   },
   {
-    "id": "2025-2026_24_US MONTAUBAN_STADE FRANÇAIS PARIS",
+    "id": "2025-2026_24_US_MONTAUBAN_STADE_FRANÇAIS_PARIS",
     "date": "2026-05-16T00:00:00",
     "saison": "2025-2026",
     "journee": 24,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "17 --- 17",
-    "prono_score_ht": "13 --- 8",
-    "confiance_ft": 0.00036344270135959015,
-    "confiance_ht": 0.00036344270135959015
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 22
+    },
+    "prono_ht": {
+      "domicile": 7,
+      "exterieur": 10
+    },
+    "prono_text": "18 --- 22",
+    "prono_ht_text": "7 --- 10"
   },
   {
-    "id": "2025-2026_25_ASM CLERMONT_RACING 92",
+    "id": "2025-2026_25_ASM_CLERMONT_RACING_92",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "ASM CLERMONT",
     "equipe_exterieure": "RACING 92",
-    "prono_score_final": "36 --- 20",
-    "prono_score_ht": "7 --- 10",
-    "confiance_ft": 1.830746261876492e-08,
-    "confiance_ht": 1.830746261876492e-08
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 18,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 14
+    },
+    "prono_text": "18 --- 19",
+    "prono_ht_text": "11 --- 14"
   },
   {
-    "id": "2025-2026_25_MONTPELLIER HÉRAULT RUGBY_SECTION PALOISE",
+    "id": "2025-2026_25_MONTPELLIER_HÉRAULT_RUGBY_SECTION_PALOISE",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "MONTPELLIER HÉRAULT RUGBY",
     "equipe_exterieure": "SECTION PALOISE",
-    "prono_score_final": "30 --- 20",
-    "prono_score_ht": "10 --- 9",
-    "confiance_ft": 0.006948296958668808,
-    "confiance_ht": 0.006948296958668808
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.35321854661188595,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 7
+    },
+    "prono_text": "25 --- 19",
+    "prono_ht_text": "14 --- 7"
   },
   {
-    "id": "2025-2026_25_RC TOULON_BORDEAUX BÈGLES",
+    "id": "2025-2026_25_RC_TOULON_BORDEAUX_BÈGLES",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "RC TOULON",
     "equipe_exterieure": "BORDEAUX BÈGLES",
-    "prono_score_final": "19 --- 19",
-    "prono_score_ht": "14 --- 6",
-    "confiance_ft": 0.007472776636357611,
-    "confiance_ht": 0.007472776636357611
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3011120102565853,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 9,
+      "exterieur": 5
+    },
+    "prono_text": "28 --- 19",
+    "prono_ht_text": "9 --- 5"
   },
   {
-    "id": "2025-2026_25_STADE FRANÇAIS PARIS_AVIRON BAYONNAIS",
+    "id": "2025-2026_25_STADE_FRANÇAIS_PARIS_AVIRON_BAYONNAIS",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "STADE FRANÇAIS PARIS",
     "equipe_exterieure": "AVIRON BAYONNAIS",
-    "prono_score_final": "26 --- 19",
-    "prono_score_ht": "9 --- 10",
-    "confiance_ft": 0.7847817905118796,
-    "confiance_ht": 0.7847817905118796
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.7373191652019244,
+    "confiance_mt_algo": 0.6181005428274241,
+    "prono_ft": {
+      "domicile": 30,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 9
+    },
+    "prono_text": "30 --- 15",
+    "prono_ht_text": "14 --- 9"
   },
   {
-    "id": "2025-2026_25_STADE TOULOUSAIN_LYON OU",
+    "id": "2025-2026_25_STADE_TOULOUSAIN_LYON_OU",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "STADE TOULOUSAIN",
     "equipe_exterieure": "LYON OU",
-    "prono_score_final": "43 --- 15",
-    "prono_score_ht": "18 --- 3",
-    "confiance_ft": 0.9999999975465899,
-    "confiance_ht": 0.9999999975465899
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.95,
+    "confiance_mt_algo": 0.7474280054695639,
+    "prono_ft": {
+      "domicile": 51,
+      "exterieur": 13
+    },
+    "prono_ht": {
+      "domicile": 44,
+      "exterieur": 10
+    },
+    "prono_text": "51 --- 13",
+    "prono_ht_text": "44 --- 10"
   },
   {
-    "id": "2025-2026_25_US MONTAUBAN_STADE ROCHELAIS",
+    "id": "2025-2026_25_US_MONTAUBAN_STADE_ROCHELAIS",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "US MONTAUBAN",
     "equipe_exterieure": "STADE ROCHELAIS",
-    "prono_score_final": "13 --- 23",
-    "prono_score_ht": "11 --- 8",
-    "confiance_ft": 8.73579353041037e-09,
-    "confiance_ht": 8.73579353041037e-09
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 15,
+      "exterieur": 15
+    },
+    "prono_ht": {
+      "domicile": 5,
+      "exterieur": 7
+    },
+    "prono_text": "15 --- 15",
+    "prono_ht_text": "5 --- 7"
   },
   {
-    "id": "2025-2026_25_USA PERPIGNAN_CASTRES OLYMPIQUE",
+    "id": "2025-2026_25_USA_PERPIGNAN_CASTRES_OLYMPIQUE",
     "date": "2026-05-30T00:00:00",
     "saison": "2025-2026",
     "journee": 25,
     "equipe_domicile": "USA PERPIGNAN",
     "equipe_exterieure": "CASTRES OLYMPIQUE",
-    "prono_score_final": "25 --- 18",
-    "prono_score_ht": "16 --- 7",
-    "confiance_ft": 0.07226360037041117,
-    "confiance_ht": 0.07226360037041117
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 19,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 6,
+      "exterieur": 13
+    },
+    "prono_text": "19 --- 16",
+    "prono_ht_text": "6 --- 13"
   },
   {
-    "id": "2025-2026_26_AVIRON BAYONNAIS_USA PERPIGNAN",
+    "id": "2025-2026_26_AVIRON_BAYONNAIS_USA_PERPIGNAN",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "AVIRON BAYONNAIS",
     "equipe_exterieure": "USA PERPIGNAN",
-    "prono_score_final": "24 --- 16",
-    "prono_score_ht": "8 --- 8",
-    "confiance_ft": 0.04794991635265811,
-    "confiance_ht": 0.04794991635265811
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3105099435971456,
+    "prono_ft": {
+      "domicile": 26,
+      "exterieur": 9
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 0
+    },
+    "prono_text": "26 --- 9",
+    "prono_ht_text": "11 --- 0"
   },
   {
-    "id": "2025-2026_26_CASTRES OLYMPIQUE_RC TOULON",
+    "id": "2025-2026_26_CASTRES_OLYMPIQUE_RC_TOULON",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "CASTRES OLYMPIQUE",
     "equipe_exterieure": "RC TOULON",
-    "prono_score_final": "36 --- 18",
-    "prono_score_ht": "11 --- 8",
-    "confiance_ft": 0.9957530765204715,
-    "confiance_ht": 0.9957530765204715
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.9498991911315752,
+    "confiance_mt_algo": 0.6465827195065263,
+    "prono_ft": {
+      "domicile": 28,
+      "exterieur": 19
+    },
+    "prono_ht": {
+      "domicile": 14,
+      "exterieur": 16
+    },
+    "prono_text": "28 --- 19",
+    "prono_ht_text": "14 --- 16"
   },
   {
-    "id": "2025-2026_26_LYON OU_MONTPELLIER HÉRAULT RUGBY",
+    "id": "2025-2026_26_LYON_OU_MONTPELLIER_HÉRAULT_RUGBY",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "LYON OU",
     "equipe_exterieure": "MONTPELLIER HÉRAULT RUGBY",
-    "prono_score_final": "25 --- 18",
-    "prono_score_ht": "16 --- 8",
-    "confiance_ft": 0.008031449432193066,
-    "confiance_ht": 0.008031449432193066
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3326805815333026,
+    "prono_ft": {
+      "domicile": 25,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 11,
+      "exterieur": 8
+    },
+    "prono_text": "25 --- 16",
+    "prono_ht_text": "11 --- 8"
   },
   {
-    "id": "2025-2026_26_RACING 92_STADE TOULOUSAIN",
+    "id": "2025-2026_26_RACING_92_STADE_TOULOUSAIN",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "RACING 92",
     "equipe_exterieure": "STADE TOULOUSAIN",
-    "prono_score_final": "33 --- 17",
-    "prono_score_ht": "16 --- 7",
-    "confiance_ft": 0.3664145863992698,
-    "confiance_ht": 0.3664145863992698
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.35,
+    "confiance_mt_algo": 0.3,
+    "prono_ft": {
+      "domicile": 26,
+      "exterieur": 35
+    },
+    "prono_ht": {
+      "domicile": 17,
+      "exterieur": 26
+    },
+    "prono_text": "26 --- 35",
+    "prono_ht_text": "17 --- 26"
   },
   {
-    "id": "2025-2026_26_SECTION PALOISE_US MONTAUBAN",
+    "id": "2025-2026_26_SECTION_PALOISE_US_MONTAUBAN",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "SECTION PALOISE",
     "equipe_exterieure": "US MONTAUBAN",
-    "prono_score_final": "40 --- 18",
-    "prono_score_ht": "18 --- 7",
-    "confiance_ft": 0.9999999934087378,
-    "confiance_ht": 0.9999999934087378
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.8513386362462393,
+    "confiance_mt_algo": 0.6919586798624661,
+    "prono_ft": {
+      "domicile": 39,
+      "exterieur": 6
+    },
+    "prono_ht": {
+      "domicile": 16,
+      "exterieur": 3
+    },
+    "prono_text": "39 --- 6",
+    "prono_ht_text": "16 --- 3"
   },
   {
-    "id": "2025-2026_26_STADE ROCHELAIS_STADE FRANÇAIS PARIS",
+    "id": "2025-2026_26_STADE_ROCHELAIS_STADE_FRANÇAIS_PARIS",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "STADE ROCHELAIS",
     "equipe_exterieure": "STADE FRANÇAIS PARIS",
-    "prono_score_final": "31 --- 17",
-    "prono_score_ht": "11 --- 6",
-    "confiance_ft": 0.9999833773093029,
-    "confiance_ht": 0.9999833773093029
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.9134386256583414,
+    "confiance_mt_algo": 0.7873130973585095,
+    "prono_ft": {
+      "domicile": 27,
+      "exterieur": 16
+    },
+    "prono_ht": {
+      "domicile": 16,
+      "exterieur": 3
+    },
+    "prono_text": "27 --- 16",
+    "prono_ht_text": "16 --- 3"
   },
   {
-    "id": "2025-2026_26_BORDEAUX BÈGLES_ASM CLERMONT",
+    "id": "2025-2026_26_BORDEAUX_BÈGLES_ASM_CLERMONT",
     "date": "2026-06-06T00:00:00",
     "saison": "2025-2026",
     "journee": 26,
     "equipe_domicile": "BORDEAUX BÈGLES",
     "equipe_exterieure": "ASM CLERMONT",
-    "prono_score_final": "37 --- 17",
-    "prono_score_ht": "10 --- 7",
-    "confiance_ft": 0.9971755445116623,
-    "confiance_ht": 0.9971755445116623
+    "elo_domicile": null,
+    "elo_exterieur": null,
+    "confiance_algo": 0.925229885597328,
+    "confiance_mt_algo": 0.7125611171443796,
+    "prono_ft": {
+      "domicile": 32,
+      "exterieur": 11
+    },
+    "prono_ht": {
+      "domicile": 20,
+      "exterieur": 8
+    },
+    "prono_text": "32 --- 11",
+    "prono_ht_text": "20 --- 8"
   }
 ]

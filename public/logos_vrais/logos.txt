@@ -1,0 +1,72 @@
+ Le volume dans le lecteur C s'appelle OC_NVMe
+ Le num‚ro de s‚rie du volume est 1C07-26D0
+
+ R‚pertoire de C:\Python313\Top14\Projets\top14-app\public\logos
+
+10/12/2025  13:05    <DIR>          .
+04/12/2025  22:25    <DIR>          ..
+04/12/2025  11:00             4ÿ882 agen.png
+04/12/2025  11:55            14ÿ333 agen.svg
+04/12/2025  11:00            23ÿ640 albi.png
+04/12/2025  11:55            23ÿ174 albi.svg
+04/12/2025  11:00            28ÿ507 aurillac.png
+04/12/2025  11:56            42ÿ389 aurillac.svg
+04/12/2025  11:00            27ÿ044 bayonne.png
+04/12/2025  11:37            39ÿ036 bayonne.svg
+04/12/2025  11:00            13ÿ226 biarritz.png
+04/12/2025  11:57             4ÿ559 biarritz.svg
+04/12/2025  11:00            29ÿ316 carcassonne.png
+04/12/2025  11:57            38ÿ327 carcassonne.svg
+04/12/2025  11:00            27ÿ335 castres.png
+04/12/2025  11:46            11ÿ830 castres.svg
+04/12/2025  11:00            27ÿ429 clermont.png
+04/12/2025  11:51            11ÿ210 clermont.svg
+04/12/2025  11:00            40ÿ934 colomiers.png
+04/12/2025  11:57            50ÿ841 colomiers.svg
+04/12/2025  11:00            42ÿ030 grenoble.png
+04/12/2025  11:58            38ÿ975 grenoble.svg
+04/12/2025  11:00            28ÿ634 la-rochelle.png
+04/12/2025  11:46            12ÿ152 la-rochelle.svg
+10/12/2025  13:05                 0 logos.txt
+04/12/2025  11:00            23ÿ464 lyon.png
+04/12/2025  11:52            27ÿ944 lyon.svg
+04/12/2025  11:00            29ÿ042 massy.png
+04/12/2025  11:58            20ÿ762 massy.svg
+04/12/2025  11:50            13ÿ678 montauban.svg
+04/12/2025  11:00            38ÿ320 montpellier.png
+04/12/2025  11:49            12ÿ712 montpellier.svg
+04/12/2025  11:00            22ÿ258 narbonne.png
+04/12/2025  11:59            18ÿ813 narbonne.svg
+04/12/2025  11:00            23ÿ113 nevers.png
+04/12/2025  11:59            17ÿ283 nevers.svg
+04/12/2025  11:00            16ÿ937 oyonnax.png
+04/12/2025  11:59            11ÿ143 oyonnax.svg
+04/12/2025  11:00            22ÿ883 paris.png
+04/12/2025  11:37            12ÿ072 paris.svg
+04/12/2025  11:00            31ÿ708 pau.png
+04/12/2025  11:37            60ÿ737 pau.svg
+04/12/2025  11:00            16ÿ107 perpignan.png
+04/12/2025  11:50            11ÿ507 perpignan.svg
+04/12/2025  11:00             9ÿ911 provence.png
+04/12/2025  12:00            10ÿ995 provence.svg
+04/12/2025  11:00            17ÿ556 racing92.png
+04/12/2025  11:41            53ÿ421 racing92.svg
+04/12/2025  11:00            41ÿ789 rouen.png
+04/12/2025  11:37            79ÿ024 rouen.svg
+04/12/2025  11:00            46ÿ580 soyaux-angouleme.png
+04/12/2025  11:37            25ÿ368 soyaux-angouleme.svg
+04/12/2025  09:32           208ÿ097 stade toulousain.png
+04/12/2025  11:00            27ÿ418 tarbes.png
+04/12/2025  11:37           103ÿ015 tarbes.svg
+04/12/2025  11:00            29ÿ693 toulon.png
+04/12/2025  11:53            55ÿ834 toulon.svg
+04/12/2025  11:00            16ÿ864 toulouse.png
+04/12/2025  13:16            28ÿ076 toulouse.svg
+04/12/2025  11:00            33ÿ547 ubb.png
+04/12/2025  11:53            21ÿ335 ubb.svg
+04/12/2025  11:00            35ÿ101 valence-romans.png
+04/12/2025  12:00            41ÿ409 valence-romans.svg
+04/12/2025  11:00            36ÿ035 vannes.png
+04/12/2025  11:37            17ÿ513 vannes.svg
+              63 fichier(s)        1ÿ948ÿ867 octets
+               2 R‚p(s)  87ÿ038ÿ595ÿ072 octets libres

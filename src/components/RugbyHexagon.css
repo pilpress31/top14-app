@@ -1,0 +1,50 @@
+.hex-container {
+  display: inline-flex;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2));
+  margin: 10px;
+}
+
+.hex {
+  position: relative;
+  width: 80px;
+  height: 92px; /* Ratio pour un hexagone parfait */
+  background-color: var(--c1);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Remplissage Vertical */
+.hex-vertical {
+  background: linear-gradient(90deg, var(--c1) 50%, var(--c2) 50%);
+}
+
+/* Remplissage Diagonal */
+.hex-diagonal {
+  background: linear-gradient(135deg, var(--c1) 45%, var(--c2) 45%, var(--c2) 55%, var(--c1) 55%);
+}
+
+/* Remplissage Bordure */
+.hex-border {
+  background: var(--c2); /* La couleur 2 devient la bordure */
+}
+.hex-border::after {
+  content: "";
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  background: var(--c1);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.initials {
+  position: relative;
+  z-index: 10;
+  color: white;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  /* Contour de texte pour lisibilité sur fonds clairs */
+  text-shadow: 1px 1px 0px #000, -1px -1px 0px #000;
+}

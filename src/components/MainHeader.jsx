@@ -1,18 +1,21 @@
-import { useState, useEffect } from "react";
-import { getConfig } from "@/api/client"; // ← Import de la config
+import { useState, useEffect, useRef } from "react";
+import { getConfig, getStats } from "../lib/api";
 
 function MainHeader() {
-  const [scrolled, setScrolled] = useState(false);
   const [config, setConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
+  const [stats, setStats] = useState({
+    nombre_matchs_historique: 3651,
+    precision: { ft: { pourcentage: 0 } }
+  });
 
+  const [isVisible, setIsVisible] = useState(true);
+
+  // 🔥 Correction : useRef au lieu de state
+  const lastScrollY = useRef(0);
+
+  // Chargement config
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-
-    // Charger la config
     const loadConfig = async () => {
       try {
         setLoadingConfig(true);
@@ -20,82 +23,98 @@ function MainHeader() {
         setConfig(data);
       } catch (e) {
         console.error("Erreur chargement config", e);
-        setConfig(null); // fallback si erreur
+        setConfig(null);
       } finally {
         setLoadingConfig(false);
       }
     };
     loadConfig();
-
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Chargement stats
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const data = await getStats();
+        setStats(data);
+      } catch (e) {
+        console.error("Erreur chargement stats:", e);
+      }
+    }
+    loadStats();
+  }, []);
+
+  // 🔥 Scroll stable, sans clignotement
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      const previous = lastScrollY.current;
+      const threshold = 5; // évite les micro-oscillations
+
+      // Toujours visible tout en haut
+      if (current < 10) {
+        setIsVisible(true);
+      }
+      // Scroll vers le haut → montrer
+      else if (previous - current > threshold) {
+        setIsVisible(true);
+      }
+      // Scroll vers le bas → cacher
+      else if (current - previous > threshold && current > 120) {
+        setIsVisible(false);
+      }
+
+      lastScrollY.current = current;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []); // 👈 IMPORTANT : tableau vide
+
   return (
-    <header
-      className={`fixed top-0 w-full z-50 backdrop-blur-md transition-all duration-500 ${
-        scrolled ? "bg-black/90 py-3" : "bg-black/50 py-6"
-      } text-white shadow-lg`}
+    <header 
+      className={`fixed top-0 w-full h-[120px] z-50 text-white shadow-md 
+                  bg-gradient-to-r from-black via-gray-900 to-rugby-gold/80 
+                  transition-transform duration-300
+                  ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
     >
-      <div className="container mx-auto px-4 text-center transition-all duration-500">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <img
-            src="/images/rugby-ball.jpg"
-            alt="Ballon de rugby"
-            className={`object-contain animate-spin-slow transition-all duration-500 ${
-              scrolled ? "w-6 h-6" : "w-10 h-10"
-            }`}
-          />
-          <h1
-            className={`font-bold uppercase transition-all duration-500 ${
-              scrolled ? "text-2xl" : "text-3xl"
-            }`}
-          >
+      <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
+        
+        {/* Bloc titre */}
+        <div className="text-center">
+          <h1 className="text-lg font-bold flex items-center justify-center gap-2 text-rugby-gold uppercase tracking-widest">
+            <img
+              src="/images/rugby-ball.svg"
+              alt="Ballon de rugby"
+              className="object-contain w-5 h-5"
+            />
             TOP 14 PRONOS
           </h1>
+          <p className="text-xs italic text-gray-300 mt-1">
+            Prédictions sportives boostées par l'IA
+          </p>
         </div>
-        <p
-          className={`text-gray-300 font-medium mb-4 transition-all duration-500 ${
-            scrolled ? "text-xs" : "text-sm"
-          }`}
-        >
-          Système Elo + Machine Learning
-        </p>
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 font-semibold text-lg transition-all duration-500">
-          <div className="flex items-center gap-2">
-            <span role="img" aria-label="stats">📈</span>
-            <span className="text-blue-300">78%</span>
-            <span>Précision moyenne</span>
+
+        {/* Blocs statistiques */}
+        <div className="flex justify-center gap-2">
+          <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1">
+            <ChartIcon className="h-4 w-4 text-rugby-gold" />
+            <div>
+              <p className="text-sm font-bold text-rugby-gold">
+                {stats.precision.ft.pourcentage}%
+              </p>
+              <p className="text-[10px] text-gray-300">Précision moyenne</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span role="img" aria-label="matches">🗃️</span>
-            {loadingConfig ? (
-              // Loader visuel
-              <svg
-                className="animate-spin h-5 w-5 text-blue-300"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 01-8 8z"
-                ></path>
-              </svg>
-            ) : (
-              <span className="text-blue-300">
-                {config?.nombre_matchs_historique?.toLocaleString() || "3600+"}
-              </span>
-            )}
-            <span>Matchs analysés</span>
+
+          <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1">
+            <DatabaseIcon className="h-4 w-4 text-rugby-gold" />
+            <div>
+              <p className="text-sm font-bold text-rugby-gold">
+                {loadingConfig ? "…" : stats.nombre_matchs_historique}
+              </p>
+              <p className="text-[10px] text-gray-300">Matchs analysés</p>
+            </div>
           </div>
         </div>
       </div>
@@ -103,6 +122,21 @@ function MainHeader() {
   );
 }
 
+function ChartIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path d="M4 20h16M4 10h4v10H4zm6-6h4v16h-4zm6 8h4v8h-4z" />
+    </svg>
+  );
+}
+
+function DatabaseIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5" />
+    </svg>
+  );
+}
+
 export default MainHeader;
-
-
