@@ -13,7 +13,7 @@ function EclairIcon({ className }) {
       className={className}
       viewBox="0 0 400 400"
       xmlns="http://www.w3.org/2000/svg"
-      fill="red"
+      fill="currentColor"
     >
       <rect x="0" y="0" width="400" height="400" />
     </svg>
