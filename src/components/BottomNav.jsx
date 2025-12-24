@@ -7,7 +7,7 @@ import NotificationBadge from './NotificationBadge';   // 🆕 IMPORT
 export default function BottomNav({ active = "IA", onPronosClick, pronosMode = "accueil" }) {
   const { hasUnreadMessages } = useChatNotification();
 
-const EclairIcon = ({ size = 33 }) => (
+const EclairIcon = ({ size = 24 }) => (
   <img 
     src="/images/eclair.svg"
     alt="Éclair"
