@@ -15,10 +15,14 @@ function EclairIcon({ className }) {
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
     >
-      <rect x="0" y="0" width="400" height="400" />
+      <path d="M90 80 L115 80 L105 190 L80 190 Z" />
+      <path d="M220 40 L145 190 L200 190 L130 360 L300 185 L235 185 Z" />
+      <path d="M310 240 L355 360 L330 360 L320 330 L270 330 L260 360 L235 360 Z" />
+      <path d="M300 280 L280 315 L320 315 Z" />
     </svg>
   );
 }
+
 
 
 
