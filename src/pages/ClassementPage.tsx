@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { getConfig, getStats } from "../lib/api";
+import { getConfig, getStats, getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
 import { useResetOnActive } from "../hooks/useResetOnActive";
