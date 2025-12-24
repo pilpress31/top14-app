@@ -34,7 +34,7 @@ function HistoriquePage() {
     const loadHistorique = async () => {
       try {
         // ✅ Appel à l'API Vercel
-        const response = await fetch("https://top14-api.vercel.app/api/matchs/historique/all");
+        const response = await fetch("https://top14-api-production.up.railway.app/api/matchs/historique/all");
         const data = await response.json();
         
         console.log("Historique chargé:", data);

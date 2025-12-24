@@ -33,7 +33,7 @@ function ClassementPage() {
     async function loadStatsDetaillees() {
       if (selectedEquipe) {
         try {
-          const response = await fetch(`https://top14-api.vercel.app/api/stats/detaillees?equipe=${encodeURIComponent(selectedEquipe.equipe)}`);
+          const response = await fetch(`https://top14-api-production.up.railway.app/api/stats/detaillees?equipe=${encodeURIComponent(selectedEquipe.equipe)}`);
           const data = await response.json();
           console.log("Stats détaillées chargées pour", selectedEquipe.equipe, ":", data);
           setStatsDetaillees(data);

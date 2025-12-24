@@ -41,7 +41,7 @@ function RegisterPage() {
 
     try {
       const response = await axios.get(
-        `https://top14-api.vercel.app/api/check-pseudo/${pseudoToCheck}`
+        `https://top14-api-production.up.railway.app/api/check-pseudo/${pseudoToCheck}`
       )
       
       if (response.data.available) {
@@ -144,7 +144,7 @@ function RegisterPage() {
     } else {
       // Créer le profil dans user_profiles
       try {
-        await axios.post('https://top14-api.vercel.app/api/user-profiles', {
+        await axios.post('https://top14-api-production.up.railway.app/api/user-profiles', {
           user_id: data.user.id,
           pseudo: pseudo
         })

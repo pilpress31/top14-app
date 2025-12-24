@@ -69,7 +69,7 @@ export default function ClassementCommunauteTab() {
 
   async function loadClassementJetons() {
     try {
-      const response = await axios.get('https://top14-api.vercel.app/api/classement/jetons?limit=100');
+      const response = await axios.get('https://top14-api-production.up.railway.app/api/classement/jetons?limit=100');
       const data = response.data || [];
       
       // Charger les avatars depuis user_profiles

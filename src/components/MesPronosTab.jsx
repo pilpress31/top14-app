@@ -54,8 +54,8 @@ export default function MesPronosTab({ goToMesParis }) {
       if (!user) return;
 
       // Chargement des matchs
-      const matchsResponse = await axios.get('https://top14-api.vercel.app/api/matchs/a-venir');
-      const cotesResponse = await axios.get('https://top14-api.vercel.app/api/cotes/all');
+      const matchsResponse = await axios.get('https://top14-api-production.up.railway.app/api/matchs/a-venir');
+      const cotesResponse = await axios.get('https://top14-api-production.up.railway.app/api/cotes/all');
       
       // Création du map des cotes
       const cotesMap = {};
@@ -126,7 +126,7 @@ export default function MesPronosTab({ goToMesParis }) {
 
       // Chargement des crédits
       try {
-        const creditsResponse = await axios.get('https://top14-api.vercel.app/api/user/credits', {
+        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
         });
         setUserCredits(creditsResponse.data);

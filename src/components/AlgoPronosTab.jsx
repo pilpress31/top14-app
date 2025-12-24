@@ -14,7 +14,7 @@ export default function AlgoPronosTab() {
 
   const loadPronos = async () => {
     try {
-      const response = await axios.get('https://top14-api.vercel.app/api/pronos');
+      const response = await axios.get('https://top14-api-production.up.railway.app/api/pronos');
       const pronosData = response.data.pronos || response.data || [];
       setPronos(pronosData);
       

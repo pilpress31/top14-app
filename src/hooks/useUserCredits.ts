@@ -34,7 +34,7 @@ export function useUserCredits(): UserCredits {
       }
 
       const response = await axios.get(
-        'https://top14-api.vercel.app/api/user/credits',
+        'https://top14-api-production.up.railway.app/api/user/credits',
         {
           headers: {
             'x-user-id': user.id

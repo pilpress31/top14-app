@@ -163,7 +163,7 @@ function ProfilPage() {
 
     try {
       const response = await axios.get(
-        `https://top14-api.vercel.app/api/check-pseudo/${pseudoToCheck}`
+        `https://top14-api-production.up.railway.app/api/check-pseudo/${pseudoToCheck}`
       )
       
       if (response.data.available) {
@@ -236,7 +236,7 @@ function ProfilPage() {
       // Mettre à jour le pseudo via API si modifié
       if (pseudo !== originalPseudo) {
         await axios.put(
-          `https://top14-api.vercel.app/api/user-profiles/${user.id}/pseudo`,
+          `https://top14-api-production.up.railway.app/api/user-profiles/${user.id}/pseudo`,
           { pseudo }
         )
       }

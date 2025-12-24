@@ -40,7 +40,7 @@ export default function MaCagnotte() {
 
       // Charger les crédits
       try {
-        const creditsResponse = await axios.get('https://top14-api.vercel.app/api/user/credits', {
+        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
         });
         setUserCredits(creditsResponse.data);
@@ -51,7 +51,7 @@ export default function MaCagnotte() {
 
       // Charger les paris pour les stats
       try {
-        const parisResponse = await axios.get('https://top14-api.vercel.app/api/user/bets', {
+        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
           headers: { 'x-user-id': user.id }
         });
         const parisList = Array.isArray(parisResponse.data) 
@@ -68,7 +68,7 @@ export default function MaCagnotte() {
 
         // Charger stats transactions
         try {
-          const transStatsResponse = await axios.get('https://top14-api.vercel.app/api/user/transactions/stats', {
+          const transStatsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/transactions/stats', {
             headers: { 'x-user-id': user.id }
           });
           
@@ -102,7 +102,7 @@ export default function MaCagnotte() {
 
       // Charger transactions
       try {
-        const transResponse = await axios.get('https://top14-api.vercel.app/api/user/transactions?limit=50', {
+        const transResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/transactions?limit=50', {
           headers: { 'x-user-id': user.id }
         });
         setTransactions(transResponse.data.transactions || []);

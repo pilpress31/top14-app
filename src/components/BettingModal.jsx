@@ -234,7 +234,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       // Appels API externes (non bloquants)
       try {
         if (betOnFT && !hasFT) {
-          await axios.post('https://top14-api.vercel.app/api/bets', {
+          await axios.post('https://top14-api-production.up.railway.app/api/bets', {
             match_id: match.match_id,
             bet_type: 'FT',
             score_domicile: dFT,
@@ -244,7 +244,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
         }
 
         if (betOnMT && !hasMT) {
-          await axios.post('https://top14-api.vercel.app/api/bets', {
+          await axios.post('https://top14-api-production.up.railway.app/api/bets', {
             match_id: match.match_id,
             bet_type: 'MT',
             score_domicile: dMT,

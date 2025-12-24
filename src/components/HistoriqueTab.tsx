@@ -37,7 +37,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
   useEffect(() => {
     const loadHistorique = async () => {
       try {
-        const response = await fetch("https://top14-api.vercel.app/api/matchs/historique/all");
+        const response = await fetch("https://top14-api-production.up.railway.app/api/matchs/historique/all");
         const data = await response.json();
         
         console.log("Historique chargé:", data);

@@ -7,9 +7,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 
-// const API_URL = import.meta.env.VITE_API_URL || 'https://top14-api.vercel.app/api';
+// const API_URL = import.meta.env.VITE_API_URL || 'https://top14-api-production.up.railway.app/api';
 // Hardcodé temporairement pour tester
-const API_URL = 'https://top14-api.vercel.app/api';
+const API_URL = 'https://top14-api-production.up.railway.app/api';
 
 
 export function useNotifications() {

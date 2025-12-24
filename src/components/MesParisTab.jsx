@@ -29,7 +29,7 @@ export default function MesParisTab() {
 
       // Charger les crédits
       try {
-        const creditsResponse = await axios.get('https://top14-api.vercel.app/api/user/credits', {
+        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
         });
         console.log('✅ Crédits chargés:', creditsResponse.data);
@@ -41,7 +41,7 @@ export default function MesParisTab() {
 
       // Charger les paris
       try {
-        const parisResponse = await axios.get('https://top14-api.vercel.app/api/user/bets', {
+        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
           headers: { 'x-user-id': user.id }
         });
         console.log('✅ Réponse brute API:', parisResponse.data);
