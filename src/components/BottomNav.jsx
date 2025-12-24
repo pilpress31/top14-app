@@ -7,13 +7,20 @@ import NotificationBadge from './NotificationBadge';   // 🆕 IMPORT
 export default function BottomNav({ active = "IA", onPronosClick, pronosMode = "accueil" }) {
   const { hasUnreadMessages } = useChatNotification();
 
-const EclairIcon = ({ size = 24 }) => (
-  <img 
-    src="/images/eclair.svg"
-    alt="Éclair"
-    style={{ width: size, height: size, objectFit: "contain" }}
-  />
-);
+function EclairIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 400 400"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="red"
+    >
+      <rect x="0" y="0" width="400" height="400" />
+    </svg>
+  );
+}
+
+
 
 
   const items = [
