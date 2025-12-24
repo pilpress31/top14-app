@@ -20,7 +20,7 @@
     L105 190
     L80 190
     Z"
-    fill="url(#bronzeMain)"/>
+    fill="currentColor"/>
 
   <!-- Éclair central (inchangé) -->
   <path d="
@@ -31,7 +31,7 @@
     L300 185
     L235 185
     Z"
-    fill="url(#bronzeMain)"/>
+    fill="currentColor"/>
 
   <!-- Lettre A (plus grande + encore plus à droite) -->
   <path d="
@@ -48,5 +48,5 @@
     L280 315
     L320 315
     Z"
-    fill="url(#bronzeMain)"/>
+    fill="currentColor"/>
 </svg>
