@@ -1,52 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 400 400"
-     width="400"
-     height="400">
+<svg
+  viewBox="0 0 400 400"
+  xmlns="http://www.w3.org/2000/svg"
+  fill="currentColor"
+>
+  <!-- Lettre I -->
+  <path d="M90 80 L115 80 L105 190 L80 190 Z" />
 
-  <defs>
-    <linearGradient id="bronzeMain" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffd18a"/>
-      <stop offset="40%" stop-color="#e2a24e"/>
-      <stop offset="70%" stop-color="#b36a2c"/>
-      <stop offset="100%" stop-color="#6b3a14"/>
-    </linearGradient>
-  </defs>
+  <!-- Éclair -->
+  <path d="M220 40 L145 190 L200 190 L130 360 L300 185 L235 185 Z" />
 
-  <!-- Lettre I (plus grande + encore plus à gauche) -->
-  <path d="
-    M90 80
-    L115 80
-    L105 190
-    L80 190
-    Z"
-    fill="currentColor"/>
-
-  <!-- Éclair central (inchangé) -->
-  <path d="
-    M220 40
-    L145 190
-    L200 190
-    L130 360
-    L300 185
-    L235 185
-    Z"
-    fill="currentColor"/>
-
-  <!-- Lettre A (plus grande + encore plus à droite) -->
-  <path d="
-    M310 240
-    L355 360
-    L330 360
-    L320 330
-    L270 330
-    L260 360
-    L235 360
-    Z
-
-    M300 280
-    L280 315
-    L320 315
-    Z"
-    fill="currentColor"/>
+  <!-- Lettre A -->
+  <path d="M310 240 L355 360 L330 360 L320 330 L270 330 L260 360 L235 360 Z" />
+  <path d="M300 280 L280 315 L320 315 Z" />
 </svg>
