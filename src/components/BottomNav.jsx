@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 import NotificationBadge from './NotificationBadge';   // 🆕 IMPORT
-import eclair from "../assets/eclair.png";
+
 
 
 export default function BottomNav({ active = "IA", onPronosClick, pronosMode = "accueil" }) {
@@ -9,7 +9,7 @@ export default function BottomNav({ active = "IA", onPronosClick, pronosMode = "
 
 const EclairIcon = () => (
   <img 
-    src={eclair} 
+    src="/images/eclair.svg"
     alt="Éclair" 
     style={{ width: 22, height: 22, objectFit: "contain" }} 
   />
