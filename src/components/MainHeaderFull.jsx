@@ -70,9 +70,9 @@ export default function MainHeaderFull({ total }) {
               <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2" />
               <circle cx="12" cy="12" r="2" fill="currentColor" />
             </svg>
-            Pronostics TOP 14
+            TOP 14 PARIS VIRTUELS
           </h1>
-          <p className="text-xs italic text-gray-300 mt-1">Système Elo + Machine Learning</p>
+          <p className="text-xs italic text-gray-300 mt-1">Des cotes fiables, basées sur la réalité du terrain</p>
         </div>
 
         {/* Blocs statistiques centrés */}
