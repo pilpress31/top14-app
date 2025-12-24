@@ -80,4 +80,11 @@
   animation: pulse-slow 1.6s ease-in-out infinite;
 }
 
+.nav-active {
+  color: white; /* couleur de l’icône active */
+}
+
+.nav-inactive {
+  color: #9ca3af; /* gris clair pour les icônes inactives */
+}
 
