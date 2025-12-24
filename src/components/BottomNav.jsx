@@ -1,14 +1,23 @@
 import { Link } from "react-router-dom";
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 import NotificationBadge from './NotificationBadge';   // 🆕 IMPORT
-
+import eclair from "../assets/eclair.png";
 
 
 export default function BottomNav({ active = "IA", onPronosClick, pronosMode = "accueil" }) {
   const { hasUnreadMessages } = useChatNotification();
 
+const EclairIcon = () => (
+  <img 
+    src={eclair} 
+    alt="Éclair" 
+    style={{ width: 22, height: 22, objectFit: "contain" }} 
+  />
+);
+
+
   const items = [
-  { key: "IA", label: "Pronos", icon: BrainIcon, to: "/ia", badge: false },
+  { key: "IA", label: "Pronos", icon: EclairIcon, to: "/ia", badge: false },
   { key: "Pronos", label: "Paris", icon: TargetIcon, to: "/pronos", badge: false },
   { key: "Classement", label: "Classement", icon: TrophyIcon, to: "/classement", badge: false },
   { key: "Chat", label: "Chat", icon: ChatIcon, to: "/chat", badge: hasUnreadMessages },
