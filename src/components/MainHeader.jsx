@@ -84,7 +84,7 @@ function MainHeader() {
         <div className="text-center">
           <h1 className="text-lg font-bold flex items-center justify-center gap-2 text-rugby-gold uppercase tracking-widest">
             <img
-              src="/images/rugby-ball.svg"
+              src="/images/rugby-ball.jpg"
               alt="Ballon de rugby"
               className="object-contain w-5 h-5"
             />
