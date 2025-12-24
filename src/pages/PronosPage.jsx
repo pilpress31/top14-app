@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
-import MainHeader from '../components/MainHeader';
+import MainHeader from '../components/MainHeaderFull';
 import { useResetOnActive } from "../hooks/useResetOnActive";
 
 export default function PronosPage() {
