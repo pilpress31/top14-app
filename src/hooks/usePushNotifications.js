@@ -43,7 +43,10 @@ export function usePushNotifications() {
       await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub)
+        body: JSON.stringify({ 
+          subscription: sub,
+          // userId: à récupérer du contexte auth si disponible
+        })  // ✅ NOUVEAU
       });
 
       console.log('✅ Subscription enregistrée sur serveur');
