@@ -84,9 +84,9 @@ function MainHeader() {
         <div className="text-center">
           <h1 className="text-lg font-bold flex items-center justify-center gap-2 text-rugby-gold uppercase tracking-widest">
             <img
-              src="/images/rugby-ball.jpg"
+              src="/images/ballon-logo.png"
               alt="Ballon de rugby"
-              className="object-contain w-5 h-5"
+              className="object-contain w-6 h-6"
             />
             TOP 14 PRONOS
           </h1>
