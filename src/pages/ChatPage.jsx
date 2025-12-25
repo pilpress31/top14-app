@@ -4,6 +4,25 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 
+// ✅ Fonction de formatage heure Paris
+const formatHeureParis = (dateString) => {
+  if (!dateString) return 'Date inconnue';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Date invalide';
+    
+    return date.toLocaleTimeString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Erreur format date:', error);
+    return 'Date invalide';
+  }
+};
+
 export default function ChatPage() {
   const { user } = useAuth();
   const { markAsRead } = useChatNotification();
@@ -14,39 +33,25 @@ export default function ChatPage() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [showUsersModal, setShowUsersModal] = useState(false);
   
+  // ✅ États pour les réactions
+  const [reactions, setReactions] = useState({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  
   const messagesEndRef = useRef(null);
   const channelRef = useRef(null);
   const presenceChannelRef = useRef(null);
+
+  // Emojis rapides
+  const quickEmojis = ['❤️', '👍', '😂', '😮', '😢', '🔥', '👏', '🎉'];
 
   const scrollToBottom = (smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
   };
 
-  // Fonction utilitaire à ajouter en haut du fichier, après les imports
-    const formatHeureParis = (dateString) => {
-      if (!dateString) return "";
-
-      // Convertit "2025-12-23 07:09:36.248507" → "2025-12-23T07:09:36.248507Z"
-      const normalized = dateString.replace(" ", "T") + "Z";
-
-      const date = new Date(normalized);
-
-      return date.toLocaleTimeString("fr-FR", {
-        timeZone: "Europe/Paris",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    };
-
-
-
-
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Charger messages et s'abonner
   useEffect(() => {
     loadMessages();
     subscribeToMessages();
@@ -81,7 +86,6 @@ export default function ChatPage() {
     setLoading(false);
   };
 
-  // Temps réel : écouter nouveaux messages
   const subscribeToMessages = () => {
     const channel = supabase
       .channel('public:chat_messages')
@@ -107,7 +111,6 @@ export default function ChatPage() {
     channelRef.current = channel;
   };
 
-  // Présence en temps réel avec actualisation régulière
   const subscribeToPresence = () => {
     if (!user) return;
 
@@ -148,7 +151,6 @@ export default function ChatPage() {
 
     presenceChannelRef.current = presenceChannel;
 
-    // Actualiser toutes les 30 secondes pour garder la présence active
     const intervalId = setInterval(async () => {
       if (presenceChannel.state === 'joined') {
         await presenceChannel.track({
@@ -205,6 +207,25 @@ export default function ChatPage() {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // ✅ Ajouter une réaction
+  const handleReaction = async (messageId, emoji) => {
+    if (!user) return;
+    
+    setReactions(prev => {
+      const messageReactions = prev[messageId] || {};
+      const currentCount = messageReactions[emoji] || 0;
+      return {
+        ...prev,
+        [messageId]: {
+          ...messageReactions,
+          [emoji]: currentCount + 1
+        }
+      };
+    });
+
+    setShowEmojiPicker(null);
   };
 
   if (loading) {
@@ -274,9 +295,9 @@ export default function ChatPage() {
                       <div className="flex-1">
                         <p className="font-medium text-gray-800">{u.pseudo}</p>
                         <p className="text-xs text-gray-500">
+                          {/* ✅ CORRECTION ICI */}
                           Connecté depuis {formatHeureParis(u.online_at)}
                         </p>
-
                       </div>
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     </div>
@@ -303,6 +324,7 @@ export default function ChatPage() {
         ) : (
           messages.map(msg => {
             const isCurrentUser = user && msg.user_id === user.id;
+            const messageReactions = reactions[msg.id] || {};
             
             return (
               <div 
@@ -330,19 +352,57 @@ export default function ChatPage() {
                   
                   {/* Bulle message */}
                   <div 
-                    className={`rounded-2xl px-4 py-2 shadow-sm ${
+                    className={`rounded-2xl px-4 py-2 shadow-sm relative group ${
                       isCurrentUser
                         ? 'bg-rugby-gold text-white rounded-tr-none'
                         : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
                     }`}
+                    onMouseEnter={() => setShowEmojiPicker(msg.id)}
+                    onMouseLeave={() => setShowEmojiPicker(null)}
                   >
-                    <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                    {/* ✅ POLICE PLUS GRANDE (text-sm → text-base) */}
+                    <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
+                    
                     <p className={`text-[10px] mt-1 ${
                       isCurrentUser ? 'text-white/70' : 'text-gray-400'
                     }`}>
+                      {/* ✅ CORRECTION HEURE */}
                       {formatHeureParis(msg.created_at)}
                       {msg.edited && ' (modifié)'}
                     </p>
+
+                    {/* ✅ PICKER D'ÉMOJIS (au survol) */}
+                    {showEmojiPicker === msg.id && (
+                      <div className={`absolute ${isCurrentUser ? 'left-0' : 'right-0'} bottom-full mb-1 
+                                    bg-white rounded-lg shadow-xl p-2 flex gap-1 z-10 
+                                    animate-fade-in border border-gray-200`}>
+                        {quickEmojis.map(emoji => (
+                          <button
+                            key={emoji}
+                            onClick={() => handleReaction(msg.id, emoji)}
+                            className="text-xl hover:scale-125 transition-transform p-1"
+                            title={`Réagir avec ${emoji}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* ✅ Affichage des réactions */}
+                    {Object.keys(messageReactions).length > 0 && (
+                      <div className="flex gap-1 mt-2 flex-wrap">
+                        {Object.entries(messageReactions).map(([emoji, count]) => (
+                          <span 
+                            key={emoji}
+                            className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1"
+                          >
+                            <span>{emoji}</span>
+                            <span className="font-semibold text-gray-700">{count}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
