@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { ChevronRight, Star, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen } from "lucide-react";
+import { ChevronRight, Star, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X, AlertCircle } from "lucide-react";
 import AvisModal from "../components/AvisModal";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 function ParametresPage() {
   const [showAvisModal, setShowAvisModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // ✅ Push notifications
+  const { permission, isSupported, requestPermission } = usePushNotifications();
+  const [loadingNotif, setLoadingNotif] = useState(false);
 
   const handleNousContacter = () => {
     const subject = 'Contact - Top 14 Pronos'
@@ -25,6 +30,41 @@ Merci.
 
     window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
+
+  // ✅ Activer notifications push
+  const handleToggleNotifications = async () => {
+    if (permission === 'granted') return; // Déjà activées
+    
+    setLoadingNotif(true);
+    await requestPermission();
+    setLoadingNotif(false);
+  };
+
+  // ✅ Badge statut
+  const getNotifBadge = () => {
+    if (!isSupported) {
+      return <span className="text-xs text-gray-400">Non supporté</span>;
+    }
+    
+    switch (permission) {
+      case 'granted':
+        return (
+          <div className="flex items-center gap-1 text-green-600">
+            <Check className="w-4 h-4" />
+            <span className="text-xs font-medium">Activées</span>
+          </div>
+        );
+      case 'denied':
+        return (
+          <div className="flex items-center gap-1 text-red-600">
+            <X className="w-4 h-4" />
+            <span className="text-xs font-medium">Bloquées</span>
+          </div>
+        );
+      default:
+        return <span className="text-xs text-gray-500">Désactivées</span>;
+    }
+  };
 
   return (
     <div className="p-6 pb-24 max-w-2xl mx-auto">
@@ -84,15 +124,62 @@ Merci.
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
 
-        {/* Notifications Push */}
-        <button 
-          onClick={() => navigate('/notifications-push')}
-          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
-        >
-          <Bell className="h-5 w-5 text-blue-500" />
-          <span className="flex-1 text-left text-gray-800 font-medium">Notifications Push</span>
-          <ChevronRight className="h-5 w-5 text-gray-400" />
-        </button>
+        {/* ✅ Notifications Push - INTÉGRÉ */}
+        <div className="px-6 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-3 mb-2">
+            <Bell className="h-5 w-5 text-blue-500" />
+            <span className="flex-1 text-left text-gray-800 font-medium">Notifications Push</span>
+            {getNotifBadge()}
+          </div>
+          
+          {isSupported ? (
+            <>
+              <p className="text-xs text-gray-500 mb-3">
+                Recevez des alertes pour vos paris, bonus et distributions
+              </p>
+              
+              {permission === 'denied' && (
+                <div className="bg-orange-50 border border-orange-200 rounded p-2 mb-2">
+                  <p className="text-xs text-orange-700">
+                    Notifications bloquées. Réactivez-les dans les paramètres de votre navigateur.
+                  </p>
+                </div>
+              )}
+              
+              {permission !== 'granted' && permission !== 'denied' && (
+                <button
+                  onClick={handleToggleNotifications}
+                  disabled={loadingNotif}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {loadingNotif ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Activation...
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="w-4 h-4" />
+                      Activer les notifications
+                    </>
+                  )}
+                </button>
+              )}
+              
+              {permission === 'granted' && (
+                <div className="bg-green-50 border border-green-200 rounded p-2">
+                  <p className="text-xs text-green-700 font-medium">
+                    ✅ Vous recevrez des notifications pour vos activités
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-xs text-gray-400">
+              Votre navigateur ne supporte pas les notifications push
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Section Informations */}
