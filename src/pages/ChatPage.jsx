@@ -42,7 +42,7 @@ export default function ChatPage() {
   const presenceChannelRef = useRef(null);
 
   // Emojis rapides
-  const quickEmojis = ['❤️', '👍', '😂', '😮', '😢', '🔥', '👏', '🎉'];
+  const quickEmojis = ['❤️', '👍', '😂', '🏉', '🔥', '💪', '⚡', '🚀', '🎯', '👏', '🎉', '💯', '🙌', '👌', '😎', '🤩'];
 
   const scrollToBottom = (smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
