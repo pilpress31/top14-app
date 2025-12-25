@@ -313,102 +313,103 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Zone messages */}
-      <div className="container mx-auto px-4 py-4 space-y-3 pb-32">
-        {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Aucun message pour le moment</p>
-            <p className="text-sm text-gray-400 mt-2">Soyez le premier à discuter !</p>
-          </div>
-        ) : (
-          messages.map(msg => {
-            const isCurrentUser = user && msg.user_id === user.id;
-            const messageReactions = reactions[msg.id] || {};
-            
-            return (
-              <div 
-                key={msg.id} 
-                className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                  <div className="max-w-[85%]">
+  {/* Zone messages */}
+  <div className="container mx-auto px-4 py-4 space-y-3 pb-32">
+    {messages.length === 0 ? (
+      <div className="text-center py-12">
+        <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <p className="text-gray-500">Aucun message pour le moment</p>
+        <p className="text-sm text-gray-400 mt-2">Soyez le premier à discuter !</p>
+      </div>
+    ) : (
+      messages.map(msg => {
+        const isCurrentUser = user && msg.user_id === user.id;
+        const messageReactions = reactions[msg.id] || {};
+        
+        return (
+          <div 
+            key={msg.id} 
+            className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+          >
+            <div className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+              <div className="max-w-[85%]">
 
-                  {/* Nom utilisateur */}
-                  {!isCurrentUser && (
-                    <div className="flex items-center gap-2 mb-1 px-2">
-                      {msg.avatar_url ? (
-                        <img 
-                          src={msg.avatar_url} 
-                          alt={msg.username}
-                          className="w-5 h-5 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-rugby-gold flex items-center justify-center text-white text-xs font-bold">
-                          {msg.username?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-500 font-medium">{msg.username}</p>
+                {/* Nom utilisateur */}
+                {!isCurrentUser && (
+                  <div className="flex items-center gap-2 mb-1 px-2">
+                    {msg.avatar_url ? (
+                      <img 
+                        src={msg.avatar_url} 
+                        alt={msg.username}
+                        className="w-5 h-5 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-rugby-gold flex items-center justify-center text-white text-xs font-bold">
+                        {msg.username?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 font-medium">{msg.username}</p>
+                  </div>
+                )}
+                
+                {/* Bulle message */}
+                <div 
+                  className={`rounded-2xl px-4 py-2 shadow-sm relative group ${
+                    isCurrentUser
+                      ? 'bg-rugby-gold text-white rounded-tr-none'
+                      : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                  }`}
+                  onMouseEnter={() => setShowEmojiPicker(msg.id)}
+                  onMouseLeave={() => setShowEmojiPicker(null)}
+                >
+                  <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
+                  
+                  <p className={`text-[10px] mt-1 ${
+                    isCurrentUser ? 'text-white/70' : 'text-gray-400'
+                  }`}>
+                    {formatHeureParis(msg.created_at)}
+                    {msg.edited && ' (modifié)'}
+                  </p>
+
+                  {/* Picker emojis */}
+                  {showEmojiPicker === msg.id && (
+                    <div className="absolute -top-14 left-0 right-0 mx-auto w-max max-w-full bg-white border border-gray-200 rounded-2xl shadow-lg p-2 flex flex-wrap justify-center z-50">
+                      {quickEmojis.map((emoji) => (
+                        <button
+                          key={emoji}
+                          onClick={() => handleReaction(msg.id, emoji)}
+                          className="text-2xl m-1 hover:scale-110 transition-transform"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
                     </div>
                   )}
-                  
-                  {/* Bulle message */}
-                  <div 
-                    className={`rounded-2xl px-4 py-2 shadow-sm relative group ${
-                      isCurrentUser
-                        ? 'bg-rugby-gold text-white rounded-tr-none'
-                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
-                    }`}
-                    onMouseEnter={() => setShowEmojiPicker(msg.id)}
-                    onMouseLeave={() => setShowEmojiPicker(null)}
-                  >
-                    {/* ✅ POLICE PLUS GRANDE (text-sm → text-base) */}
-                    <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
-                    
-                    <p className={`text-[10px] mt-1 ${
-                      isCurrentUser ? 'text-white/70' : 'text-gray-400'
-                    }`}>
-                      {/* ✅ CORRECTION HEURE */}
-                      {formatHeureParis(msg.created_at)}
-                      {msg.edited && ' (modifié)'}
-                    </p>
 
-                    {/* ✅ PICKER D'ÉMOJIS (au survol) */}
-                    {showEmojiPicker === msg.id && (
-                      <div className="absolute -top-14 left-0 right-0 mx-auto w-max max-w-full bg-white border border-gray-200 rounded-2xl shadow-lg p-2 flex flex-wrap justify-center z-50">
-                        {quickEmojis.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() => handleReaction(msg.id, emoji)}
-                            className="text-2xl m-1 hover:scale-110 transition-transform"
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-
-                    {/* ✅ Affichage des réactions */}
-                    {Object.keys(messageReactions).length > 0 && (
-                      <div className="flex gap-1 mt-2 flex-wrap">
-                        {Object.entries(messageReactions).map(([emoji, count]) => (
-                          <span 
-                            key={emoji}
-                            className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1"
-                          >
-                            <span>{emoji}</span>
-                            <span className="font-semibold text-gray-700">{count}</span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  {/* Réactions */}
+                  {Object.keys(messageReactions).length > 0 && (
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {Object.entries(messageReactions).map(([emoji, count]) => (
+                        <span 
+                          key={emoji}
+                          className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1"
+                        >
+                          <span>{emoji}</span>
+                          <span className="font-semibold text-gray-700">{count}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            );
-          })
-        )}
+
+              </div> {/* ← fermeture max-w */}
+            </div>   {/* ← fermeture w-full flex */}
+          </div>     {/* ← fermeture flex wrapper */}
+        );
+      })
+    )}
+  </div>
+
         
         <div ref={messagesEndRef} />
       </div>
