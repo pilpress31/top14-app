@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 
 export function usePushNotifications() {
+  console.log('🔑 VAPID au chargement:', import.meta.env.VITE_VAPID_PUBLIC_KEY);
+  console.log('📋 Toutes les env:', import.meta.env);
+  
   const [permission, setPermission] = useState(Notification.permission);
   const [subscription, setSubscription] = useState(null);
 
+
+  
   // Demander permission
   const requestPermission = async () => {
     if (!('Notification' in window)) {
