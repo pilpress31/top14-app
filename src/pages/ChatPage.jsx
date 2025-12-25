@@ -411,8 +411,8 @@ export default function ChatPage() {
       </div>
 
         
-        <div ref={messagesEndRef} />
-      </div>
+      <div ref={messagesEndRef} />
+      
 
       {/* Barre de saisie fixe */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
