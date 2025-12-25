@@ -413,15 +413,55 @@ Merci.
                       </div>
 
                       <button
-                        onClick={handleRunDiagnostic}
-                        disabled={diagnosticRun}
-                        className={`w-full py-3 rounded font-medium text-white transition-colors flex items-center justify-center gap-2 ${
-                          diagnosticRun ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
+                        onClick={() => {
+                          if (diagnosticRun) {
+                            // Reset pour relancer
+                            setDiagnosticRun(false);
+                            setTestResults({ phoneSettings: null, appSettings: null, registration: null, testNotification: null });
+                          } else {
+                            handleRunDiagnostic();
+                          }
+                        }}
+                        className="w-full py-3 rounded font-medium text-white transition-colors flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600"
                       >
                         <PlayCircle className="w-5 h-5" />
-                        {diagnosticRun ? 'Diagnostic terminé' : 'Lancer le diagnostic'}
+                        {diagnosticRun ? 'Relancer le diagnostic' : 'Lancer le diagnostic'}
                       </button>
+
+                      {/* ✅ Rectangle signalement */}
+                      {diagnosticRun && (
+                        <div 
+                          onClick={() => {
+                            const subject = 'Problème notifications push - Top14 Pronos';
+                            const body = `
+Bonjour,
+
+Malgré un diagnostic au vert, je rencontre toujours un problème avec les notifications push.
+
+Résultats du diagnostic :
+- Paramètres téléphone : ${testResults.phoneSettings === 'success' ? '✅ OK' : '❌ Erreur'}
+- Mode silence : ${testResults.appSettings === 'success' ? '✅ OK' : '❌ Erreur'}
+- Service Worker : ${testResults.registration === 'success' ? '✅ OK' : '❌ Erreur'}
+- Test push : ${testResults.testNotification === 'success' ? '✅ OK' : '❌ Erreur'}
+
+Téléphone : [Votre modèle]
+OS : [iOS/Android + version]
+
+Problème rencontré :
+[Décrivez votre problème]
+
+Merci.
+                            `.trim();
+                            window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                          }}
+                          className="mt-3 p-4 bg-orange-50 border-2 border-orange-200 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors"
+                        >
+                          <p className="font-bold text-gray-800 text-sm mb-1">📧 Signaler un problème</p>
+                          <p className="text-xs text-gray-600">
+                            Si tout est au vert mais que vous avez toujours un problème, cliquez ici.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
