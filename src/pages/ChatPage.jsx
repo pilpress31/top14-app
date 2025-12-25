@@ -68,9 +68,10 @@ export default function ChatPage() {
     };
   }, [user]);
 
-  const loadMessages = async () => {
+    const loadMessages = async () => {
     setLoading(true);
     
+    // Charger messages
     const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
@@ -80,6 +81,21 @@ export default function ChatPage() {
 
     if (!error && data) {
       setMessages(data);
+      
+      // Charger réactions
+      const { data: reactionsData } = await supabase
+        .from('message_reactions')
+        .select('message_id, emoji');
+      
+      if (reactionsData) {
+        const reactionsMap = {};
+        reactionsData.forEach(r => {
+          if (!reactionsMap[r.message_id]) reactionsMap[r.message_id] = {};
+          reactionsMap[r.message_id][r.emoji] = (reactionsMap[r.message_id][r.emoji] || 0) + 1;
+        });
+        setReactions(reactionsMap);
+      }
+      
       setTimeout(() => scrollToBottom(false), 100);
     }
     
@@ -210,23 +226,34 @@ export default function ChatPage() {
   };
 
   // ✅ Ajouter une réaction
-  const handleReaction = (messageId, emoji) => {
+  const handleReaction = async (messageId, emoji) => {
     if (!user) return;
     
-    setReactions(prev => {
-      const messageReactions = prev[messageId] || {};
-      const currentCount = messageReactions[emoji] || 0;
-      
-      return {
-        ...prev,
-        [messageId]: {
-          ...messageReactions,
-          [emoji]: currentCount + 1
-        }
-      };
-    });
+    // Sauvegarder dans Supabase
+    const { error } = await supabase
+      .from('message_reactions')
+      .insert({
+        message_id: messageId,
+        user_id: user.id,
+        emoji: emoji
+      });
     
-    // Fermer le picker après sélection
+    if (!error) {
+      // Mettre à jour l'état local
+      setReactions(prev => {
+        const messageReactions = prev[messageId] || {};
+        const currentCount = messageReactions[emoji] || 0;
+        
+        return {
+          ...prev,
+          [messageId]: {
+            ...messageReactions,
+            [emoji]: currentCount + 1
+          }
+        };
+      });
+    }
+    
     setShowEmojiPicker(null);
   };
 
