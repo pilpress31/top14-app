@@ -331,7 +331,9 @@ export default function ChatPage() {
                 key={msg.id} 
                 className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-[75%] ${isCurrentUser ? 'order-2' : 'order-1'}`}>
+                <div className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                  <div className="max-w-[85%]">
+
                   {/* Nom utilisateur */}
                   {!isCurrentUser && (
                     <div className="flex items-center gap-2 mb-1 px-2">
@@ -373,21 +375,19 @@ export default function ChatPage() {
 
                     {/* ✅ PICKER D'ÉMOJIS (au survol) */}
                     {showEmojiPicker === msg.id && (
-                      <div className={`absolute ${isCurrentUser ? 'left-0' : 'right-0'} bottom-full mb-1 
-                                    bg-white rounded-lg shadow-xl p-2 flex gap-1 z-10 
-                                    animate-fade-in border border-gray-200`}>
-                        {quickEmojis.map(emoji => (
+                      <div className="absolute -top-14 left-0 right-0 mx-auto w-max max-w-full bg-white border border-gray-200 rounded-2xl shadow-lg p-2 flex flex-wrap justify-center z-50">
+                        {quickEmojis.map((emoji) => (
                           <button
                             key={emoji}
                             onClick={() => handleReaction(msg.id, emoji)}
-                            className="text-xl hover:scale-125 transition-transform p-1"
-                            title={`Réagir avec ${emoji}`}
+                            className="text-2xl m-1 hover:scale-110 transition-transform"
                           >
                             {emoji}
                           </button>
                         ))}
                       </div>
                     )}
+
 
                     {/* ✅ Affichage des réactions */}
                     {Object.keys(messageReactions).length > 0 && (
