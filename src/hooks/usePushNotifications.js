@@ -1,18 +1,64 @@
 import { useState, useEffect } from 'react';
 
 export function usePushNotifications() {
-  console.log('🔑 VAPID au chargement:', import.meta.env.VITE_VAPID_PUBLIC_KEY);
-  console.log('📋 Toutes les env:', import.meta.env);
-  
   const [permission, setPermission] = useState(Notification.permission);
   const [subscription, setSubscription] = useState(null);
 
+  // Helper fonction
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
+  };
 
-  
+  // Créer subscription
+  const subscribeUser = async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      
+      if (!vapidPublicKey) {
+        console.error('❌ VAPID key manquante');
+        return null;
+      }
+
+      // Vérifier si déjà abonné
+      let sub = await registration.pushManager.getSubscription();
+      
+      if (!sub) {
+        // Créer nouvelle subscription
+        sub = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        });
+        
+        console.log('✅ Subscription créée');
+      }
+
+      setSubscription(sub);
+      
+      // Envoyer au backend
+      await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub)
+      });
+
+      console.log('✅ Subscription enregistrée sur serveur');
+      return sub;
+      
+    } catch (error) {
+      console.error('❌ Erreur subscription:', error);
+      return null;
+    }
+  };
+
   // Demander permission
   const requestPermission = async () => {
     if (!('Notification' in window)) {
-      alert('Votre navigateur ne supporte pas les notifications');
+      console.error('❌ Notifications non supportées');
       return false;
     }
 
@@ -20,55 +66,41 @@ export function usePushNotifications() {
     setPermission(result);
     
     if (result === 'granted') {
+      // ✅ CRÉER AUTOMATIQUEMENT LA SUBSCRIPTION
       await subscribeUser();
+      return true;
     }
     
-    return result === 'granted';
+    return false;
   };
 
-  // S'abonner aux push
-  const subscribeUser = async () => {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      
-      // Clés VAPID (on les génère après)
-      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-      
-
-      // ✅ AJOUTER CE LOG
-      console.log('🔑 VAPID KEY:', vapidPublicKey);
-
-      if (!vapidPublicKey) {
-        console.warn('VAPID key manquante');
-        return;
+  // Vérifier subscription au chargement
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (permission === 'granted' && 'serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        const sub = await registration.pushManager.getSubscription();
+        
+        if (sub) {
+          setSubscription(sub);
+          console.log('✅ Subscription existante trouvée');
+        } else if (permission === 'granted') {
+          // Permission granted mais pas de subscription → Créer
+          console.log('⚠️ Permission granted mais pas de subscription, création...');
+          await subscribeUser();
+        }
       }
-
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-      });
-
-      setSubscription(sub);
-      
-      // Envoyer subscription au backend
-      await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub)
-      });
-
-      return sub;
-    } catch (error) {
-      console.error('Erreur subscription:', error);
-    }
-  };
+    };
+    
+    checkSubscription();
+  }, [permission]);
 
   // Enregistrer Service Worker au chargement
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then(reg => console.log('✅ SW enregistré:', reg))
+        .then(reg => console.log('✅ SW enregistré:', reg.scope))
         .catch(err => console.error('❌ SW erreur:', err));
     }
   }, []);
@@ -77,14 +109,7 @@ export function usePushNotifications() {
     permission,
     subscription,
     requestPermission,
+    subscribeUser,
     isSupported: 'Notification' in window && 'serviceWorker' in navigator
   };
-}
-
-// Helper
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
 }
