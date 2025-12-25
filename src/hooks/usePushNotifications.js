@@ -29,6 +29,10 @@ export function usePushNotifications() {
       // Clés VAPID (on les génère après)
       const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
       
+
+      // ✅ AJOUTER CE LOG
+      console.log('🔑 VAPID KEY:', vapidPublicKey);
+
       if (!vapidPublicKey) {
         console.warn('VAPID key manquante');
         return;
