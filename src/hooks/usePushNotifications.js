@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext'; // ✅ AJOUTER
 
 export function usePushNotifications() {
+  const { user } = useAuth(); // ✅ AJOUTER
   const [permission, setPermission] = useState(Notification.permission);
   const [subscription, setSubscription] = useState(null);
 
@@ -24,11 +26,9 @@ export function usePushNotifications() {
         return null;
       }
 
-      // Vérifier si déjà abonné
       let sub = await registration.pushManager.getSubscription();
       
       if (!sub) {
-        // Créer nouvelle subscription
         sub = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
@@ -39,17 +39,22 @@ export function usePushNotifications() {
 
       setSubscription(sub);
       
-      // Envoyer au backend
-      await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
+      // ✅ ENVOYER AVEC userId
+      const response = await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           subscription: sub,
-          // userId: à récupérer du contexte auth si disponible
-        })  // ✅ NOUVEAU
+          userId: user?.id // ✅ AJOUTER user.id
+        })
       });
 
-      console.log('✅ Subscription enregistrée sur serveur');
+      if (response.ok) {
+        console.log('✅ Subscription sauvegardée en base');
+      } else {
+        console.error('❌ Erreur sauvegarde:', await response.text());
+      }
+
       return sub;
       
     } catch (error) {
