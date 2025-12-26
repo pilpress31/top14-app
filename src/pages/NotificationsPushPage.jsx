@@ -16,6 +16,7 @@ export default function NotificationsPushPage() {
   const [notifPariGagne, setNotifPariGagne] = useState(localStorage.getItem('notif-pari-gagne') !== 'false');
   const [notifBonusScore, setNotifBonusScore] = useState(localStorage.getItem('notif-bonus-score') !== 'false');
   const [notifNouveauxMatchs, setNotifNouveauxMatchs] = useState(localStorage.getItem('notif-nouveaux-matchs') !== 'false');
+  const [notifDistributionMensuelle, setNotifDistributionMensuelle] = useState(localStorage.getItem('notif-distribution-mensuelle') !== 'false');
 
   const handleToggleSilence = () => {
     const newValue = !modeSilence;
@@ -48,6 +49,12 @@ export default function NotificationsPushPage() {
     const newValue = !notifNouveauxMatchs;
     setNotifNouveauxMatchs(newValue);
     localStorage.setItem('notif-nouveaux-matchs', newValue.toString());
+  };
+
+  const handleToggleNotifDistributionMensuelle = () => {
+    const newValue = !notifDistributionMensuelle;
+    setNotifDistributionMensuelle(newValue);
+    localStorage.setItem('notif-distribution-mensuelle', newValue.toString());
   };
 
   const handleActiverNotifications = async () => {
@@ -261,6 +268,29 @@ export default function NotificationsPushPage() {
                       >
                         <div className={`absolute top-0.5 w-6 h-6 bg-white rounded-full transition-transform ${
                           notifNouveauxMatchs ? 'left-7' : 'left-0.5'
+                        }`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Distribution mensuelle */}
+                  <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">💰</span>
+                        <div>
+                          <p className="font-medium text-gray-800">Distribution mensuelle</p>
+                          <p className="text-xs text-gray-500">Bonus mensuel de jetons</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleToggleNotifDistributionMensuelle}
+                        className={`w-14 h-7 rounded-full transition-colors relative ${
+                          notifDistributionMensuelle ? 'bg-green-500' : 'bg-gray-400'
+                        }`}
+                      >
+                        <div className={`absolute top-0.5 w-6 h-6 bg-white rounded-full transition-transform ${
+                          notifDistributionMensuelle ? 'left-7' : 'left-0.5'
                         }`} />
                       </button>
                     </div>
