@@ -172,8 +172,8 @@ export default function ChatPage() {
       user_id: user.id,
       username: user.user_metadata?.nom_complet || user.email?.split('@')[0] || 'Anonyme',
       avatar_url: user.user_metadata?.avatar_url || null,
-      message: newMessage.trim(),
-      deleted: false  // ✅ Ajouter explicitement
+      message: newMessage.trim()
+      // deleted sera false par défaut grâce au DEFAULT dans Supabase
     };
 
     const { data, error } = await supabase
