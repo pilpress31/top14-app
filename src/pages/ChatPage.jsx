@@ -13,19 +13,26 @@ import { useChatNotification } from '../contexts/ChatNotificationContext';
       // Exemple Supabase : "2025-12-26 21:21:44.19262"
       const [datePart, timePart] = dateString.split(' ');
 
-      // On découpe l'heure proprement
-      const [hour, minute, secondRaw] = timePart.split(':');
-      const [second, micro] = secondRaw.split('.');
+      if (!datePart || !timePart) return 'Date invalide';
 
-      // On construit une date UTC propre
+      // On enlève les microsecondes
+      const [h, m, sRaw] = timePart.split(':');
+      const s = sRaw.split('.')[0]; // "44.19262" → "44"
+
+      const [year, month, day] = datePart.split('-').map(Number);
+
+      // Construction UTC propre
       const date = new Date(Date.UTC(
-        ...datePart.split('-').map(Number), // year, month, day
-        Number(hour),
-        Number(minute),
-        Number(second)
+        year,
+        month - 1, // JS: mois 0-11
+        day,
+        Number(h),
+        Number(m),
+        Number(s)
       ));
 
-      // Conversion Europe/Paris
+      if (isNaN(date.getTime())) return 'Date invalide';
+
       return date.toLocaleTimeString('fr-FR', {
         timeZone: 'Europe/Paris',
         hour: '2-digit',
