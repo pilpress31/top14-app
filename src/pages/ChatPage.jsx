@@ -6,28 +6,27 @@ import { useChatNotification } from '../contexts/ChatNotificationContext';
 
 
 // ✅ Fonction de formatage heure - VERSION DÉFINITIVE
-  
-  const formatHeureParis = (dateString) => {
-    if (!dateString) return 'Date inconnue';
+const formatHeureParis = (dateString) => {
+  if (!dateString) return 'Date inconnue';
 
-    try {
-      // Supprimer les microsecondes
-      const cleaned = dateString.replace(' ', 'T').split('.')[0] + 'Z';
-      // Exemple : "2025-12-26T21:21:44Z"
+  try {
+    // Supprimer les microsecondes
+    const cleaned = dateString.replace(' ', 'T').split('.')[0] + 'Z';
+    // Exemple : "2025-12-26T21:21:44Z"
 
-      const date = new Date(cleaned);
+    const date = new Date(cleaned);
 
-      return date.toLocaleTimeString('fr-FR', {
-        timeZone: 'Europe/Paris',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+    return date.toLocaleTimeString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
 
-    } catch (e) {
-      console.error(e);
-      return 'Date invalide';
-    }
-  };
+  } catch (e) {
+    console.error(e);
+    return 'Date invalide';
+  }
+};
 
 
 
@@ -193,19 +192,19 @@ export default function ChatPage() {
     setSending(true);
 
     // ✅ Générer le même pseudo que pour presence
-  const generatePseudo = () => {
-    if (user.user_metadata?.pseudo) return user.user_metadata.pseudo;
-    if (user.user_metadata?.nom_complet) return user.user_metadata.nom_complet.split(' ')[0];
-    if (user.email) return user.email.split('@')[0];
-    return 'Anonyme';
-  };
+    const generatePseudo = () => {
+      if (user.user_metadata?.pseudo) return user.user_metadata.pseudo;
+      if (user.user_metadata?.nom_complet) return user.user_metadata.nom_complet.split(' ')[0];
+      if (user.email) return user.email.split('@')[0];
+      return 'Anonyme';
+    };
 
-  const messageData = {
-    user_id: user.id,
-    username: generatePseudo(),  // ✅ Pseudo court au lieu de nom complet
-    avatar_url: user.user_metadata?.avatar_url || null,
-    message: newMessage.trim()
-  };
+    const messageData = {
+      user_id: user.id,
+      username: generatePseudo(),  // ✅ Pseudo court au lieu de nom complet
+      avatar_url: user.user_metadata?.avatar_url || null,
+      message: newMessage.trim()
+    };
 
     const { data, error } = await supabase
       .from('chat_messages')
@@ -329,9 +328,9 @@ export default function ChatPage() {
   }
 
   return (
-  <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
-    {/* Header - STICKY */}
-    <div className="sticky top-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg">
+    <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
+      {/* ✅ Header - STICKY */}
+      <div className="sticky top-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -386,6 +385,7 @@ export default function ChatPage() {
                         {u.pseudo?.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
+                        {/* ✅ PSEUDO COURT */}
                         <p className="font-medium text-gray-800">{u.pseudo}</p>
                         <p className="text-xs text-gray-500">
                           Connecté depuis {formatHeureParis(u.online_at)}
@@ -405,10 +405,8 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Zone messages */}
-      
+      {/* ✅ Zone messages - AVEC PADDING-TOP pour header sticky */}
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
-
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -442,6 +440,7 @@ export default function ChatPage() {
                           {msg.username?.charAt(0).toUpperCase()}
                         </div>
                       )}
+                      {/* ✅ PSEUDO COURT dans les messages */}
                       <p className="text-xs text-gray-500 font-medium">{msg.username}</p>
                     </div>
                   )}
