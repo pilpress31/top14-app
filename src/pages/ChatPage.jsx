@@ -220,24 +220,35 @@ export default function ChatPage() {
   };
 
   // ✅ Supprimer un message
+  // Dans ChatPage.jsx, modifie handleDeleteMessage :
   const handleDeleteMessage = async (messageId) => {
     try {
-      const { error } = await supabase
+      console.log('🔍 Tentative suppression:', {
+        messageId,
+        userId: user.id,
+        authUid: supabase.auth.user()?.id
+      });
+      
+      const { data, error } = await supabase
         .from('chat_messages')
         .update({ deleted: true })
         .eq('id', messageId)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();  // ✅ Ajouter .select() pour voir ce qui est retourné
+      
+      console.log('📊 Résultat:', { data, error });
       
       if (error) {
-        console.error('Erreur suppression:', error);
-        alert('Erreur lors de la suppression: ' + error.message);
+        console.error('❌ Erreur complète:', JSON.stringify(error, null, 2));
+        alert('Erreur: ' + error.message);
       } else {
+        console.log('✅ Suppression réussie');
         setMessages(prev => prev.filter(m => m.id !== messageId));
         setDeleteConfirm(null);
       }
     } catch (err) {
-      console.error('Erreur:', err);
-      alert('Erreur lors de la suppression');
+      console.error('❌ Exception:', err);
+      alert('Exception: ' + err.message);
     }
   };
 
