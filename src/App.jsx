@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
 import { useState, useEffect } from "react";
 
-
 // Pages
 import IAPage from '@/pages/IAPage';
 import PronosPage from './pages/PronosPage';
@@ -47,20 +46,26 @@ function App() {
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
   
-  // ✅ POPUP SORTIE APPLICATION (Android)
+  // ✅ POPUP SORTIE APPLICATION - UNIQUEMENT SUR PAGES PRINCIPALES
   useEffect(() => {
     const handleBackButton = (e) => {
-      e.preventDefault();
+      // ✅ Pages principales (BottomNav) où on veut le popup
+      const mainPages = ['/ia', '/pronos', '/classement', '/live', '/chat', '/plus'];
+      const currentPath = window.location.pathname;
       
-      if (window.confirm('Voulez-vous quitter l\'application ?')) {
-        window.history.back();
-      } else {
-        window.history.pushState(null, '', window.location.pathname);
+      // Si on est sur une page principale, demander confirmation
+      if (mainPages.includes(currentPath)) {
+        e.preventDefault();
+        
+        if (window.confirm('Voulez-vous quitter l\'application ?')) {
+          window.history.back();
+        } else {
+          window.history.pushState(null, '', window.location.pathname);
+        }
       }
+      // Sinon, laisser le comportement normal (retour vers page précédente)
     };
 
-    // Empêcher le retour arrière
-    window.history.pushState(null, '', window.location.pathname);
     window.addEventListener('popstate', handleBackButton);
 
     return () => {
@@ -250,4 +255,3 @@ function App() {
 }
 
 export default App;
-
