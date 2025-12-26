@@ -10,20 +10,22 @@ import { useChatNotification } from '../contexts/ChatNotificationContext';
     if (!dateString) return 'Date inconnue';
 
     try {
-      let date;
+      // Exemple Supabase : "2025-12-26 21:21:44.19262"
+      const [datePart, timePart] = dateString.split(' ');
 
-      // Format Supabase : "2025-01-12 18:00:00"
-      if (!dateString.includes('T')) {
-        const [d, t] = dateString.split(' ');
-        date = new Date(`${d}T${t}Z`); // On force UTC proprement
-      } 
-      // Format ISO déjà correct
-      else {
-        date = new Date(dateString);
-      }
+      // On découpe l'heure proprement
+      const [hour, minute, secondRaw] = timePart.split(':');
+      const [second, micro] = secondRaw.split('.');
 
-      if (isNaN(date)) return 'Date invalide';
+      // On construit une date UTC propre
+      const date = new Date(Date.UTC(
+        ...datePart.split('-').map(Number), // year, month, day
+        Number(hour),
+        Number(minute),
+        Number(second)
+      ));
 
+      // Conversion Europe/Paris
       return date.toLocaleTimeString('fr-FR', {
         timeZone: 'Europe/Paris',
         hour: '2-digit',
@@ -35,6 +37,7 @@ import { useChatNotification } from '../contexts/ChatNotificationContext';
       return 'Date invalide';
     }
   };
+
 
 
 export default function ChatPage() {
