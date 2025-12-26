@@ -223,10 +223,10 @@ export default function ChatPage() {
   // Dans ChatPage.jsx, modifie handleDeleteMessage :
   const handleDeleteMessage = async (messageId) => {
     try {
+      // Debug info
       console.log('🔍 Tentative suppression:', {
         messageId,
-        userId: user.id,
-        authUid: supabase.auth.user()?.id
+        userId: user.id
       });
       
       const { data, error } = await supabase
@@ -234,12 +234,12 @@ export default function ChatPage() {
         .update({ deleted: true })
         .eq('id', messageId)
         .eq('user_id', user.id)
-        .select();  // ✅ Ajouter .select() pour voir ce qui est retourné
+        .select();  // Pour voir ce qui est retourné
       
-      console.log('📊 Résultat:', { data, error });
+      console.log('📊 Résultat update:', { data, error });
       
       if (error) {
-        console.error('❌ Erreur complète:', JSON.stringify(error, null, 2));
+        console.error('❌ Erreur complète:', error);
         alert('Erreur: ' + error.message);
       } else {
         console.log('✅ Suppression réussie');
@@ -251,6 +251,7 @@ export default function ChatPage() {
       alert('Exception: ' + err.message);
     }
   };
+
 
   // ✅ Ajouter une réaction
   const handleReaction = async (messageId, emoji) => {
