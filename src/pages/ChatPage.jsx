@@ -9,10 +9,17 @@ const formatHeureParis = (dateString) => {
   if (!dateString) return 'Date inconnue';
   
   try {
-    // ✅ Format Supabase: "2025-12-26 08:09:59.555344"
-    // On ajoute manuellement le "Z" pour indiquer UTC
-    const isoString = dateString.replace(' ', 'T') + 'Z';
-    const date = new Date(isoString);
+    let date;
+    
+    // ✅ Si déjà en format ISO (avec T), utiliser directement
+    if (dateString.includes('T')) {
+      date = new Date(dateString);
+    } 
+    // ✅ Sinon, format Supabase : convertir en ISO
+    else {
+      const isoString = dateString.replace(' ', 'T') + 'Z';
+      date = new Date(isoString);
+    }
     
     if (isNaN(date.getTime())) return 'Date invalide';
     
@@ -197,7 +204,7 @@ export default function ChatPage() {
   
   const { error } = await supabase
     .from('chat_messages')
-    .update({ deleted: true }) // ✅ MARQUER COMME DELETED au lieu de DELETE
+    .delete()
     .eq('id', messageId)
     .eq('user_id', user.id);
   
@@ -205,7 +212,6 @@ export default function ChatPage() {
     console.error('Erreur suppression:', error);
     alert('Erreur lors de la suppression');
   } else {
-    // Retirer immédiatement du state
     setMessages(prev => prev.filter(m => m.id !== messageId));
   }
 };
@@ -393,9 +399,12 @@ export default function ChatPage() {
                       )}
                     </div>
 
+                    
                     {/* ✅ Picker emojis - BULLE SCROLLABLE HORIZONTALE */}
                     {showEmojiPicker === msg.id && (
-                      <div className="absolute -top-12 left-0 right-0 w-[90vw] mx-auto bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50">
+                      <div className={`absolute -top-12 w-[90vw] bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50 ${
+                        isCurrentUser ? 'right-0' : 'left-0'
+                      }`}>
                         <div className="flex gap-1 overflow-x-auto scrollbar-hide">
                           {quickEmojis.map((emoji) => (
                             <button
@@ -410,13 +419,15 @@ export default function ChatPage() {
                       </div>
                     )}
 
-                    {/* Bouton pour ouvrir le picker (mobile) */}
-                    <button
-                      onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
-                      className="absolute -bottom-2 -right-2 bg-gray-200 rounded-full p-1.5 shadow-md hover:bg-gray-300 transition-colors md:hidden"
-                    >
-                      <span className="text-sm">😊</span>
-                    </button>
+                    {/* Bouton pour ouvrir le picker (mobile) - UNIQUEMENT pour messages des autres */}
+                    {!isCurrentUser && (
+                      <button
+                        onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
+                        className="absolute -bottom-2 -right-2 bg-gray-200 rounded-full p-1.5 shadow-md hover:bg-gray-300 transition-colors md:hidden"
+                      >
+                        <span className="text-sm">😊</span>
+                      </button>
+                    )}
 
                     {/* Desktop hover */}
                     <div 
