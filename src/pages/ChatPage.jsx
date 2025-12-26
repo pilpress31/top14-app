@@ -148,6 +148,27 @@ export default function ChatPage() {
   const subscribeToPresence = () => {
     if (!user) return;
 
+    // ✅ Générer un pseudo court
+    const generatePseudo = () => {
+      // 1. Si y a un pseudo dans user_metadata, l'utiliser
+      if (user.user_metadata?.pseudo) {
+        return user.user_metadata.pseudo;
+      }
+      
+      // 2. Sinon, prendre le prénom uniquement (premier mot du nom complet)
+      if (user.user_metadata?.nom_complet) {
+        return user.user_metadata.nom_complet.split(' ')[0];
+      }
+      
+      // 3. Sinon, prendre l'email avant le @
+      if (user.email) {
+        return user.email.split('@')[0];
+      }
+      
+      // 4. Dernier recours
+      return 'Anonyme';
+    };
+
     presenceChannelRef.current = supabase
       .channel('online-users')
       .on('presence', { event: 'sync' }, () => {
@@ -159,7 +180,7 @@ export default function ChatPage() {
         if (status === 'SUBSCRIBED') {
           await presenceChannelRef.current.track({
             user_id: user.id,
-            pseudo: user.user_metadata?.nom_complet || 'Anonyme',
+            pseudo: generatePseudo(),  // ✅ Pseudo court
             online_at: new Date().toISOString()
           });
         }
@@ -171,12 +192,20 @@ export default function ChatPage() {
 
     setSending(true);
 
-    const messageData = {
-      user_id: user.id,
-      username: user.user_metadata?.nom_complet || user.email?.split('@')[0] || 'Anonyme',
-      avatar_url: user.user_metadata?.avatar_url || null,
-      message: newMessage.trim()
-    };
+    // ✅ Générer le même pseudo que pour presence
+  const generatePseudo = () => {
+    if (user.user_metadata?.pseudo) return user.user_metadata.pseudo;
+    if (user.user_metadata?.nom_complet) return user.user_metadata.nom_complet.split(' ')[0];
+    if (user.email) return user.email.split('@')[0];
+    return 'Anonyme';
+  };
+
+  const messageData = {
+    user_id: user.id,
+    username: generatePseudo(),  // ✅ Pseudo court au lieu de nom complet
+    avatar_url: user.user_metadata?.avatar_url || null,
+    message: newMessage.trim()
+  };
 
     const { data, error } = await supabase
       .from('chat_messages')
@@ -300,9 +329,9 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white">
+  <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
+    {/* Header - STICKY */}
+    <div className="sticky top-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -377,7 +406,9 @@ export default function ChatPage() {
       )}
 
       {/* Zone messages */}
-      <div className="container mx-auto px-4 py-4 space-y-3 pb-32">
+      
+      <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
+
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
