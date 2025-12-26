@@ -3,7 +3,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 // Pages
 import IAPage from '@/pages/IAPage';
@@ -46,32 +46,8 @@ function App() {
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
   
-  // ✅ POPUP SORTIE APPLICATION - UNIQUEMENT SUR PAGES PRINCIPALES
-  useEffect(() => {
-    const handleBackButton = (e) => {
-      // ✅ Pages principales (BottomNav) où on veut le popup
-      const mainPages = ['/ia', '/pronos', '/classement', '/live', '/chat', '/plus'];
-      const currentPath = window.location.pathname;
-      
-      // Si on est sur une page principale, demander confirmation
-      if (mainPages.includes(currentPath)) {
-        e.preventDefault();
-        
-        if (window.confirm('Voulez-vous quitter l\'application ?')) {
-          window.history.back();
-        } else {
-          window.history.pushState(null, '', window.location.pathname);
-        }
-      }
-      // Sinon, laisser le comportement normal (retour vers page précédente)
-    };
-
-    window.addEventListener('popstate', handleBackButton);
-
-    return () => {
-      window.removeEventListener('popstate', handleBackButton);
-    };
-  }, []);
+  // ❌ POPUP SUPPRIMÉ : Trop intrusif, casse la navigation normale
+  // L'utilisateur peut quitter naturellement avec le bouton système
   
   // Ne pas afficher la BottomNav sur les pages d'authentification
   const hideBottomNav = [
@@ -84,7 +60,10 @@ function App() {
     '/conditions-generales',
     '/signaler-bug',
     '/notifications-push',
-    '/notifications-diagnostic'
+    '/notifications-diagnostic',
+    '/reglement',
+    '/a-propos',
+    '/cgu'
   ].includes(location.pathname);
   
   return (

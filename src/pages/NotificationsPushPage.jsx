@@ -273,7 +273,7 @@ export default function NotificationsPushPage() {
               <div>
                 <h2 className="text-lg font-bold text-gray-800 mb-3">Support</h2>
                 <button
-                  onClick={() => navigate('/parametres', { state: { openDiagnostic: true } })}
+                  onClick={() => navigate('/plus', { state: { openDiagnostic: true } })}
                   className="w-full bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors flex items-center gap-3"
                 >
                   <Settings className="w-5 h-5 text-blue-500" />
