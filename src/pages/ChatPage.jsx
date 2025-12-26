@@ -8,33 +8,34 @@ import { useChatNotification } from '../contexts/ChatNotificationContext';
 // ✅ Fonction de formatage heure - VERSION DÉFINITIVE
   const formatHeureParis = (dateString) => {
     if (!dateString) return 'Date inconnue';
-    
+
     try {
       let date;
-      
-      // Si format ISO (avec T)
-      if (dateString.includes('T')) {
-        date = new Date(dateString);
+
+      // Format Supabase : "2025-01-12 18:00:00"
+      if (!dateString.includes('T')) {
+        const [d, t] = dateString.split(' ');
+        date = new Date(`${d}T${t}Z`); // On force UTC proprement
       } 
-      // Sinon, format Supabase : convertir en ISO UTC
+      // Format ISO déjà correct
       else {
-        const isoString = dateString.replace(' ', 'T') + 'Z';
-        date = new Date(isoString);
+        date = new Date(dateString);
       }
-      
-      if (isNaN(date.getTime())) return 'Date invalide';
-      
-      // ✅ FORCER Europe/Paris pour avoir l'heure locale française
+
+      if (isNaN(date)) return 'Date invalide';
+
       return date.toLocaleTimeString('fr-FR', {
         timeZone: 'Europe/Paris',
         hour: '2-digit',
         minute: '2-digit'
       });
-    } catch (error) {
-      console.error('Erreur format date:', error);
+
+    } catch (e) {
+      console.error(e);
       return 'Date invalide';
     }
   };
+
 
 export default function ChatPage() {
   const { user } = useAuth();
