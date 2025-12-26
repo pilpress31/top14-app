@@ -198,23 +198,25 @@ export default function ChatPage() {
     }
   };
 
-  // ✅ Supprimer un message
+  
+  // ✅ Supprimer un message (soft delete)
   const handleDeleteMessage = async (messageId) => {
-  if (!confirm('Supprimer ce message ?')) return;
-  
-  const { error } = await supabase
-    .from('chat_messages')
-    .delete()
-    .eq('id', messageId)
-    .eq('user_id', user.id);
-  
-  if (error) {
-    console.error('Erreur suppression:', error);
-    alert('Erreur lors de la suppression');
-  } else {
-    setMessages(prev => prev.filter(m => m.id !== messageId));
-  }
-};
+    if (!confirm('Supprimer ce message ?')) return;
+    
+    const { error } = await supabase
+      .from('chat_messages')
+      .update({ deleted: true })  // ✅ UPDATE au lieu de DELETE
+      .eq('id', messageId)
+      .eq('user_id', user.id);
+    
+    if (error) {
+      console.error('Erreur suppression:', error);
+      alert('Erreur lors de la suppression');
+    } else {
+      // ✅ Retirer du state React
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    }
+  };
 
   // ✅ Ajouter une réaction
   const handleReaction = async (messageId, emoji) => {

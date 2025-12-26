@@ -200,15 +200,15 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
             {pariComplet && (
               <button
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow-sm transition"
                 onClick={() => {
                   navigate('/pronos', { 
                     state: { 
                       activeTab: 'mes-paris',
-                      scrollToBetId: existingProno?.bet_id
-                    } 
+                      scrollToMatchId: match.id  // ✅ Passer le match_id
+                    }
                   });
                 }}
+                className="..."
               >
                 Voir mes paris en cours
               </button>

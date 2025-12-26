@@ -24,22 +24,27 @@ export default function MesParisTab() {
 
   // ✅ Scroll auto vers un pari spécifique
   useEffect(() => {
-    if (location.state?.scrollToBetId && paris.length > 0) {
-      const betId = location.state.scrollToBetId;
+    if (location.state?.scrollToMatchId && paris.length > 0) {
+      const matchId = location.state.scrollToMatchId;  // ✅ Chercher par match_id
       
-      // Attendre que le DOM soit mis à jour
-      setTimeout(() => {
-        const element = betRefs.current[betId];
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
-          // Effet de highlight temporaire
-          element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
-          setTimeout(() => {
-            element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
-          }, 2000);
-        }
-      }, 300);
+      // ✅ Trouver le bet qui a ce match_id
+      const targetBet = paris.find(bet => bet.match_id === matchId);
+      
+      if (targetBet) {
+        // Attendre que le DOM soit mis à jour
+        setTimeout(() => {
+          const element = betRefs.current[targetBet.match_id];  // ✅ Utiliser match_id
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Effet de highlight temporaire
+            element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
+            setTimeout(() => {
+              element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
+            }, 2000);
+          }
+        }, 300);
+      }
 
       // Nettoyer le state
       window.history.replaceState({}, document.title);
@@ -245,7 +250,7 @@ export default function MesParisTab() {
             return (
               <div 
                 key={bet.id}
-                ref={el => betRefs.current[bet.id] = el}
+                ref={el => betRefs.current[bet.match_id] = el}  // ✅ Ref par match_id
                 className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all"
                 style={{
                   borderLeftColor: 
