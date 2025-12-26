@@ -148,20 +148,18 @@ export default function MaCagnotte() {
   };
 
   const navigateToBet = (transaction) => {
-    // Types liés aux paris
     const betTypes = ['bet_placed', 'bet_won', 'bet_lost', 'bonus_exact_score'];
     
     if (betTypes.includes(transaction.type) && transaction.reference_id) {
-      // Trouver le pari correspondant
       const bet = paris.find(p => p.id === transaction.reference_id);
       
       if (bet) {
-        // Naviguer vers Mes paris avec le bon filtre
-        const filter = bet.status; // 'pending', 'won', ou 'lost'
+        const filter = bet.status;
         navigate('/pronos', { 
           state: { 
             activeTab: 'mes-paris', 
-            filter: filter 
+            filter: filter,
+            scrollToBetId: bet.id  // ✅ AJOUTER CETTE LIGNE
           } 
         });
       }

@@ -4,7 +4,6 @@ import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MainHeader from '../components/MainHeaderFull';
-import { useResetOnActive } from "../hooks/useResetOnActive";
 
 export default function PronosPage() {
   const location = useLocation();
@@ -13,7 +12,6 @@ export default function PronosPage() {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const goToMesParis = () => { setActiveTab("mes-paris"); };
-
 
   // ✅ Ouvrir l'onglet "Mes paris" si state est passé
   useEffect(() => {
@@ -103,8 +101,6 @@ export default function PronosPage() {
         {activeTab === 'mes-paris' && (
           <MesParisTab />
         )}
-
-
       </div>
     </div>
   );

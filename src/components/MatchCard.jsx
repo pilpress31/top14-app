@@ -4,6 +4,8 @@
 
 import { CheckCircle, Plus, Edit, Lock } from 'lucide-react';
 import { getTeamData } from '../utils/teams';
+import { useNavigate } from 'react-router-dom';
+
 
 // Fonction : Vérifier si le pari est autorisé
 const isBettingAllowed = (match) => {
@@ -46,6 +48,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
+  const navigate = useNavigate();
 
   return (
     <div className="px-3 py-3 hover:bg-rugby-gold/5 transition-colors">
@@ -128,24 +131,18 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {existingProno && (
           !bettingAllowed ? (
             // Paris fermés → zone verte cliquable
-            <div
-              onClick={goToMesParis}
-              className="flex items-center gap-2 px-2 py-1 bg-green-50 rounded border border-green-200 
-                        underline cursor-pointer animate-pulse-slow"
+            <div 
+              onClick={() => {
+                navigate('/pronos', { 
+                  state: { 
+                    activeTab: 'mes-paris',
+                    scrollToBetId: existingProno?.bet_id 
+                  } 
+                });
+              }}
+              className="cursor-pointer..."
             >
-              <CheckCircle className="w-3 h-3 text-green-600" />
-              <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
-                {existingProno.score_dom_pronos !== null && existingProno.score_ext_pronos !== null && (
-                  <span>
-                    Prono FT : {existingProno.score_dom_pronos} - {existingProno.score_ext_pronos} | Mise : {existingProno.mise_ft}
-                  </span>
-                )}
-                {existingProno.score_dom_mt !== null && existingProno.score_ext_mt !== null && (
-                  <span>
-                    Prono MT : {existingProno.score_dom_mt} - {existingProno.score_ext_mt} | Mise : {existingProno.mise_mt}
-                  </span>
-                )}
-              </div>
+              Voir le pari
             </div>
           ) : (
             // Paris ouverts → zone verte NON cliquable
@@ -202,13 +199,18 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             )}
 
             {pariComplet && (
-              <button
-                onClick={goToMesParis}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                          bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors shadow-sm"
+              <button 
+                onClick={() => {
+                  // Naviguer vers l'onglet Mes paris avec betId pour scroll auto
+                  navigate('/pronos', { 
+                    state: { 
+                      activeTab: 'mes-paris',
+                      scrollToBetId: existingProno?.bet_id // ✅ ID du pari pour scroll
+                    } 
+                  });
+                }}
               >
-                <CheckCircle className="w-4 h-4" />
-                <span>Paris en cours → Voir mes paris</span>
+                Voir mes paris
               </button>
             )}
           </>

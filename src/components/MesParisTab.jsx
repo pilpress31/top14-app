@@ -1,21 +1,50 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Coins, TrendingUp, TrendingDown, Trophy, Calendar, Clock, FileText } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import ReglementModal from './ReglementModal';
+import { useLocation } from 'react-router-dom';
 
 export default function MesParisTab() {
+  const location = useLocation();
   const [userCredits, setUserCredits] = useState(null);
   const [paris, setParis] = useState([]);
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('pending'); // Par défaut : En cours
+  const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
+
+  // ✅ Refs pour chaque pari
+  const betRefs = useRef({});
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // ✅ Scroll auto vers un pari spécifique
+  useEffect(() => {
+    if (location.state?.scrollToBetId && paris.length > 0) {
+      const betId = location.state.scrollToBetId;
+      
+      // Attendre que le DOM soit mis à jour
+      setTimeout(() => {
+        const element = betRefs.current[betId];
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Effet de highlight temporaire
+          element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
+          setTimeout(() => {
+            element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
+          }, 2000);
+        }
+      }, 300);
+
+      // Nettoyer le state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, paris]);
 
   const loadData = async () => {
     try {
@@ -46,7 +75,6 @@ export default function MesParisTab() {
         });
         console.log('✅ Réponse brute API:', parisResponse.data);
         
-        // ✅ FIX: L'API retourne directement un array, pas un objet avec .bets
         const parisList = Array.isArray(parisResponse.data) 
           ? parisResponse.data 
           : (parisResponse.data.bets || []);
@@ -60,7 +88,7 @@ export default function MesParisTab() {
         setParis([]);
       }
 
-      // Charger les pronos (pour infos match)
+      // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
         .from('user_pronos')
         .select('*')
@@ -104,18 +132,21 @@ export default function MesParisTab() {
 
   return (
     <div className="space-y-4">
-      {/* Dashboard cagnotte */}
+      {/* Dashboard cagnotte - ✅ ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          {/* ✅ ZONE CLIQUABLE */}
+          <button
+            onClick={() => window.location.href = '/ma-cagnotte'}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <Coins className="w-8 h-8 text-white" />
             <div>
               <p className="text-white text-xs font-medium">Ma cagnotte</p>
               <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
             </div>
-          </div>
+          </button>
 
-          {/* Bouton Règlement au centre */}
           <button
             onClick={() => setShowReglementModal(true)}
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -161,7 +192,7 @@ export default function MesParisTab() {
         </div>
       </div>
 
-      {/* Filtres (SANS "Tous") */}
+      {/* Filtres */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         <button
           onClick={() => setFilter('pending')}
@@ -213,8 +244,9 @@ export default function MesParisTab() {
 
             return (
               <div 
-                key={bet.id} 
-                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-shadow"
+                key={bet.id}
+                ref={el => betRefs.current[bet.id] = el}
+                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all"
                 style={{
                   borderLeftColor: 
                     bet.status === 'pending' ? '#f97316' : 
@@ -266,7 +298,7 @@ export default function MesParisTab() {
                   </div>
                 </div>
 
-                {/* Gain potentiel ou réel */}
+                {/* Gain */}
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   {bet.status === 'pending' && (
                     <div className="flex items-center justify-between">
@@ -310,7 +342,6 @@ export default function MesParisTab() {
         </div>
       )}
 
-      {/* Modal Règlement */}
       <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}

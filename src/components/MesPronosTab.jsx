@@ -1,5 +1,5 @@
 // ============================================
-// MES PRONOS - VERSION AVEC NOUVEAU BANDEAU
+// MES PRONOS - VERSION AVEC BANDEAU CLIQUABLE
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
@@ -27,7 +27,6 @@ export default function MesPronosTab({ goToMesParis }) {
     loadData();
   }, []);
 
-  // Gestion du scroll pour masquer/afficher le header
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY;
@@ -53,11 +52,9 @@ export default function MesPronosTab({ goToMesParis }) {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // Chargement des matchs
       const matchsResponse = await axios.get('https://top14-api-production.up.railway.app/api/matchs/a-venir');
       const cotesResponse = await axios.get('https://top14-api-production.up.railway.app/api/cotes/all');
       
-      // Création du map des cotes
       const cotesMap = {};
       const cotesArray = Array.isArray(cotesResponse.data) 
         ? cotesResponse.data 
@@ -94,7 +91,6 @@ export default function MesPronosTab({ goToMesParis }) {
 
       setMatchsDisponibles(matchsAvecCotes);
 
-      // Auto-expansion de la première journée
       if (matchsAvecCotes.length > 0 && expandedJournees.size === 0) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, match) => {
           if (!acc[match.journee]) acc[match.journee] = [];
@@ -113,7 +109,6 @@ export default function MesPronosTab({ goToMesParis }) {
         }
       }
 
-      // Chargement des pronos
       const { data: pronos, error } = await supabase
         .from('user_pronos')
         .select('*')
@@ -124,7 +119,6 @@ export default function MesPronosTab({ goToMesParis }) {
       if (error) throw error;
       setMesPronos(pronos || []);
 
-      // Chargement des crédits
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
@@ -181,7 +175,6 @@ export default function MesPronosTab({ goToMesParis }) {
     );
   }
 
-  // Groupement des matchs par journée
   const matchsParJournee = matchsDisponibles.reduce((acc, match) => {
     if (!acc[match.journee]) acc[match.journee] = [];
     acc[match.journee].push(match);
@@ -197,18 +190,21 @@ export default function MesPronosTab({ goToMesParis }) {
   return (
     <div className="space-y-3">
       
-      {/* ✅ NOUVEAU BANDEAU IDENTIQUE À MesParisTab */}
+      {/* ✅ BANDEAU AVEC ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          {/* ✅ ZONE CLIQUABLE VERS MA CAGNOTTE */}
+          <button
+            onClick={() => window.location.href = '/ma-cagnotte'}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <Coins className="w-8 h-8 text-white" />
             <div>
               <p className="text-white text-xs font-medium">Ma cagnotte</p>
               <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
             </div>
-          </div>
+          </button>
 
-          {/* ✅ BOUTON RÈGLEMENT AU CENTRE */}
           <button
             onClick={() => setShowReglementModal(true)}
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -265,7 +261,6 @@ export default function MesPronosTab({ goToMesParis }) {
             return (
               <div key={journee} className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden">
                 
-                {/* En-tête cliquable */}
                 <button
                   onClick={() => toggleJournee(journee)}
                   className="w-full bg-rugby-gold/10 px-3 py-2 border-b border-rugby-gray hover:bg-rugby-gold/20 transition-colors"
@@ -284,7 +279,6 @@ export default function MesPronosTab({ goToMesParis }) {
                   </div>
                 </button>
 
-                {/* Matchs */}
                 {isExpanded && (
                   <div className="divide-y divide-rugby-gray">
                     {matchsJournee.map(match => {
@@ -308,7 +302,6 @@ export default function MesPronosTab({ goToMesParis }) {
         </div>
       )}
 
-      {/* Modal Paris */}
       {showModal && selectedMatch && (
         <BettingModal 
           match={selectedMatch}
@@ -322,7 +315,6 @@ export default function MesPronosTab({ goToMesParis }) {
         />
       )}
 
-      {/* ✅ MODAL RÈGLEMENT */}
       <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
