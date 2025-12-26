@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
@@ -7,6 +7,9 @@ export default function AlgoPronosTab() {
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
+  
+  // ✅ Refs pour chaque journée
+  const journeeRefs = useRef({});
 
   useEffect(() => {
     loadPronos();
@@ -38,14 +41,39 @@ export default function AlgoPronosTab() {
     }
   };
 
+  // ✅ Fonction de scroll vers une journée
+  const scrollToJournee = (journee) => {
+    // Attendre que le DOM soit mis à jour (journée dépliée)
+    setTimeout(() => {
+      const element = journeeRefs.current[journee];
+      if (element) {
+        // Offset pour compenser les headers sticky
+        const headerOffset = 200;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 100); // Petit délai pour laisser l'animation se terminer
+  };
+
+  // ✅ Toggle avec scroll
   const toggleJournee = (journee) => {
     setExpandedJournees(prev => {
       const newSet = new Set();
-      // Si cette journée était déjà ouverte, on la ferme (newSet reste vide)
+      const wasExpanded = prev.has(journee);
+      
+      // Si cette journée était déjà ouverte, on la ferme
       // Sinon, on ouvre uniquement celle-ci
-      if (!prev.has(journee)) {
+      if (!wasExpanded) {
         newSet.add(journee);
+        // ✅ Scroller vers la journée après ouverture
+        scrollToJournee(journee);
       }
+      
       return newSet;
     });
   };
@@ -88,7 +116,11 @@ export default function AlgoPronosTab() {
         const pronosJournee = pronosParJournee[journee] || [];
         
         return (
-          <div key={journee} className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden">
+          <div 
+            key={journee} 
+            ref={el => journeeRefs.current[journee] = el}  // ✅ Ref pour scroll
+            className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden"
+          >
             
             {/* En-tête cliquable */}
             <button
