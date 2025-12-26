@@ -13,6 +13,10 @@ export default function PronosPage() {
 
   const goToMesParis = () => { setActiveTab("mes-paris"); };
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // ✅ Ouvrir l'onglet "Mes paris" si state est passé
   useEffect(() => {
     if (location.state?.activeTab) {

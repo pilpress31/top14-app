@@ -8,6 +8,9 @@ import MainHeaderFull from '../components/MainHeaderFull';
 import { useResetOnActive } from "../hooks/useResetOnActive";
 
 export default function IAPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const [activeTab, setActiveTab] = useState('algorithme');
   const [stats, setStats] = useState({
     nombre_matchs_historique: 3651,
