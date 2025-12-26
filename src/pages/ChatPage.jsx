@@ -9,11 +9,16 @@ const formatHeureParis = (dateString) => {
   if (!dateString) return 'Date inconnue';
   
   try {
-    const date = new Date(dateString);
+    // ✅ Format Supabase: "2025-12-26 08:09:59.555344"
+    // On ajoute manuellement le "Z" pour indiquer UTC
+    const isoString = dateString.replace(' ', 'T') + 'Z';
+    const date = new Date(isoString);
+    
     if (isNaN(date.getTime())) return 'Date invalide';
     
-    // ✅ Supabase renvoie en UTC, on affiche directement en heure locale
+    // Afficher en heure locale française
     return date.toLocaleTimeString('fr-FR', {
+      timeZone: 'Europe/Paris',
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -42,7 +47,13 @@ export default function ChatPage() {
   const presenceChannelRef = useRef(null);
 
   // Emojis rapides
-  const quickEmojis = ['❤️', '👍', '😂', '🏉', '🔥', '💪', '⚡', '🚀', '🎯', '👏', '🎉', '💯', '🙌', '👌', '😎', '🤩'];
+  const quickEmojis = [
+    '❤️', '👍', '😂', '🏉', '🔥', '💪', '⚡', '🚀', 
+    '🎯', '👏', '🎉', '💯', '🙌', '👌', '😎', '🤩',
+    '🤔', '😍', '🥳', '🤣', '👀', '💀', '✨', '⭐',
+    '🏆', '🥇', '🎊', '🌟', '💫', '🔝', '🆒', '💥',
+    '😤', '🤝', '🙏', '👊', '🤘', '✌️', '🤙', '👋'
+  ];
 
   const scrollToBottom = (smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
@@ -182,19 +193,22 @@ export default function ChatPage() {
 
   // ✅ Supprimer un message
   const handleDeleteMessage = async (messageId) => {
-    if (!confirm('Supprimer ce message ?')) return;
-    
-    const { error } = await supabase
-      .from('chat_messages')
-      .delete()
-      .eq('id', messageId)
-      .eq('user_id', user.id); // Sécurité : uniquement ses propres messages
-    
-    if (error) {
-      console.error('Erreur suppression:', error);
-      alert('Erreur lors de la suppression');
-    }
-  };
+  if (!confirm('Supprimer ce message ?')) return;
+  
+  const { error } = await supabase
+    .from('chat_messages')
+    .update({ deleted: true }) // ✅ MARQUER COMME DELETED au lieu de DELETE
+    .eq('id', messageId)
+    .eq('user_id', user.id);
+  
+  if (error) {
+    console.error('Erreur suppression:', error);
+    alert('Erreur lors de la suppression');
+  } else {
+    // Retirer immédiatement du state
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+  }
+};
 
   // ✅ Ajouter une réaction
   const handleReaction = async (messageId, emoji) => {

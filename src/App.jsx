@@ -1,15 +1,16 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 
 // Pages
-import IAPage from '@/pages/IAPage';  // ✅ NOUVEAU (ex-PronosPage)
-import PronosPage from './pages/PronosPage';  // ✅ NOUVEAU (avec paris)
-import ChatPage from './pages/ChatPage';  // ✅ NOUVEAU
-import LivePage from './pages/LivePage';  // ✅ NOUVEAU (ex-ResultatsPage)
+import IAPage from '@/pages/IAPage';
+import PronosPage from './pages/PronosPage';
+import ChatPage from './pages/ChatPage';
+import LivePage from './pages/LivePage';
 import ClassementPageWithTabs from './pages/ClassementPageWithTabs';
 import StatistiquesPage from './pages/StatistiquesPage';
 import SignalerBugPage from './pages/SignalerBugPage';
@@ -26,7 +27,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilPage from './pages/ProfilPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import MaCagnotte from './pages/MaCagnotte';  // ✅ NOUVEAU
+import MaCagnotte from './pages/MaCagnotte';
 
 /* ✅ Hook pour savoir quel onglet est actif */
 function useActiveLabel() {
@@ -45,6 +46,27 @@ function App() {
   const active = useActiveLabel();
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
+  
+  // ✅ POPUP SORTIE APPLICATION (Android)
+  useEffect(() => {
+    const handleBackButton = (e) => {
+      e.preventDefault();
+      
+      if (window.confirm('Voulez-vous quitter l\'application ?')) {
+        window.history.back();
+      } else {
+        window.history.pushState(null, '', window.location.pathname);
+      }
+    };
+
+    // Empêcher le retour arrière
+    window.history.pushState(null, '', window.location.pathname);
+    window.addEventListener('popstate', handleBackButton);
+
+    return () => {
+      window.removeEventListener('popstate', handleBackButton);
+    };
+  }, []);
   
   // Ne pas afficher la BottomNav sur les pages d'authentification
   const hideBottomNav = [
@@ -71,17 +93,10 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-            {/* Routes protégées */}
-            
+            {/* ✅ Route racine : Redirection vers /ia */}
+            <Route path="/" element={<Navigate to="/ia" replace />} />
+
             {/* ✅ Route IA (page d'accueil) */}
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <IAPage />
-                </ProtectedRoute>
-              } 
-            />
             <Route 
               path="/ia" 
               element={
@@ -235,3 +250,4 @@ function App() {
 }
 
 export default App;
+

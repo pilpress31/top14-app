@@ -1,17 +1,37 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { ChevronRight, Star, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X } from "lucide-react";
+import { ChevronRight, Star, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import AvisModal from "../components/AvisModal";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
 function ParametresPage() {
   const [showAvisModal, setShowAvisModal] = useState(false);
+  const [showDiagnostic, setShowDiagnostic] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // ✅ Push notifications (juste pour afficher le statut)
+  // ✅ Push notifications
   const { permission, isSupported } = usePushNotifications();
+
+  // ✅ États diagnostic
+  const [diagnosticResults, setDiagnosticResults] = useState({
+    permission: { status: 'idle', message: '' },
+    silenceMode: { status: 'idle', message: '' },
+    serviceWorker: { status: 'idle', message: '' },
+    pushTest: { status: 'idle', message: '' }
+  });
+  const [diagnosticRunning, setDiagnosticRunning] = useState(false);
+  const [diagnosticCompleted, setDiagnosticCompleted] = useState(false);
+
+  // ✅ Ouvrir diagnostic si demandé via navigation
+  useEffect(() => {
+    if (location.state?.openDiagnostic) {
+      setShowDiagnostic(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleNousContacter = () => {
     const subject = 'Contact - Top 14 Pronos'
@@ -29,6 +49,140 @@ Merci.
 
     window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
+
+  // ✅ Lancer le diagnostic
+  const runDiagnostic = async () => {
+    setDiagnosticRunning(true);
+    setDiagnosticCompleted(false);
+
+    // Reset
+    setDiagnosticResults({
+      permission: { status: 'loading', message: 'Vérification...' },
+      silenceMode: { status: 'loading', message: 'Vérification...' },
+      serviceWorker: { status: 'loading', message: 'Vérification...' },
+      pushTest: { status: 'loading', message: 'Vérification...' }
+    });
+
+    // Test 1: Permission
+    await new Promise(resolve => setTimeout(resolve, 500));
+    if (Notification.permission === 'granted') {
+      setDiagnosticResults(prev => ({
+        ...prev,
+        permission: { status: 'success', message: 'Autorisées' }
+      }));
+    } else {
+      setDiagnosticResults(prev => ({
+        ...prev,
+        permission: { status: 'error', message: 'Non autorisées' }
+      }));
+    }
+
+    // Test 2: Mode silence
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const modeSilence = localStorage.getItem('mode-silence') === 'true';
+    setDiagnosticResults(prev => ({
+      ...prev,
+      silenceMode: { 
+        status: modeSilence ? 'warning' : 'success', 
+        message: modeSilence ? 'Activé' : 'Désactivé' 
+      }
+    }));
+
+    // Test 3: Service Worker
+    await new Promise(resolve => setTimeout(resolve, 500));
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        setDiagnosticResults(prev => ({
+          ...prev,
+          serviceWorker: { status: 'success', message: 'Actif' }
+        }));
+      } catch {
+        setDiagnosticResults(prev => ({
+          ...prev,
+          serviceWorker: { status: 'error', message: 'Non disponible' }
+        }));
+      }
+    } else {
+      setDiagnosticResults(prev => ({
+        ...prev,
+        serviceWorker: { status: 'error', message: 'Non supporté' }
+      }));
+    }
+
+    // Test 4: Push réel
+    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      
+      if (subscription) {
+        const response = await fetch('https://top14-api-production.up.railway.app/api/notifications/send-push-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription })
+        });
+
+        if (response.ok) {
+          setDiagnosticResults(prev => ({
+            ...prev,
+            pushTest: { status: 'success', message: 'Notification envoyée' }
+          }));
+        } else {
+          setDiagnosticResults(prev => ({
+            ...prev,
+            pushTest: { status: 'error', message: 'Erreur serveur' }
+          }));
+        }
+      } else {
+        setDiagnosticResults(prev => ({
+          ...prev,
+          pushTest: { status: 'error', message: 'Pas de subscription' }
+        }));
+      }
+    } catch (error) {
+      setDiagnosticResults(prev => ({
+        ...prev,
+        pushTest: { status: 'error', message: 'Erreur test' }
+      }));
+    }
+
+    setDiagnosticRunning(false);
+    setDiagnosticCompleted(true);
+  };
+
+  const getStatusIcon = (status) => {
+    if (status === 'loading') return <Loader className="w-5 h-5 animate-spin text-blue-500" />;
+    if (status === 'success') return <CheckCircle className="w-5 h-5 text-green-500" />;
+    if (status === 'warning') return <AlertCircle className="w-5 h-5 text-orange-500" />;
+    if (status === 'error') return <X className="w-5 h-5 text-red-500" />;
+    return <AlertCircle className="w-5 h-5 text-gray-400" />;
+  };
+
+  const handleSignalerProbleme = () => {
+    const resultsText = `
+Résultats du diagnostic :
+- Permission: ${diagnosticResults.permission.message}
+- Mode silence: ${diagnosticResults.silenceMode.message}
+- Service Worker: ${diagnosticResults.serviceWorker.message}
+- Test push: ${diagnosticResults.pushTest.message}
+    `.trim();
+
+    const subject = 'Problème notifications push - Top 14 Pronos';
+    const body = `
+Bonjour,
+
+Je rencontre un problème avec les notifications push.
+
+${resultsText}
+
+[Décrivez votre problème ici]
+
+Merci.
+    `.trim();
+
+    window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
 
   return (
     <div className="p-6 pb-24 max-w-2xl mx-auto">
@@ -86,7 +240,7 @@ Merci.
         </button>
       </div>
 
-      {/* ✅ NOTIFICATIONS PUSH - VERSION CLIQUABLE SIMPLIFIÉE */}
+      {/* ✅ NOTIFICATIONS PUSH - CLIQUABLE */}
       <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h2 className="text-sm font-bold text-gray-700 uppercase flex items-center gap-2">
@@ -121,6 +275,84 @@ Merci.
           </div>
         </button>
       </div>
+
+      {/* ✅ SECTION DIAGNOSTIC (SI OUVERTE) */}
+      {showDiagnostic && (
+        <div className="bg-white rounded-lg shadow-lg mb-4 overflow-hidden border-2 border-blue-500">
+          <div className="px-4 py-3 bg-blue-500">
+            <h2 className="text-sm font-bold text-white uppercase flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Diagnostic Notifications
+            </h2>
+          </div>
+
+          <div className="p-4 space-y-3">
+            {/* Test 1 */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span className="text-sm font-medium">Permissions téléphone</span>
+              <div className="flex items-center gap-2">
+                {getStatusIcon(diagnosticResults.permission.status)}
+                <span className="text-xs">{diagnosticResults.permission.message}</span>
+              </div>
+            </div>
+
+            {/* Test 2 */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span className="text-sm font-medium">Mode silence app</span>
+              <div className="flex items-center gap-2">
+                {getStatusIcon(diagnosticResults.silenceMode.status)}
+                <span className="text-xs">{diagnosticResults.silenceMode.message}</span>
+              </div>
+            </div>
+
+            {/* Test 3 */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span className="text-sm font-medium">Service Worker</span>
+              <div className="flex items-center gap-2">
+                {getStatusIcon(diagnosticResults.serviceWorker.status)}
+                <span className="text-xs">{diagnosticResults.serviceWorker.message}</span>
+              </div>
+            </div>
+
+            {/* Test 4 */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span className="text-sm font-medium">Test notification push</span>
+              <div className="flex items-center gap-2">
+                {getStatusIcon(diagnosticResults.pushTest.status)}
+                <span className="text-xs">{diagnosticResults.pushTest.message}</span>
+              </div>
+            </div>
+
+            {/* Boutons */}
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={runDiagnostic}
+                disabled={diagnosticRunning}
+                className="flex-1 bg-blue-500 text-white py-2 rounded font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {diagnosticRunning ? 'Test en cours...' : (diagnosticCompleted ? 'Relancer le diagnostic' : 'Lancer le diagnostic')}
+              </button>
+              
+              <button
+                onClick={() => setShowDiagnostic(false)}
+                className="px-4 bg-gray-200 text-gray-700 py-2 rounded font-medium hover:bg-gray-300"
+              >
+                Fermer
+              </button>
+            </div>
+
+            {/* Signaler un problème */}
+            {diagnosticCompleted && (
+              <button
+                onClick={handleSignalerProbleme}
+                className="w-full mt-2 bg-orange-100 text-orange-700 py-2 rounded text-sm font-medium hover:bg-orange-200"
+              >
+                📧 Signaler un problème
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Section Informations */}
       <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">

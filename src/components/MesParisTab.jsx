@@ -138,7 +138,7 @@ export default function MesParisTab() {
           {/* ✅ ZONE CLIQUABLE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
           >
             <Coins className="w-8 h-8 text-white" />
             <div>
