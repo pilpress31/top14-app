@@ -223,32 +223,33 @@ export default function ChatPage() {
   // Dans ChatPage.jsx, modifie handleDeleteMessage :
   const handleDeleteMessage = async (messageId) => {
     try {
-      // Debug info
-      console.log('🔍 Tentative suppression:', {
-        messageId,
-        userId: user.id
+      console.log('🗑️ Suppression via backend:', { messageId, userId: user.id });
+      
+      const response = await fetch('https://top14-api-production.up.railway.app/api/chat/delete-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id
+        },
+        body: JSON.stringify({
+          messageId: messageId
+        })
       });
       
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .update({ deleted: true })
-        .eq('id', messageId)
-        .eq('user_id', user.id)
-        .select();  // Pour voir ce qui est retourné
+      const result = await response.json();
+      console.log('📊 Résultat backend:', result);
       
-      console.log('📊 Résultat update:', { data, error });
-      
-      if (error) {
-        console.error('❌ Erreur complète:', error);
-        alert('Erreur: ' + error.message);
-      } else {
-        console.log('✅ Suppression réussie');
+      if (result.success) {
+        console.log('✅ Message supprimé avec succès');
         setMessages(prev => prev.filter(m => m.id !== messageId));
         setDeleteConfirm(null);
+      } else {
+        console.error('❌ Erreur:', result.error);
+        alert('Erreur: ' + result.error);
       }
     } catch (err) {
       console.error('❌ Exception:', err);
-      alert('Exception: ' + err.message);
+      alert('Erreur de connexion');
     }
   };
 
