@@ -210,7 +210,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                   });
                 }}
               >
-                Voir mes paris
+                Voir mes paris en cours
               </button>
             )}
           </>
