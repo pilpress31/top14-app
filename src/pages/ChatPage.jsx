@@ -1,27 +1,30 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Users, MessageCircle, X, AlertCircle } from 'lucide-react';
+import { Send, Users, MessageCircle, X, AlertCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 
-// ✅ Fonction de formatage heure
+// ✅ Fonction de formatage heure - CORRIGÉE (sans timeZone)
 const formatHeureParis = (dateString) => {
   if (!dateString) return 'Date inconnue';
   
   try {
     let date;
     
+    // Si format ISO (avec T et Z)
     if (dateString.includes('T')) {
       date = new Date(dateString);
-    } else {
+    } 
+    // Sinon, format Supabase : convertir en ISO
+    else {
       const isoString = dateString.replace(' ', 'T') + 'Z';
       date = new Date(isoString);
     }
     
     if (isNaN(date.getTime())) return 'Date invalide';
     
+    // ✅ CORRECTION : Sans timeZone (utilise l'heure locale du navigateur)
     return date.toLocaleTimeString('fr-FR', {
-      timeZone: 'Europe/Paris',
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -41,13 +44,17 @@ export default function ChatPage() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [showUsersModal, setShowUsersModal] = useState(false);
   
-  // ✅ États pour les réactions
+  // États pour les réactions
   const [reactions, setReactions] = useState({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
   
-  // ✅ États pour la suppression
+  // États pour la suppression
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [longPressTimer, setLongPressTimer] = useState(null);
+  
+  // ✅ États pour le swipe
+  const [swipedMessage, setSwipedMessage] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchCurrent, setTouchCurrent] = useState(null);
   
   const messagesEndRef = useRef(null);
   const channelRef = useRef(null);
@@ -133,7 +140,6 @@ export default function ChatPage() {
       .on('postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'chat_messages' },
         (payload) => {
-          // Si message marqué comme supprimé, le retirer
           if (payload.new.deleted) {
             setMessages(prev => prev.filter(m => m.id !== payload.new.id));
           }
@@ -173,7 +179,6 @@ export default function ChatPage() {
       username: user.user_metadata?.nom_complet || user.email?.split('@')[0] || 'Anonyme',
       avatar_url: user.user_metadata?.avatar_url || null,
       message: newMessage.trim()
-      // deleted sera false par défaut grâce au DEFAULT dans Supabase
     };
 
     const { data, error } = await supabase
@@ -200,31 +205,44 @@ export default function ChatPage() {
     }
   };
 
-  // ✅ Gestion appui long
-  const handleTouchStart = (messageId) => {
-    const timer = setTimeout(() => {
-      setDeleteConfirm(messageId);
-      // Vibration si supportée
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-    }, 500); // 500ms d'appui long
-    setLongPressTimer(timer);
+  // ✅ Gestion du swipe
+  const handleTouchStart = (e, messageId) => {
+    setTouchStart(e.touches[0].clientX);
+    setTouchCurrent(0);
+    setSwipedMessage(messageId);
+  };
+
+  const handleTouchMove = (e, messageId) => {
+    if (!touchStart || swipedMessage !== messageId) return;
+    
+    const currentTouch = e.touches[0].clientX;
+    const diff = touchStart - currentTouch;
+    
+    // Limiter le swipe à 80px maximum
+    const swipeDistance = Math.min(Math.max(diff, 0), 80);
+    setTouchCurrent(swipeDistance);
   };
 
   const handleTouchEnd = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
+    // Si swipe > 40px, garder ouvert, sinon refermer
+    if (touchCurrent > 40) {
+      setTouchCurrent(80); // Ouvrir complètement
+    } else {
+      setTouchCurrent(0);
+      setSwipedMessage(null);
     }
+    setTouchStart(null);
   };
 
-  // ✅ Supprimer un message
-  // Dans ChatPage.jsx, modifie handleDeleteMessage :
+  // Fermer le swipe si on touche ailleurs
+  const handleClickOutside = () => {
+    setSwipedMessage(null);
+    setTouchCurrent(0);
+  };
+
+  // ✅ Supprimer un message via backend
   const handleDeleteMessage = async (messageId) => {
     try {
-      console.log('🗑️ Suppression via backend:', { messageId, userId: user.id });
-      
       const response = await fetch('https://top14-api-production.up.railway.app/api/chat/delete-message', {
         method: 'POST',
         headers: {
@@ -237,22 +255,20 @@ export default function ChatPage() {
       });
       
       const result = await response.json();
-      console.log('📊 Résultat backend:', result);
       
       if (result.success) {
-        console.log('✅ Message supprimé avec succès');
         setMessages(prev => prev.filter(m => m.id !== messageId));
         setDeleteConfirm(null);
+        setSwipedMessage(null);
+        setTouchCurrent(0);
       } else {
-        console.error('❌ Erreur:', result.error);
         alert('Erreur: ' + result.error);
       }
     } catch (err) {
-      console.error('❌ Exception:', err);
+      console.error('Erreur:', err);
       alert('Erreur de connexion');
     }
   };
-
 
   // ✅ Ajouter une réaction
   const handleReaction = async (messageId, emoji) => {
@@ -287,7 +303,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-rugby-white">
+    <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
       {/* Header */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white">
         <div className="container mx-auto px-4 py-6">
@@ -303,7 +319,10 @@ export default function ChatPage() {
             </div>
 
             <button
-              onClick={() => setShowUsersModal(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowUsersModal(true);
+              }}
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-colors backdrop-blur-sm"
             >
               <Users className="w-5 h-5" />
@@ -315,8 +334,8 @@ export default function ChatPage() {
 
       {/* Modal utilisateurs en ligne */}
       {showUsersModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowUsersModal(false)}>
+          <div className="bg-white rounded-lg max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h2 className="text-lg font-bold text-gray-800">
                 Utilisateurs en ligne ({onlineUsers.length})
@@ -372,13 +391,15 @@ export default function ChatPage() {
           messages.map(msg => {
             const isCurrentUser = user && msg.user_id === user.id;
             const messageReactions = reactions[msg.id] || {};
+            const isSwiped = swipedMessage === msg.id;
+            const swipeOffset = isSwiped ? touchCurrent : 0;
             
             return (
               <div 
                 key={msg.id} 
                 className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
               >
-                <div className="max-w-[85%]">
+                <div className="max-w-[85%] relative">
                   {/* Nom utilisateur */}
                   {!isCurrentUser && (
                     <div className="flex items-center gap-2 mb-1 px-2">
@@ -397,81 +418,111 @@ export default function ChatPage() {
                     </div>
                   )}
                   
-                  {/* Bulle message avec appui long */}
-                  <div 
-                    className={`rounded-2xl px-4 py-2 shadow-sm relative ${
-                      isCurrentUser
-                        ? 'bg-rugby-gold text-white rounded-tr-none'
-                        : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
-                    }`}
-                    onTouchStart={() => isCurrentUser && handleTouchStart(msg.id)}
-                    onTouchEnd={handleTouchEnd}
-                    onTouchCancel={handleTouchEnd}
-                    onMouseDown={() => isCurrentUser && handleTouchStart(msg.id)}
-                    onMouseUp={handleTouchEnd}
-                    onMouseLeave={handleTouchEnd}
-                  >
-                    <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
+                  {/* Container avec swipe */}
+                  <div className="relative overflow-visible">
+                    {/* Bouton poubelle en arrière-plan (uniquement pour messages de l'utilisateur) */}
+                    {isCurrentUser && (
+                      <div className="absolute right-0 top-0 bottom-0 w-20 flex items-center justify-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirm(msg.id);
+                          }}
+                          className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600 transition-colors"
+                          style={{
+                            opacity: swipeOffset / 80,
+                            transform: `scale(${0.5 + (swipeOffset / 80) * 0.5})`
+                          }}
+                        >
+                          <Trash2 className="w-6 h-6" />
+                        </button>
+                      </div>
+                    )}
                     
-                    <div className="flex items-center justify-between mt-1">
-                      <p className={`text-[10px] ${
-                        isCurrentUser ? 'text-white/70' : 'text-gray-400'
-                      }`}>
-                        {formatHeureParis(msg.created_at)}
-                        {msg.edited && ' (modifié)'}
-                      </p>
-                    </div>
+                    {/* Bulle message avec swipe */}
+                    <div 
+                      className={`rounded-2xl px-4 py-2 shadow-sm relative ${
+                        isCurrentUser
+                          ? 'bg-rugby-gold text-white rounded-tr-none'
+                          : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
+                      }`}
+                      style={{
+                        transform: isCurrentUser ? `translateX(-${swipeOffset}px)` : 'none',
+                        transition: touchStart ? 'none' : 'transform 0.3s ease-out'
+                      }}
+                      onTouchStart={(e) => isCurrentUser && handleTouchStart(e, msg.id)}
+                      onTouchMove={(e) => isCurrentUser && handleTouchMove(e, msg.id)}
+                      onTouchEnd={handleTouchEnd}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
+                      
+                      <div className="flex items-center justify-between mt-1">
+                        <p className={`text-[10px] ${
+                          isCurrentUser ? 'text-white/70' : 'text-gray-400'
+                        }`}>
+                          {formatHeureParis(msg.created_at)}
+                          {msg.edited && ' (modifié)'}
+                        </p>
+                      </div>
 
-                    {/* ✅ Picker emojis */}
-                    {showEmojiPicker === msg.id && (
-                      <div className={`absolute -top-12 w-[90vw] bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50 ${
-                        isCurrentUser ? 'right-0' : 'left-0'
-                      }`}>
-                        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-                          {quickEmojis.map((emoji) => (
-                            <button
+                      {/* Picker emojis */}
+                      {showEmojiPicker === msg.id && (
+                        <div className={`absolute -top-12 w-[90vw] bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50 ${
+                          isCurrentUser ? 'right-0' : 'left-0'
+                        }`}>
+                          <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+                            {quickEmojis.map((emoji) => (
+                              <button
+                                key={emoji}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleReaction(msg.id, emoji);
+                                }}
+                                className="text-2xl flex-shrink-0 hover:scale-125 transition-transform active:scale-95"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bouton emoji (uniquement pour messages des autres) */}
+                      {!isCurrentUser && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id);
+                          }}
+                          className="absolute -bottom-2 -right-2 bg-gray-200 rounded-full p-1.5 shadow-md hover:bg-gray-300 transition-colors md:hidden"
+                        >
+                          <span className="text-sm">😊</span>
+                        </button>
+                      )}
+
+                      {/* Desktop hover */}
+                      <div 
+                        className="hidden md:block absolute -top-0 -bottom-0 -left-0 -right-0"
+                        onMouseEnter={() => setShowEmojiPicker(msg.id)}
+                        onMouseLeave={() => setShowEmojiPicker(null)}
+                      />
+
+                      {/* Réactions */}
+                      {Object.keys(messageReactions).length > 0 && (
+                        <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide">
+                          {Object.entries(messageReactions).map(([emoji, count]) => (
+                            <span 
                               key={emoji}
-                              onClick={() => handleReaction(msg.id, emoji)}
-                              className="text-2xl flex-shrink-0 hover:scale-125 transition-transform active:scale-95"
+                              className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-gray-300 flex-shrink-0"
                             >
-                              {emoji}
-                            </button>
+                              <span>{emoji}</span>
+                              <span className="font-semibold text-gray-700">{count}</span>
+                            </span>
                           ))}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Bouton emoji (uniquement pour messages des autres) */}
-                    {!isCurrentUser && (
-                      <button
-                        onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
-                        className="absolute -bottom-2 -right-2 bg-gray-200 rounded-full p-1.5 shadow-md hover:bg-gray-300 transition-colors md:hidden"
-                      >
-                        <span className="text-sm">😊</span>
-                      </button>
-                    )}
-
-                    {/* Desktop hover */}
-                    <div 
-                      className="hidden md:block absolute -top-0 -bottom-0 -left-0 -right-0"
-                      onMouseEnter={() => setShowEmojiPicker(msg.id)}
-                      onMouseLeave={() => setShowEmojiPicker(null)}
-                    />
-
-                    {/* Réactions */}
-                    {Object.keys(messageReactions).length > 0 && (
-                      <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide">
-                        {Object.entries(messageReactions).map(([emoji, count]) => (
-                          <span 
-                            key={emoji}
-                            className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-gray-300 flex-shrink-0"
-                          >
-                            <span>{emoji}</span>
-                            <span className="font-semibold text-gray-700">{count}</span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -482,10 +533,10 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ✅ Modal confirmation suppression */}
+      {/* Modal confirmation suppression */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-sm w-full shadow-xl p-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDeleteConfirm(null)}>
+          <div className="bg-white rounded-lg max-w-sm w-full shadow-xl p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                 <AlertCircle className="w-6 h-6 text-red-600" />
