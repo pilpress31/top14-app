@@ -1,29 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Users, MessageCircle, X, Trash2 } from 'lucide-react';
+import { Send, Users, MessageCircle, X, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 
-// ✅ Fonction de formatage heure - CORRIGÉE (pas de timeZone Europe/Paris car +1h)
+// ✅ Fonction de formatage heure
 const formatHeureParis = (dateString) => {
   if (!dateString) return 'Date inconnue';
   
   try {
     let date;
     
-    // ✅ Si déjà en format ISO (avec T), utiliser directement
     if (dateString.includes('T')) {
       date = new Date(dateString);
-    } 
-    // ✅ Sinon, format Supabase : convertir en ISO
-    else {
+    } else {
       const isoString = dateString.replace(' ', 'T') + 'Z';
       date = new Date(isoString);
     }
     
     if (isNaN(date.getTime())) return 'Date invalide';
     
-    // Afficher en heure locale française
     return date.toLocaleTimeString('fr-FR', {
       timeZone: 'Europe/Paris',
       hour: '2-digit',
@@ -48,6 +44,10 @@ export default function ChatPage() {
   // ✅ États pour les réactions
   const [reactions, setReactions] = useState({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  
+  // ✅ États pour la suppression
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [longPressTimer, setLongPressTimer] = useState(null);
   
   const messagesEndRef = useRef(null);
   const channelRef = useRef(null);
@@ -89,7 +89,6 @@ export default function ChatPage() {
   const loadMessages = async () => {
     setLoading(true);
     
-    // Charger messages
     const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
@@ -100,7 +99,6 @@ export default function ChatPage() {
     if (!error && data) {
       setMessages(data);
       
-      // Charger réactions
       const { data: reactionsData } = await supabase
         .from('message_reactions')
         .select('message_id, emoji');
@@ -133,9 +131,12 @@ export default function ChatPage() {
         }
       )
       .on('postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'chat_messages' },
+        { event: 'UPDATE', schema: 'public', table: 'chat_messages' },
         (payload) => {
-          setMessages(prev => prev.filter(m => m.id !== payload.old.id));
+          // Si message marqué comme supprimé, le retirer
+          if (payload.new.deleted) {
+            setMessages(prev => prev.filter(m => m.id !== payload.new.id));
+          }
         }
       )
       .subscribe();
@@ -171,7 +172,8 @@ export default function ChatPage() {
       user_id: user.id,
       username: user.user_metadata?.nom_complet || user.email?.split('@')[0] || 'Anonyme',
       avatar_url: user.user_metadata?.avatar_url || null,
-      message: newMessage.trim()
+      message: newMessage.trim(),
+      deleted: false  // ✅ Ajouter explicitement
     };
 
     const { data, error } = await supabase
@@ -198,31 +200,51 @@ export default function ChatPage() {
     }
   };
 
-  
-  // ✅ Supprimer un message (soft delete)
+  // ✅ Gestion appui long
+  const handleTouchStart = (messageId) => {
+    const timer = setTimeout(() => {
+      setDeleteConfirm(messageId);
+      // Vibration si supportée
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, 500); // 500ms d'appui long
+    setLongPressTimer(timer);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  // ✅ Supprimer un message
   const handleDeleteMessage = async (messageId) => {
-    if (!confirm('Supprimer ce message ?')) return;
-    
-    const { error } = await supabase
-      .from('chat_messages')
-      .update({ deleted: true })  // ✅ UPDATE au lieu de DELETE
-      .eq('id', messageId)
-      .eq('user_id', user.id);
-    
-    if (error) {
-      console.error('Erreur suppression:', error);
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ deleted: true })
+        .eq('id', messageId)
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Erreur suppression:', error);
+        alert('Erreur lors de la suppression: ' + error.message);
+      } else {
+        setMessages(prev => prev.filter(m => m.id !== messageId));
+        setDeleteConfirm(null);
+      }
+    } catch (err) {
+      console.error('Erreur:', err);
       alert('Erreur lors de la suppression');
-    } else {
-      // ✅ Retirer du state React
-      setMessages(prev => prev.filter(m => m.id !== messageId));
     }
   };
 
   // ✅ Ajouter une réaction
   const handleReaction = async (messageId, emoji) => {
     if (!user) return;
-    
-    // Sauvegarder dans Supabase
+
     const { error } = await supabase
       .from('message_reactions')
       .insert({
@@ -230,76 +252,67 @@ export default function ChatPage() {
         user_id: user.id,
         emoji: emoji
       });
-    
+
     if (!error) {
-      // Mettre à jour l'état local
-      setReactions(prev => {
-        const messageReactions = prev[messageId] || {};
-        const currentCount = messageReactions[emoji] || 0;
-        
-        return {
-          ...prev,
-          [messageId]: {
-            ...messageReactions,
-            [emoji]: currentCount + 1
-          }
-        };
-      });
+      setReactions(prev => ({
+        ...prev,
+        [messageId]: {
+          ...prev[messageId],
+          [emoji]: (prev[messageId]?.[emoji] || 0) + 1
+        }
+      }));
+      setShowEmojiPicker(null);
     }
-    
-    setShowEmojiPicker(null);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-rugby-white flex items-center justify-center">
-        <div className="text-center">
-          <MessageCircle className="w-12 h-12 text-rugby-gold mx-auto mb-2 animate-pulse" />
-          <p className="text-gray-600">Chargement du chat...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rugby-gold"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-rugby-white pb-24 pt-20">
-      {/* Header fixe */}
-      <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-rugby-gold to-rugby-bronze p-4 shadow-md z-40">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <MessageCircle className="w-6 h-6 text-white" />
-            <div>
-              <h1 className="text-white text-xl font-bold">Chat Communauté</h1>
-              <p className="text-white/80 text-xs">
-                {messages.length} message{messages.length > 1 ? 's' : ''}
-              </p>
+    <div className="min-h-screen bg-rugby-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="w-8 h-8" />
+              <div>
+                <h1 className="text-2xl font-bold">Chat Communauté</h1>
+                <p className="text-sm text-white/80">
+                  {messages.length} message{messages.length > 1 ? 's' : ''}
+                </p>
+              </div>
             </div>
+
+            <button
+              onClick={() => setShowUsersModal(true)}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-full transition-colors backdrop-blur-sm"
+            >
+              <Users className="w-5 h-5" />
+              <span className="font-semibold">{onlineUsers.length}</span>
+            </button>
           </div>
-          <button
-            onClick={() => setShowUsersModal(true)}
-            className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full hover:bg-white/30 transition-colors"
-          >
-            <Users className="w-4 h-4 text-white" />
-            <span className="text-white text-sm font-bold">
-              {onlineUsers.length} en ligne
-            </span>
-          </button>
         </div>
       </div>
 
-      {/* Modale utilisateurs en ligne */}
+      {/* Modal utilisateurs en ligne */}
       {showUsersModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze p-4 flex justify-between items-center">
-              <h2 className="text-white font-bold text-lg">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-800">
                 Utilisateurs en ligne ({onlineUsers.length})
               </h2>
               <button
                 onClick={() => setShowUsersModal(false)}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             
@@ -371,13 +384,19 @@ export default function ChatPage() {
                     </div>
                   )}
                   
-                  {/* Bulle message */}
+                  {/* Bulle message avec appui long */}
                   <div 
-                    className={`rounded-2xl px-4 py-2 shadow-sm relative group ${
+                    className={`rounded-2xl px-4 py-2 shadow-sm relative ${
                       isCurrentUser
                         ? 'bg-rugby-gold text-white rounded-tr-none'
                         : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
                     }`}
+                    onTouchStart={() => isCurrentUser && handleTouchStart(msg.id)}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchEnd}
+                    onMouseDown={() => isCurrentUser && handleTouchStart(msg.id)}
+                    onMouseUp={handleTouchEnd}
+                    onMouseLeave={handleTouchEnd}
                   >
                     <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
                     
@@ -388,21 +407,9 @@ export default function ChatPage() {
                         {formatHeureParis(msg.created_at)}
                         {msg.edited && ' (modifié)'}
                       </p>
-
-                      {/* ✅ Bouton supprimer (uniquement pour l'auteur) */}
-                      {isCurrentUser && (
-                        <button
-                          onClick={() => handleDeleteMessage(msg.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 hover:bg-white/20 rounded"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="w-3 h-3 text-white/80" />
-                        </button>
-                      )}
                     </div>
 
-                    
-                    {/* ✅ Picker emojis - BULLE SCROLLABLE HORIZONTALE */}
+                    {/* ✅ Picker emojis */}
                     {showEmojiPicker === msg.id && (
                       <div className={`absolute -top-12 w-[90vw] bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50 ${
                         isCurrentUser ? 'right-0' : 'left-0'
@@ -421,7 +428,7 @@ export default function ChatPage() {
                       </div>
                     )}
 
-                    {/* Bouton pour ouvrir le picker (mobile) - UNIQUEMENT pour messages des autres */}
+                    {/* Bouton emoji (uniquement pour messages des autres) */}
                     {!isCurrentUser && (
                       <button
                         onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
@@ -438,7 +445,7 @@ export default function ChatPage() {
                       onMouseLeave={() => setShowEmojiPicker(null)}
                     />
 
-                    {/* ✅ Affichage des réactions - SCROLLABLE */}
+                    {/* Réactions */}
                     {Object.keys(messageReactions).length > 0 && (
                       <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide">
                         {Object.entries(messageReactions).map(([emoji, count]) => (
@@ -461,6 +468,38 @@ export default function ChatPage() {
         
         <div ref={messagesEndRef} />
       </div>
+
+      {/* ✅ Modal confirmation suppression */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-sm w-full shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Supprimer ce message ?</h3>
+                <p className="text-sm text-gray-500">Cette action est irréversible</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 py-3 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => handleDeleteMessage(deleteConfirm)}
+                className="flex-1 py-3 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Barre de saisie fixe */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
@@ -505,7 +544,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* ✅ CSS pour cacher la scrollbar */}
+      {/* CSS pour cacher la scrollbar */}
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
