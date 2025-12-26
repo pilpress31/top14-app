@@ -217,100 +217,118 @@ function PronoCard({ match }) {
         </div>
       </div>
 
-      {/* Équipes + scores */}
-      <div className="grid grid-cols-3 items-start px-4 mb-2">
-
-        {/* Équipe domicile */}
-        <div className="flex flex-col items-center text-center">
-          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
-            <img
-              src={teamDomData.logo}
-              alt={teamDomData.name}
-              className="w-12 h-12 object-contain"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
+      {/* ✅ LAYOUT RESPONSIVE */}
+      <div className="px-3">
+        
+        {/* Équipes + Logos */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          
+          {/* Équipe domicile */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+              <img
+                src={teamDomData.logo}
+                alt={teamDomData.name}
+                className="w-8 h-8 object-contain"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
+            <div className="text-sm font-bold text-rugby-black leading-tight truncate">
+              {equipeDom}
+            </div>
           </div>
-          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2">
-            {equipeDom}
+
+          {/* VS */}
+          <div className="text-xs text-gray-400 font-semibold flex-shrink-0 px-1">
+            VS
+          </div>
+
+          {/* Équipe extérieure */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
+            <div className="text-sm font-bold text-rugby-black leading-tight truncate text-right">
+              {equipeExt}
+            </div>
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+              <img
+                src={teamExtData.logo}
+                alt={teamExtData.name}
+                className="w-8 h-8 object-contain"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Scores */}
-        <div className="flex flex-col items-center justify-center gap-1">
+        {/* Score Final */}
+        <div className="text-center mb-2">
           <div className="text-xs text-rugby-bronze font-medium mb-1">Score final</div>
-          <div className="flex items-center gap-2 text-3xl font-bold text-rugby-gold">
+          <div className="text-4xl font-bold text-rugby-gold">
             {scoreDom} - {scoreExt}
           </div>
-
-          {scoreHtText && (
-            <>
-              <div className="text-xs text-rugby-bronze font-medium mt-2">Score M-T</div>
-              <div className="text-sm text-rugby-black font-semibold">{scoreHtText}</div>
-
-              {/* Barre MT juste sous Score M-T */}
-              <div className="mt-1 flex items-center gap-2 w-full">
-                <div className="flex-1 bg-gray-200 h-1 rounded-full overflow-hidden">
-                  <div
-                    className="h-1 rounded-full transition-all duration-700 ease-out"
-                    style={{
-                      width: `${animatedWidthMT}%`,
-                      background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
-                    }}
-                  />
-                </div>
-                <span className="text-[10px] text-gray-600">{confidenceMTPct}%</span>
-              </div>
-            </>
-          )}
         </div>
 
-        {/* Équipe extérieure */}
-        <div className="flex flex-col items-center text-center">
-          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
-            <img
-              src={teamExtData.logo}
-              alt={teamExtData.name}
-              className="w-12 h-12 object-contain"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        {/* Score Mi-temps (si disponible) */}
+        {scoreHtText && (
+          <div className="text-center mb-3">
+            <div className="text-xs text-rugby-bronze font-medium mb-1">Score mi-temps</div>
+            <div className="text-lg text-rugby-black font-semibold">{scoreHtText}</div>
+            
+            {/* Barre confiance MT */}
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="h-1.5 rounded-full transition-all duration-700 ease-out"
+                  style={{
+                    width: `${animatedWidthMT}%`,
+                    background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
+                  }}
+                />
+              </div>
+              <span className="text-xs text-gray-600 font-semibold min-w-[35px] text-right">
+                {confidenceMTPct}%
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Barre Confiance FT */}
+        <div className="mt-4">
+          <div className="flex justify-between text-xs text-rugby-bronze mb-2">
+            <span className="font-medium">Confiance score final</span>
+            <span className="font-bold text-rugby-gold">{confidencePct}%</span>
+          </div>
+
+          {/* Conteneur avec graduations */}
+          <div className="relative w-full bg-gray-200 rounded-full h-2">
+
+            {/* Graduations */}
+            <div className="absolute top-0 left-1/4 w-px h-full bg-gray-300"></div>
+            <div className="absolute top-0 left-1/2 w-px h-full bg-gray-300"></div>
+            <div className="absolute top-0 left-3/4 w-px h-full bg-gray-300"></div>
+
+            {/* Labels */}
+            <div className="absolute -bottom-4 left-1/4 text-[10px] text-gray-500 transform -translate-x-1/2">
+              25%
+            </div>
+            <div className="absolute -bottom-4 left-1/2 text-[10px] text-gray-500 transform -translate-x-1/2">
+              50%
+            </div>
+            <div className="absolute -bottom-4 left-3/4 text-[10px] text-gray-500 transform -translate-x-1/2">
+              75%
+            </div>
+
+            {/* Barre animée */}
+            <div
+              className="h-2 rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${animatedWidth}%`,
+                background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
+              }}
             />
           </div>
-          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2">
-            {equipeExt}
-          </div>
         </div>
+
       </div>
-
-      {/* Barre FT */}
-      <div className="mt-4 px-4">
-        <div className="flex justify-between text-xs text-rugby-bronze mb-2">
-          <span className="font-medium">Confiance score final</span>
-          <span className="font-bold text-rugby-gold">{confidencePct}%</span>
-        </div>
-
-        {/* Conteneur */}
-        <div className="relative w-full bg-gray-200 rounded-full h-[7px]">
-
-          {/* Graduations */}
-          <div className="absolute top-0 left-1/4 w-px h-full bg-gray-300"></div>
-          <div className="absolute top-0 left-1/2 w-px h-full bg-gray-300"></div>
-          <div className="absolute top-0 left-3/4 w-px h-full bg-gray-300"></div>
-
-          {/* Labels */}
-          <div className="absolute -bottom-4 left-1/4 text-[10px] text-gray-500 transform -translate-x-1/2">25%</div>
-          <div className="absolute -bottom-4 left-1/2 text-[10px] text-gray-500 transform -translate-x-1/2">50%</div>
-          <div className="absolute -bottom-4 left-3/4 text-[10px] text-gray-500 transform -translate-x-1/2">75%</div>
-
-          {/* Barre animée */}
-          <div
-            className="h-full rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${animatedWidth}%`,
-              background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
-            }}
-          />
-        </div>
-      </div>
-
     </div>
   );
 }
