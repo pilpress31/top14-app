@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Users, MessageCircle, X } from 'lucide-react';
+import { Send, Users, MessageCircle, X, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 
-// ✅ Fonction de formatage heure Paris
+// ✅ Fonction de formatage heure - CORRIGÉE (pas de timeZone Europe/Paris car +1h)
 const formatHeureParis = (dateString) => {
   if (!dateString) return 'Date inconnue';
   
@@ -12,8 +12,8 @@ const formatHeureParis = (dateString) => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'Date invalide';
     
+    // ✅ Supabase renvoie en UTC, on affiche directement en heure locale
     return date.toLocaleTimeString('fr-FR', {
-      timeZone: 'Europe/Paris',
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -68,7 +68,7 @@ export default function ChatPage() {
     };
   }, [user]);
 
-    const loadMessages = async () => {
+  const loadMessages = async () => {
     setLoading(true);
     
     // Charger messages
@@ -103,100 +103,55 @@ export default function ChatPage() {
   };
 
   const subscribeToMessages = () => {
-    const channel = supabase
-      .channel('public:chat_messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages'
-        },
+    channelRef.current = supabase
+      .channel('chat_messages')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'chat_messages' }, 
         (payload) => {
-          console.log('Nouveau message reçu:', payload.new);
           if (!payload.new.deleted) {
             setMessages(prev => [...prev, payload.new]);
-            setTimeout(() => scrollToBottom(), 100);
+            markAsRead();
           }
         }
       )
-      .subscribe((status) => {
-        console.log('Statut subscription messages:', status);
-      });
-
-    channelRef.current = channel;
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'chat_messages' },
+        (payload) => {
+          setMessages(prev => prev.filter(m => m.id !== payload.old.id));
+        }
+      )
+      .subscribe();
   };
 
   const subscribeToPresence = () => {
     if (!user) return;
 
-    const presenceChannel = supabase.channel('online-users', {
-      config: {
-        presence: {
-          key: user.id,
-        },
-      },
-    });
-
-    presenceChannel
+    presenceChannelRef.current = supabase
+      .channel('online-users')
       .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState();
+        const state = presenceChannelRef.current.presenceState();
         const users = Object.values(state).flat();
-        console.log('Utilisateurs en ligne:', users.length);
         setOnlineUsers(users);
       })
-      .on('presence', { event: 'join' }, ({ newPresences }) => {
-        console.log('Utilisateur connecté:', newPresences);
-      })
-      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
-        console.log('Utilisateur déconnecté:', leftPresences);
-      })
       .subscribe(async (status) => {
-        console.log('Statut subscription presence:', status);
         if (status === 'SUBSCRIBED') {
-          await presenceChannel.track({
+          await presenceChannelRef.current.track({
             user_id: user.id,
-            pseudo: user.user_metadata?.pseudo || 
-                    user.user_metadata?.username || 
-                    user.email?.split('@')[0] || 
-                    'Utilisateur',
-            online_at: new Date().toISOString(),
+            pseudo: user.user_metadata?.nom_complet || 'Anonyme',
+            online_at: new Date().toISOString()
           });
         }
       });
-
-    presenceChannelRef.current = presenceChannel;
-
-    const intervalId = setInterval(async () => {
-      if (presenceChannel.state === 'joined') {
-        await presenceChannel.track({
-          user_id: user.id,
-          pseudo: user.user_metadata?.pseudo || 
-                  user.user_metadata?.username || 
-                  user.email?.split('@')[0] || 
-                  'Utilisateur',
-          online_at: new Date().toISOString(),
-        });
-      }
-    }, 30000);
-
-    return () => {
-      clearInterval(intervalId);
-      presenceChannel.unsubscribe();
-    };
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !user) return;
+    if (!newMessage.trim() || sending || !user) return;
 
     setSending(true);
 
     const messageData = {
       user_id: user.id,
-      username: user.user_metadata?.pseudo || 
-                user.user_metadata?.username || 
-                user.email?.split('@')[0] || 
-                'Utilisateur',
+      username: user.user_metadata?.nom_complet || user.email?.split('@')[0] || 'Anonyme',
       avatar_url: user.user_metadata?.avatar_url || null,
       message: newMessage.trim()
     };
@@ -222,6 +177,22 @@ export default function ChatPage() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  // ✅ Supprimer un message
+  const handleDeleteMessage = async (messageId) => {
+    if (!confirm('Supprimer ce message ?')) return;
+    
+    const { error } = await supabase
+      .from('chat_messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('user_id', user.id); // Sécurité : uniquement ses propres messages
+    
+    if (error) {
+      console.error('Erreur suppression:', error);
+      alert('Erreur lors de la suppression');
     }
   };
 
@@ -385,40 +356,68 @@ export default function ChatPage() {
                         ? 'bg-rugby-gold text-white rounded-tr-none'
                         : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'
                     }`}
-                    onMouseEnter={() => setShowEmojiPicker(msg.id)}
-                    onMouseLeave={() => setShowEmojiPicker(null)}
                   >
                     <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
                     
-                    <p className={`text-[10px] mt-1 ${
-                      isCurrentUser ? 'text-white/70' : 'text-gray-400'
-                    }`}>
-                      {formatHeureParis(msg.created_at)}
-                      {msg.edited && ' (modifié)'}
-                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className={`text-[10px] ${
+                        isCurrentUser ? 'text-white/70' : 'text-gray-400'
+                      }`}>
+                        {formatHeureParis(msg.created_at)}
+                        {msg.edited && ' (modifié)'}
+                      </p>
 
-                    {/* Picker emojis au survol */}
+                      {/* ✅ Bouton supprimer (uniquement pour l'auteur) */}
+                      {isCurrentUser && (
+                        <button
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 hover:bg-white/20 rounded"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-3 h-3 text-white/80" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ✅ Picker emojis - BULLE SCROLLABLE HORIZONTALE */}
                     {showEmojiPicker === msg.id && (
-                      <div className="absolute -top-14 left-0 right-0 mx-auto w-max max-w-full bg-white border border-gray-200 rounded-2xl shadow-xl p-2 flex flex-wrap justify-center z-50">
-                        {quickEmojis.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() => handleReaction(msg.id, emoji)}
-                            className="text-2xl m-1 hover:scale-125 transition-transform active:scale-95"
-                          >
-                            {emoji}
-                          </button>
-                        ))}
+                      <div className="absolute -top-12 left-0 right-0 mx-auto w-full max-w-[280px] bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50">
+                        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+                          {quickEmojis.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => handleReaction(msg.id, emoji)}
+                              className="text-2xl flex-shrink-0 hover:scale-125 transition-transform active:scale-95"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
 
-                    {/* Affichage des réactions */}
+                    {/* Bouton pour ouvrir le picker (mobile) */}
+                    <button
+                      onClick={() => setShowEmojiPicker(showEmojiPicker === msg.id ? null : msg.id)}
+                      className="absolute -bottom-2 -right-2 bg-gray-200 rounded-full p-1.5 shadow-md hover:bg-gray-300 transition-colors md:hidden"
+                    >
+                      <span className="text-sm">😊</span>
+                    </button>
+
+                    {/* Desktop hover */}
+                    <div 
+                      className="hidden md:block absolute -top-0 -bottom-0 -left-0 -right-0"
+                      onMouseEnter={() => setShowEmojiPicker(msg.id)}
+                      onMouseLeave={() => setShowEmojiPicker(null)}
+                    />
+
+                    {/* ✅ Affichage des réactions - SCROLLABLE */}
                     {Object.keys(messageReactions).length > 0 && (
-                      <div className="flex gap-1 mt-2 flex-wrap">
+                      <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-hide">
                         {Object.entries(messageReactions).map(([emoji, count]) => (
                           <span 
                             key={emoji}
-                            className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-gray-300"
+                            className="bg-gray-100 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-gray-300 flex-shrink-0"
                           >
                             <span>{emoji}</span>
                             <span className="font-semibold text-gray-700">{count}</span>
@@ -478,6 +477,17 @@ export default function ChatPage() {
           )}
         </div>
       </div>
+
+      {/* ✅ CSS pour cacher la scrollbar */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
