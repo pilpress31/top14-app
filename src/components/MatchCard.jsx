@@ -199,19 +199,20 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             )}
 
             {pariComplet && (
-              <button 
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow-sm transition"
                 onClick={() => {
-                  // Naviguer vers l'onglet Mes paris avec betId pour scroll auto
                   navigate('/pronos', { 
                     state: { 
                       activeTab: 'mes-paris',
-                      scrollToBetId: existingProno?.bet_id // ✅ ID du pari pour scroll
+                      scrollToBetId: existingProno?.bet_id
                     } 
                   });
                 }}
               >
                 Voir mes paris en cours
               </button>
+
             )}
           </>
         )}
