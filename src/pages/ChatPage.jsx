@@ -4,35 +4,37 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useChatNotification } from '../contexts/ChatNotificationContext';
 
-// ✅ Fonction de formatage heure - CORRIGÉE (sans timeZone)
-const formatHeureParis = (dateString) => {
-  if (!dateString) return 'Date inconnue';
-  
-  try {
-    let date;
+
+// ✅ Fonction de formatage heure - VERSION DÉFINITIVE
+  const formatHeureParis = (dateString) => {
+    if (!dateString) return 'Date inconnue';
     
-    // Si format ISO (avec T et Z)
-    if (dateString.includes('T')) {
-      date = new Date(dateString);
-    } 
-    // Sinon, format Supabase : convertir en ISO
-    else {
-      const isoString = dateString.replace(' ', 'T') + 'Z';
-      date = new Date(isoString);
+    try {
+      let date;
+      
+      // Si format ISO (avec T)
+      if (dateString.includes('T')) {
+        date = new Date(dateString);
+      } 
+      // Sinon, format Supabase : convertir en ISO UTC
+      else {
+        const isoString = dateString.replace(' ', 'T') + 'Z';
+        date = new Date(isoString);
+      }
+      
+      if (isNaN(date.getTime())) return 'Date invalide';
+      
+      // ✅ FORCER Europe/Paris pour avoir l'heure locale française
+      return date.toLocaleTimeString('fr-FR', {
+        timeZone: 'Europe/Paris',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Erreur format date:', error);
+      return 'Date invalide';
     }
-    
-    if (isNaN(date.getTime())) return 'Date invalide';
-    
-    // ✅ CORRECTION : Sans timeZone (utilise l'heure locale du navigateur)
-    return date.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  } catch (error) {
-    console.error('Erreur format date:', error);
-    return 'Date invalide';
-  }
-};
+  };
 
 export default function ChatPage() {
   const { user } = useAuth();
