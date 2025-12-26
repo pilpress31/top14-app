@@ -395,7 +395,7 @@ export default function ChatPage() {
 
                     {/* ✅ Picker emojis - BULLE SCROLLABLE HORIZONTALE */}
                     {showEmojiPicker === msg.id && (
-                      <div className="absolute -top-12 left-0 right-0 mx-auto w-full max-w-[280px] bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50">
+                      <div className="absolute -top-12 left-0 right-0 w-[90vw] mx-auto bg-white border border-gray-200 rounded-full shadow-xl p-2 z-50">
                         <div className="flex gap-1 overflow-x-auto scrollbar-hide">
                           {quickEmojis.map((emoji) => (
                             <button
