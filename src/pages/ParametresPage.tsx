@@ -5,19 +5,17 @@ import { ChevronRight, Star, User, Mail, MessageSquare, Flag, FileText, Bell, Co
 import AvisModal from "../components/AvisModal";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
-function ParametresPage() {
+export default function ParametresPage() {
   const [showAvisModal, setShowAvisModal] = useState(false);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-export default function ParametresPage() {
   // ✅ Scroll en haut à l'ouverture
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);  
-
+  }, []);
 
   // ✅ Push notifications
   const { permission, isSupported } = usePushNotifications();
@@ -200,36 +198,25 @@ Merci.
       {user && (
         <div className="bg-gradient-to-r from-rugby-gold/10 to-rugby-orange/10 rounded-lg p-4 mb-4 border border-rugby-gold/20">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-rugby-gold rounded-full flex items-center justify-center">
-              <User className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-rugby-gold flex items-center justify-center text-white font-bold text-lg">
+              {user.user_metadata?.nom_complet?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div>
-              <p className="font-bold text-gray-800">
-                {user.user_metadata?.nom_complet || 'Utilisateur'}
-              </p>
+              <p className="font-bold text-gray-900">{user.user_metadata?.nom_complet || 'Utilisateur'}</p>
               <p className="text-sm text-gray-600">{user.email}</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Section Mon compte */}
+      {/* Section Compte */}
       <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h2 className="text-sm font-bold text-gray-700 uppercase flex items-center gap-2">
             <User className="h-4 w-4" />
-            Mon compte
+            Compte
           </h2>
         </div>
-
-        <button 
-          onClick={() => navigate('/profil')}
-          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
-        >
-          <User className="h-5 w-5 text-rugby-gold" />
-          <span className="flex-1 text-left text-gray-800 font-medium">Mon profil</span>
-          <ChevronRight className="h-5 w-5 text-gray-400" />
-        </button>
 
         <button 
           onClick={() => navigate('/ma-cagnotte')}
@@ -432,4 +419,3 @@ Merci.
   );
 }
 
-export default ParametresPage;
