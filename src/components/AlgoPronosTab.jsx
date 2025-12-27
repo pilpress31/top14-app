@@ -263,7 +263,7 @@ function PronoCard({ match }) {
         {/* Scores */}
         <div className="flex flex-col items-center justify-center gap-1">
           <div className="text-xs text-rugby-bronze font-medium mb-1">Score final</div>
-          <div className="flex items-center gap-2 text-3xl font-bold text-rugby-gold">
+          <div className="flex items-center gap-2 text-[1.65rem] font-bold text-rugby-gold">
             {scoreDom} - {scoreExt}
           </div>
 
