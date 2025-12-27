@@ -130,19 +130,31 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {/* Bloc vert des pronos existants */}
         {existingProno && (
           !bettingAllowed ? (
-            // Paris fermés → zone verte cliquable
+            // ✅ Paris fermés → zone verte cliquable avec scroll auto
             <div 
               onClick={() => {
                 navigate('/pronos', { 
                   state: { 
                     activeTab: 'mes-paris',
-                    scrollToBetId: existingProno?.bet_id 
+                    scrollToMatchId: match.id  // ✅ Utiliser match.id pour cohérence
                   } 
                 });
               }}
-              className="cursor-pointer..."
+              className="cursor-pointer flex items-center gap-2 px-2 py-1 bg-green-50 rounded border border-green-200 hover:bg-green-100 transition-colors"
             >
-              Voir le pari
+              <CheckCircle className="w-3 h-3 text-green-600" />
+              <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
+                {existingProno.score_dom_pronos !== null && existingProno.score_ext_pronos !== null && (
+                  <span>
+                    Prono FT : {existingProno.score_dom_pronos} - {existingProno.score_ext_pronos} | Mise : {existingProno.mise_ft}
+                  </span>
+                )}
+                {existingProno.score_dom_mt !== null && existingProno.score_ext_mt !== null && (
+                  <span>
+                    Prono MT : {existingProno.score_dom_mt} - {existingProno.score_ext_mt} | Mise : {existingProno.mise_mt}
+                  </span>
+                )}
+              </div>
             </div>
           ) : (
             // Paris ouverts → zone verte NON cliquable
@@ -204,15 +216,15 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                   navigate('/pronos', { 
                     state: { 
                       activeTab: 'mes-paris',
-                      scrollToMatchId: match.id  // ✅ Passer le match_id
+                      scrollToMatchId: match.id
                     }
                   });
                 }}
-                className="..."
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                          bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm"
               >
                 Voir mes paris en cours
               </button>
-
             )}
           </>
         )}

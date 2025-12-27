@@ -159,7 +159,7 @@ export default function MaCagnotte() {
           state: { 
             activeTab: 'mes-paris', 
             filter: filter,
-            scrollToBetId: bet.id  // ✅ AJOUTER CETTE LIGNE
+            scrollToMatchId: bet.match_id  // ✅ AJOUTER CETTE LIGNE
           } 
         });
       }
