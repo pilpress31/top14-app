@@ -13,9 +13,17 @@ export default function PronosPage() {
 
   const goToMesParis = () => { setActiveTab("mes-paris"); };
 
+  // ✅ Scroll en haut au montage de la page
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // ✅ Scroll en haut quand on revient sur "À parier"
+  useEffect(() => {
+    if (activeTab === 'a-parier') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   // ✅ Ouvrir l'onglet "Mes paris" si state est passé
   useEffect(() => {
