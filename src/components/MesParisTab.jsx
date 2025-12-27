@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Coins, TrendingUp, TrendingDown, Trophy, Calendar, Clock, FileText } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -129,9 +129,9 @@ export default function MesParisTab() {
     return true;
   });
 
-  const parisPending = useMemo(() => (paris || []).filter(b => b.status === "pending").length, [paris]);
-  const parisWon = useMemo(() => (paris || []).filter(b => b.status === "won").length, [paris]);
-  const parisLost = useMemo(() => (paris || []).filter(b => b.status === "lost").length, [paris]);
+  const parisPending = (paris || []).filter(b => b.status === 'pending').length;
+  const parisWon = (paris || []).filter(b => b.status === 'won').length;
+  const parisLost = (paris || []).filter(b => b.status === 'lost').length;
 
   console.log('📊 Stats paris:', { total: (paris || []).length, pending: parisPending, won: parisWon, lost: parisLost });
 
@@ -243,7 +243,7 @@ export default function MesParisTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
-            const prono = pronos.find(p => p.match_id === bet.match_id);
+            const prono = (pronos || []).find(p => p.match_id === bet.match_id);
             const teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
             const teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
 
