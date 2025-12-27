@@ -243,7 +243,7 @@ export default function MesParisTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
-            const prono = pronos.find(p => p.match_id === bet.match_id);
+            const prono = (pronos || []).find(p => p.match_id === bet.match_id);
             const teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
             const teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
 
