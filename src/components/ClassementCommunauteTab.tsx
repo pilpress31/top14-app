@@ -26,8 +26,10 @@ export default function ClassementCommunauteTab() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [showReglementPoints, setShowReglementPoints] = useState(false);
+  const [currentSaison, setCurrentSaison] = useState('2025-2026'); // Valeur par défaut
 
   useEffect(() => {
+    loadAppConfig();
     loadCurrentUser();
     loadClassement();
   }, [classementType]);
@@ -40,6 +42,19 @@ export default function ClassementCommunauteTab() {
       setFilteredUsers(users.filter(u => u.pseudo.toLowerCase().includes(query)));
     }
   }, [searchQuery, users]);
+
+  async function loadAppConfig() {
+    try {
+      const response = await axios.get('https://top14-api-production.up.railway.app/api/config');
+      if (response.data && response.data.saison) {
+        setCurrentSaison(response.data.saison);
+        console.log('📅 Saison chargée:', response.data.saison);
+      }
+    } catch (error) {
+      console.error('Erreur chargement config:', error);
+      // Valeur par défaut déjà définie dans le state
+    }
+  }
 
   async function loadCurrentUser() {
     try {
@@ -123,7 +138,7 @@ export default function ClassementCommunauteTab() {
           taux_reussite,
           user_profiles!inner(pseudo, avatar_url)
         `)
-        .eq('saison', '2024-2025')
+        .eq('saison', currentSaison)
         .order('total_points', { ascending: false })
         .limit(100);
 
