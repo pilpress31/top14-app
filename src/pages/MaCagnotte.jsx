@@ -377,6 +377,15 @@ export default function MaCagnotte() {
                 <span className="text-sm text-gray-600">Taux de réussite</span>
                 <span className="text-lg font-bold text-rugby-gold">{winRate}%</span>
               </div>
+
+              <div className="flex items-center justify-between py-2 border-t border-gray-100">
+                <span className="text-sm text-gray-600">ROI</span>
+                <span className={`text-lg font-bold ${
+                  roi >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {roi >= 0 ? '+' : ''}{roi}%
+                </span>
+              </div>
             </div>
           </div>
 

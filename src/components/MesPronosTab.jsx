@@ -14,6 +14,7 @@ export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
   const [userCredits, setUserCredits] = useState(null);
+  const [userStats, setUserStats] = useState(null); // ✅ Stats depuis user_stats
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showReglementModal, setShowReglementModal] = useState(false);
@@ -224,22 +225,22 @@ export default function MesPronosTab({ goToMesParis }) {
       </div>
 
       {/* Stats */}
-      {headerVisible && mesPronos.length > 0 && (
+      {headerVisible && userStats && userStats.total_pronos > 0 && (
         <div className="sticky z-10" style={{ top: '100px' }}>
           <div className="grid grid-cols-3 gap-2 mt-2">
             <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
-              <p className="text-xl font-bold text-rugby-gold">{mesPronos.length}</p>
+              <p className="text-xl font-bold text-rugby-gold">{userStats.total_pronos}</p>
               <p className="text-[10px] text-gray-600">Pronos</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
               <p className="text-xl font-bold text-green-600">
-                {mesPronos.filter(p => p.est_correct).length}
+                {userStats.pronos_corrects}
               </p>
               <p className="text-[10px] text-gray-600">Corrects</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
               <p className="text-xl font-bold text-rugby-bronze">
-                {mesPronos.reduce((sum, p) => sum + (p.points_gagnes || 0), 0)}
+                {userStats.total_points}
               </p>
               <p className="text-[10px] text-gray-600">Points</p>
             </div>
