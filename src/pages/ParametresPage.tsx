@@ -11,7 +11,14 @@ function ParametresPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
+export default function ParametresPage() {
+  // ✅ Scroll en haut à l'ouverture
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);  
+
+
   // ✅ Push notifications
   const { permission, isSupported } = usePushNotifications();
 
