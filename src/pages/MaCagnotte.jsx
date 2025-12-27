@@ -215,6 +215,10 @@ export default function MaCagnotte() {
     ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1) 
     : 0;
 
+  const roi = stats.totalStaked > 0
+    ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
+    : 0;
+
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
       {/* Header */}
