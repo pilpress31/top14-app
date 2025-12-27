@@ -195,14 +195,34 @@ function PronoCard({ match }) {
     return () => clearTimeout(timer);
   }, [confidenceMTPct]);
 
-  const date = match.date
-    ? new Date(match.date).toLocaleDateString('fr-FR', {
+  // ✅ FORMATAGE DATE ET HEURE
+  let dateFormatted = 'À VENIR';
+  let heureFormatted = '';
+  
+  if (match.date) {
+    try {
+      const matchDate = new Date(match.date);
+      
+      // Date au format "SAM. 27 DÉC. 2025"
+      dateFormatted = matchDate.toLocaleDateString('fr-FR', {
         weekday: 'short',
         day: 'numeric',
         month: 'short',
         year: 'numeric',
-      }).toUpperCase()
-    : 'À VENIR';
+      }).toUpperCase();
+      
+      // Heure au format "14H30"
+      const hours = matchDate.getHours();
+      const minutes = matchDate.getMinutes();
+      
+      // Vérifier si l'heure est définie (pas 00:00)
+      if (hours !== 0 || minutes !== 0) {
+        heureFormatted = `${String(hours).padStart(2, '0')}H${String(minutes).padStart(2, '0')}`;
+      }
+    } catch (error) {
+      console.error('Erreur formatage date:', error);
+    }
+  }
 
   const teamDomData = getTeamData(equipeDom);
   const teamExtData = getTeamData(equipeExt);
@@ -210,11 +230,16 @@ function PronoCard({ match }) {
   return (
     <div className="w-full bg-gray-50 rounded-lg py-4 border border-gray-200">
 
-      {/* Date */}
-      <div className="flex justify-end items-center px-4 mb-3">
+      {/* ✅ Date à gauche + Heure à droite */}
+      <div className="flex justify-between items-center px-4 mb-3">
         <div className="text-xs text-rugby-bronze font-semibold">
-          {date}
+          {dateFormatted}
         </div>
+        {heureFormatted && (
+          <div className="text-xs text-rugby-gold font-bold">
+            {heureFormatted}
+          </div>
+        )}
       </div>
 
       {/* Équipes + scores */}
