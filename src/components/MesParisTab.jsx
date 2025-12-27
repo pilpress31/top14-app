@@ -122,18 +122,18 @@ export default function MesParisTab() {
     );
   }
 
-  const parisFiltered = paris.filter(bet => {
+  const parisFiltered = (paris || []).filter(bet => {
     if (filter === 'pending') return bet.status === 'pending';
     if (filter === 'won') return bet.status === 'won';
     if (filter === 'lost') return bet.status === 'lost';
     return true;
   });
 
-  const parisPending = useMemo(() => paris.filter(b => b.status === "pending").length, [paris]);
-  const parisWon = useMemo(() => paris.filter(b => b.status === "won").length, [paris]);
-  const parisLost = useMemo(() => paris.filter(b => b.status === "lost").length, [paris]);
+  const parisPending = useMemo(() => (paris || []).filter(b => b.status === "pending").length, [paris]);
+  const parisWon = useMemo(() => (paris || []).filter(b => b.status === "won").length, [paris]);
+  const parisLost = useMemo(() => (paris || []).filter(b => b.status === "lost").length, [paris]);
 
-  console.log('📊 Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
+  console.log('📊 Stats paris:', { total: (paris || []).length, pending: parisPending, won: parisWon, lost: parisLost });
 
   return (
     <div className="space-y-4">
