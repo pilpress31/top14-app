@@ -133,14 +133,29 @@ export default function MaCagnotte() {
   };
 
   const navigateToBet = (transaction) => {
-    if (!transaction.metadata?.match_id) return;
+    // ✅ Essayer d'abord avec metadata.match_id
+    if (transaction.metadata?.match_id) {
+      navigate('/pronos', {
+        state: {
+          activeTab: 'mes-paris',
+          scrollToMatchId: transaction.metadata.match_id
+        }
+      });
+      return;
+    }
     
-    navigate('/pronos', {
-      state: {
-        activeTab: 'mes-paris',
-        scrollToMatchId: transaction.metadata.match_id
+    // ✅ Sinon chercher le match_id via reference_id dans paris
+    if (transaction.reference_id) {
+      const bet = paris.find(p => p.id === transaction.reference_id);
+      if (bet?.match_id) {
+        navigate('/pronos', {
+          state: {
+            activeTab: 'mes-paris',
+            scrollToMatchId: bet.match_id
+          }
+        });
       }
-    });
+    }
   };
 
   const getTransactionIcon = (type) => {
@@ -181,9 +196,8 @@ export default function MaCagnotte() {
   };
 
   const getTransactionDetails = (trans) => {
-    if (!trans.metadata) return null;
-
-    if (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost') {
+    // Si on a les metadata, les utiliser directement
+    if (trans.metadata && (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost')) {
       return (
         <p className="text-xs text-gray-500 mt-1">
           {trans.metadata.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
@@ -191,6 +205,20 @@ export default function MaCagnotte() {
           Mise: {trans.metadata.stake} jetons
         </p>
       );
+    }
+
+    // ✅ Si pas de metadata mais qu'on a un reference_id, chercher dans paris
+    if (!trans.metadata && trans.reference_id && (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost')) {
+      const bet = paris.find(p => p.id === trans.reference_id);
+      if (bet) {
+        return (
+          <p className="text-xs text-gray-500 mt-1">
+            {bet.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
+            Cote: {bet.odds} • 
+            Mise: {bet.stake} jetons
+          </p>
+        );
+      }
     }
 
     if (trans.type === 'bonus_exact_score') {
@@ -484,8 +512,8 @@ export default function MaCagnotte() {
                               </p>
                               {getTransactionDetails(trans)}
                               
-                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id */}
-                              {trans.metadata?.match_id && trans.type !== 'monthly_distribution' && (
+                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id OU reference_id */}
+                              {((trans.metadata?.match_id || trans.reference_id) && trans.type !== 'monthly_distribution') && (
                                 <button
                                   onClick={() => navigateToBet(trans)}
                                   className="mt-2 flex items-center gap-1 text-xs text-rugby-gold hover:text-rugby-bronze font-semibold transition-colors"
