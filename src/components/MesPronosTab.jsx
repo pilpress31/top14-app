@@ -216,29 +216,7 @@ export default function MesPronosTab({ goToMesParis }) {
         </div>
       </div>
 
-      {/* Stats */}
-      {headerVisible && mesPronos.length > 0 && (
-        <div className="sticky z-10" style={{ top: '100px' }}>
-          <div className="grid grid-cols-3 gap-2 mt-2">
-            <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
-              <p className="text-xl font-bold text-rugby-gold">{mesPronos.length}</p>
-              <p className="text-[10px] text-gray-600">Pronos</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
-              <p className="text-xl font-bold text-green-600">
-                {mesPronos.filter(p => p.est_correct).length}
-              </p>
-              <p className="text-[10px] text-gray-600">Corrects</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
-              <p className="text-xl font-bold text-rugby-bronze">
-                {mesPronos.reduce((sum, p) => sum + (p.points_gagnes || 0), 0)}
-              </p>
-              <p className="text-[10px] text-gray-600">Points</p>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* Liste des journées */}
       {journees.length === 0 ? (
