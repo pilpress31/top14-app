@@ -25,15 +25,24 @@ export default function MesParisTab() {
   // ✅ Scroll auto vers un pari spécifique
   useEffect(() => {
     if (location.state?.scrollToMatchId && paris.length > 0) {
-      const matchId = location.state.scrollToMatchId;  // ✅ Chercher par match_id
+      const matchId = location.state.scrollToMatchId;
       
       // ✅ Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
       
       if (targetBet) {
-        // Attendre que le DOM soit mis à jour
+        // ✅ Changer l'onglet selon le status du pari
+        if (targetBet.status === 'pending') {
+          setFilter('pending');
+        } else if (targetBet.status === 'won') {
+          setFilter('won');
+        } else if (targetBet.status === 'lost') {
+          setFilter('lost');
+        }
+        
+        // Attendre que le DOM soit mis à jour (changement d'onglet + render)
         setTimeout(() => {
-          const element = betRefs.current[targetBet.match_id];  // ✅ Utiliser match_id
+          const element = betRefs.current[targetBet.match_id];
           if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
@@ -43,7 +52,7 @@ export default function MesParisTab() {
               element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
             }, 2000);
           }
-        }, 300);
+        }, 500);  // ✅ Augmenter le délai pour laisser le temps au DOM de se mettre à jour
       }
 
       // Nettoyer le state
@@ -122,18 +131,18 @@ export default function MesParisTab() {
     );
   }
 
-  const parisFiltered = (paris || []).filter(bet => {
+  const parisFiltered = paris.filter(bet => {
     if (filter === 'pending') return bet.status === 'pending';
     if (filter === 'won') return bet.status === 'won';
     if (filter === 'lost') return bet.status === 'lost';
     return true;
   });
 
-  const parisPending = (paris || []).filter(b => b.status === 'pending').length;
-  const parisWon = (paris || []).filter(b => b.status === 'won').length;
-  const parisLost = (paris || []).filter(b => b.status === 'lost').length;
+  const parisPending = paris.filter(b => b.status === 'pending').length;
+  const parisWon = paris.filter(b => b.status === 'won').length;
+  const parisLost = paris.filter(b => b.status === 'lost').length;
 
-  console.log('📊 Stats paris:', { total: (paris || []).length, pending: parisPending, won: parisWon, lost: parisLost });
+  console.log('📊 Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
 
   return (
     <div className="space-y-4">
@@ -243,7 +252,7 @@ export default function MesParisTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
-            const prono = (pronos || []).find(p => p.match_id === bet.match_id);
+            const prono = pronos.find(p => p.match_id === bet.match_id);
             const teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
             const teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
 
