@@ -25,24 +25,15 @@ export default function MesParisTab() {
   // ✅ Scroll auto vers un pari spécifique
   useEffect(() => {
     if (location.state?.scrollToMatchId && paris.length > 0) {
-      const matchId = location.state.scrollToMatchId;
+      const matchId = location.state.scrollToMatchId;  // ✅ Chercher par match_id
       
       // ✅ Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
       
       if (targetBet) {
-        // ✅ Changer l'onglet selon le status du pari
-        if (targetBet.status === 'pending') {
-          setFilter('pending');
-        } else if (targetBet.status === 'won') {
-          setFilter('won');
-        } else if (targetBet.status === 'lost') {
-          setFilter('lost');
-        }
-        
-        // Attendre que le DOM soit mis à jour (changement d'onglet + render)
+        // Attendre que le DOM soit mis à jour
         setTimeout(() => {
-          const element = betRefs.current[targetBet.match_id];
+          const element = betRefs.current[targetBet.match_id];  // ✅ Utiliser match_id
           if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
@@ -52,7 +43,7 @@ export default function MesParisTab() {
               element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
             }, 2000);
           }
-        }, 500);  // ✅ Augmenter le délai pour laisser le temps au DOM de se mettre à jour
+        }, 300);
       }
 
       // Nettoyer le state
@@ -161,13 +152,6 @@ export default function MesParisTab() {
             </div>
           </button>
 
-          <button
-            onClick={() => setShowReglementModal(true)}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
-          >
-            <FileText className="w-4 h-4" />
-            <span className="text-xs font-semibold">Règlement</span>
-          </button>
 
           <div className="text-right">
             <p className="text-white/80 text-xs">Total gagné</p>
@@ -356,7 +340,19 @@ export default function MesParisTab() {
         </div>
       )}
 
-      <ReglementModal 
+
+      {/* Bouton Règlement en bas de page */}
+      <div className="flex justify-center mt-6 mb-4">
+        <button
+          onClick={() => setShowReglementModal(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+        >
+          <FileText className="w-5 h-5" />
+          <span className="font-semibold">Consulter le règlement</span>
+        </button>
+      </div>
+
+            <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />

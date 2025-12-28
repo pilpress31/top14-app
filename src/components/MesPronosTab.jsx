@@ -14,7 +14,6 @@ export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
   const [userCredits, setUserCredits] = useState(null);
-  const [userStats, setUserStats] = useState(null); // ✅ Stats depuis user_stats
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showReglementModal, setShowReglementModal] = useState(false);
@@ -206,13 +205,6 @@ export default function MesPronosTab({ goToMesParis }) {
             </div>
           </button>
 
-          <button
-            onClick={() => setShowReglementModal(true)}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
-          >
-            <FileText className="w-4 h-4" />
-            <span className="text-xs font-semibold">Règlement</span>
-          </button>
 
           <div className="text-right">
             <p className="text-white/80 text-xs">Total gagné</p>
@@ -225,22 +217,22 @@ export default function MesPronosTab({ goToMesParis }) {
       </div>
 
       {/* Stats */}
-      {headerVisible && userStats && userStats.total_pronos > 0 && (
+      {headerVisible && mesPronos.length > 0 && (
         <div className="sticky z-10" style={{ top: '100px' }}>
           <div className="grid grid-cols-3 gap-2 mt-2">
             <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
-              <p className="text-xl font-bold text-rugby-gold">{userStats.total_pronos}</p>
+              <p className="text-xl font-bold text-rugby-gold">{mesPronos.length}</p>
               <p className="text-[10px] text-gray-600">Pronos</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
               <p className="text-xl font-bold text-green-600">
-                {userStats.pronos_corrects}
+                {mesPronos.filter(p => p.est_correct).length}
               </p>
               <p className="text-[10px] text-gray-600">Corrects</p>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-2 text-center border border-rugby-gray">
               <p className="text-xl font-bold text-rugby-bronze">
-                {userStats.total_points}
+                {mesPronos.reduce((sum, p) => sum + (p.points_gagnes || 0), 0)}
               </p>
               <p className="text-[10px] text-gray-600">Points</p>
             </div>
@@ -316,7 +308,19 @@ export default function MesPronosTab({ goToMesParis }) {
         />
       )}
 
-      <ReglementModal 
+
+      {/* Bouton Règlement en bas de page */}
+      <div className="flex justify-center mt-6 mb-4">
+        <button
+          onClick={() => setShowReglementModal(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+        >
+          <FileText className="w-5 h-5" />
+          <span className="font-semibold">Consulter le règlement</span>
+        </button>
+      </div>
+
+            <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />
