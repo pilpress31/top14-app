@@ -25,12 +25,15 @@ export default function MesParisTab() {
   // ? Scroll auto vers un pari spécifique
   useEffect(() => {
     if (location.state?.scrollToMatchId && paris.length > 0) {
-      const matchId = location.state.scrollToMatchId;  // ? Chercher par match_id
+      const matchId = location.state.scrollToMatchId;
+      console.log('🎯 Navigation vers match_id:', matchId);
       
       // ? Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
       
       if (targetBet) {
+        console.log('✅ Pari trouvé:', targetBet);
+        
         // ? Changer l'onglet selon le status du pari
         if (targetBet.status === 'pending') {
           setFilter('pending');
@@ -42,21 +45,32 @@ export default function MesParisTab() {
         
         // Attendre que le DOM soit mis à jour (changement d'onglet + render)
         setTimeout(() => {
-          const element = betRefs.current[targetBet.match_id];  // ? Utiliser match_id
+          const element = betRefs.current[targetBet.match_id];
+          console.log('🔍 Élément trouvé dans betRefs:', element);
+          
           if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // Effet de highlight temporaire
-            element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
+            // ✅ Effet de highlight temporaire - AMÉLIORÉ
+            element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+            console.log('✨ Classes ajoutées pour highlight');
+            
             setTimeout(() => {
-              element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
-            }, 2000);
+              element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+              console.log('🔄 Classes retirées');
+            }, 3000);
+          } else {
+            console.log('❌ Élément non trouvé dans betRefs pour:', targetBet.match_id);
           }
-        }, 500);
+        }, 800);
+      } else {
+        console.log('❌ Aucun pari trouvé pour match_id:', matchId);
       }
 
       // Nettoyer le state
-      window.history.replaceState({}, document.title);
+      if (window.history?.replaceState) {
+        window.history.replaceState({}, document.title);
+      }
     }
   }, [location.state, paris]);
 
@@ -253,7 +267,7 @@ export default function MesParisTab() {
               <div 
                 key={bet.id}
                 ref={el => betRefs.current[bet.match_id] = el}  // ? Ref par match_id
-                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all"
+                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all duration-300"
                 style={{
                   borderLeftColor: 
                     bet.status === 'pending' ? '#f97316' : 
