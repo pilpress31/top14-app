@@ -14,6 +14,9 @@ export default function MesParisTab() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
+  
+  // ✅ Stocker le match_id cible pour le scroll après changement d'onglet
+  const [targetMatchId, setTargetMatchId] = useState(null);
 
   // ? Refs pour chaque pari
   const betRefs = useRef({});
@@ -33,38 +36,25 @@ export default function MesParisTab() {
       
       if (targetBet) {
         console.log('✅ Pari trouvé:', targetBet);
+        console.log('📊 Status du pari:', targetBet.status);
+        
+        // ✅ Stocker le match_id pour le scroll après le changement d'onglet
+        setTargetMatchId(matchId);
         
         // ? Changer l'onglet selon le status du pari
         if (targetBet.status === 'pending') {
+          console.log('🔄 Changement vers onglet: En cours');
           setFilter('pending');
         } else if (targetBet.status === 'won') {
+          console.log('🔄 Changement vers onglet: Gagnés');
           setFilter('won');
         } else if (targetBet.status === 'lost') {
+          console.log('🔄 Changement vers onglet: Perdus');
           setFilter('lost');
         }
-        
-        // Attendre que le DOM soit mis à jour (changement d'onglet + render)
-        setTimeout(() => {
-          const element = betRefs.current[targetBet.match_id];
-          console.log('🔍 Élément trouvé dans betRefs:', element);
-          
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // ✅ Effet de highlight temporaire - AMÉLIORÉ
-            element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-            console.log('✨ Classes ajoutées pour highlight');
-            
-            setTimeout(() => {
-              element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-              console.log('🔄 Classes retirées');
-            }, 3000);
-          } else {
-            console.log('❌ Élément non trouvé dans betRefs pour:', targetBet.match_id);
-          }
-        }, 800);
       } else {
         console.log('❌ Aucun pari trouvé pour match_id:', matchId);
+        console.log('❌ Paris disponibles:', paris.map(p => p.match_id));
       }
 
       // Nettoyer le state
@@ -73,6 +63,52 @@ export default function MesParisTab() {
       }
     }
   }, [location.state, paris]);
+
+  // ✅ Nouveau useEffect pour gérer le scroll APRÈS le changement d'onglet
+  useEffect(() => {
+    if (targetMatchId && paris.length > 0) {
+      console.log('🎯 Tentative de scroll vers:', targetMatchId);
+      
+      // Attendre que React ait re-rendu la liste avec le bon filtre
+      setTimeout(() => {
+        const element = betRefs.current[targetMatchId];
+        console.log('🔍 Recherche élément pour match_id:', targetMatchId);
+        console.log('🔍 Élément trouvé:', element);
+        console.log('🔍 Tous les refs disponibles:', Object.keys(betRefs.current));
+        
+        if (element) {
+          console.log('📜 Scroll vers l\'élément');
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // ✅ Effet de highlight temporaire
+          element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+          console.log('✨ Classes ajoutées pour highlight');
+          
+          setTimeout(() => {
+            element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+            console.log('🔄 Classes retirées');
+          }, 3000);
+          
+          // ✅ Nettoyer targetMatchId après le scroll
+          setTargetMatchId(null);
+        } else {
+          console.log('❌ Élément non trouvé, nouvelle tentative dans 500ms');
+          // Réessayer une fois au cas où le DOM n'est pas encore prêt
+          setTimeout(() => {
+            const retryElement = betRefs.current[targetMatchId];
+            if (retryElement) {
+              retryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              retryElement.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+              setTimeout(() => {
+                retryElement.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+              }, 3000);
+            }
+            setTargetMatchId(null);
+          }, 500);
+        }
+      }, 300); // Délai court car on attend déjà le changement de filter
+    }
+  }, [targetMatchId, filter, paris]); // ✅ Se déclenche quand filter change
 
   const loadData = async () => {
     try {
