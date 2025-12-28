@@ -154,6 +154,29 @@ export default function MaCagnotte() {
             scrollToMatchId: bet.match_id
           }
         });
+        return;
+      }
+    }
+
+    // ✅ Sinon parser la description pour trouver le match
+    if (transaction.description) {
+      const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
+      if (match) {
+        const [_, team1, team2] = match;
+        const bet = paris.find(p => {
+          const matchIdParts = p.match_id?.split('_') || [];
+          const matchTeams = matchIdParts.slice(2).join('_');
+          return matchTeams.includes(team1.replace(/ /g, '_')) || matchTeams.includes(team2.replace(/ /g, '_'));
+        });
+        
+        if (bet?.match_id) {
+          navigate('/pronos', {
+            state: {
+              activeTab: 'mes-paris',
+              scrollToMatchId: bet.match_id
+            }
+          });
+        }
       }
     }
   };
@@ -218,6 +241,31 @@ export default function MaCagnotte() {
             Mise: {bet.stake} jetons
           </p>
         );
+      }
+    }
+
+    // ✅ Si pas de metadata ni reference_id, essayer de trouver via la description
+    if (!trans.metadata && !trans.reference_id && trans.description && (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost')) {
+      // Extraire les noms d'équipes de la description (format: "✅ Bon vainqueur ! EQUIPE1 XX-YY EQUIPE2")
+      const match = trans.description.match(/! (.+?) \d+-\d+ (.+?)$/);
+      if (match) {
+        const [_, team1, team2] = match;
+        // Chercher un pari qui correspond à ces équipes
+        const bet = paris.find(p => {
+          const matchIdParts = p.match_id?.split('_') || [];
+          const matchTeams = matchIdParts.slice(2).join('_');
+          return matchTeams.includes(team1.replace(/ /g, '_')) || matchTeams.includes(team2.replace(/ /g, '_'));
+        });
+        
+        if (bet) {
+          return (
+            <p className="text-xs text-gray-500 mt-1">
+              {bet.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
+              Cote: {bet.odds} • 
+              Mise: {bet.stake} jetons
+            </p>
+          );
+        }
       }
     }
 
@@ -512,8 +560,8 @@ export default function MaCagnotte() {
                               </p>
                               {getTransactionDetails(trans)}
                               
-                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id OU reference_id */}
-                              {((trans.metadata?.match_id || trans.reference_id) && trans.type !== 'monthly_distribution') && (
+                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id, reference_id OU description */}
+                              {((trans.metadata?.match_id || trans.reference_id || trans.description) && trans.type !== 'monthly_distribution') && (
                                 <button
                                   onClick={() => navigateToBet(trans)}
                                   className="mt-2 flex items-center gap-1 text-xs text-rugby-gold hover:text-rugby-bronze font-semibold transition-colors"
