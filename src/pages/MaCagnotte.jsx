@@ -484,8 +484,8 @@ export default function MaCagnotte() {
                               </p>
                               {getTransactionDetails(trans)}
                               
-                              {/* Bouton Voir le pari */}
-                              {isBetTransaction && trans.reference_id && (
+                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id */}
+                              {trans.metadata?.match_id && trans.type !== 'monthly_distribution' && (
                                 <button
                                   onClick={() => navigateToBet(trans)}
                                   className="mt-2 flex items-center gap-1 text-xs text-rugby-gold hover:text-rugby-bronze font-semibold transition-colors"
