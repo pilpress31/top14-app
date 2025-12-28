@@ -15,25 +15,34 @@ export default function MesParisTab() {
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
 
-  // ✅ Refs pour chaque pari
+  // ? Refs pour chaque pari
   const betRefs = useRef({});
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // ✅ Scroll auto vers un pari spécifique
+  // ? Scroll auto vers un pari spécifique
   useEffect(() => {
     if (location.state?.scrollToMatchId && paris.length > 0) {
-      const matchId = location.state.scrollToMatchId;  // ✅ Chercher par match_id
+      const matchId = location.state.scrollToMatchId;  // ? Chercher par match_id
       
-      // ✅ Trouver le bet qui a ce match_id
+      // ? Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
       
       if (targetBet) {
-        // Attendre que le DOM soit mis à jour
+        // ? Changer l'onglet selon le status du pari
+        if (targetBet.status === 'pending') {
+          setFilter('pending');
+        } else if (targetBet.status === 'won') {
+          setFilter('won');
+        } else if (targetBet.status === 'lost') {
+          setFilter('lost');
+        }
+        
+        // Attendre que le DOM soit mis à jour (changement d'onglet + render)
         setTimeout(() => {
-          const element = betRefs.current[targetBet.match_id];  // ✅ Utiliser match_id
+          const element = betRefs.current[targetBet.match_id];  // ? Utiliser match_id
           if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
@@ -43,7 +52,7 @@ export default function MesParisTab() {
               element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
             }, 2000);
           }
-        }, 300);
+        }, 500);
       }
 
       // Nettoyer le state
@@ -55,21 +64,21 @@ export default function MesParisTab() {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) {
-        console.log('❌ Pas de user connecté');
+        console.log('? Pas de user connecté');
         return;
       }
 
-      console.log('✅ User ID:', user.id);
+      console.log('? User ID:', user.id);
 
       // Charger les crédits
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
         });
-        console.log('✅ Crédits chargés:', creditsResponse.data);
+        console.log('? Crédits chargés:', creditsResponse.data);
         setUserCredits(creditsResponse.data);
       } catch (error) {
-        console.log('⚠️ Crédits non disponibles:', error.message);
+        console.log('?? Crédits non disponibles:', error.message);
         setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
       }
 
@@ -78,18 +87,18 @@ export default function MesParisTab() {
         const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
           headers: { 'x-user-id': user.id }
         });
-        console.log('✅ Réponse brute API:', parisResponse.data);
+        console.log('? Réponse brute API:', parisResponse.data);
         
         const parisList = Array.isArray(parisResponse.data) 
           ? parisResponse.data 
           : (parisResponse.data.bets || []);
         
-        console.log(`📊 Nombre de paris trouvés: ${parisList.length}`);
-        console.log('📋 Liste paris:', parisList);
+        console.log(`?? Nombre de paris trouvés: ${parisList.length}`);
+        console.log('?? Liste paris:', parisList);
         setParis(parisList);
       } catch (error) {
-        console.error('❌ Erreur chargement paris:', error);
-        console.log('❌ Détails:', error.response?.data || error.message);
+        console.error('? Erreur chargement paris:', error);
+        console.log('? Détails:', error.response?.data || error.message);
         setParis([]);
       }
 
@@ -101,14 +110,14 @@ export default function MesParisTab() {
         .order('created_at', { ascending: false });
 
       if (!pronosError) {
-        console.log(`📊 Nombre de pronos trouvés: ${pronosData?.length || 0}`);
+        console.log(`?? Nombre de pronos trouvés: ${pronosData?.length || 0}`);
         setPronos(pronosData || []);
       } else {
-        console.error('❌ Erreur chargement pronos:', pronosError);
+        console.error('? Erreur chargement pronos:', pronosError);
       }
 
     } catch (error) {
-      console.error('❌ Erreur globale chargement données:', error);
+      console.error('? Erreur globale chargement données:', error);
     } finally {
       setLoading(false);
     }
@@ -133,14 +142,14 @@ export default function MesParisTab() {
   const parisWon = paris.filter(b => b.status === 'won').length;
   const parisLost = paris.filter(b => b.status === 'lost').length;
 
-  console.log('📊 Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
+  console.log('?? Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
 
   return (
     <div className="space-y-4">
-      {/* Dashboard cagnotte - ✅ ICÔNE CLIQUABLE */}
+      {/* Dashboard cagnotte - ? ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          {/* ✅ ZONE CLIQUABLE */}
+          {/* ? ZONE CLIQUABLE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -243,7 +252,7 @@ export default function MesParisTab() {
             return (
               <div 
                 key={bet.id}
-                ref={el => betRefs.current[bet.match_id] = el}  // ✅ Ref par match_id
+                ref={el => betRefs.current[bet.match_id] = el}  // ? Ref par match_id
                 className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all"
                 style={{
                   borderLeftColor: 
@@ -280,7 +289,7 @@ export default function MesParisTab() {
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <p className="text-gray-500">Type</p>
-                    <p className="font-bold">{bet.bet_type === 'FT' ? '⏱️ Temps plein' : '⏱️ Mi-temps'}</p>
+                    <p className="font-bold">{bet.bet_type === 'FT' ? '?? Temps plein' : '?? Mi-temps'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Prono</p>
@@ -308,7 +317,7 @@ export default function MesParisTab() {
                   )}
                   {bet.status === 'won' && (
                     <div className="flex items-center justify-between bg-green-50 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-green-700">✓ Gagné:</span>
+                      <span className="text-xs font-semibold text-green-700">? Gagné:</span>
                       <span className="text-sm font-bold text-green-700">
                         +{bet.payout} jetons
                       </span>
@@ -316,7 +325,7 @@ export default function MesParisTab() {
                   )}
                   {bet.status === 'lost' && (
                     <div className="flex items-center justify-between bg-red-50 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-red-700">✗ Perdu:</span>
+                      <span className="text-xs font-semibold text-red-700">? Perdu:</span>
                       <span className="text-sm font-bold text-red-700">
                         -{bet.stake} jetons
                       </span>
