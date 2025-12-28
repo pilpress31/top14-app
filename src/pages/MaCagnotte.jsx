@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Coins, TrendingUp, TrendingDown, Trophy, 
-  DollarSign, History, Gift, Award, Calendar, Clock, ExternalLink 
+  DollarSign, History, Gift, Award, Calendar, Clock, ExternalLink, Info 
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -21,7 +21,7 @@ export default function MaCagnotte() {
     totalWon: 0,
     netProfit: 0,
     totalBonus: 0,
-    totalDistributions: 0
+    nbDistributions: 0  // ✅ Nombre de distributions (pas montant)
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' ou 'transactions'
@@ -66,11 +66,24 @@ export default function MaCagnotte() {
         const totalStaked = parisList.reduce((sum, b) => sum + b.stake, 0);
         const totalWon = parisList.filter(b => b.status === 'won').reduce((sum, b) => sum + b.payout, 0);
 
-        // Charger stats transactions
-        try {
-          const transStatsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/transactions/stats', {
-            headers: { 'x-user-id': user.id }
-          });
+        // ✅ Charger les transactions directement depuis Supabase
+        const { data: transData, error: transError } = await supabase
+          .from('user_transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (!transError && transData) {
+          setTransactions(transData);
+          
+          // ✅ Calculer nombre de distributions mensuelles
+          const nbDistributions = transData.filter(t => t.type === 'monthly_distribution').length;
+          
+          // ✅ Calculer montant total des bonus (score exact + autres)
+          const totalBonus = transData
+            .filter(t => t.type === 'bonus' || t.type === 'bonus_exact_score')
+            .reduce((sum, t) => sum + t.amount, 0);
           
           setStats({
             totalBets: parisList.length,
@@ -80,10 +93,11 @@ export default function MaCagnotte() {
             totalStaked,
             totalWon,
             netProfit: totalWon - totalStaked,
-            totalBonus: transStatsResponse.data.total_bonus || 0,
-            totalDistributions: transStatsResponse.data.total_distributions || 0
+            totalBonus,
+            nbDistributions
           });
-        } catch (error) {
+        } else {
+          setTransactions([]);
           setStats({
             totalBets: parisList.length,
             pendingBets: pending,
@@ -93,22 +107,22 @@ export default function MaCagnotte() {
             totalWon,
             netProfit: totalWon - totalStaked,
             totalBonus: 0,
-            totalDistributions: 0
+            nbDistributions: 0
           });
         }
       } catch (error) {
         console.log('Stats non disponibles:', error.message);
-      }
-
-      // Charger transactions
-      try {
-        const transResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/transactions?limit=50', {
-          headers: { 'x-user-id': user.id }
+        setStats({
+          totalBets: 0,
+          pendingBets: 0,
+          wonBets: 0,
+          lostBets: 0,
+          totalStaked: 0,
+          totalWon: 0,
+          netProfit: 0,
+          totalBonus: 0,
+          nbDistributions: 0
         });
-        setTransactions(transResponse.data.transactions || []);
-      } catch (error) {
-        console.log('Transactions non disponibles:', error.message);
-        setTransactions([]);
       }
 
     } catch (error) {
@@ -118,85 +132,72 @@ export default function MaCagnotte() {
     }
   };
 
+  const navigateToBet = (transaction) => {
+    if (!transaction.metadata?.match_id) return;
+    
+    navigate('/pronos', {
+      state: {
+        activeTab: 'mes-paris',
+        scrollToMatchId: transaction.metadata.match_id
+      }
+    });
+  };
+
   const getTransactionIcon = (type) => {
     switch (type) {
-      case 'bet_won': return <TrendingUp className="w-4 h-4 text-green-600" />;
-      case 'bet_lost': return <TrendingDown className="w-4 h-4 text-red-600" />;
-      case 'bet_placed': return <Coins className="w-4 h-4 text-orange-600" />;
-      case 'bonus_exact_score': return <Award className="w-4 h-4 text-purple-600" />;
-      case 'monthly_distribution': return <Gift className="w-4 h-4 text-blue-600" />;
-      default: return <History className="w-4 h-4 text-gray-600" />;
+      case 'bet_placed':
+        return <TrendingDown className="w-5 h-5 text-red-500" />;
+      case 'bet_won':
+        return <Trophy className="w-5 h-5 text-green-500" />;
+      case 'bet_lost':
+        return <TrendingDown className="w-5 h-5 text-gray-400" />;
+      case 'monthly_distribution':
+        return <Gift className="w-5 h-5 text-blue-500" />;
+      case 'bonus':
+      case 'bonus_exact_score':
+        return <Award className="w-5 h-5 text-purple-500" />;
+      default:
+        return <Coins className="w-5 h-5 text-gray-400" />;
     }
   };
 
   const getTransactionLabel = (type) => {
     switch (type) {
-      case 'bet_won': return 'Pari gagné';
-      case 'bet_lost': return 'Pari perdu';
-      case 'bet_placed': return 'Pari placé';
-      case 'bonus_exact_score': return 'Bonus score exact';
-      case 'monthly_distribution': return 'Distribution mensuelle';
-      default: return 'Transaction';
+      case 'bet_placed':
+        return 'Pari placé';
+      case 'bet_won':
+        return 'Pari gagné';
+      case 'bet_lost':
+        return 'Pari perdu';
+      case 'monthly_distribution':
+        return 'Distribution mensuelle';
+      case 'bonus_exact_score':
+        return 'Bonus score exact';
+      case 'bonus':
+        return 'Bonus';
+      default:
+        return 'Transaction';
     }
   };
 
-  const getBetFilterFromTransaction = (type) => {
-    if (type === 'bet_placed') return 'pending';
-    if (type === 'bet_won') return 'won';
-    if (type === 'bet_lost') return 'lost';
-    return 'pending';
-  };
+  const getTransactionDetails = (trans) => {
+    if (!trans.metadata) return null;
 
-  const navigateToBet = (transaction) => {
-    const betTypes = ['bet_placed', 'bet_won', 'bet_lost', 'bonus_exact_score'];
-    
-    if (betTypes.includes(transaction.type) && transaction.reference_id) {
-      const bet = paris.find(p => p.id === transaction.reference_id);
-      
-      if (bet) {
-        const filter = bet.status;
-        navigate('/pronos', { 
-          state: { 
-            activeTab: 'mes-paris', 
-            filter: filter,
-            scrollToMatchId: bet.match_id  // ✅ AJOUTER CETTE LIGNE
-          } 
-        });
-      }
-    }
-  };
-
-  const getTransactionDetails = (transaction) => {
-    const metadata = transaction.metadata || {};
-    
-    if (transaction.type === 'bet_placed') {
+    if (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost') {
       return (
-        <div className="text-[10px] text-gray-500 mt-1">
-          Mise: {metadata.stake} jetons • Cote: ×{metadata.odds?.toFixed(2)}
-        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          {trans.metadata.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
+          Cote: {trans.metadata.odds} • 
+          Mise: {trans.metadata.stake} jetons
+        </p>
       );
     }
-    
-    if (transaction.type === 'bonus_exact_score') {
+
+    if (trans.type === 'bonus_exact_score') {
       return (
-        <div className="text-[10px] text-purple-600 mt-1 font-semibold">
-          {transaction.description}
-        </div>
-      );
-    }
-    
-    if (transaction.type === 'monthly_distribution') {
-      const category = metadata.category;
-      const categoryLabels = {
-        'base': '🎁 Tous les utilisateurs',
-        'active': '⚡ Utilisateur actif',
-        'regular': '🔥 Utilisateur régulier',
-        'complete': '👑 Tous les paris du mois'
-      };
-      return (
-        <div className="text-[10px] text-blue-600 mt-1 font-semibold">
-          {categoryLabels[category] || 'Distribution'}
-        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Score exact trouvé ! 🎯
+        </p>
       );
     }
     
@@ -215,6 +216,7 @@ export default function MaCagnotte() {
     ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1) 
     : 0;
 
+  // ✅ Calcul ROI
   const roi = stats.totalStaked > 0
     ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
     : 0;
@@ -303,12 +305,23 @@ export default function MaCagnotte() {
               : 'bg-red-50 border-red-200'
           }`}>
             <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-xs font-semibold mb-1 ${
-                  stats.netProfit >= 0 ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  Bénéfice net
-                </p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className={`text-xs font-semibold ${
+                    stats.netProfit >= 0 ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    Bénéfice net
+                  </p>
+                  {/* ✅ Tooltip explicatif */}
+                  <div className="group relative">
+                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                    <div className="invisible group-hover:visible absolute left-0 top-6 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
+                      <strong>Bénéfice net =</strong> Total gagné - Total misé
+                      <br/><br/>
+                      Représente votre profit/perte global sur tous vos paris.
+                    </div>
+                  </div>
+                </div>
                 <p className={`text-3xl font-bold ${
                   stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>
@@ -331,6 +344,7 @@ export default function MaCagnotte() {
               <p className="text-2xl font-bold text-purple-600">
                 {stats.totalBonus}
               </p>
+              <p className="text-[10px] text-purple-500 mt-1">jetons</p>
             </div>
 
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -339,8 +353,9 @@ export default function MaCagnotte() {
                 <p className="text-xs text-blue-700 font-semibold">Distributions</p>
               </div>
               <p className="text-2xl font-bold text-blue-600">
-                {stats.totalDistributions}
+                {stats.nbDistributions}
               </p>
+              <p className="text-[10px] text-blue-500 mt-1">reçues</p>
             </div>
           </div>
 
@@ -377,13 +392,28 @@ export default function MaCagnotte() {
                 <span className="text-lg font-bold text-rugby-gold">{stats.totalBets}</span>
               </div>
 
-              <div className="flex items-center justify-between py-2">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Taux de réussite</span>
                 <span className="text-lg font-bold text-rugby-gold">{winRate}%</span>
               </div>
 
-              <div className="flex items-center justify-between py-2 border-t border-gray-100">
-                <span className="text-sm text-gray-600">ROI</span>
+              {/* ✅ ROI avec tooltip */}
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">ROI</span>
+                  {/* ✅ Tooltip explicatif */}
+                  <div className="group relative">
+                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                    <div className="invisible group-hover:visible absolute left-0 top-6 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
+                      <strong>ROI (Return On Investment) =</strong><br/>
+                      ((Total gagné - Total misé) / Total misé) × 100
+                      <br/><br/>
+                      <strong>Positif :</strong> Vous gagnez plus que vous misez<br/>
+                      <strong>Négatif :</strong> Vous perdez de l'argent<br/>
+                      <strong>Exemple :</strong> ROI +20% = 20% de profit sur vos mises
+                    </div>
+                  </div>
+                </div>
                 <span className={`text-lg font-bold ${
                   roi >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>
