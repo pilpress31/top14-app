@@ -6,6 +6,7 @@ import AvisModal from "../components/AvisModal";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
 export default function ParametresPage() {
+  const [showMesDonnees, setShowMesDonnees] = useState(false);
   const [showAvisModal, setShowAvisModal] = useState(false);
   const [showDiagnostic, setShowDiagnostic] = useState(false);
   const { user } = useAuth();
@@ -209,15 +210,28 @@ Merci.
         </div>
       )}
 
+
+
       {/* Section Compte */}
       <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h2 className="text-sm font-bold text-gray-700 uppercase flex items-center gap-2">
             <User className="h-4 w-4" />
-            Compte
+            Mon Compte
           </h2>
         </div>
 
+		{/* Lien vers Mon Compte */}
+        <button 
+          onClick={() => navigate('/profil')}
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
+        >
+          <User className="h-5 w-5 text-rugby-gold" />
+          <span className="flex-1 text-left text-gray-800 font-medium">Mon profil</span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+        </button>  
+        
+        {/* Ma cagnotte */}
         <button 
           onClick={() => navigate('/ma-cagnotte')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
