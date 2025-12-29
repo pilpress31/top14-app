@@ -71,7 +71,27 @@ export default function MesPronosTab({ goToMesParis }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // 🔥 Ouvrir le modal de pari
+  const ouvrirModal = (match) => {
+    const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
+    const hasFT = dejaPronos?.mise_ft > 0;
+    const hasMT = dejaPronos?.mise_mt > 0;
 
+    if (hasFT && hasMT) {
+      goToMesParis();
+      return;
+    }
+
+    setSelectedMatch(match);
+    setShowModal(true);
+  };
+
+  const fermerModal = () => {
+    setShowModal(false);
+    setSelectedMatch(null);
+  };
+
+  // 🔥 Chargement des données
   const loadData = async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
@@ -160,6 +180,7 @@ export default function MesPronosTab({ goToMesParis }) {
       setLoading(false);
     }
   };
+
 
   const ouvrirModal = (match) => {
     const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
