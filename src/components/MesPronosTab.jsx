@@ -9,6 +9,7 @@ import axios from 'axios';
 import BettingModal from './BettingModal';
 import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
+import { useLocation } from "react-router-dom";
 
 
 export default function MesPronosTab({ goToMesParis }) {
