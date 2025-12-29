@@ -86,11 +86,7 @@ export default function MesPronosTab({ goToMesParis }) {
     setShowModal(true);
   };
 
-  const fermerModal = () => {
-    setShowModal(false);
-    setSelectedMatch(null);
-  };
-
+  
   // 🔥 Chargement des données
   const loadData = async () => {
     try {
@@ -182,24 +178,8 @@ export default function MesPronosTab({ goToMesParis }) {
   };
 
 
-  const ouvrirModal = (match) => {
-    const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
-    const hasFT = dejaPronos?.mise_ft > 0;
-    const hasMT = dejaPronos?.mise_mt > 0;
-
-    if (hasFT && hasMT) {
-      goToMesParis();
-      return;
-    }
-
-    setSelectedMatch(match);
-    setShowModal(true);
-  };
-
-  const fermerModal = () => {
-    setShowModal(false);
-    setSelectedMatch(null);
-  };
+  
+  
 
   const toggleJournee = (journee) => {
     setExpandedJournees(prev => {
