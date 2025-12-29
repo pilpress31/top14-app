@@ -520,3 +520,4 @@ export default function MaCagnotte() {
     </div>
   );
 }
+
