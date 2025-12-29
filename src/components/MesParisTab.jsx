@@ -27,8 +27,13 @@ export default function MesParisTab() {
 
   // ? Scroll auto vers un pari spécifique
   useEffect(() => {
-    if (location.state?.scrollToMatchId && paris.length > 0) {
-      const matchId = location.state.scrollToMatchId;
+    // ✅ Lire depuis location.state OU depuis les query params de l'URL
+    const matchIdFromState = location.state?.scrollToMatchId;
+    const urlParams = new URLSearchParams(window.location.search);
+    const matchIdFromUrl = urlParams.get('scrollToMatchId');
+    const matchId = matchIdFromState || matchIdFromUrl;
+
+    if (matchId && paris.length > 0) {
       console.log('🎯 Navigation vers match_id:', matchId);
       
       // ? Trouver le bet qui a ce match_id
@@ -57,9 +62,9 @@ export default function MesParisTab() {
         console.log('❌ Paris disponibles:', paris.map(p => p.match_id));
       }
 
-      // Nettoyer le state
+      // Nettoyer le state ET l'URL
       if (window.history?.replaceState) {
-        window.history.replaceState({}, document.title);
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   }, [location.state, paris]);

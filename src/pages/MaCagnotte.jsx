@@ -133,33 +133,21 @@ export default function MaCagnotte() {
   };
 
   const navigateToBet = (transaction) => {
+    let matchId = null;
+    
     // ✅ Essayer d'abord avec metadata.match_id
     if (transaction.metadata?.match_id) {
-      navigate('/pronos', {
-        state: {
-          activeTab: 'mes-paris',
-          scrollToMatchId: transaction.metadata.match_id
-        }
-      });
-      return;
+      matchId = transaction.metadata.match_id;
     }
-    
     // ✅ Sinon chercher le match_id via reference_id dans paris
-    if (transaction.reference_id) {
+    else if (transaction.reference_id) {
       const bet = paris.find(p => p.id === transaction.reference_id);
       if (bet?.match_id) {
-        navigate('/pronos', {
-          state: {
-            activeTab: 'mes-paris',
-            scrollToMatchId: bet.match_id
-          }
-        });
-        return;
+        matchId = bet.match_id;
       }
     }
-
     // ✅ Sinon parser la description pour trouver le match
-    if (transaction.description) {
+    else if (transaction.description) {
       const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
       if (match) {
         const [_, team1, team2] = match;
@@ -170,14 +158,14 @@ export default function MaCagnotte() {
         });
         
         if (bet?.match_id) {
-          navigate('/pronos', {
-            state: {
-              activeTab: 'mes-paris',
-              scrollToMatchId: bet.match_id
-            }
-          });
+          matchId = bet.match_id;
         }
       }
+    }
+
+    // ✅ Naviguer avec le match_id dans l'URL
+    if (matchId) {
+      window.location.href = `/pronos?scrollToMatchId=${encodeURIComponent(matchId)}`;
     }
   };
 
