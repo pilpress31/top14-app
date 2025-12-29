@@ -134,40 +134,41 @@ export default function MaCagnotte() {
 
   const navigateToBet = (transaction) => {
     let matchId = null;
-    
-    // ✅ Essayer d'abord avec metadata.match_id
+
+    // 1) metadata.match_id
     if (transaction.metadata?.match_id) {
       matchId = transaction.metadata.match_id;
     }
-    // ✅ Sinon chercher le match_id via reference_id dans paris
+
+    // 2) via reference_id
     else if (transaction.reference_id) {
       const bet = paris.find(p => p.id === transaction.reference_id);
-      if (bet?.match_id) {
-        matchId = bet.match_id;
-      }
+      if (bet?.match_id) matchId = bet.match_id;
     }
-    // ✅ Sinon parser la description pour trouver le match
+
+    // 3) via description
     else if (transaction.description) {
       const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
       if (match) {
         const [_, team1, team2] = match;
         const bet = paris.find(p => {
-          const matchIdParts = p.match_id?.split('_') || [];
-          const matchTeams = matchIdParts.slice(2).join('_');
-          return matchTeams.includes(team1.replace(/ /g, '_')) || matchTeams.includes(team2.replace(/ /g, '_'));
+          const parts = p.match_id?.split('_') || [];
+          const teams = parts.slice(2).join('_');
+          return (
+            teams.includes(team1.replace(/ /g, '_')) ||
+            teams.includes(team2.replace(/ /g, '_'))
+          );
         });
-        
-        if (bet?.match_id) {
-          matchId = bet.match_id;
-        }
+        if (bet?.match_id) matchId = bet.match_id;
       }
     }
 
-    // ✅ Naviguer avec le match_id dans l'URL
+    // 4) Navigation vers /pronos avec paramètre
     if (matchId) {
-      window.location.href = `/pronos?scrollToMatchId=${encodeURIComponent(matchId)}`;
+      window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
     }
   };
+
 
   const getTransactionIcon = (type) => {
     switch (type) {

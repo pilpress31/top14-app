@@ -9,6 +9,7 @@ import axios from 'axios';
 import BettingModal from './BettingModal';
 import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
+import { useSearchParams } from 'next/navigation';
 
 export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
@@ -23,9 +24,30 @@ export default function MesPronosTab({ goToMesParis }) {
 
   const lastScrollY = useRef(0);
 
+
+  const searchParams = useSearchParams();
+  const matchToScroll = searchParams.get('match');
+
+  const matchRefs = useRef({});
+  const registerMatchRef = (matchId) => (el) => {
+    if (el) matchRefs.current[matchId] = el;
+  };
+
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (matchToScroll && matchRefs.current[matchToScroll]) {
+      matchRefs.current[matchToScroll].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }, [matchToScroll, mesPronos]);
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -256,13 +278,16 @@ export default function MesPronosTab({ goToMesParis }) {
                       const existingProno = mesPronos.find(p => p.match_id === match.match_id);
                       
                       return (
-                        <MatchCard
-                          key={match.match_id}
-                          match={match}
-                          existingProno={existingProno}
-                          onBetClick={ouvrirModal}
-                          goToMesParis={goToMesParis}
-                        />
+                        <div ref={registerMatchRef(match.match_id)}>
+                          <MatchCard
+                            key={match.match_id}
+                            match={match}
+                            existingProno={existingProno}
+                            onBetClick={ouvrirModal}
+                            goToMesParis={goToMesParis}
+                          />
+                        </div>
+
                       );
                     })}
                   </div>
