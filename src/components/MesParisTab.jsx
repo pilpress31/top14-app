@@ -14,12 +14,6 @@ export default function MesParisTab() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
-  const params = new URLSearchParams(location.search);
-  const matchToScroll = params.get('match');
-
-
-  // ✅ Stocker le match_id cible pour le scroll après changement d'onglet
-  const [targetMatchId, setTargetMatchId] = useState(null);
 
   // ? Refs pour chaque pari
   const betRefs = useRef({});
@@ -30,102 +24,112 @@ export default function MesParisTab() {
 
   // ? Scroll auto vers un pari spécifique
   useEffect(() => {
-    // 🔥 Lire depuis location.state OU depuis les query params de l'URL
-    const matchIdFromState = location.state?.match;
-    const urlParams = new URLSearchParams(window.location.search);
-    const matchIdFromUrl = urlParams.get('match');
-
-    const matchId = matchIdFromState || matchIdFromUrl;
-
-    if (matchId && paris.length > 0) {
-      console.log('🎯 Navigation vers match_id:', matchId);
-
+    if (location.state?.scrollToMatchId && paris.length > 0) {
+      const matchId = location.state.scrollToMatchId;  // ? Chercher par match_id
+      
       // ? Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
-
+      
       if (targetBet) {
-        console.log('✅ Pari trouvé:', targetBet);
-        console.log('📊 Status du pari:', targetBet.status);
-
-        // 🔥 Stocker le match_id pour le scroll après changement d’onglet
-        setTargetMatchId(matchId);
-
-        // 🔥 Sélectionner automatiquement le bon onglet
+        // ? Changer l'onglet selon le status du pari
         if (targetBet.status === 'pending') {
-          console.log('🔄 Changement vers onglet: En cours');
           setFilter('pending');
         } else if (targetBet.status === 'won') {
-          console.log('🔄 Changement vers onglet: Gagnés');
           setFilter('won');
         } else if (targetBet.status === 'lost') {
-          console.log('🔄 Changement vers onglet: Perdus');
           setFilter('lost');
         }
-      } else {
-        console.log('❌ Aucun pari trouvé pour match_id:', matchId);
-        console.log('❌ Paris disponibles:', paris.map(p => p.match_id));
+        
+        // Attendre que le DOM soit mis à jour (changement d'onglet + render)
+        setTimeout(() => {
+          const element = betRefs.current[targetBet.match_id];  // ? Utiliser match_id
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Effet de highlight temporaire
+            element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2');
+            setTimeout(() => {
+              element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2');
+            }, 2000);
+          }
+        }, 500);
       }
 
-      // 🔥 Nettoyer l’URL pour éviter un scroll infini
-      if (window.history?.replaceState) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+      // Nettoyer le state
+      window.history.replaceState({}, document.title);
     }
   }, [location.state, paris]);
 
+  const loadData = async () => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) {
+        console.log('? Pas de user connecté');
+        return;
+      }
 
-  // ? Scroll APRÈS changement d’onglet
-  useEffect(() => {
-    if (targetMatchId && paris.length > 0) {
-      console.log('🎯 Tentative de scroll vers:', targetMatchId);
+      console.log('? User ID:', user.id);
 
-      setTimeout(() => {
-        const element = betRefs.current[targetMatchId];
-        console.log('🔍 Élément trouvé:', element);
+      // Charger les crédits
+      try {
+        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
+          headers: { 'x-user-id': user.id }
+        });
+        console.log('? Crédits chargés:', creditsResponse.data);
+        setUserCredits(creditsResponse.data);
+      } catch (error) {
+        console.log('?? Crédits non disponibles:', error.message);
+        setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
+      }
 
-        if (element) {
-          console.log('📜 Scroll vers l\'élément');
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Charger les paris
+      try {
+        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
+          headers: { 'x-user-id': user.id }
+        });
+        console.log('? Réponse brute API:', parisResponse.data);
+        
+        const parisList = Array.isArray(parisResponse.data) 
+          ? parisResponse.data 
+          : (parisResponse.data.bets || []);
+        
+        console.log(`?? Nombre de paris trouvés: ${parisList.length}`);
+        console.log('?? Liste paris:', parisList);
+        setParis(parisList);
+      } catch (error) {
+        console.error('? Erreur chargement paris:', error);
+        console.log('? Détails:', error.response?.data || error.message);
+        setParis([]);
+      }
 
-          // ✨ Highlight temporaire
-          element.classList.add(
-            'ring-4', 'ring-blue-500', 'ring-offset-2',
-            'scale-105', 'shadow-2xl'
-          );
+      // Charger les pronos
+      const { data: pronosData, error: pronosError } = await supabase
+        .from('user_pronos')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-          setTimeout(() => {
-            element.classList.remove(
-              'ring-4', 'ring-blue-500', 'ring-offset-2',
-              'scale-105', 'shadow-2xl'
-            );
-          }, 3000);
+      if (!pronosError) {
+        console.log(`?? Nombre de pronos trouvés: ${pronosData?.length || 0}`);
+        setPronos(pronosData || []);
+      } else {
+        console.error('? Erreur chargement pronos:', pronosError);
+      }
 
-          setTargetMatchId(null);
-        } else {
-          console.log('❌ Élément non trouvé, retry dans 500ms');
-
-          setTimeout(() => {
-            const retryElement = betRefs.current[targetMatchId];
-            if (retryElement) {
-              retryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              retryElement.classList.add(
-                'ring-4', 'ring-blue-500', 'ring-offset-2',
-                'scale-105', 'shadow-2xl'
-              );
-              setTimeout(() => {
-                retryElement.classList.remove(
-                  'ring-4', 'ring-blue-500', 'ring-offset-2',
-                  'scale-105', 'shadow-2xl'
-                );
-              }, 3000);
-            }
-            setTargetMatchId(null);
-          }, 500);
-        }
-      }, 300);
+    } catch (error) {
+      console.error('? Erreur globale chargement données:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [targetMatchId, filter, paris]);
+  };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rugby-gold"></div>
+      </div>
+    );
+  }
 
   const parisFiltered = paris.filter(bet => {
     if (filter === 'pending') return bet.status === 'pending';
@@ -249,7 +253,7 @@ export default function MesParisTab() {
               <div 
                 key={bet.id}
                 ref={el => betRefs.current[bet.match_id] = el}  // ? Ref par match_id
-                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all duration-300"
+                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all"
                 style={{
                   borderLeftColor: 
                     bet.status === 'pending' ? '#f97316' : 
