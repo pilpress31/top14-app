@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
+import { useLocation } from "react-router-dom";
+
 
 export default function MaCagnotte() {
   const navigate = useNavigate();
