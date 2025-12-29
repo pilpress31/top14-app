@@ -135,15 +135,42 @@ export default function MaCagnotte() {
   };
 
   const navigateToBet = (transaction) => {
-    if (!transaction.metadata?.match_id) return;
-    
-    navigate('/pronos', {
-      state: {
-        activeTab: 'mes-paris',
-        scrollToMatchId: transaction.metadata.match_id
+    let matchId = null;
+
+    // 1) metadata.match_id
+    if (transaction.metadata?.match_id) {
+      matchId = transaction.metadata.match_id;
+    }
+
+    // 2) reference_id → retrouver le pari
+    else if (transaction.reference_id) {
+      const bet = paris.find(p => p.id === transaction.reference_id);
+      if (bet?.match_id) matchId = bet.match_id;
+    }
+
+    // 3) description → fallback
+    else if (transaction.description) {
+      const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
+      if (match) {
+        const [_, team1, team2] = match;
+        const bet = paris.find(p => {
+          const parts = p.match_id?.split('_') || [];
+          const teams = parts.slice(2).join('_');
+          return (
+            teams.includes(team1.replace(/ /g, '_')) ||
+            teams.includes(team2.replace(/ /g, '_'))
+          );
+        });
+        if (bet?.match_id) matchId = bet.match_id;
       }
-    });
+    }
+
+    // 4) Navigation vers /pronos avec paramètre URL
+    if (matchId) {
+      window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
+    }
   };
+
 
   const getTransactionIcon = (type) => {
     switch (type) {
