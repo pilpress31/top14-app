@@ -14,7 +14,10 @@ export default function MesParisTab() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
-  
+  const params = new URLSearchParams(location.search);
+  const matchToScroll = params.get('match');
+
+
   // ✅ Stocker le match_id cible pour le scroll après changement d'onglet
   const [targetMatchId, setTargetMatchId] = useState(null);
 
@@ -27,26 +30,27 @@ export default function MesParisTab() {
 
   // ? Scroll auto vers un pari spécifique
   useEffect(() => {
-    // ✅ Lire depuis location.state OU depuis les query params de l'URL
-    const matchIdFromState = location.state?.scrollToMatchId;
+    // 🔥 Lire depuis location.state OU depuis les query params de l'URL
+    const matchIdFromState = location.state?.match;
     const urlParams = new URLSearchParams(window.location.search);
-    const matchIdFromUrl = urlParams.get('scrollToMatchId');
+    const matchIdFromUrl = urlParams.get('match');
+
     const matchId = matchIdFromState || matchIdFromUrl;
 
     if (matchId && paris.length > 0) {
       console.log('🎯 Navigation vers match_id:', matchId);
-      
+
       // ? Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
-      
+
       if (targetBet) {
         console.log('✅ Pari trouvé:', targetBet);
         console.log('📊 Status du pari:', targetBet.status);
-        
-        // ✅ Stocker le match_id pour le scroll après le changement d'onglet
+
+        // 🔥 Stocker le match_id pour le scroll après changement d’onglet
         setTargetMatchId(matchId);
-        
-        // ? Changer l'onglet selon le status du pari
+
+        // 🔥 Sélectionner automatiquement le bon onglet
         if (targetBet.status === 'pending') {
           console.log('🔄 Changement vers onglet: En cours');
           setFilter('pending');
@@ -62,129 +66,66 @@ export default function MesParisTab() {
         console.log('❌ Paris disponibles:', paris.map(p => p.match_id));
       }
 
-      // Nettoyer le state ET l'URL
+      // 🔥 Nettoyer l’URL pour éviter un scroll infini
       if (window.history?.replaceState) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   }, [location.state, paris]);
 
-  // ✅ Nouveau useEffect pour gérer le scroll APRÈS le changement d'onglet
+
+  // ? Scroll APRÈS changement d’onglet
   useEffect(() => {
     if (targetMatchId && paris.length > 0) {
       console.log('🎯 Tentative de scroll vers:', targetMatchId);
-      
-      // Attendre que React ait re-rendu la liste avec le bon filtre
+
       setTimeout(() => {
         const element = betRefs.current[targetMatchId];
-        console.log('🔍 Recherche élément pour match_id:', targetMatchId);
         console.log('🔍 Élément trouvé:', element);
-        console.log('🔍 Tous les refs disponibles:', Object.keys(betRefs.current));
-        
+
         if (element) {
           console.log('📜 Scroll vers l\'élément');
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
-          // ✅ Effet de highlight temporaire
-          element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-          console.log('✨ Classes ajoutées pour highlight');
-          
+
+          // ✨ Highlight temporaire
+          element.classList.add(
+            'ring-4', 'ring-blue-500', 'ring-offset-2',
+            'scale-105', 'shadow-2xl'
+          );
+
           setTimeout(() => {
-            element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-            console.log('🔄 Classes retirées');
+            element.classList.remove(
+              'ring-4', 'ring-blue-500', 'ring-offset-2',
+              'scale-105', 'shadow-2xl'
+            );
           }, 3000);
-          
-          // ✅ Nettoyer targetMatchId après le scroll
+
           setTargetMatchId(null);
         } else {
-          console.log('❌ Élément non trouvé, nouvelle tentative dans 500ms');
-          // Réessayer une fois au cas où le DOM n'est pas encore prêt
+          console.log('❌ Élément non trouvé, retry dans 500ms');
+
           setTimeout(() => {
             const retryElement = betRefs.current[targetMatchId];
             if (retryElement) {
               retryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              retryElement.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+              retryElement.classList.add(
+                'ring-4', 'ring-blue-500', 'ring-offset-2',
+                'scale-105', 'shadow-2xl'
+              );
               setTimeout(() => {
-                retryElement.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
+                retryElement.classList.remove(
+                  'ring-4', 'ring-blue-500', 'ring-offset-2',
+                  'scale-105', 'shadow-2xl'
+                );
               }, 3000);
             }
             setTargetMatchId(null);
           }, 500);
         }
-      }, 300); // Délai court car on attend déjà le changement de filter
+      }, 300);
     }
-  }, [targetMatchId, filter, paris]); // ✅ Se déclenche quand filter change
+  }, [targetMatchId, filter, paris]);
 
-  const loadData = async () => {
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) {
-        console.log('? Pas de user connecté');
-        return;
-      }
-
-      console.log('? User ID:', user.id);
-
-      // Charger les crédits
-      try {
-        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
-          headers: { 'x-user-id': user.id }
-        });
-        console.log('? Crédits chargés:', creditsResponse.data);
-        setUserCredits(creditsResponse.data);
-      } catch (error) {
-        console.log('?? Crédits non disponibles:', error.message);
-        setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
-      }
-
-      // Charger les paris
-      try {
-        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
-          headers: { 'x-user-id': user.id }
-        });
-        console.log('? Réponse brute API:', parisResponse.data);
-        
-        const parisList = Array.isArray(parisResponse.data) 
-          ? parisResponse.data 
-          : (parisResponse.data.bets || []);
-        
-        console.log(`?? Nombre de paris trouvés: ${parisList.length}`);
-        console.log('?? Liste paris:', parisList);
-        setParis(parisList);
-      } catch (error) {
-        console.error('? Erreur chargement paris:', error);
-        console.log('? Détails:', error.response?.data || error.message);
-        setParis([]);
-      }
-
-      // Charger les pronos
-      const { data: pronosData, error: pronosError } = await supabase
-        .from('user_pronos')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!pronosError) {
-        console.log(`?? Nombre de pronos trouvés: ${pronosData?.length || 0}`);
-        setPronos(pronosData || []);
-      } else {
-        console.error('? Erreur chargement pronos:', pronosError);
-      }
-
-    } catch (error) {
-      console.error('? Erreur globale chargement données:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rugby-gold"></div>
-      </div>
-    );
-  }
 
   const parisFiltered = paris.filter(bet => {
     if (filter === 'pending') return bet.status === 'pending';
