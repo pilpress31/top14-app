@@ -9,7 +9,7 @@ import axios from 'axios';
 import BettingModal from './BettingModal';
 import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
-import { useSearchParams } from 'next/navigation';
+
 
 export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
