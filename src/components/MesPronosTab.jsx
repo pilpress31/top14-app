@@ -24,9 +24,10 @@ export default function MesPronosTab({ goToMesParis }) {
 
   const lastScrollY = useRef(0);
 
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const matchToScroll = params.get('match');
 
-  const searchParams = useSearchParams();
-  const matchToScroll = searchParams.get('match');
 
   const matchRefs = useRef({});
   const registerMatchRef = (matchId) => (el) => {
