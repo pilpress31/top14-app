@@ -11,7 +11,6 @@ import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
 import { useLocation } from "react-router-dom";
 
-
 export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
@@ -25,21 +24,23 @@ export default function MesPronosTab({ goToMesParis }) {
 
   const lastScrollY = useRef(0);
 
+  // 🔥 Lecture du paramètre ?match=xxxx dans l’URL
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const matchToScroll = params.get('match');
 
-
+  // 🔥 Refs pour scroller vers un match précis
   const matchRefs = useRef({});
   const registerMatchRef = (matchId) => (el) => {
     if (el) matchRefs.current[matchId] = el;
   };
 
-
+  // 🔥 Chargement initial des données
   useEffect(() => {
     loadData();
   }, []);
 
+  // 🔥 Scroll automatique vers le match ciblé
   useEffect(() => {
     if (matchToScroll && matchRefs.current[matchToScroll]) {
       matchRefs.current[matchToScroll].scrollIntoView({
@@ -49,8 +50,7 @@ export default function MesPronosTab({ goToMesParis }) {
     }
   }, [matchToScroll, mesPronos]);
 
-
-
+  // 🔥 Gestion du header sticky
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY;
@@ -70,6 +70,7 @@ export default function MesPronosTab({ goToMesParis }) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
 
   const loadData = async () => {
     try {
