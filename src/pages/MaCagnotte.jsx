@@ -133,42 +133,15 @@ export default function MaCagnotte() {
   };
 
   const navigateToBet = (transaction) => {
-    let matchId = null;
-
-    // 1) metadata.match_id
-    if (transaction.metadata?.match_id) {
-      matchId = transaction.metadata.match_id;
-    }
-
-    // 2) via reference_id
-    else if (transaction.reference_id) {
-      const bet = paris.find(p => p.id === transaction.reference_id);
-      if (bet?.match_id) matchId = bet.match_id;
-    }
-
-    // 3) via description
-    else if (transaction.description) {
-      const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
-      if (match) {
-        const [_, team1, team2] = match;
-        const bet = paris.find(p => {
-          const parts = p.match_id?.split('_') || [];
-          const teams = parts.slice(2).join('_');
-          return (
-            teams.includes(team1.replace(/ /g, '_')) ||
-            teams.includes(team2.replace(/ /g, '_'))
-          );
-        });
-        if (bet?.match_id) matchId = bet.match_id;
+    if (!transaction.metadata?.match_id) return;
+    
+    navigate('/pronos', {
+      state: {
+        activeTab: 'mes-paris',
+        scrollToMatchId: transaction.metadata.match_id
       }
-    }
-
-    // 4) Navigation vers /pronos avec paramètre
-    if (matchId) {
-      window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
-    }
+    });
   };
-
 
   const getTransactionIcon = (type) => {
     switch (type) {
@@ -208,8 +181,9 @@ export default function MaCagnotte() {
   };
 
   const getTransactionDetails = (trans) => {
-    // Si on a les metadata, les utiliser directement
-    if (trans.metadata && (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost')) {
+    if (!trans.metadata) return null;
+
+    if (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost') {
       return (
         <p className="text-xs text-gray-500 mt-1">
           {trans.metadata.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
@@ -217,45 +191,6 @@ export default function MaCagnotte() {
           Mise: {trans.metadata.stake} jetons
         </p>
       );
-    }
-
-    // ✅ Si pas de metadata mais qu'on a un reference_id, chercher dans paris
-    if (!trans.metadata && trans.reference_id && (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost')) {
-      const bet = paris.find(p => p.id === trans.reference_id);
-      if (bet) {
-        return (
-          <p className="text-xs text-gray-500 mt-1">
-            {bet.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
-            Cote: {bet.odds} • 
-            Mise: {bet.stake} jetons
-          </p>
-        );
-      }
-    }
-
-    // ✅ Si pas de metadata ni reference_id, essayer de trouver via la description
-    if (!trans.metadata && !trans.reference_id && trans.description && (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost')) {
-      // Extraire les noms d'équipes de la description (format: "✅ Bon vainqueur ! EQUIPE1 XX-YY EQUIPE2")
-      const match = trans.description.match(/! (.+?) \d+-\d+ (.+?)$/);
-      if (match) {
-        const [_, team1, team2] = match;
-        // Chercher un pari qui correspond à ces équipes
-        const bet = paris.find(p => {
-          const matchIdParts = p.match_id?.split('_') || [];
-          const matchTeams = matchIdParts.slice(2).join('_');
-          return matchTeams.includes(team1.replace(/ /g, '_')) || matchTeams.includes(team2.replace(/ /g, '_'));
-        });
-        
-        if (bet) {
-          return (
-            <p className="text-xs text-gray-500 mt-1">
-              {bet.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
-              Cote: {bet.odds} • 
-              Mise: {bet.stake} jetons
-            </p>
-          );
-        }
-      }
     }
 
     if (trans.type === 'bonus_exact_score') {
@@ -549,8 +484,8 @@ export default function MaCagnotte() {
                               </p>
                               {getTransactionDetails(trans)}
                               
-                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id, reference_id OU description */}
-                              {((trans.metadata?.match_id || trans.reference_id || trans.description) && trans.type !== 'monthly_distribution') && (
+                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id */}
+                              {trans.metadata?.match_id && trans.type !== 'monthly_distribution' && (
                                 <button
                                   onClick={() => navigateToBet(trans)}
                                   className="mt-2 flex items-center gap-1 text-xs text-rugby-gold hover:text-rugby-bronze font-semibold transition-colors"
