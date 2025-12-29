@@ -9,7 +9,7 @@ import axios from 'axios';
 import BettingModal from './BettingModal';
 import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 
 export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
@@ -35,45 +35,9 @@ export default function MesPronosTab({ goToMesParis }) {
     if (el) matchRefs.current[matchId] = el;
   };
 
-  // 🔥 Chargement initial des données
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  // 🔥 Scroll automatique vers le match ciblé
-  useEffect(() => {
-    if (matchToScroll && matchRefs.current[matchToScroll]) {
-      matchRefs.current[matchToScroll].scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
-  }, [matchToScroll, mesPronos]);
-
-  // 🔥 Gestion du header sticky
-  useEffect(() => {
-    const handleScroll = () => {
-      const current = window.scrollY;
-      const threshold = 5;
-
-      if (current < 10) {
-        setHeaderVisible(true);
-      } else if (current - lastScrollY.current > threshold) {
-        setHeaderVisible(false);
-      } else if (lastScrollY.current - current > threshold) {
-        setHeaderVisible(true);
-      }
-
-      lastScrollY.current = current;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // 🔥 Ouvrir le modal de pari
+  // 🔥 Ouvrir / fermer le modal
   const ouvrirModal = (match) => {
-    const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
+    const dejaPronos = mesPronos.find((p) => p.match_id === match.match_id);
     const hasFT = dejaPronos?.mise_ft > 0;
     const hasMT = dejaPronos?.mise_mt > 0;
 
@@ -86,22 +50,34 @@ export default function MesPronosTab({ goToMesParis }) {
     setShowModal(true);
   };
 
-  
+  const fermerModal = () => {
+    setShowModal(false);
+    setSelectedMatch(null);
+  };
+
   // 🔥 Chargement des données
   const loadData = async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-      const matchsResponse = await axios.get('https://top14-api-production.up.railway.app/api/matchs/a-venir');
-      const cotesResponse = await axios.get('https://top14-api-production.up.railway.app/api/cotes/all');
-      
+      // Matchs + cotes
+      const matchsResponse = await axios.get(
+        'https://top14-api-production.up.railway.app/api/matchs/a-venir'
+      );
+      const cotesResponse = await axios.get(
+        'https://top14-api-production.up.railway.app/api/cotes/all'
+      );
+
       const cotesMap = {};
-      const cotesArray = Array.isArray(cotesResponse.data) 
-        ? cotesResponse.data 
-        : (cotesResponse.data?.cotes || []);
-      
-      cotesArray.forEach(cote => {
+      const cotesArray = Array.isArray(cotesResponse.data)
+        ? cotesResponse.data
+        : cotesResponse.data?.cotes || [];
+
+      cotesArray.forEach((cote) => {
         cotesMap[cote.match_id] = {
           cote_domicile: cote.cote_domicile,
           cote_exterieur: cote.cote_exterieur,
@@ -119,37 +95,39 @@ export default function MesPronosTab({ goToMesParis }) {
           score_predit_mt_ext: cote.score_predit_mt_ext,
           match_start_time: cote.match_start_time,
           halftime_start_time: cote.halftime_start_time,
-          halftime_duration: cote.halftime_duration
+          halftime_duration: cote.halftime_duration,
         };
       });
 
-      const matchsAvecCotes = (matchsResponse.data.matchs || []).map(match => ({
+      const matchsAvecCotes = (matchsResponse.data.matchs || []).map((match) => ({
         ...match,
         match_id: match.id,
         date_match: match.date,
-        cotes: cotesMap[match.id] || null
+        cotes: cotesMap[match.id] || null,
       }));
 
       setMatchsDisponibles(matchsAvecCotes);
 
+      // Déplier par défaut la première journée
       if (matchsAvecCotes.length > 0 && expandedJournees.size === 0) {
-        const matchsParJournee = matchsAvecCotes.reduce((acc, match) => {
+        const matchsParJourneeInit = matchsAvecCotes.reduce((acc, match) => {
           if (!acc[match.journee]) acc[match.journee] = [];
           acc[match.journee].push(match);
           return acc;
         }, {});
-        
-        const journees = Object.keys(matchsParJournee).sort((a, b) => {
+
+        const journeesInit = Object.keys(matchsParJourneeInit).sort((a, b) => {
           const numA = parseInt(a.replace('J', ''));
           const numB = parseInt(b.replace('J', ''));
           return numA - numB;
         });
-        
-        if (journees.length > 0) {
-          setExpandedJournees(new Set([journees[0]]));
+
+        if (journeesInit.length > 0) {
+          setExpandedJournees(new Set([journeesInit[0]]));
         }
       }
 
+      // Pronos utilisateur
       const { data: pronos, error } = await supabase
         .from('user_pronos')
         .select('*')
@@ -160,16 +138,19 @@ export default function MesPronosTab({ goToMesParis }) {
       if (error) throw error;
       setMesPronos(pronos || []);
 
+      // Crédits utilisateur
       try {
-        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
-          headers: { 'x-user-id': user.id }
-        });
+        const creditsResponse = await axios.get(
+          'https://top14-api-production.up.railway.app/api/user/credits',
+          {
+            headers: { 'x-user-id': user.id },
+          }
+        );
         setUserCredits(creditsResponse.data);
       } catch (creditsError) {
         console.log('Crédits non disponibles:', creditsError.message);
         setUserCredits({ credits: 1000, total_earned: 0 });
       }
-
     } catch (error) {
       console.error('Erreur chargement data:', error);
     } finally {
@@ -177,12 +158,44 @@ export default function MesPronosTab({ goToMesParis }) {
     }
   };
 
+  // 🔥 Chargement initial des données
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  
-  
+  // 🔥 Scroll automatique vers le match ciblé
+  useEffect(() => {
+    if (matchToScroll && matchRefs.current[matchToScroll]) {
+      matchRefs.current[matchToScroll].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [matchToScroll, mesPronos]);
+
+  // 🔥 Gestion du header sticky (si utilisé ailleurs)
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      const threshold = 5;
+
+      if (current < 10) {
+        setHeaderVisible(true);
+      } else if (current - lastScrollY.current > threshold) {
+        setHeaderVisible(false);
+      } else if (lastScrollY.current - current > threshold) {
+        setHeaderVisible(true);
+      }
+
+      lastScrollY.current = current;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const toggleJournee = (journee) => {
-    setExpandedJournees(prev => {
+    setExpandedJournees((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(journee)) {
         newSet.delete(journee);
@@ -215,13 +228,12 @@ export default function MesPronosTab({ goToMesParis }) {
 
   return (
     <div className="space-y-3">
-      
       {/* ✅ BANDEAU AVEC ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
           {/* ✅ ZONE CLIQUABLE VERS MA CAGNOTTE */}
           <button
-            onClick={() => window.location.href = '/ma-cagnotte'}
+            onClick={() => (window.location.href = '/ma-cagnotte')}
             className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
           >
             <Coins className="w-8 h-8 text-white" />
@@ -230,7 +242,6 @@ export default function MesPronosTab({ goToMesParis }) {
               <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
             </div>
           </button>
-
 
           <div className="text-right">
             <p className="text-white/80 text-xs">Total gagné</p>
@@ -242,8 +253,6 @@ export default function MesPronosTab({ goToMesParis }) {
         </div>
       </div>
 
-      
-
       {/* Liste des journées */}
       {journees.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
@@ -251,13 +260,15 @@ export default function MesPronosTab({ goToMesParis }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {journees.map(journee => {
+          {journees.map((journee) => {
             const isExpanded = expandedJournees.has(journee);
             const matchsJournee = matchsParJournee[journee];
-            
+
             return (
-              <div key={journee} className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden">
-                
+              <div
+                key={journee}
+                className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden"
+              >
                 <button
                   onClick={() => toggleJournee(journee)}
                   className="w-full bg-rugby-gold/10 px-3 py-2 border-b border-rugby-gray hover:bg-rugby-gold/20 transition-colors"
@@ -266,7 +277,9 @@ export default function MesPronosTab({ goToMesParis }) {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-rugby-gold" />
                       <span className="font-bold text-rugby-black text-sm">{journee}</span>
-                      <span className="text-xs text-gray-500">({matchsJournee.length} matchs)</span>
+                      <span className="text-xs text-gray-500">
+                        ({matchsJournee.length} matchs)
+                      </span>
                     </div>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4 text-rugby-gold" />
@@ -278,20 +291,23 @@ export default function MesPronosTab({ goToMesParis }) {
 
                 {isExpanded && (
                   <div className="divide-y divide-rugby-gray">
-                    {matchsJournee.map(match => {
-                      const existingProno = mesPronos.find(p => p.match_id === match.match_id);
-                      
+                    {matchsJournee.map((match) => {
+                      const existingProno = mesPronos.find(
+                        (p) => p.match_id === match.match_id
+                      );
+
                       return (
-                        <div ref={registerMatchRef(match.match_id)}>
+                        <div
+                          key={match.match_id}
+                          ref={registerMatchRef(match.match_id)}
+                        >
                           <MatchCard
-                            key={match.match_id}
                             match={match}
                             existingProno={existingProno}
                             onBetClick={ouvrirModal}
                             goToMesParis={goToMesParis}
                           />
                         </div>
-
                       );
                     })}
                   </div>
@@ -303,9 +319,11 @@ export default function MesPronosTab({ goToMesParis }) {
       )}
 
       {showModal && selectedMatch && (
-        <BettingModal 
+        <BettingModal
           match={selectedMatch}
-          existingProno={mesPronos.find(p => p.match_id === selectedMatch.match_id)}
+          existingProno={mesPronos.find(
+            (p) => p.match_id === selectedMatch.match_id
+          )}
           userCredits={userCredits?.credits || 0}
           onClose={fermerModal}
           onSuccess={() => {
@@ -314,7 +332,6 @@ export default function MesPronosTab({ goToMesParis }) {
           }}
         />
       )}
-
 
       {/* Bouton Règlement en bas de page */}
       <div className="flex justify-center mt-6 mb-4">
@@ -327,7 +344,7 @@ export default function MesPronosTab({ goToMesParis }) {
         </button>
       </div>
 
-            <ReglementModal 
+      <ReglementModal
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />
