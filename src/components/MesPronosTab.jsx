@@ -139,6 +139,9 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
       setMatchsDisponibles(matchsAvecCotes);
 
+      console.log("matchsDisponibles:", matchsAvecCotes);
+
+
       // Auto-expand première journée seulement si pas de targetMatch
       if (matchsAvecCotes.length > 0 && expandedJournees.size === 0 && !targetMatch) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, match) => {
