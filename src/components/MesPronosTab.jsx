@@ -348,19 +348,16 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
                       const existingProno = mesPronos.find(p => p.match_id === match.match_id);
                       
                       return (
-                        <div 
+                        <MatchCard
                           key={match.match_id}
                           ref={el => matchRefs.current[match.match_id] = el}
-                          className="transition-all duration-300"
-                        >
-                          <MatchCard
-                            match={match}
-                            existingProno={existingProno}
-                            onBetClick={ouvrirModal}
-                            goToMesParis={goToMesParis}
-                          />
-                        </div>
+                          match={match}
+                          existingProno={existingProno}
+                          onBetClick={ouvrirModal}
+                          goToMesParis={goToMesParis}
+                        />
                       );
+
 
                     })}
                   </div>
