@@ -190,6 +190,8 @@ export default function MaCagnotte() {
       case 'bonus':
       case 'bonus_exact_score':
         return <Award className="w-5 h-5 text-purple-500" />;
+      case 'initial_capital':
+        return <Gift className="w-5 h-5 text-blue-500" />;
       default:
         return <Coins className="w-5 h-5 text-gray-400" />;
     }
@@ -209,6 +211,8 @@ export default function MaCagnotte() {
         return 'Bonus score exact';
       case 'bonus':
         return 'Bonus';
+      case 'initial_capital':
+        return 'Bonus de bienvenue';  
       default:
         return 'Transaction';
     }
@@ -235,6 +239,15 @@ export default function MaCagnotte() {
       );
     }
     
+    if (trans.type === 'initial_capital') {
+      return (
+        <p className="text-xs text-gray-500 mt-1">
+          Jetons offerts à l’inscription
+        </p>
+      );
+    }
+  
+
     return null;
   };
 
