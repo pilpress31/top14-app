@@ -75,7 +75,7 @@ export default function MaCagnotte() {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: true })
-          .limit(100);
+          .order('id', { ascending: true });
 
 
 
