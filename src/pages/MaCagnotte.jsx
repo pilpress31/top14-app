@@ -51,25 +51,36 @@ export default function MaCagnotte() {
         setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
       }
 
-      // Charger les paris pour les stats
       try {
-        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
-          headers: { 'x-user-id': user.id }
-        });
-        const parisList = Array.isArray(parisResponse.data) 
-          ? parisResponse.data 
-          : (parisResponse.data.bets || []);
-        
+        // Charger les paris enrichis (nouveau système)
+        const parisResponse = await axios.get(
+          'https://top14-api-production.up.railway.app/api/user/bets/v2',
+          {
+            headers: { 'x-user-id': user.id }
+          }
+        );
+
+        const parisList = Array.isArray(parisResponse.data)
+          ? parisResponse.data
+          : [];
+
         setParis(parisList);
-        
-        const pending = parisList.filter(b => b.status === 'pending').length;
-        const won = parisList.filter(b => b.status === 'won').length;
-        const lost = parisList.filter(b => b.status === 'lost').length;
-        const totalStaked = parisList.reduce((sum, b) => sum + b.stake, 0);
-        const totalWon = parisList.filter(b => b.status === 'won').reduce((sum, b) => sum + b.payout, 0);
+
+        // Adaptation : les stats lisent maintenant dans parisList.bets
+        const pending = parisList.filter(b => b.bets?.status === 'pending').length;
+        const won = parisList.filter(b => b.bets?.status === 'won').length;
+        const lost = parisList.filter(b => b.bets?.status === 'lost').length;
+
+        const totalStaked = parisList.reduce(
+          (sum, b) => sum + (b.bets?.stake || 0),
+          0
+        );
+
+        const totalWon = parisList
+          .filter(b => b.bets?.status === 'won')
+          .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
 
         // Charger les transactions depuis credit_transactions (source de vérité)
-        // en ordre chronologique (plus ancien → plus récent)
         const { data: transData, error: transError } = await supabase
           .from('credit_transactions')
           .select('*')
@@ -77,21 +88,17 @@ export default function MaCagnotte() {
           .order('created_at', { ascending: true })
           .order('id', { ascending: true });
 
-
-
         if (!transError && transData) {
-          // On inverse pour afficher du plus récent au plus ancien
           setTransactions([...transData].reverse());
 
-          
-          // ✅ Calculer nombre de distributions mensuelles
-          const nbDistributions = transData.filter(t => t.type === 'monthly_distribution').length;
-          
-          // ✅ Calculer montant total des bonus (score exact + autres)
+          const nbDistributions = transData.filter(
+            t => t.type === 'monthly_distribution'
+          ).length;
+
           const totalBonus = transData
             .filter(t => t.type === 'bonus' || t.type === 'bonus_exact_score')
             .reduce((sum, t) => sum + t.amount, 0);
-          
+
           setStats({
             totalBets: parisList.length,
             pendingBets: pending,
@@ -117,6 +124,7 @@ export default function MaCagnotte() {
             nbDistributions: 0
           });
         }
+
       } catch (error) {
         console.log('Stats non disponibles:', error.message);
         setStats({
@@ -132,11 +140,14 @@ export default function MaCagnotte() {
         });
       }
 
-    } catch (error) {
-      console.error('Erreur chargement données:', error);
-    } finally {
-      setLoading(false);
-    }
+      } catch (error) {
+        console.error('Erreur chargement données:', error);
+      } finally {
+        setLoading(false);
+      }
+
+
+
   };
 
   const navigateToBet = (transaction) => {
