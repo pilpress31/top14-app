@@ -344,7 +344,7 @@ export default function MesParisTab() {
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <p className="text-gray-500">Type</p>
-                    <p className="font-bold">{bet.bet_type === 'FT' ? '?? Temps plein' : '?? Mi-temps'}</p>
+                    <p className="font-bold">{bet.bet_type === 'FT' ? 'Temps plein' : 'Mi-temps'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Prono</p>
