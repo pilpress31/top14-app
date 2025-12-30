@@ -230,8 +230,9 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
 
   return (
     <div className="space-y-4">
-      <div className={`sticky bg-white z-30 pb-4 pt-2 shadow-sm border-b border-gray-200 transition-all duration-300`}
-           style={{ top: headerVisible ? '200px' : '80px' }}>
+      <div className={`sticky bg-white z-30 pb-4 pt-2 shadow-sm border-b border-gray-200 transition-all duration-300 ${
+        headerVisible ? 'top-[200px]' : 'top-[80px]'
+      }`}>
         <div className="flex flex-col md:flex-row gap-4">
           {/* Sélecteur d'équipe */}
           <div className="relative flex-1">
@@ -525,10 +526,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
       </div>
 
       {/* Pagination */}
-      <div
-        className="fixed left-0 w-full flex justify-center items-center gap-4 bg-white py-2 shadow-md z-50"
-        style={{ bottom: "var(--bottom-nav-height, 60px)" }}
-      >
+      <div className="fixed left-0 w-full flex justify-center items-center gap-4 bg-white py-2 shadow-md z-50 bottom-[60px]">
         <button
           onClick={() => {
             setCurrentPage(p => Math.max(1, p - 1));
