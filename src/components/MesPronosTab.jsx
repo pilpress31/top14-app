@@ -1,5 +1,5 @@
 // ============================================
-// MES PRONOS - VERSION AVEC BANDEAU CLIQUABLE
+// MES PRONOS - VERSION AVEC NAVIGATION CIBLÉE
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
@@ -10,7 +10,7 @@ import BettingModal from './BettingModal';
 import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
 
-export default function MesPronosTab({ goToMesParis }) {
+export default function MesPronosTab({ goToMesParis, targetMatch }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
   const [userCredits, setUserCredits] = useState(null);
@@ -22,10 +22,24 @@ export default function MesPronosTab({ goToMesParis }) {
   const [headerVisible, setHeaderVisible] = useState(true);
 
   const lastScrollY = useRef(0);
+  const matchRefs = useRef({});
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Gérer le targetMatch pour auto-expand et scroll
+  useEffect(() => {
+    if (targetMatch && matchsDisponibles.length > 0) {
+      // Expand la journée du match cible
+      setExpandedJournees(new Set([targetMatch.journee]));
+      
+      // Scroll vers le match après un délai pour laisser le DOM se mettre à jour
+      setTimeout(() => {
+        scrollToMatch(targetMatch.id);
+      }, 300);
+    }
+  }, [targetMatch, matchsDisponibles]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +60,26 @@ export default function MesPronosTab({ goToMesParis }) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const scrollToMatch = (matchId) => {
+    const element = matchRefs.current[matchId];
+    if (element) {
+      const headerOffset = 220;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      // Effet visuel sur le match
+      element.classList.add('ring-2', 'ring-rugby-gold', 'ring-offset-2');
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-rugby-gold', 'ring-offset-2');
+      }, 2000);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -91,7 +125,8 @@ export default function MesPronosTab({ goToMesParis }) {
 
       setMatchsDisponibles(matchsAvecCotes);
 
-      if (matchsAvecCotes.length > 0 && expandedJournees.size === 0) {
+      // Auto-expand première journée seulement si pas de targetMatch
+      if (matchsAvecCotes.length > 0 && expandedJournees.size === 0 && !targetMatch) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, match) => {
           if (!acc[match.journee]) acc[match.journee] = [];
           acc[match.journee].push(match);
@@ -190,10 +225,8 @@ export default function MesPronosTab({ goToMesParis }) {
   return (
     <div className="space-y-3">
       
-      {/* ✅ BANDEAU AVEC ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          {/* ✅ ZONE CLIQUABLE VERS MA CAGNOTTE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -205,7 +238,6 @@ export default function MesPronosTab({ goToMesParis }) {
             </div>
           </button>
 
-
           <div className="text-right">
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
@@ -216,9 +248,6 @@ export default function MesPronosTab({ goToMesParis }) {
         </div>
       </div>
 
-      
-
-      {/* Liste des journées */}
       {journees.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
           <p className="text-gray-500">Aucun match à venir</p>
@@ -256,13 +285,18 @@ export default function MesPronosTab({ goToMesParis }) {
                       const existingProno = mesPronos.find(p => p.match_id === match.match_id);
                       
                       return (
-                        <MatchCard
+                        <div 
                           key={match.match_id}
-                          match={match}
-                          existingProno={existingProno}
-                          onBetClick={ouvrirModal}
-                          goToMesParis={goToMesParis}
-                        />
+                          ref={el => matchRefs.current[match.match_id] = el}
+                          className="transition-all duration-300"
+                        >
+                          <MatchCard
+                            match={match}
+                            existingProno={existingProno}
+                            onBetClick={ouvrirModal}
+                            goToMesParis={goToMesParis}
+                          />
+                        </div>
                       );
                     })}
                   </div>
@@ -286,8 +320,6 @@ export default function MesPronosTab({ goToMesParis }) {
         />
       )}
 
-
-      {/* Bouton Règlement en bas de page */}
       <div className="flex justify-center mt-6 mb-4">
         <button
           onClick={() => setShowReglementModal(true)}
@@ -298,7 +330,7 @@ export default function MesPronosTab({ goToMesParis }) {
         </button>
       </div>
 
-            <ReglementModal 
+      <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />

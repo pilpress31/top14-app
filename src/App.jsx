@@ -1,3 +1,7 @@
+// ========================================= //
+// ================= Partie 1 ===============//
+// ========================================= //
+
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
@@ -65,7 +69,11 @@ function App() {
     '/a-propos',
     '/cgu'
   ].includes(location.pathname);
-  
+
+// ========================================= //
+// ================= Partie 2 ===============//
+// ========================================= //
+
   return (
     <AuthProvider>
       <ChatNotificationProvider>
