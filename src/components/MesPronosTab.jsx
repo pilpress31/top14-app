@@ -11,6 +11,8 @@ import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
 
 export default function MesPronosTab({ goToMesParis, targetMatch }) {
+  console.log("matchsDisponibles AU RENDER:", matchsDisponibles);
+  
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
   const [userCredits, setUserCredits] = useState(null);
