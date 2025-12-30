@@ -69,12 +69,14 @@ export default function MaCagnotte() {
         const totalWon = parisList.filter(b => b.status === 'won').reduce((sum, b) => sum + b.payout, 0);
 
         // Charger les transactions depuis credit_transactions (source de vérité)
+        // en ordre chronologique (plus ancien → plus récent)
         const { data: transData, error: transError } = await supabase
           .from('credit_transactions')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: true })
           .limit(100);
+
 
 
         if (!transError && transData) {
