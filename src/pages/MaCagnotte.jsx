@@ -80,7 +80,9 @@ export default function MaCagnotte() {
 
 
         if (!transError && transData) {
-          setTransactions(transData);
+          // On inverse pour afficher du plus récent au plus ancien
+          setTransactions([...transData].reverse());
+
           
           // ✅ Calculer nombre de distributions mensuelles
           const nbDistributions = transData.filter(t => t.type === 'monthly_distribution').length;
