@@ -12,7 +12,6 @@ import ReglementModal from './ReglementModal';
 
 export default function MesPronosTab({ goToMesParis, targetMatch }) {
   
-  
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
   const [userCredits, setUserCredits] = useState(null);
@@ -28,7 +27,6 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
   console.log("matchsDisponibles AU RENDER:", matchsDisponibles);
 
-
   useEffect(() => {
     loadData();
   }, []);
@@ -39,7 +37,6 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
     if (!targetMatch || matchsDisponibles.length === 0) return;
 
-    // Ouvrir la journée du match ciblé
     const journeeKey =
       typeof targetMatch.journee === "number"
         ? `J${targetMatch.journee}`
@@ -63,32 +60,27 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     if (!targetMatch) return;
     if (matchsDisponibles.length === 0) return;
 
-    // On attend que les MatchCard soient rendus et que les refs soient attachées
     requestAnimationFrame(() => {
-      const match = matchsDisponibles.find(m => m.match_id === targetMatch.match_id);
-      if (!match) {
-        console.log("Aucun match correspondant trouvé pour match_id:", targetMatch.match_id);
-        return;
-      }
+      const el = matchRefs.current[targetMatch.match_id];
 
-      const el = matchRefs.current[match.match.id];
       if (!el) {
-        console.log("Ref pas encore prête pour", match.id);
+        console.log(
+          "Ref pas encore prête pour",
+          targetMatch.match_id,
+          "clés actuelles:",
+          Object.keys(matchRefs.current)
+        );
         return;
       }
 
-      // Scroll
       el.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      // Highlight
       el.classList.add("ring-2", "ring-rugby-gold", "ring-offset-2");
       setTimeout(() => {
         el.classList.remove("ring-2", "ring-rugby-gold", "ring-offset-2");
       }, 2000);
     });
   }, [expandedJournees, matchsDisponibles, targetMatch]);
-
-
 
 
 
@@ -127,13 +119,14 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
         behavior: 'smooth'
       });
 
-      // Effet visuel sur le match
       element.classList.add('ring-2', 'ring-rugby-gold', 'ring-offset-2');
       setTimeout(() => {
         element.classList.remove('ring-2', 'ring-rugby-gold', 'ring-offset-2');
       }, 2000);
     }
   };
+
+
 
   const loadData = async () => {
     try {
@@ -182,10 +175,9 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
       console.log("matchsDisponibles:", matchsAvecCotes);
 
 
-      /// Auto-expand première journée seulement si pas de targetMatch
       if (matchsAvecCotes.length > 0 && expandedJournees.size === 0 && !targetMatch) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, match) => {
-          const key = `J${match.journee}`;   // <-- CORRECTION ICI
+          const key = `J${match.journee}`;
           if (!acc[key]) acc[key] = [];
           acc[key].push(match);
           return acc;
@@ -230,6 +222,8 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     }
   };
 
+
+
   const ouvrirModal = (match) => {
     const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
     const hasFT = dejaPronos?.mise_ft > 0;
@@ -261,6 +255,8 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     });
   };
 
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -268,6 +264,8 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
       </div>
     );
   }
+
+
 
   const matchsParJournee = matchsDisponibles.reduce((acc, match) => {
     const key =
@@ -369,8 +367,6 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
                         />
                       );
                     })}
-
-
                   </div>
                 )}
               </div>
