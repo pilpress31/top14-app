@@ -272,7 +272,13 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
   }
 
   const matchsParJournee = matchsDisponibles.reduce((acc, match) => {
-    const key = `J${match.journee}`;   // <-- même clé que Bloc 1
+    const key =
+      typeof match.journee === "number"
+        ? `J${match.journee}`
+        : match.journee.startsWith("J")
+          ? match.journee
+          : `J${match.journee}`;
+
     if (!acc[key]) acc[key] = [];
     acc[key].push(match);
     return acc;
@@ -283,6 +289,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     const numB = parseInt(b.replace('J', ''));
     return numA - numB;
   });
+
 
 
   return (
