@@ -141,7 +141,7 @@ const MatchCard = forwardRef(function MatchCard(
                 navigate('/pronos', { 
                   state: { 
                     activeTab: 'mes-paris',
-                    scrollToMatchId: match.id
+                    scrollToMatchId: match.match.id
                   } 
                 });
               }}
@@ -218,7 +218,7 @@ const MatchCard = forwardRef(function MatchCard(
                   navigate('/pronos', { 
                     state: { 
                       activeTab: 'mes-paris',
-                      scrollToMatchId: match.id
+                      scrollToMatchId: match.match.id
                     }
                   });
                 }}
