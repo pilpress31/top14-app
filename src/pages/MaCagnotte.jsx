@@ -118,6 +118,7 @@ export default function MaCagnotte() {
             headers: { 'x-user-id': user.id }
           }
         );
+        console.log("DEBUG parisResponse.data =", parisResponse.data);
 
         const parisList = Array.isArray(parisResponse.data)
           ? parisResponse.data
