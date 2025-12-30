@@ -40,9 +40,12 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     if (!targetMatch || matchsDisponibles.length === 0) return;
 
     // Ouvrir la journée du match ciblé
-    const journeeKey = typeof targetMatch.journee === "number"
-      ? `J${targetMatch.journee}`
-      : targetMatch.journee;
+    const journeeKey =
+      typeof targetMatch.journee === "number"
+        ? `J${targetMatch.journee}`
+        : targetMatch.journee.startsWith("J")
+          ? targetMatch.journee
+          : `J${targetMatch.journee}`;
 
     setExpandedJournees(prev => new Set([...prev, journeeKey]));
 
