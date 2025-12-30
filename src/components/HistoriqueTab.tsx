@@ -320,7 +320,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                 {saisons.map(saison => (
                   <div key={saison}>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (selectedSaison === saison) {
                           setSelectedSaison("all");
                           setSelectedJournee("all");
@@ -340,7 +341,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                     {selectedSaison === saison && (
                       <div className="bg-gray-50">
                         <button
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedJournee("all");
                             setCurrentPage(1);
                           }}
@@ -353,7 +355,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                         {getJourneesForSaison(saison).map(({ journee, label }) => (
                           <button
                             key={journee}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedJournee(journee.toString());
                               setSaisonDropdownOpen(false);
                               setCurrentPage(1);
