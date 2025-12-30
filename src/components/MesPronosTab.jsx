@@ -55,41 +55,34 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
   // 2) Quand la journée est ouverte → scroller vers le match
   useEffect(() => {
-    console.log("targetMatch:", targetMatch);
-    console.log("matchRefs keys:", Object.keys(matchRefs.current));
-    console.log("matchsDisponibles length:", matchsDisponibles.length);
-
     if (!targetMatch) return;
-
-    // Attendre que les MatchCard soient rendus
     if (matchsDisponibles.length === 0) return;
-    if (Object.keys(matchRefs.current).length === 0) {
-      console.log("Pas encore de refs, on attend le prochain render");
-      return;
-    }
 
-    // Matching robuste sur match_id
-    const match = matchsDisponibles.find(m => m.match_id === targetMatch.match_id);
+    // On attend que les MatchCard soient rendus et que les refs soient attachées
+    requestAnimationFrame(() => {
+      const match = matchsDisponibles.find(m => m.match_id === targetMatch.match_id);
+      if (!match) {
+        console.log("Aucun match correspondant trouvé pour match_id:", targetMatch.match_id);
+        return;
+      }
 
-    if (!match) {
-      console.log("Aucun match correspondant trouvé dans matchsDisponibles pour match_id:", targetMatch.match_id);
-      return;
-    }
+      const el = matchRefs.current[match.id];
+      if (!el) {
+        console.log("Ref pas encore prête pour", match.id);
+        return;
+      }
 
-    console.log("Match trouvé pour scroll:", match.id);
-
-    const el = matchRefs.current[match.id];
-
-    if (!el) {
-      console.log("Aucune ref trouvée pour match.id:", match.id, "keys:", Object.keys(matchRefs.current));
-      return;
-    }
-
-    setTimeout(() => {
+      // Scroll
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 150);
 
-  }, [expandedJournees, targetMatch, matchsDisponibles]);
+      // Highlight
+      el.classList.add("ring-2", "ring-rugby-gold", "ring-offset-2");
+      setTimeout(() => {
+        el.classList.remove("ring-2", "ring-rugby-gold", "ring-offset-2");
+      }, 2000);
+    });
+  }, [expandedJournees, matchsDisponibles, targetMatch]);
+
 
 
 
