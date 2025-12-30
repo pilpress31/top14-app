@@ -349,8 +349,8 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
                       
                       return (
                         <div 
-                          key={match.id}
-                          ref={el => matchRefs.current[match.id] = el}
+                          key={match.match_id}
+                          ref={el => matchRefs.current[match.match_id] = el}
                           className="transition-all duration-300"
                         >
                           <MatchCard
@@ -361,6 +361,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
                           />
                         </div>
                       );
+
                     })}
                   </div>
                 )}
