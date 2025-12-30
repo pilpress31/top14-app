@@ -347,6 +347,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedJournee("all");
+                            setSaisonDropdownOpen(false);
                             setCurrentPage(1);
                           }}
                           className={`w-full text-left px-6 py-1.5 text-xs hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
