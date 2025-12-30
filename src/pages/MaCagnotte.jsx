@@ -9,6 +9,65 @@ import axios from 'axios';
 import { useLocation } from "react-router-dom";
 
 
+// 👉 TU COLLES BetItem ICI, juste après les imports
+function BetItem({ t }) {
+  const bet = t.bets;
+  const match = bet?.matches;
+
+  const isBet = !!bet;
+
+  return (
+    <div className="p-4 border-b border-gray-200">
+      <div className="flex justify-between">
+        <span className="font-semibold">
+          {t.type === 'bet_placed' && 'Pari placé'}
+          {t.type === 'bet_won' && 'Pari gagné'}
+          {t.type === 'bet_lost' && 'Pari perdu'}
+          {t.type === 'bonus' && 'Bonus'}
+          {t.type === 'monthly_distribution' && 'Distribution mensuelle'}
+        </span>
+
+        <span className={t.amount > 0 ? 'text-green-600' : 'text-red-600'}>
+          {t.amount > 0 ? `+${t.amount}` : t.amount} jetons
+        </span>
+      </div>
+
+      {isBet && (
+        <div className="text-xs text-gray-500 mt-1">
+          <div className="font-medium">
+            {match.home_team} vs {match.away_team}
+          </div>
+
+          <div>
+            Cote: {bet.odds} • Mise: {bet.stake}
+            {bet.payout && t.type === 'bet_won' && (
+              <> • Gain: {bet.payout}</>
+            )}
+          </div>
+
+          {match.score_home !== null && (
+            <div>
+              Score final : {match.score_home} – {match.score_away}
+            </div>
+          )}
+
+          {match.kickoff && (
+            <div>
+              Match joué le {new Date(match.kickoff).toLocaleDateString('fr-FR')}
+            </div>
+          )}
+
+          {match.round && (
+            <div>Journée : {match.round}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// 👉 TON COMPOSANT PRINCIPAL COMMENCE ENSUITE
 export default function MaCagnotte() {
   const navigate = useNavigate();
   const [userCredits, setUserCredits] = useState(null);
@@ -23,10 +82,10 @@ export default function MaCagnotte() {
     totalWon: 0,
     netProfit: 0,
     totalBonus: 0,
-    nbDistributions: 0  // ✅ Nombre de distributions (pas montant)
+    nbDistributions: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' ou 'transactions'
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     loadData();
@@ -497,84 +556,26 @@ export default function MaCagnotte() {
           </button>
         </div>
       ) : (
-        // Onglet Transactions
-        <div className="p-6">
-          <div className="bg-white rounded-lg shadow-sm border border-rugby-gray">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2">
-                <History className="w-5 h-5" />
-                Historique des transactions
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                {transactions.length} transaction{transactions.length > 1 ? 's' : ''} récente{transactions.length > 1 ? 's' : ''}
-              </p>
+        // Onglet Historique des paris
+        <div className="p-6 space-y-4">
+
+          <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
+            <History className="w-5 h-5" />
+            Historique des paris
+          </h2>
+
+          {paris.length === 0 ? (
+            <div className="p-8 text-center">
+              <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">Aucun pari pour le moment</p>
             </div>
+          ) : (
+            paris.map(t => <BetItem key={t.id} t={t} />)
+          )}
 
-            <div className="divide-y divide-gray-100">
-              {transactions.length === 0 ? (
-                <div className="p-8 text-center">
-                  <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Aucune transaction pour le moment</p>
-                </div>
-              ) : (
-                transactions.map((trans) => {
-                  const isPositive = trans.amount > 0;
-                  const formattedDate = new Date(trans.created_at).toLocaleDateString('fr-FR', {
-                    day: '2-digit',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  });
-
-                  const isBetTransaction = ['bet_placed', 'bet_won', 'bet_lost', 'bonus_exact_score'].includes(trans.type);
-
-                  return (
-                    <div key={trans.id} className="p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1">
-                          {getTransactionIcon(trans.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <p className="font-semibold text-sm text-gray-900">
-                                {getTransactionLabel(trans.type)}
-                              </p>
-                              {getTransactionDetails(trans)}
-                              
-                              {/* Bouton Voir le pari - ✅ Basé sur metadata.match_id */}
-                              {trans.metadata?.match_id && trans.type !== 'monthly_distribution' && (
-                                <button
-                                  onClick={() => navigateToBet(trans)}
-                                  className="mt-2 flex items-center gap-1 text-xs text-rugby-gold hover:text-rugby-bronze font-semibold transition-colors"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                  Voir le pari
-                                </button>
-                              )}
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className={`font-bold text-lg ${
-                                isPositive ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                {isPositive ? '+' : ''}{trans.amount}
-                              </p>
-                              <p className="text-[10px] text-gray-500">
-                                Solde: {trans.balance_after}
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-xs text-gray-400 mt-1">{formattedDate}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
         </div>
       )}
+
     </div>
   );
 }
