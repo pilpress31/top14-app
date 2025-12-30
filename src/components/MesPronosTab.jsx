@@ -30,6 +30,8 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
   // 1) Quand targetMatch arrive → ouvrir la journée correspondante
   useEffect(() => {
+    console.log("expandedJournees:", expandedJournees);
+
     if (!targetMatch || matchsDisponibles.length === 0) return;
 
     // Ouvrir la journée du match ciblé
