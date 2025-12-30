@@ -44,6 +44,14 @@ export default function PronosPage() {
     }
   }, [location]);
 
+
+  useEffect(() => {
+    if (location.state?.targetMatch) {
+      setTargetMatch(location.state.targetMatch);
+    }
+  }, [location]);
+
+
   // Gestion du header sticky
   useEffect(() => {
     const handleScroll = () => {
