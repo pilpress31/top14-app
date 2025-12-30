@@ -41,7 +41,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
   useEffect(() => {
     if (!targetMatch) return;
 
-    const el = matchRefs.current[targetMatch.id];
+    const el = matchRefs.current[targetMatch.match_id];
     if (el) {
       setTimeout(() => {
         el.scrollIntoView({

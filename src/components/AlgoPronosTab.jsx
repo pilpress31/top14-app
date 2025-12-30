@@ -71,9 +71,9 @@ export default function AlgoPronosTab({ onMatchClick }) {
 
   const handleMatchClick = (prono) => {
     if (onMatchClick) {
-      // Passer les infos du match pour la navigation
       onMatchClick({
         id: prono.id,
+        match_id: prono.id,
         journee: prono.journee,
         equipe_domicile: prono.equipe_domicile,
         equipe_exterieure: prono.equipe_exterieure,
@@ -81,6 +81,7 @@ export default function AlgoPronosTab({ onMatchClick }) {
       });
     }
   };
+
 
   const journees = pronos.length > 0 
     ? [...new Set(pronos.map(p => p.journee))].sort((a, b) => {
