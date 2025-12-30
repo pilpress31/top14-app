@@ -46,8 +46,9 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
     setExpandedJournees(prev => new Set([...prev, journeeKey]));
 
-
   }, [targetMatch, matchsDisponibles]);
+
+
 
   // 2) Quand la journée est ouverte → scroller vers le match
   useEffect(() => {
@@ -55,6 +56,10 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     console.log("matchRefs keys:", Object.keys(matchRefs.current));
 
     if (!targetMatch) return;
+
+    // Attendre que les MatchCard soient rendus
+    if (matchsDisponibles.length === 0) return;
+    if (Object.keys(matchRefs.current).length === 0) return;
 
     // Trouver le match correspondant dans la liste réelle
     const match = matchsDisponibles.find(m =>
@@ -81,6 +86,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
 
 
+  // 3) Gestion du header au scroll
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY;
@@ -100,6 +106,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
 
 
   const scrollToMatch = (matchId) => {
