@@ -71,7 +71,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
         return;
       }
 
-      const el = matchRefs.current[match.id];
+      const el = matchRefs.current[match.match.id];
       if (!el) {
         console.log("Ref pas encore prête pour", match.id);
         return;
@@ -348,23 +348,29 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
                 </button>
 
                 {isExpanded && (
-                  <div className="divide-y divide-rugby-gray">
-                    {matchsJournee.map(match => {
-                      const existingProno = mesPronos.find(p => p.match_id === match.match_id);
-                      
+                  <div className="flex flex-col divide-y divide-rugby-gray">
+                    {matchsJournee.map((match) => {
+                      const existingProno = mesPronos.find(
+                        (p) => p.match_id === match.match_id
+                      );
+
                       return (
                         <MatchCard
                           key={match.match_id}
-                          ref={el => matchRefs.current[match.match_id] = el}
+                          ref={(el) => {
+                            if (el) {
+                              matchRefs.current[match.match_id] = el;
+                            }
+                          }}
                           match={match}
                           existingProno={existingProno}
                           onBetClick={ouvrirModal}
                           goToMesParis={goToMesParis}
                         />
                       );
-
-
                     })}
+
+
                   </div>
                 )}
               </div>
