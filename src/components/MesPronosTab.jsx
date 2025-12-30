@@ -176,11 +176,12 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
       console.log("matchsDisponibles:", matchsAvecCotes);
 
 
-      // Auto-expand première journée seulement si pas de targetMatch
+      /// Auto-expand première journée seulement si pas de targetMatch
       if (matchsAvecCotes.length > 0 && expandedJournees.size === 0 && !targetMatch) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, match) => {
-          if (!acc[match.journee]) acc[match.journee] = [];
-          acc[match.journee].push(match);
+          const key = `J${match.journee}`;   // <-- CORRECTION ICI
+          if (!acc[key]) acc[key] = [];
+          acc[key].push(match);
           return acc;
         }, {});
         
@@ -194,6 +195,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
           setExpandedJournees(new Set([journees[0]]));
         }
       }
+
 
       const { data: pronos, error } = await supabase
         .from('user_pronos')
