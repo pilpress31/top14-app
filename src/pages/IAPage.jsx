@@ -27,7 +27,7 @@ export default function IAPage() {
   const handleMatchClick = (matchInfo) => {
     navigate("/pronos", {
       state: {
-        activeTab: "mes-paris",
+        activeTab: "a-parier",
         targetMatch: matchInfo
       }
     });
