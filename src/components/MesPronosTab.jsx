@@ -33,7 +33,12 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     if (!targetMatch || matchsDisponibles.length === 0) return;
 
     // Ouvrir la journée du match ciblé
-    setExpandedJournees(prev => new Set([...prev, targetMatch.journee]));
+    const journeeKey = typeof targetMatch.journee === "number"
+      ? `J${targetMatch.journee}`
+      : targetMatch.journee;
+
+    setExpandedJournees(prev => new Set([...prev, journeeKey]));
+
 
   }, [targetMatch, matchsDisponibles]);
 
@@ -44,14 +49,28 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
     if (!targetMatch) return;
 
-    const el = matchRefs.current[targetMatch.match_id];
+    // Trouver le match correspondant dans la liste réelle
+    const match = matchsDisponibles.find(m =>
+      m.equipe_domicile === targetMatch.equipe_domicile &&
+      m.equipe_exterieure === targetMatch.equipe_exterieure &&
+      m.date === targetMatch.date
+    );
+
+    if (!match) {
+      console.log("Aucun match correspondant trouvé dans matchsDisponibles");
+      return;
+    }
+
+    // Récupérer la ref du match rendu
+    const el = matchRefs.current[match.id];
+
     if (el) {
       setTimeout(() => {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 150);
     }
 
-  }, [expandedJournees, targetMatch]);
+  }, [expandedJournees, targetMatch, matchsDisponibles]);
 
 
 
@@ -74,6 +93,7 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
 
   const scrollToMatch = (matchId) => {
     const element = matchRefs.current[matchId];
