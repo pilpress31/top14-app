@@ -2,6 +2,7 @@
 // CARTE DE MATCH - VERSION OPTIMISÉE
 // ============================================
 
+import React, { forwardRef } from "react";
 import { CheckCircle, Plus, Edit, Lock } from 'lucide-react';
 import { getTeamData } from '../utils/teams';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +36,11 @@ const getBlockingMessage = (match) => {
   }
 };
 
-export default function MatchCard({ match, existingProno, onBetClick, goToMesParis }) {
+// ⭐ VERSION CORRIGÉE AVEC forwardRef
+const MatchCard = forwardRef(function MatchCard(
+  { match, existingProno, onBetClick, goToMesParis },
+  ref
+) {
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
@@ -51,7 +56,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const navigate = useNavigate();
 
   return (
-    <div className="px-3 py-3 hover:bg-rugby-gold/5 transition-colors">
+    <div ref={ref} className="px-3 py-3 hover:bg-rugby-gold/5 transition-colors">
+
       {/* Date */}
       <p className="text-[10px] text-gray-500 mb-2">
         {matchDate.toLocaleDateString('fr-FR', {
@@ -130,13 +136,12 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {/* Bloc vert des pronos existants */}
         {existingProno && (
           !bettingAllowed ? (
-            // ✅ Paris fermés → zone verte cliquable avec scroll auto
             <div 
               onClick={() => {
                 navigate('/pronos', { 
                   state: { 
                     activeTab: 'mes-paris',
-                    scrollToMatchId: match.id  // ✅ Utiliser match.id pour cohérence
+                    scrollToMatchId: match.id
                   } 
                 });
               }}
@@ -157,7 +162,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               </div>
             </div>
           ) : (
-            // Paris ouverts → zone verte NON cliquable
             <div className="flex items-center gap-2 px-2 py-1 bg-green-50 rounded border border-green-200">
               <CheckCircle className="w-3 h-3 text-green-600" />
               <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
@@ -178,7 +182,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
         {/* Bouton d'action */}
         {!bettingAllowed ? (
-          // Paris fermés → message gris
           <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300">
             <Lock className="w-4 h-4 text-gray-500" />
             <span className="text-xs font-semibold text-gray-600">
@@ -186,7 +189,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             </span>
           </div>
         ) : (
-          // Paris ouverts → boutons normaux
           <>
             {aucunPari && (
               <button
@@ -231,4 +233,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
       </div>
     </div>
   );
-}
+});
+
+export default MatchCard;
