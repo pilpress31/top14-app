@@ -119,6 +119,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false);
   const [saisonDropdownOpen, setSaisonDropdownOpen] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const matchesPerPage = 21;
 
   useEffect(() => {
@@ -144,12 +145,13 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
     const handleClickOutside = () => {
       setTeamDropdownOpen(false);
       setSaisonDropdownOpen(false);
+      setSortDropdownOpen(false);
     };
-    if (teamDropdownOpen || saisonDropdownOpen) {
+    if (teamDropdownOpen || saisonDropdownOpen || sortDropdownOpen) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [teamDropdownOpen, saisonDropdownOpen]);
+  }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
   const equipes = Array.from(
     new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))
@@ -239,12 +241,12 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                 setTeamDropdownOpen(!teamDropdownOpen);
                 setSaisonDropdownOpen(false);
               }}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-yellow-600 transition-colors"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-rugby-gold transition-colors"
             >
               <span className="text-gray-700">
                 {selectedTeam === "all" ? "Toutes les équipes" : selectedTeam}
               </span>
-              <ChevronDown className={`w-4 h-4 text-yellow-600 transition-transform ${teamDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-rugby-gold transition-transform ${teamDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {teamDropdownOpen && (
@@ -255,8 +257,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                     setTeamDropdownOpen(false);
                     setCurrentPage(1);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-yellow-50 transition-colors ${
-                    selectedTeam === "all" ? "bg-yellow-100 font-semibold" : ""
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                    selectedTeam === "all" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
                   }`}
                 >
                   Toutes les équipes
@@ -269,8 +271,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                       setTeamDropdownOpen(false);
                       setCurrentPage(1);
                     }}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-yellow-50 transition-colors ${
-                      selectedTeam === team ? "bg-yellow-100 font-semibold" : ""
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                      selectedTeam === team ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
                     }`}
                   >
                     {team}
@@ -288,7 +290,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                 setSaisonDropdownOpen(!saisonDropdownOpen);
                 setTeamDropdownOpen(false);
               }}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-yellow-600 transition-colors"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-rugby-gold transition-colors"
             >
               <span className="text-gray-700">
                 {selectedSaison === "all" 
@@ -298,7 +300,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                     : `${selectedSaison} - J${selectedJournee}`
                 }
               </span>
-              <ChevronDown className={`w-4 h-4 text-yellow-600 transition-transform ${saisonDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-rugby-gold transition-transform ${saisonDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {saisonDropdownOpen && (
@@ -310,8 +312,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                     setSaisonDropdownOpen(false);
                     setCurrentPage(1);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-yellow-50 transition-colors ${
-                    selectedSaison === "all" ? "bg-yellow-100 font-semibold" : ""
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                    selectedSaison === "all" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
                   }`}
                 >
                   Toutes les saisons
@@ -331,8 +333,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                         }
                         setCurrentPage(1);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm font-semibold hover:bg-yellow-50 transition-colors border-t border-gray-100 ${
-                        selectedSaison === saison ? "bg-yellow-100 text-yellow-700" : "text-gray-800"
+                      className={`w-full text-left px-3 py-2 text-sm font-semibold hover:bg-rugby-gold hover:bg-opacity-10 transition-colors border-t border-gray-100 ${
+                        selectedSaison === saison ? "bg-rugby-gold bg-opacity-20 text-rugby-gold" : "text-gray-800"
                       }`}
                     >
                       Saison {saison}
@@ -346,8 +348,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                             setSelectedJournee("all");
                             setCurrentPage(1);
                           }}
-                          className={`w-full text-left px-6 py-1.5 text-xs hover:bg-yellow-50 transition-colors ${
-                            selectedJournee === "all" ? "bg-yellow-200 font-semibold" : ""
+                          className={`w-full text-left px-6 py-1.5 text-xs hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                            selectedJournee === "all" ? "bg-rugby-gold bg-opacity-30 font-semibold" : ""
                           }`}
                         >
                           Toutes les journées
@@ -361,8 +363,8 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                               setSaisonDropdownOpen(false);
                               setCurrentPage(1);
                             }}
-                            className={`w-full text-left px-6 py-1.5 text-xs hover:bg-yellow-50 transition-colors ${
-                              selectedJournee === journee.toString() ? "bg-yellow-200 font-semibold" : ""
+                            className={`w-full text-left px-6 py-1.5 text-xs hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                              selectedJournee === journee.toString() ? "bg-rugby-gold bg-opacity-30 font-semibold" : ""
                             }`}
                           >
                             {label}
@@ -377,18 +379,51 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
           </div>
 
           {/* Tri par date */}
-          <select
-            value={sortOrder}
-            onChange={(e) => {
-              setSortOrder(e.target.value as "asc" | "desc");
-              setCurrentPage(1);
-            }}
-            aria-label="Ordre de tri par date"
-            className="border border-gray-300 rounded px-3 py-2 text-sm hover:border-yellow-600 transition-colors"
-          >
-            <option value="desc">Date décroissante (récent → ancien)</option>
-            <option value="asc">Date croissante (ancien → récent)</option>
-          </select>
+          <div className="relative md:w-64">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSortDropdownOpen(!sortDropdownOpen);
+                setTeamDropdownOpen(false);
+                setSaisonDropdownOpen(false);
+              }}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-rugby-gold transition-colors"
+            >
+              <span className="text-gray-700">
+                {sortOrder === "desc" ? "Date décroissante (récent → ancien)" : "Date croissante (ancien → récent)"}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-rugby-gold transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {sortDropdownOpen && (
+              <div className="absolute top-full mt-1 w-full bg-white border border-gray-300 rounded shadow-lg z-40">
+                <button
+                  onClick={() => {
+                    setSortOrder("desc");
+                    setSortDropdownOpen(false);
+                    setCurrentPage(1);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                    sortOrder === "desc" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                  }`}
+                >
+                  Date décroissante (récent → ancien)
+                </button>
+                <button
+                  onClick={() => {
+                    setSortOrder("asc");
+                    setSortDropdownOpen(false);
+                    setCurrentPage(1);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
+                    sortOrder === "asc" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                  }`}
+                >
+                  Date croissante (ancien → récent)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -410,7 +445,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
           return (
             <div key={m.id} className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow py-4 px-3 border border-gray-200">
               <div className="flex justify-between items-start mb-3">
-                <div className="text-xs text-orange-600 font-bold uppercase tracking-wide">
+                <div className="text-xs text-rugby-orange font-bold uppercase tracking-wide">
                   JOURNÉE {m.journee}
                 </div>
                 <div className="text-xs text-gray-700 font-semibold text-right">
@@ -441,7 +476,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                 <div className="flex flex-col items-center justify-center gap-2">
                   <div className="text-center">
                     <div className="text-[10px] text-gray-500 uppercase mb-1">Score réel</div>
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-2xl font-bold text-rugby-orange">
                       {m.score_domicile} - {m.score_exterieur}
                     </div>
                   </div>
@@ -501,14 +536,14 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
           }}
           disabled={currentPage === 1}
           className="px-4 py-2 rounded font-semibold text-white
-                    bg-yellow-600 hover:bg-yellow-700
+                    bg-rugby-gold hover:bg-rugby-bronze
                     disabled:bg-gray-300 disabled:text-gray-500
                     transition-colors shadow-md"
         >
           ◀ Précédent
         </button>
 
-        <span className="px-4 py-2 font-semibold text-yellow-600">
+        <span className="px-4 py-2 font-semibold text-rugby-gold">
           Page {currentPage} / {totalPages}
         </span>
 
@@ -519,7 +554,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
           }}
           disabled={currentPage === totalPages}
           className="px-4 py-2 rounded font-semibold text-white
-                    bg-yellow-600 hover:bg-yellow-700
+                    bg-rugby-gold hover:bg-rugby-bronze
                     disabled:bg-gray-300 disabled:text-gray-500
                     transition-colors shadow-md"
         >
