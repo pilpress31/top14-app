@@ -3,11 +3,12 @@ import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 
-export default function AlgoPronosTab({ onMatchClick }) {
+export default function AlgoPronosTab() {
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   
+  // ✅ Refs pour chaque journée
   const journeeRefs = useRef({});
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function AlgoPronosTab({ onMatchClick }) {
       const pronosData = response.data.pronos || response.data || [];
       setPronos(pronosData);
       
+      // Auto-expansion de la première journée
       if (pronosData.length > 0) {
         const journees = [...new Set(pronosData.map(p => p.journee))].sort((a, b) => {
           const numA = typeof a === 'string' ? parseInt(a.replace('J', '')) : a;
@@ -39,10 +41,13 @@ export default function AlgoPronosTab({ onMatchClick }) {
     }
   };
 
+  // ✅ Fonction de scroll vers une journée
   const scrollToJournee = (journee) => {
+    // Attendre que le DOM soit mis à jour (journée dépliée)
     setTimeout(() => {
       const element = journeeRefs.current[journee];
       if (element) {
+        // Offset pour compenser les headers sticky
         const headerOffset = 200;
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -52,36 +57,26 @@ export default function AlgoPronosTab({ onMatchClick }) {
           behavior: 'smooth'
         });
       }
-    }, 100);
+    }, 100); // Petit délai pour laisser l'animation se terminer
   };
 
+  // ✅ Toggle avec scroll
   const toggleJournee = (journee) => {
     setExpandedJournees(prev => {
       const newSet = new Set();
       const wasExpanded = prev.has(journee);
       
+      // Si cette journée était déjà ouverte, on la ferme
+      // Sinon, on ouvre uniquement celle-ci
       if (!wasExpanded) {
         newSet.add(journee);
+        // ✅ Scroller vers la journée après ouverture
         scrollToJournee(journee);
       }
       
       return newSet;
     });
   };
-
-  const handleMatchClick = (prono) => {
-    if (onMatchClick) {
-      onMatchClick({
-        id: prono.id,
-        match_id: prono.id,
-        journee: prono.journee,
-        equipe_domicile: prono.equipe_domicile,
-        equipe_exterieure: prono.equipe_exterieure,
-        date: prono.date
-      });
-    }
-  };
-
 
   const journees = pronos.length > 0 
     ? [...new Set(pronos.map(p => p.journee))].sort((a, b) => {
@@ -91,6 +86,7 @@ export default function AlgoPronosTab({ onMatchClick }) {
       })
     : [];
 
+  // Grouper pronos par journée
   const pronosParJournee = pronos.reduce((acc, prono) => {
     if (!acc[prono.journee]) acc[prono.journee] = [];
     acc[prono.journee].push(prono);
@@ -122,10 +118,11 @@ export default function AlgoPronosTab({ onMatchClick }) {
         return (
           <div 
             key={journee} 
-            ref={el => journeeRefs.current[journee] = el}
+            ref={el => journeeRefs.current[journee] = el}  // ✅ Ref pour scroll
             className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden"
           >
             
+            {/* En-tête cliquable */}
             <button
               onClick={() => toggleJournee(journee)}
               className="w-full bg-rugby-gold/10 px-3 py-2 border-b border-rugby-gray hover:bg-rugby-gold/20 transition-colors"
@@ -144,14 +141,11 @@ export default function AlgoPronosTab({ onMatchClick }) {
               </div>
             </button>
 
+            {/* Pronos */}
             {isExpanded && (
               <div className="p-3 space-y-4">
                 {pronosJournee.map(prono => (
-                  <PronoCard 
-                    key={prono.id} 
-                    match={prono} 
-                    onClick={() => handleMatchClick(prono)}
-                  />
+                  <PronoCard key={prono.id} match={prono} />
                 ))}
               </div>
             )}
@@ -162,19 +156,22 @@ export default function AlgoPronosTab({ onMatchClick }) {
   );
 }
 
-function PronoCard({ match, onClick }) {
+function PronoCard({ match }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
+  // Scores finaux
   const scoreDom = match.prono_ft?.domicile ?? 0;
   const scoreExt = match.prono_ft?.exterieur ?? 0;
 
+  // Mi-temps
   const scoreHtDom = match.prono_ht?.domicile ?? null;
   const scoreHtExt = match.prono_ht?.exterieur ?? null;
   const scoreHtText = (scoreHtDom !== null && scoreHtExt !== null) 
     ? `${scoreHtDom} - ${scoreHtExt}` 
     : null;
 
+  // Confiance FT
   const confianceFT = match.confiance_algo ?? match.confiance ?? 0;
   const confidencePct = Math.round(confianceFT);
 
@@ -186,6 +183,7 @@ function PronoCard({ match, onClick }) {
     return () => clearTimeout(timer);
   }, [confidencePct]);
 
+  // Confiance MT
   const confianceMT = match.confiance_mt_algo ?? 0;
   const confidenceMTPct = Math.round(confianceMT);
 
@@ -197,6 +195,7 @@ function PronoCard({ match, onClick }) {
     return () => clearTimeout(timer);
   }, [confidenceMTPct]);
 
+  // ✅ FORMATAGE DATE ET HEURE
   let dateFormatted = 'À VENIR';
   let heureFormatted = '';
   
@@ -204,6 +203,7 @@ function PronoCard({ match, onClick }) {
     try {
       const matchDate = new Date(match.date);
       
+      // Date au format "SAM. 27 DÉC. 2025"
       dateFormatted = matchDate.toLocaleDateString('fr-FR', {
         weekday: 'short',
         day: 'numeric',
@@ -211,9 +211,11 @@ function PronoCard({ match, onClick }) {
         year: 'numeric',
       }).toUpperCase();
       
+      // Heure au format "14H30"
       const hours = matchDate.getHours();
       const minutes = matchDate.getMinutes();
       
+      // Vérifier si l'heure est définie (pas 00:00)
       if (hours !== 0 || minutes !== 0) {
         heureFormatted = `${String(hours).padStart(2, '0')}H${String(minutes).padStart(2, '0')}`;
       }
@@ -226,11 +228,9 @@ function PronoCard({ match, onClick }) {
   const teamExtData = getTeamData(equipeExt);
 
   return (
-    <div 
-      onClick={onClick}
-      className="w-full bg-gray-50 rounded-lg py-4 border border-gray-200 cursor-pointer hover:shadow-lg hover:border-rugby-gold transition-all"
-    >
+    <div className="w-full bg-gray-50 rounded-lg py-4 border border-gray-200">
 
+      {/* ✅ Date à gauche + Heure à droite */}
       <div className="flex justify-between items-center px-4 mb-3">
         <div className="text-xs text-rugby-bronze font-semibold">
           {dateFormatted}
@@ -242,8 +242,10 @@ function PronoCard({ match, onClick }) {
         )}
       </div>
 
+      {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-4 mb-2">
 
+        {/* Équipe domicile */}
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -258,6 +260,7 @@ function PronoCard({ match, onClick }) {
           </div>
         </div>
 
+        {/* Scores */}
         <div className="flex flex-col items-center justify-center gap-1">
           <div className="text-xs text-rugby-bronze font-medium mb-1">Score final</div>
           <div className="flex items-center gap-2 text-[1.65rem] font-bold text-rugby-gold">
@@ -269,6 +272,7 @@ function PronoCard({ match, onClick }) {
               <div className="text-xs text-rugby-bronze font-medium mt-2">Score M-T</div>
               <div className="text-sm text-rugby-black font-semibold">{scoreHtText}</div>
 
+              {/* Barre MT juste sous Score M-T */}
               <div className="mt-1 flex items-center gap-2 w-full">
                 <div className="flex-1 bg-gray-200 h-1 rounded-full overflow-hidden">
                   <div
@@ -285,6 +289,7 @@ function PronoCard({ match, onClick }) {
           )}
         </div>
 
+        {/* Équipe extérieure */}
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -300,22 +305,27 @@ function PronoCard({ match, onClick }) {
         </div>
       </div>
 
+      {/* Barre FT */}
       <div className="mt-4 px-4">
         <div className="flex justify-between text-xs text-rugby-bronze mb-2">
           <span className="font-medium">Confiance score final</span>
           <span className="font-bold text-rugby-gold">{confidencePct}%</span>
         </div>
 
+        {/* Conteneur */}
         <div className="relative w-full bg-gray-200 rounded-full h-[7px]">
 
+          {/* Graduations */}
           <div className="absolute top-0 left-1/4 w-px h-full bg-gray-300"></div>
           <div className="absolute top-0 left-1/2 w-px h-full bg-gray-300"></div>
           <div className="absolute top-0 left-3/4 w-px h-full bg-gray-300"></div>
 
+          {/* Labels */}
           <div className="absolute -bottom-4 left-1/4 text-[10px] text-gray-500 transform -translate-x-1/2">25%</div>
           <div className="absolute -bottom-4 left-1/2 text-[10px] text-gray-500 transform -translate-x-1/2">50%</div>
           <div className="absolute -bottom-4 left-3/4 text-[10px] text-gray-500 transform -translate-x-1/2">75%</div>
 
+          {/* Barre animée */}
           <div
             className="h-full rounded-full transition-all duration-700 ease-out"
             style={{

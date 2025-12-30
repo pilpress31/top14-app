@@ -7,52 +7,32 @@ import MainHeader from '../components/MainHeaderFull';
 
 export default function PronosPage() {
   const location = useLocation();
-
   const [activeTab, setActiveTab] = useState('a-parier');
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // ⭐ Nouveau : match ciblé pour scroll automatique
-  const [targetMatch, setTargetMatch] = useState(null);
+  const goToMesParis = () => { setActiveTab("mes-paris"); };
 
-  // ⭐ Nouveau : fonction appelée depuis AlgoPronosTab ou MaCagnotte
-  const handleMatchClick = (matchInfo) => {
-    setTargetMatch(matchInfo);
-    setActiveTab('mes-paris');
-  };
-
-  const goToMesParis = () => { 
-    setActiveTab("mes-paris"); 
-  };
-
-  // Scroll en haut au montage
+  // ✅ Scroll en haut au montage de la page
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Scroll en haut quand on revient sur "À parier"
+  // ✅ Scroll en haut quand on revient sur "À parier"
   useEffect(() => {
     if (activeTab === 'a-parier') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [activeTab]);
 
-  // Ouvrir l'onglet "Mes paris" si state est passé
+  // ✅ Ouvrir l'onglet "Mes paris" si state est passé
   useEffect(() => {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
     }
   }, [location]);
 
-
-  useEffect(() => {
-    if (location.state?.targetMatch) {
-      setTargetMatch(location.state.targetMatch);
-    }
-  }, [location]);
-
-
-  // Gestion du header sticky
+  // Détection du scroll pour synchroniser avec le header
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -74,9 +54,10 @@ export default function PronosPage() {
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
+      {/* Header */}
       <MainHeader />
 
-      {/* Onglets */}
+      {/* Onglets - STICKY avec position dynamique */}
       <div 
         className={`sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300 ${
           headerVisible ? 'top-[120px]' : 'top-0'
@@ -84,6 +65,7 @@ export default function PronosPage() {
       >
         <div className="container mx-auto">
           <div className="flex">
+            {/* Onglet À parier */}
             <button
               onClick={() => setActiveTab('a-parier')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
@@ -101,6 +83,7 @@ export default function PronosPage() {
               </span>
             </button>
 
+            {/* Onglet Mes paris */}
             <button
               onClick={() => setActiveTab('mes-paris')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
@@ -121,14 +104,10 @@ export default function PronosPage() {
         </div>
       </div>
 
-      {/* Contenu */}
+      {/* Contenu - avec padding-top pour le header */}
       <div className="container mx-auto px-4 py-6 pt-6 mt-[120px]">
-        
         {activeTab === 'a-parier' && (
-          <MesPronosTab 
-            goToMesParis={goToMesParis}
-            targetMatch={targetMatch}   // ⭐ Ajout essentiel
-          />
+          <MesPronosTab goToMesParis={goToMesParis} />
         )}
 
         {activeTab === 'mes-paris' && (
