@@ -54,35 +54,40 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
   useEffect(() => {
     console.log("targetMatch:", targetMatch);
     console.log("matchRefs keys:", Object.keys(matchRefs.current));
+    console.log("matchsDisponibles length:", matchsDisponibles.length);
 
     if (!targetMatch) return;
 
     // Attendre que les MatchCard soient rendus
     if (matchsDisponibles.length === 0) return;
-    if (Object.keys(matchRefs.current).length === 0) return;
-
-    // Trouver le match correspondant dans la liste réelle
-    const match = matchsDisponibles.find(m =>
-      m.equipe_domicile === targetMatch.equipe_domicile &&
-      m.equipe_exterieure === targetMatch.equipe_exterieure &&
-      m.date === targetMatch.date
-    );
-
-    if (!match) {
-      console.log("Aucun match correspondant trouvé dans matchsDisponibles");
+    if (Object.keys(matchRefs.current).length === 0) {
+      console.log("Pas encore de refs, on attend le prochain render");
       return;
     }
 
-    // Récupérer la ref du match rendu
-    const el = matchRefs.current[match.id];
+    // Matching robuste sur match_id
+    const match = matchsDisponibles.find(m => m.match_id === targetMatch.match_id);
 
-    if (el) {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 150);
+    if (!match) {
+      console.log("Aucun match correspondant trouvé dans matchsDisponibles pour match_id:", targetMatch.match_id);
+      return;
     }
 
+    console.log("Match trouvé pour scroll:", match.id);
+
+    const el = matchRefs.current[match.id];
+
+    if (!el) {
+      console.log("Aucune ref trouvée pour match.id:", match.id, "keys:", Object.keys(matchRefs.current));
+      return;
+    }
+
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+
   }, [expandedJournees, targetMatch, matchsDisponibles]);
+
 
 
 
