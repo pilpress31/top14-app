@@ -11,7 +11,7 @@ import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
 
 export default function MesPronosTab({ goToMesParis, targetMatch }) {
-  console.log("matchsDisponibles AU RENDER:", matchsDisponibles);
+  
   
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
@@ -25,6 +25,9 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
   const lastScrollY = useRef(0);
   const matchRefs = useRef({});
+
+  console.log("matchsDisponibles AU RENDER:", matchsDisponibles);
+
 
   useEffect(() => {
     loadData();
