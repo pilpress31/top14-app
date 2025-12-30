@@ -28,18 +28,31 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
     loadData();
   }, []);
 
-  // Gérer le targetMatch pour auto-expand et scroll
+  // 1) Quand targetMatch arrive → ouvrir la journée correspondante
   useEffect(() => {
-    if (targetMatch && matchsDisponibles.length > 0) {
-      // Expand la journée du match cible
-      setExpandedJournees(new Set([targetMatch.journee]));
-      
-      // Scroll vers le match après un délai pour laisser le DOM se mettre à jour
-      setTimeout(() => {
-        scrollToMatch(targetMatch.id);
-      }, 300);
-    }
+    if (!targetMatch || matchsDisponibles.length === 0) return;
+
+    // Ouvrir la journée du match ciblé
+    setExpandedJournees(prev => new Set([...prev, targetMatch.journee]));
+
   }, [targetMatch, matchsDisponibles]);
+
+  // 2) Quand la journée est ouverte → scroller vers le match
+  useEffect(() => {
+    if (!targetMatch) return;
+
+    const el = matchRefs.current[targetMatch.id];
+    if (el) {
+      setTimeout(() => {
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }, 150);
+    }
+
+  }, [expandedJournees, targetMatch]);
+
 
   useEffect(() => {
     const handleScroll = () => {
