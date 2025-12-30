@@ -39,19 +39,20 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
   // 2) Quand la journée est ouverte → scroller vers le match
   useEffect(() => {
+    console.log("targetMatch:", targetMatch);
+    console.log("matchRefs keys:", Object.keys(matchRefs.current));
+
     if (!targetMatch) return;
 
     const el = matchRefs.current[targetMatch.match_id];
     if (el) {
       setTimeout(() => {
-        el.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 150);
     }
 
   }, [expandedJournees, targetMatch]);
+
 
 
   useEffect(() => {
