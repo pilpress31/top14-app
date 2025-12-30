@@ -6,11 +6,15 @@ import { getConfig, getStats } from "../lib/api";
 import MainHeader from '../components/MainHeader';
 import MainHeaderFull from '../components/MainHeaderFull';
 import { useResetOnActive } from "../hooks/useResetOnActive";
+import { useNavigate } from "react-router-dom";
 
 export default function IAPage() {
+  const navigate = useNavigate();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
   const [activeTab, setActiveTab] = useState('algorithme');
   const [stats, setStats] = useState({
     nombre_matchs_historique: 3651,
@@ -18,6 +22,16 @@ export default function IAPage() {
   });
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  // ⭐ Fonction appelée quand on clique un match dans AlgoPronosTab
+  const handleMatchClick = (matchInfo) => {
+    navigate("/pronos", {
+      state: {
+        activeTab: "mes-paris",
+        targetMatch: matchInfo
+      }
+    });
+  };
 
   useEffect(() => {
     async function loadStats() {
@@ -110,7 +124,7 @@ export default function IAPage() {
       {/* Contenu - avec padding-top pour le header */}
       <div className="container mx-auto px-4 py-6 pt-6 mt-[120px]">
         {activeTab === 'algorithme' ? (
-          <AlgoPronosTab />
+          <AlgoPronosTab onMatchClick={handleMatchClick} />
         ) : (
           <HistoriqueTab headerVisible={headerVisible} />
         )}
