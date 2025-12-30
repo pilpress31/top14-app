@@ -55,6 +55,11 @@ export default function MesPronosTab({ goToMesParis, targetMatch }) {
 
   // 2) Quand la journée est ouverte → scroller vers le match
   useEffect(() => {
+    console.log("🔥 useEffect scroll déclenché");
+    console.log("expandedJournees:", expandedJournees);
+    console.log("targetMatch:", targetMatch);
+    console.log("matchRefs keys:", Object.keys(matchRefs.current));
+
     if (!targetMatch) return;
     if (matchsDisponibles.length === 0) return;
 
