@@ -174,7 +174,7 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 
   // Format date premium
   const dateObj = new Date(t.created_at);
-  const dateStr = dateObj.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  const dateStr = dateObj.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
   const timeStr = dateObj.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
   return (
@@ -198,22 +198,28 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 
       {isBet && (
         <div className="mt-2 text-sm text-gray-700">
+
+          {/* Score */}
           <div className="font-semibold">
             {home} {match.score_home ?? ""} {match.score_home !== null ? "–" : "vs"} {match.score_away ?? ""} {away}
           </div>
 
-          <div className="text-gray-500">
-            Cote {bet.odds} • Mise {bet.stake}
-            {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
-          </div>
-
+          {/* Journée + date + heure */}
           {match.round && (
             <div className="text-gray-500">
               Journée {match.round} du {dateStr} - {timeStr}
             </div>
           )}
+
+          {/* Cote / Mise / Gain */}
+          <div className="text-gray-500">
+            Cote {bet.odds} • Mise {bet.stake}
+            {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
+          </div>
+
         </div>
       )}
+
 
       <div className="mt-2 text-xs text-gray-500 flex justify-end">
         Solde après transaction : <span className="font-semibold ml-1">{t.balance_after}</span>
@@ -866,8 +872,8 @@ export default function MaCagnotte() {
                 value={sortMode}
                 onChange={(v) => setSortMode(v)}
                 options={[
-                  { value: "Récent", label: "Plus récent" },
-                  { value: "Ancien", label: "Plus ancien" }
+                  { value: "recent", label: "Plus récent" },
+                  { value: "ancien", label: "Plus ancien" }
                 ]}
               />
             </div>  
@@ -884,9 +890,15 @@ export default function MaCagnotte() {
           ) : (
             [...paris]
               .sort((a, b) => {
-                return sortMode === "asc"
-                  ? new Date(a.created_at) - new Date(b.created_at)
-                  : new Date(b.created_at) - new Date(a.created_at);
+                const da = new Date(a.created_at);
+                const db = new Date(b.created_at);
+
+                // Nouveau tri basé sur "recent" / "ancien"
+                if (sortMode === "ancien") {
+                  return da - db; // plus ancien en premier
+                } else {
+                  return db - da; // plus récent en premier
+                }
               })
               .filter(t => {
                 if (!teamFilter) return true;
@@ -907,6 +919,7 @@ export default function MaCagnotte() {
                 />
               ))
           )}
+
 
         </div>
       )}
