@@ -73,6 +73,10 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
   const match = bet?.matches;
   const isBet = !!bet;
 
+  // 👉 Ajoute ceci juste en dessous
+  const isFT = t.description?.includes("FT");
+  const periodLabel = isFT ? "Temps plein" : "Mi-temps";
+
   // Normalisation locale (obligatoire pour éviter l’erreur)
   const normalizeTeam = (name) => {
     if (!name) return "";
@@ -188,7 +192,7 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 
           {isBet && (
             <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
-              {t.user_bets?.bet_type === "FT" ? "Temps plein" : "Mi‑temps"}
+              {periodLabel}
             </span>
           )}
         </div>
