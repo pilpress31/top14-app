@@ -77,6 +77,12 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
   const isFT = t.description?.includes("FT");
   const periodLabel = isFT ? "Temps plein" : "Mi-temps";
 
+// 👉 Mets les logs ici
+console.log("TRANSACTION:", t);
+console.log("DESCRIPTION:", t.description);
+console.log("PERIOD:", periodLabel);
+
+
   // Normalisation locale (obligatoire pour éviter l’erreur)
   const normalizeTeam = (name) => {
     if (!name) return "";
