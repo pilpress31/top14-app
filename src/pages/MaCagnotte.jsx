@@ -548,7 +548,16 @@ export default function MaCagnotte() {
               <p className="text-gray-500">Aucun pari pour le moment</p>
             </div>
           ) : (
-            paris.map(t => <BetItem key={t.id} t={t} />)
+            paris.map(t => (
+              <BetItem
+                key={t.id}
+                t={t}
+                getTransactionIcon={getTransactionIcon}
+                getTransactionLabel={getTransactionLabel}
+                navigateToBet={navigateToBet}
+              />
+            ))
+
           )}
 
         </div>
