@@ -116,17 +116,18 @@ export default function MaCagnotte() {
   });
 
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
+  // Tri + filtre
   const [sortMode, setSortMode] = useState("desc");
   const [teamFilter, setTeamFilter] = useState("");
 
-  // 1️⃣ Charger l’utilisateur d’abord
+  // Charger l’utilisateur
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
-        navigate('/login');
+        navigate("/login");
         return;
       }
       setUser(data.user);
@@ -134,33 +135,32 @@ export default function MaCagnotte() {
     fetchUser();
   }, []);
 
-  // 2️⃣ Charger les données uniquement quand user.id existe
+  // Charger les données quand user.id existe
   useEffect(() => {
-    if (!user?.id) return; // attendre que user soit prêt
+    if (!user?.id) return;
     loadData(user.id);
   }, [user]);
 
-  // 3️⃣ loadData reçoit userId
   const loadData = async (userId) => {
     try {
-      console.log("🔍 DEBUG userId:", userId); // ✅ Ajoutez ceci
-      
-      // --- Crédits ---
+      console.log("🔍 DEBUG userId:", userId);
+
+      // Crédits
       const creditsResponse = await axios.get(
-        'https://top14-api-production.up.railway.app/api/user/credits',
-        { headers: { 'x-user-id': userId } }
+        "https://top14-api-production.up.railway.app/api/user/credits",
+        { headers: { "x-user-id": userId } }
       );
       setUserCredits(creditsResponse.data);
 
-      // --- Paris enrichis ---
-      console.log("🔍 Appel API bets/v2 avec userId:", userId); // ✅ Ajoutez ceci
+      // Paris enrichis
+      console.log("🔍 Appel API bets/v2 avec userId:", userId);
 
       const parisResponse = await axios.get(
-        'https://top14-api-production.up.railway.app/api/user/bets/v2',
-        { headers: { 'x-user-id': userId } }
+        "https://top14-api-production.up.railway.app/api/user/bets/v2",
+        { headers: { "x-user-id": userId } }
       );
 
-      console.log("✅ Réponse API bets/v2:", parisResponse.data); // ✅ Ajoutez ceci
+      console.log("✅ Réponse API bets/v2:", parisResponse.data);
 
       const parisList = Array.isArray(parisResponse.data)
         ? parisResponse.data
@@ -168,10 +168,10 @@ export default function MaCagnotte() {
 
       setParis(parisList);
 
-      // --- Stats ---
-      const pending = parisList.filter(b => b.bets?.status === 'pending').length;
-      const won = parisList.filter(b => b.bets?.status === 'won').length;
-      const lost = parisList.filter(b => b.bets?.status === 'lost').length;
+      // Stats
+      const pending = parisList.filter((b) => b.bets?.status === "pending").length;
+      const won = parisList.filter((b) => b.bets?.status === "won").length;
+      const lost = parisList.filter((b) => b.bets?.status === "lost").length;
 
       const totalStaked = parisList.reduce(
         (sum, b) => sum + (b.bets?.stake || 0),
@@ -179,7 +179,7 @@ export default function MaCagnotte() {
       );
 
       const totalWon = parisList
-        .filter(b => b.bets?.status === 'won')
+        .filter((b) => b.bets?.status === "won")
         .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
 
       setStats({
@@ -190,71 +190,60 @@ export default function MaCagnotte() {
         totalStaked,
         totalWon,
         netProfit: totalWon - totalStaked,
-        totalBonus: parisList.filter(t => t.type === 'bonus').length,
-        nbDistributions: parisList.filter(t => t.type === 'monthly_distribution').length
+        totalBonus: parisList.filter((t) => t.type === "bonus").length,
+        nbDistributions: parisList.filter((t) => t.type === "monthly_distribution").length
       });
 
       setLoading(false);
-
     } catch (error) {
       console.error("Erreur loadData:", error);
       setLoading(false);
     }
   };
 
-
   const navigateToBet = (transaction) => {
     let matchId = null;
 
-    // 1) metadata.match_id
     if (transaction.metadata?.match_id) {
       matchId = transaction.metadata.match_id;
-    }
-
-    // 2) reference_id → retrouver le pari
-    else if (transaction.reference_id) {
-      const bet = paris.find(p => p.id === transaction.reference_id);
+    } else if (transaction.reference_id) {
+      const bet = paris.find((p) => p.id === transaction.reference_id);
       if (bet?.match_id) matchId = bet.match_id;
-    }
-
-    // 3) description → fallback
-    else if (transaction.description) {
+    } else if (transaction.description) {
       const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
       if (match) {
         const [_, team1, team2] = match;
-        const bet = paris.find(p => {
-          const parts = p.match_id?.split('_') || [];
-          const teams = parts.slice(2).join('_');
+        const bet = paris.find((p) => {
+          const parts = p.match_id?.split("_") || [];
+          const teams = parts.slice(2).join("_");
           return (
-            teams.includes(team1.replace(/ /g, '_')) ||
-            teams.includes(team2.replace(/ /g, '_'))
+            teams.includes(team1.replace(/ /g, "_")) ||
+            teams.includes(team2.replace(/ /g, "_"))
           );
         });
         if (bet?.match_id) matchId = bet.match_id;
       }
     }
 
-    // 4) Navigation vers /pronos avec paramètre URL
     if (matchId) {
       window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
     }
   };
 
-
   const getTransactionIcon = (type) => {
     switch (type) {
-      case 'bet_placed':
+      case "bet_placed":
         return <TrendingDown className="w-5 h-5 text-red-500" />;
-      case 'bet_won':
+      case "bet_won":
         return <Trophy className="w-5 h-5 text-green-500" />;
-      case 'bet_lost':
+      case "bet_lost":
         return <TrendingDown className="w-5 h-5 text-gray-400" />;
-      case 'monthly_distribution':
+      case "monthly_distribution":
         return <Gift className="w-5 h-5 text-blue-500" />;
-      case 'bonus':
-      case 'bonus_exact_score':
+      case "bonus":
+      case "bonus_exact_score":
         return <Award className="w-5 h-5 text-purple-500" />;
-      case 'initial_capital':
+      case "initial_capital":
         return <Gift className="w-5 h-5 text-blue-500" />;
       default:
         return <Coins className="w-5 h-5 text-gray-400" />;
@@ -263,54 +252,46 @@ export default function MaCagnotte() {
 
   const getTransactionLabel = (type) => {
     switch (type) {
-      case 'bet_placed':
-        return 'Pari placé';
-      case 'bet_won':
-        return 'Pari gagné';
-      case 'bet_lost':
-        return 'Pari perdu';
-      case 'monthly_distribution':
-        return 'Distribution mensuelle';
-      case 'bonus_exact_score':
-        return 'Bonus score exact';
-      case 'bonus':
-        return 'Bonus';
-      case 'initial_capital':
-        return 'Bonus de bienvenue';  
+      case "bet_placed":
+        return "Pari placé";
+      case "bet_won":
+        return "Pari gagné";
+      case "bet_lost":
+        return "Pari perdu";
+      case "monthly_distribution":
+        return "Distribution mensuelle";
+      case "bonus_exact_score":
+        return "Bonus score exact";
+      case "bonus":
+        return "Bonus";
+      case "initial_capital":
+        return "Bonus de bienvenue";
       default:
-        return 'Transaction';
+        return "Transaction";
     }
   };
 
   const getTransactionDetails = (trans) => {
     if (!trans.metadata) return null;
 
-    if (trans.type === 'bet_placed' || trans.type === 'bet_won' || trans.type === 'bet_lost') {
+    if (["bet_placed", "bet_won", "bet_lost"].includes(trans.type)) {
       return (
         <p className="text-xs text-gray-500 mt-1">
-          {trans.metadata.bet_type === 'FT' ? 'Full Time' : 'Mi-Temps'} • 
-          Cote: {trans.metadata.odds} • 
-          Mise: {trans.metadata.stake} jetons
+          {trans.metadata.bet_type === "FT" ? "Full Time" : "Mi-Temps"} • Cote:{" "}
+          {trans.metadata.odds} • Mise: {trans.metadata.stake} jetons
         </p>
       );
     }
 
-    if (trans.type === 'bonus_exact_score') {
+    if (trans.type === "bonus_exact_score") {
+      return <p className="text-xs text-gray-500 mt-1">Score exact trouvé ! 🎯</p>;
+    }
+
+    if (trans.type === "initial_capital") {
       return (
-        <p className="text-xs text-gray-500 mt-1">
-          Score exact trouvé ! 🎯
-        </p>
+        <p className="text-xs text-gray-500 mt-1">Jetons offerts à l’inscription</p>
       );
     }
-    
-    if (trans.type === 'initial_capital') {
-      return (
-        <p className="text-xs text-gray-500 mt-1">
-          Jetons offerts à l’inscription
-        </p>
-      );
-    }
-  
 
     return null;
   };
@@ -323,14 +304,29 @@ export default function MaCagnotte() {
     );
   }
 
-  const winRate = stats.totalBets > 0 
-    ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1) 
-    : 0;
+  const winRate =
+    stats.totalBets > 0
+      ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
+      : 0;
 
-  // ✅ Calcul ROI
-  const roi = stats.totalStaked > 0
-    ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
-    : 0;
+  const roi =
+    stats.totalStaked > 0
+      ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
+      : 0;
+
+  // Calcul des équipes
+  const teams = Array.from(
+    new Set(
+      paris
+        .filter((t) => t.bets?.matches)
+        .flatMap((t) => [
+          t.bets.matches.home_team,
+          t.bets.matches.away_team
+        ])
+    )
+  );
+
+  console.log("RENDER paris =", paris);
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
@@ -343,16 +339,18 @@ export default function MaCagnotte() {
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm">Retour</span>
         </button>
-        
+
         <div className="flex items-center gap-3 mb-4">
           <Coins className="w-8 h-8 text-white" />
           <h1 className="text-2xl font-bold text-white">Ma Cagnotte</h1>
         </div>
 
-        {/* Cagnotte principale */}
+        {/* Solde */}
         <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
           <p className="text-white/80 text-sm mb-1">Solde actuel</p>
-          <p className="text-white text-4xl font-bold">{userCredits?.credits || 0}</p>
+          <p className="text-white text-4xl font-bold">
+            {userCredits?.credits || 0}
+          </p>
           <p className="text-white/70 text-xs mt-1">jetons</p>
         </div>
       </div>
@@ -361,21 +359,22 @@ export default function MaCagnotte() {
       <div className="bg-white border-b-2 border-rugby-gray sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto flex">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => setActiveTab("overview")}
             className={`flex-1 py-3 font-semibold transition-colors ${
-              activeTab === 'overview'
-                ? 'text-rugby-gold border-b-4 border-rugby-gold'
-                : 'text-gray-600 hover:text-rugby-gold'
+              activeTab === "overview"
+                ? "text-rugby-gold border-b-4 border-rugby-gold"
+                : "text-gray-600 hover:text-rugby-gold"
             }`}
           >
             Vue d'ensemble
           </button>
+
           <button
-            onClick={() => setActiveTab('transactions')}
+            onClick={() => setActiveTab("transactions")}
             className={`flex-1 py-3 font-semibold transition-colors ${
-              activeTab === 'transactions'
-                ? 'text-rugby-gold border-b-4 border-rugby-gold'
-                : 'text-gray-600 hover:text-rugby-gold'
+              activeTab === "transactions"
+                ? "text-rugby-gold border-b-4 border-rugby-gold"
+                : "text-gray-600 hover:text-rugby-gold"
             }`}
           >
             Historique
@@ -383,8 +382,11 @@ export default function MaCagnotte() {
         </div>
       </div>
 
-      {/* Contenu */}
-      {activeTab === 'overview' ? (
+      {/* CONTENU */}
+      {activeTab === "overview" ? (
+        /* --------------------------------------------- */
+        /* PARTIE OVERVIEW                               */
+        /* --------------------------------------------- */
         <div className="p-6 space-y-4">
           {/* Gains/Pertes */}
           <div className="grid grid-cols-2 gap-3">
@@ -410,38 +412,50 @@ export default function MaCagnotte() {
           </div>
 
           {/* Bénéfice net */}
-          <div className={`rounded-lg p-4 border ${
-            stats.netProfit >= 0 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-red-50 border-red-200'
-          }`}>
+          <div
+            className={`rounded-lg p-4 border ${
+              stats.netProfit >= 0
+                ? "bg-green-50 border-green-200"
+                : "bg-red-50 border-red-200"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className={`text-xs font-semibold ${
-                    stats.netProfit >= 0 ? 'text-green-700' : 'text-red-700'
-                  }`}>
+                  <p
+                    className={`text-xs font-semibold ${
+                      stats.netProfit >= 0 ? "text-green-700" : "text-red-700"
+                    }`}
+                  >
                     Bénéfice net
                   </p>
-                  {/* ✅ Tooltip explicatif */}
+
                   <div className="group relative">
                     <Info className="w-4 h-4 text-gray-400 cursor-help" />
                     <div className="invisible group-hover:visible absolute left-0 top-6 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
                       <strong>Bénéfice net =</strong> Total gagné - Total misé
-                      <br/><br/>
+                      <br />
+                      <br />
                       Représente votre profit/perte global sur tous vos paris.
                     </div>
                   </div>
                 </div>
-                <p className={`text-3xl font-bold ${
-                  stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {stats.netProfit >= 0 ? '+' : ''}{stats.netProfit}
+
+                <p
+                  className={`text-3xl font-bold ${
+                    stats.netProfit >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {stats.netProfit >= 0 ? "+" : ""}
+                  {stats.netProfit}
                 </p>
               </div>
-              <DollarSign className={`w-12 h-12 ${
-                stats.netProfit >= 0 ? 'text-green-300' : 'text-red-300'
-              }`} />
+
+              <DollarSign
+                className={`w-12 h-12 ${
+                  stats.netProfit >= 0 ? "text-green-300" : "text-red-300"
+                }`}
+              />
             </div>
           </div>
 
@@ -450,7 +464,9 @@ export default function MaCagnotte() {
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <div className="flex items-center gap-2 mb-2">
                 <Award className="w-5 h-5 text-purple-600" />
-                <p className="text-xs text-purple-700 font-semibold">Bonus gagnés</p>
+                <p className="text-xs text-purple-700 font-semibold">
+                  Bonus gagnés
+                </p>
               </div>
               <p className="text-2xl font-bold text-purple-600">
                 {stats.totalBonus}
@@ -461,7 +477,9 @@ export default function MaCagnotte() {
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
               <div className="flex items-center gap-2 mb-2">
                 <Gift className="w-5 h-5 text-blue-600" />
-                <p className="text-xs text-blue-700 font-semibold">Distributions</p>
+                <p className="text-xs text-blue-700 font-semibold">
+                  Distributions
+                </p>
               </div>
               <p className="text-2xl font-bold text-blue-600">
                 {stats.nbDistributions}
@@ -480,19 +498,25 @@ export default function MaCagnotte() {
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="bg-orange-50 rounded-lg p-3 text-center border border-orange-200">
                 <Clock className="w-5 h-5 text-orange-500 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-orange-500">{stats.pendingBets}</p>
+                <p className="text-2xl font-bold text-orange-500">
+                  {stats.pendingBets}
+                </p>
                 <p className="text-[10px] text-gray-600">En cours</p>
               </div>
 
               <div className="bg-green-50 rounded-lg p-3 text-center border border-green-200">
                 <Trophy className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-green-600">{stats.wonBets}</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.wonBets}
+                </p>
                 <p className="text-[10px] text-gray-600">Gagnés</p>
               </div>
 
               <div className="bg-red-50 rounded-lg p-3 text-center border border-red-200">
                 <TrendingDown className="w-5 h-5 text-red-600 mx-auto mb-1" />
-                <p className="text-2xl font-bold text-red-600">{stats.lostBets}</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {stats.lostBets}
+                </p>
                 <p className="text-[10px] text-gray-600">Perdus</p>
               </div>
             </div>
@@ -500,19 +524,23 @@ export default function MaCagnotte() {
             <div className="space-y-2">
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Total paris</span>
-                <span className="text-lg font-bold text-rugby-gold">{stats.totalBets}</span>
+                <span className="text-lg font-bold text-rugby-gold">
+                  {stats.totalBets}
+                </span>
               </div>
 
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Taux de réussite</span>
-                <span className="text-lg font-bold text-rugby-gold">{winRate}%</span>
+                <span className="text-lg font-bold text-rugby-gold">
+                  {winRate}%
+                </span>
               </div>
 
-              {/* ✅ ROI avec tooltip */}
+                            {/* ROI */}
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">ROI</span>
-                  {/* ✅ Tooltip explicatif */}
+
                   <div className="group relative">
                     <Info className="w-4 h-4 text-gray-400 cursor-help" />
                     <div className="invisible group-hover:visible absolute left-0 top-6 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
@@ -525,6 +553,7 @@ export default function MaCagnotte() {
                     </div>
                   </div>
                 </div>
+
                 <span className={`text-lg font-bold ${
                   roi >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>
@@ -548,68 +577,82 @@ export default function MaCagnotte() {
           >
             Voir mes paris
           </button>
+
+        </div>
+      ) : (
+        /* --------------------------------------------- */
+        /* PARTIE TRANSACTIONS                           */
+        /* --------------------------------------------- */
+        <div className="p-6 space-y-4">
+
+          <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
+            <History className="w-5 h-5" />
+            Historique des paris
+          </h2>
+
+          {/* Filtres */}
+          <div className="flex gap-3 mb-4">
+
+            {/* Filtre équipe */}
+            <select
+              value={teamFilter}
+              onChange={(e) => setTeamFilter(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="">Toutes les équipes</option>
+              {teams.map(team => (
+                <option key={team} value={team}>{team}</option>
+              ))}
+            </select>
+
+            {/* Tri par date */}
+            <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="desc">Plus récent</option>
+              <option value="asc">Plus ancien</option>
+            </select>
+
           </div>
-          ) : (
-            // Onglet Historique des paris
-            <div className="p-6 space-y-4">
 
-              <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
-                <History className="w-5 h-5" />
-                Historique des paris
-              </h2>
-
-              {/* Filtres */}
-              <div className="flex gap-3 mb-4">
-                <select
-                  value={teamFilter}
-                  onChange={(e) => setTeamFilter(e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Toutes les équipes</option>
-                  {teams.map(team => (
-                    <option key={team} value={team}>{team}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Liste des transactions */}
-              {paris.length === 0 ? (
-                <div className="p-8 text-center">
-                  <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Aucun pari pour le moment</p>
-                </div>
-              ) : (
-                [...paris]
-                  .sort((a, b) => {
-                    return sortMode === "asc"
-                      ? new Date(a.created_at) - new Date(b.created_at)
-                      : new Date(b.created_at) - new Date(a.created_at);
-                  })
-                  .filter(t => {
-                    if (!teamFilter) return true;
-                    const match = t.bets?.matches;
-                    if (!match) return false;
-                    return (
-                      match.home_team === teamFilter ||
-                      match.away_team === teamFilter
-                    );
-                  })
-                  .map(t => (
-                    <BetItem
-                      key={t.id}
-                      t={t}
-                      getTransactionIcon={getTransactionIcon}
-                      getTransactionLabel={getTransactionLabel}
-                      navigateToBet={navigateToBet}
-                    />
-                  ))
-              )}
-
+          {/* Liste des transactions */}
+          {paris.length === 0 ? (
+            <div className="p-8 text-center">
+              <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">Aucun pari pour le moment</p>
             </div>
+          ) : (
+            [...paris]
+              .sort((a, b) => {
+                return sortMode === "asc"
+                  ? new Date(a.created_at) - new Date(b.created_at)
+                  : new Date(b.created_at) - new Date(a.created_at);
+              })
+              .filter(t => {
+                if (!teamFilter) return true;
+                const match = t.bets?.matches;
+                if (!match) return false;
+                return (
+                  match.home_team === teamFilter ||
+                  match.away_team === teamFilter
+                );
+              })
+              .map(t => (
+                <BetItem
+                  key={t.id}
+                  t={t}
+                  getTransactionIcon={getTransactionIcon}
+                  getTransactionLabel={getTransactionLabel}
+                  navigateToBet={navigateToBet}
+                />
+              ))
           )}
 
+        </div>
+      )}
 
     </div>
   );
 }
-
