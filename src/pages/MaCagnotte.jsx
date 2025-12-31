@@ -548,64 +548,66 @@ export default function MaCagnotte() {
           >
             Voir mes paris
           </button>
-        </div>
-      ) : (
-        // Onglet Historique des paris
-        <div className="p-6 space-y-4">
-
-          <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
-            <History className="w-5 h-5" />
-            Historique des paris
-          </h2>
-
-          <div className="flex gap-3 mb-4">
-            <select
-              value={teamFilter}
-              onChange={(e) => setTeamFilter(e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
-            >
-              <option value="">Toutes les équipes</option>
-                {teams.map(team => (
-              <option key={team} value={team}>{team}</option>
-              ))}
-            </select>
           </div>
-
-          {paris.length === 0 ? (
-            <div className="p-8 text-center">
-              <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Aucun pari pour le moment</p>
-            </div>
           ) : (
-            [...paris]
-              .sort((a, b) => {
-                return sortMode === "asc"
-                  ? new Date(a.created_at) - new Date(b.created_at)
-                  : new Date(b.created_at) - new Date(a.created_at);
-              })
-              .filter(t => {
-                if (!teamFilter) return true;
-                const match = t.bets?.matches;
-                if (!match) return false;
-                return (
-                  match.home_team === teamFilter ||
-                  match.away_team === teamFilter
-                );
-              })
-              .map(t => (
-                <BetItem
-                  key={t.id}
-                  t={t}
-                  getTransactionIcon={getTransactionIcon}
-                  getTransactionLabel={getTransactionLabel}
-                  navigateToBet={navigateToBet}
-                />
-              ))
+            // Onglet Historique des paris
+            <div className="p-6 space-y-4">
+
+              <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
+                <History className="w-5 h-5" />
+                Historique des paris
+              </h2>
+
+              {/* Filtres */}
+              <div className="flex gap-3 mb-4">
+                <select
+                  value={teamFilter}
+                  onChange={(e) => setTeamFilter(e.target.value)}
+                  className="border rounded px-2 py-1 text-sm"
+                >
+                  <option value="">Toutes les équipes</option>
+                  {teams.map(team => (
+                    <option key={team} value={team}>{team}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Liste des transactions */}
+              {paris.length === 0 ? (
+                <div className="p-8 text-center">
+                  <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">Aucun pari pour le moment</p>
+                </div>
+              ) : (
+                [...paris]
+                  .sort((a, b) => {
+                    return sortMode === "asc"
+                      ? new Date(a.created_at) - new Date(b.created_at)
+                      : new Date(b.created_at) - new Date(a.created_at);
+                  })
+                  .filter(t => {
+                    if (!teamFilter) return true;
+                    const match = t.bets?.matches;
+                    if (!match) return false;
+                    return (
+                      match.home_team === teamFilter ||
+                      match.away_team === teamFilter
+                    );
+                  })
+                  .map(t => (
+                    <BetItem
+                      key={t.id}
+                      t={t}
+                      getTransactionIcon={getTransactionIcon}
+                      getTransactionLabel={getTransactionLabel}
+                      navigateToBet={navigateToBet}
+                    />
+                  ))
+              )}
+
+            </div>
           )}
 
-
-        </div>
-      )}
 
     </div>
   );
