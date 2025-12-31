@@ -111,6 +111,8 @@ export default function MaCagnotte() {
   // 3️⃣ loadData reçoit userId
   const loadData = async (userId) => {
     try {
+      console.log("🔍 DEBUG userId:", userId); // ✅ Ajoutez ceci
+      
       // --- Crédits ---
       const creditsResponse = await axios.get(
         'https://top14-api-production.up.railway.app/api/user/credits',
@@ -119,12 +121,14 @@ export default function MaCagnotte() {
       setUserCredits(creditsResponse.data);
 
       // --- Paris enrichis ---
+      console.log("🔍 Appel API bets/v2 avec userId:", userId); // ✅ Ajoutez ceci
+
       const parisResponse = await axios.get(
         'https://top14-api-production.up.railway.app/api/user/bets/v2',
         { headers: { 'x-user-id': userId } }
       );
 
-      console.log("DEBUG parisResponse.data =", parisResponse.data);
+      console.log("✅ Réponse API bets/v2:", parisResponse.data); // ✅ Ajoutez ceci
 
       const parisList = Array.isArray(parisResponse.data)
         ? parisResponse.data
