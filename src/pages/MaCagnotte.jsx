@@ -10,61 +10,77 @@ import { useLocation } from "react-router-dom";
 
 
 // 👉 TU COLLES BetItem ICI, juste après les imports
-function BetItem({ t }) {
+function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) {
   const bet = t.bets;
   const match = bet?.matches;
 
   const isBet = !!bet;
 
   return (
-    <div className="p-4 border-b border-gray-200">
-      <div className="flex justify-between">
-        <span className="font-semibold">
-          {t.type === 'bet_placed' && 'Pari placé'}
-          {t.type === 'bet_won' && 'Pari gagné'}
-          {t.type === 'bet_lost' && 'Pari perdu'}
-          {t.type === 'bonus' && 'Bonus'}
-          {t.type === 'monthly_distribution' && 'Distribution mensuelle'}
-        </span>
+    <div 
+      className="p-4 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+      onClick={() => navigateToBet(t)}
+    >
+      {/* Ligne titre + montant */}
+      <div className="flex justify-between items-center mb-1">
+        <div className="flex items-center gap-2">
+          {getTransactionIcon(t.type)}
+          <span className="font-semibold">{getTransactionLabel(t.type)}</span>
+        </div>
 
-        <span className={t.amount > 0 ? 'text-green-600' : 'text-red-600'}>
+        <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-600"}`}>
           {t.amount > 0 ? `+${t.amount}` : t.amount} jetons
         </span>
       </div>
 
+      {/* Bloc pari */}
       {isBet && (
-        <div className="text-xs text-gray-500 mt-1">
-          <div className="font-medium">
-            {match.home_team} vs {match.away_team}
+        <div className="mt-2 text-sm text-gray-700">
+          {/* Match */}
+          <div className="font-semibold">
+            {match.home_team}{" "}
+            {match.score_home !== null ? match.score_home : ""}
+
+            {match.score_home !== null ? " – " : " vs "}
+
+            {match.score_away !== null ? match.score_away : ""}{" "}
+            {match.away_team}
           </div>
 
-          <div>
-            Cote: {bet.odds} • Mise: {bet.stake}
-            {bet.payout && t.type === 'bet_won' && (
-              <> • Gain: {bet.payout}</>
+          {/* Détails pari */}
+          <div className="text-gray-500">
+            Cote {bet.odds} • Mise {bet.stake}
+            {bet.payout && t.type === "bet_won" && (
+              <> • Gain {bet.payout}</>
             )}
           </div>
 
-          {match.score_home !== null && (
-            <div>
-              Score final : {match.score_home} – {match.score_away}
-            </div>
-          )}
-
-          {match.kickoff && (
-            <div>
-              Match joué le {new Date(match.kickoff).toLocaleDateString('fr-FR')}
-            </div>
-          )}
-
+          {/* Journée */}
           {match.round && (
-            <div>Journée : {match.round}</div>
+            <div className="text-gray-500">Journée : {match.round}</div>
           )}
         </div>
       )}
+
+      {/* Solde après transaction */}
+      <div className="mt-2 text-xs text-gray-500">
+        Solde après transaction :{" "}
+        <span className="font-semibold">{t.balance_after}</span>
+      </div>
+
+      {/* Date */}
+      <div className="text-xs text-gray-400">
+        {new Date(t.created_at).toLocaleString("fr-FR", {
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit"
+        })}
+      </div>
     </div>
   );
 }
+
 
 
 export default function MaCagnotte() {
