@@ -67,6 +67,8 @@ function PremiumDropdown({ label, value, onChange, options }) {
 // BET ITEM — Composant enfant + normalisation locale
 // ---------------------------------------------------------
 function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) {
+  console.log("BET ITEM t =", t);
+  
   const bet = t.bets;
   const match = bet?.matches;
   const isBet = !!bet;
@@ -883,37 +885,7 @@ export default function MaCagnotte() {
           </div>
 
 
-          {/* Filtres */}
-          <div className="flex gap-3 mb-4">
-
-            {/* Filtre équipe */}
-            <PremiumDropdown
-              label="Toutes les équipes"
-              value={teamFilter}
-              onChange={(v) => setTeamFilter(v)}
-              options={[
-                { value: "", label: "Toutes les équipes" },
-                ...teams.map((t) => ({ value: t, label: t }))
-              ]}
-            />
-
-
-            {/* Tri par date */}
-            <div className="w-48">
-              <PremiumDropdown
-                label="Trier par"
-                value={sortMode}
-                onChange={(v) => setSortMode(v)}
-                options={[
-                  { value: "recent", label: "Récent → Ancien" },
-                  { value: "ancien", label: "Ancien → Récent" }
-                ]}
-              />
-            </div>
-  
-
-
-          </div>
+          
 
           {/* Liste des transactions */}
           {paris.length === 0 ? (
