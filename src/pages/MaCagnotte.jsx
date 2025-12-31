@@ -165,7 +165,7 @@ export default function MaCagnotte() {
       setLoading(false);
     }
   };
-}
+
 
   const navigateToBet = (transaction) => {
     let matchId = null;
