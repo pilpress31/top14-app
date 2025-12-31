@@ -862,15 +862,17 @@ export default function MaCagnotte() {
 
 
             {/* Tri par date */}
-            <PremiumDropdown
-              label="Trier par"
-              value={sortMode}
-              onChange={(v) => setSortMode(v)}
-              options={[
-                { value: "desc", label: "Plus récent" },
-                { value: "asc", label: "Plus ancien" }
-              ]}
-            />
+            <div className="w-48">
+              <PremiumDropdown
+                label="Trier par"
+                value={sortMode}
+                onChange={(v) => setSortMode(v)}
+                options={[
+                  { value: "Récent", label: "Plus récent" },
+                  { value: "Ancien", label: "Plus ancien" }
+                ]}
+              />
+            </div>  
 
 
           </div>
