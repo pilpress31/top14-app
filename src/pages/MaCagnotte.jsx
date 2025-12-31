@@ -22,13 +22,109 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
   // Normalisation des noms d’équipes
   const normalizeTeam = (name) => {
     if (!name) return "";
-    return name
-      .replace(/^RACING$/, "RACING 92")
-      .replace(/^92$/, "RACING 92")
-      .replace(/^CASTRES$/, "CASTRES OLYMPIQUE")
-      .replace(/^OLYMPIQUE$/, "CASTRES OLYMPIQUE")
-      .trim();
+
+    const n = name.toUpperCase().replace(/\s+/g, "").trim();
+
+    const map = {
+      // TOP 14
+      "RACING": "RACING 92",
+      "92": "RACING 92",
+      "RACING92": "RACING 92",
+      "R92": "RACING 92",
+
+      "CASTRES": "CASTRES OLYMPIQUE",
+      "OLYMPIQUE": "CASTRES OLYMPIQUE",
+      "CASTRESOLYMPIQUE": "CASTRES OLYMPIQUE",
+      "CO": "CASTRES OLYMPIQUE",
+
+      "TOULOUSE": "STADE TOULOUSAIN",
+      "STADETOULOUSAIN": "STADE TOULOUSAIN",
+      "ST": "STADE TOULOUSAIN",
+
+      "STADEFRANCAIS": "STADE FRANÇAIS",
+      "PARIS": "STADE FRANÇAIS",
+
+      "TOULON": "RC TOULON",
+      "RCT": "RC TOULON",
+
+      "MONTPELLIER": "MONTPELLIER HÉRAULT",
+      "MHR": "MONTPELLIER HÉRAULT",
+
+      "CLERMONT": "ASM CLERMONT AUVERGNE",
+      "ASM": "ASM CLERMONT AUVERGNE",
+
+      "BORDEAUX": "BORDEAUX-BÈGLES",
+      "UBB": "BORDEAUX-BÈGLES",
+
+      "LYON": "LYON OU",
+      "LOU": "LYON OU",
+
+      "PAU": "SECTION PALOISE",
+      "SECTIONPALOISE": "SECTION PALOISE",
+
+      "PERPIGNAN": "USAP PERPIGNAN",
+      "USAP": "USAP PERPIGNAN",
+
+      "BAYONNE": "AVIRON BAYONNAIS",
+      "AB": "AVIRON BAYONNAIS",
+
+      // PRO D2
+      "AGEN": "SU AGEN",
+      "SUA": "SU AGEN",
+
+      "AURILLAC": "STADE AURILLACOIS",
+
+      "BEZIERS": "AS BEZIERS",
+      "ASBH": "AS BEZIERS",
+
+      "BIARRITZ": "BIARRITZ OLYMPIQUE",
+      "BO": "BIARRITZ OLYMPIQUE",
+
+      "CARCASSONNE": "US CARCASSONNE",
+      "USC": "US CARCASSONNE",
+
+      "COLOMIERS": "COLOMIERS RUGBY",
+
+      "DAX": "US DAX",
+
+      "GRENOBLE": "FC GRENOBLE",
+      "FCG": "FC GRENOBLE",
+
+      "MONTDEMARSAN": "STADO MONTOIS",
+      "MONTOIS": "STADO MONTOIS",
+
+      "NEVERS": "USON NEVERS",
+
+      "PROVENCE": "PROVENCE RUGBY",
+
+      "ROUEN": "ROUEN NORMANDIE",
+
+      "VALENCEROMANS": "VALENCE-ROMANS",
+      "VRDR": "VALENCE-ROMANS",
+
+      "VANNES": "RC VANNES",
+      "RCV": "RC VANNES",
+
+      // MONTAUBAN
+      "MONTAUBAN": "US MONTAUBAN",
+      "USMONTAUBAN": "US MONTAUBAN",
+      "USM": "US MONTAUBAN",
+      "SAPIAC": "US MONTAUBAN",
+      "USMSAPIAC": "US MONTAUBAN",
+    };
+
+    // Correspondance exacte
+    if (map[n]) return map[n];
+
+    // Correspondance partielle (fallback intelligent)
+    for (const key in map) {
+      if (n.includes(key)) return map[key];
+    }
+
+    // Sinon renvoyer le nom original propre
+    return name.trim();
   };
+
 
   const home = normalizeTeam(match?.home_team);
   const away = normalizeTeam(match?.away_team);
@@ -340,11 +436,13 @@ export default function MaCagnotte() {
       paris
         .filter((t) => t.bets?.matches)
         .flatMap((t) => [
-          t.bets.matches.home_team,
-          t.bets.matches.away_team
+          normalizeTeam(t.bets.matches.home_team),
+          normalizeTeam(t.bets.matches.away_team),
         ])
+        .filter(Boolean)
     )
-  );
+  ).sort();
+
 
   console.log("RENDER paris =", paris);
 
