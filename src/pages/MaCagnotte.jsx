@@ -196,20 +196,21 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
         </span>
       </div>
 
+      
       {isBet && (
         <div className="mt-2 text-sm text-gray-700">
+
+          {/* Journée + date + heure */}
+          {match.round && (
+            <div className="text-gray-500 mb-1">
+              Journée {match.round} — {dateStr} • {timeStr}
+            </div>
+          )}
 
           {/* Score */}
           <div className="font-semibold">
             {home} {match.score_home ?? ""} {match.score_home !== null ? "–" : "vs"} {match.score_away ?? ""} {away}
           </div>
-
-          {/* Journée + date + heure */}
-          {match.round && (
-            <div className="text-gray-500">
-              Journée {match.round} du {dateStr} - {timeStr}
-            </div>
-          )}
 
           {/* Cote / Mise / Gain */}
           <div className="text-gray-500">
@@ -872,11 +873,12 @@ export default function MaCagnotte() {
                 value={sortMode}
                 onChange={(v) => setSortMode(v)}
                 options={[
-                  { value: "recent", label: "Plus récent" },
-                  { value: "ancien", label: "Plus ancien" }
+                  { value: "recent", label: "Récent → Ancien" },
+                  { value: "ancien", label: "Ancien → Récent" }
                 ]}
               />
-            </div>  
+            </div>
+  
 
 
           </div>
