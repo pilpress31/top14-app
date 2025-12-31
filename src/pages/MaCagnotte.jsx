@@ -8,6 +8,60 @@ import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { useLocation } from "react-router-dom";
 
+// ---------------------------------------------------------
+// Dropdown Premium (réutilisable)
+// ---------------------------------------------------------
+import { ChevronDown, Check } from "lucide-react";
+
+function PremiumDropdown({ label, value, onChange, options }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative w-full">
+      {/* Bouton */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-3 py-2 border rounded-lg bg-white shadow-sm hover:shadow-md transition-all"
+      >
+        <span className="text-sm text-gray-700">
+          {value ? value : label}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 text-gray-500 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Menu */}
+      {open && (
+        <div
+          className="absolute mt-2 w-full bg-white border rounded-lg shadow-lg z-50 
+                     animate-[fadeIn_0.15s_ease-out]"
+        >
+          {options.map((opt) => (
+            <div
+              key={opt.value}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between
+                          hover:bg-gray-100 transition ${
+                            value === opt.value ? "bg-gray-50" : ""
+                          }`}
+            >
+              <span>{opt.label}</span>
+              {value === opt.value && (
+                <Check className="w-4 h-4 text-rugby-gold" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ---------------------------------------------------------
 // BET ITEM — Composant enfant + normalisation locale
@@ -796,26 +850,28 @@ export default function MaCagnotte() {
           <div className="flex gap-3 mb-4">
 
             {/* Filtre équipe */}
-            <select
+            <PremiumDropdown
+              label="Toutes les équipes"
               value={teamFilter}
-              onChange={(e) => setTeamFilter(e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
-            >
-              <option value="">Toutes les équipes</option>
-              {teams.map(team => (
-                <option key={team} value={team}>{team}</option>
-              ))}
-            </select>
+              onChange={(v) => setTeamFilter(v)}
+              options={[
+                { value: "", label: "Toutes les équipes" },
+                ...teams.map((t) => ({ value: t, label: t }))
+              ]}
+            />
+
 
             {/* Tri par date */}
-            <select
+            <PremiumDropdown
+              label="Trier par"
               value={sortMode}
-              onChange={(e) => setSortMode(e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
-            >
-              <option value="desc">Plus récent</option>
-              <option value="asc">Plus ancien</option>
-            </select>
+              onChange={(v) => setSortMode(v)}
+              options={[
+                { value: "desc", label: "Plus récent" },
+                { value: "asc", label: "Plus ancien" }
+              ]}
+            />
+
 
           </div>
 
