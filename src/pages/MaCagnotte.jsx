@@ -9,328 +9,17 @@ import axios from 'axios';
 import { useLocation } from "react-router-dom";
 
 
-
-
-
-// 👉 TU COLLES BetItem ICI, juste après les imports
+// ---------------------------------------------------------
+// BET ITEM — Composant enfant + normalisation locale
+// ---------------------------------------------------------
 function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) {
   const bet = t.bets;
   const match = bet?.matches;
-
   const isBet = !!bet;
 
-  
-
-
-  const home = normalizeTeam(match?.home_team);
-  const away = normalizeTeam(match?.away_team);
-
-  // Format date premium
-  const dateObj = new Date(t.created_at);
-  const dateStr = dateObj.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-  });
-  const timeStr = dateObj.toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return (
-    <div
-      className="p-4 hover:bg-gray-50 transition cursor-pointer"
-      onClick={() => navigateToBet(t)}
-    >
-      {/* Ligne titre + montant */}
-      <div className="flex justify-between items-center mb-1">
-        <div className="flex items-center gap-2">
-          {getTransactionIcon(t.type)}
-          <span className="font-semibold">{getTransactionLabel(t.type)}</span>
-
-          {/* Badge FT / MT */}
-          {isBet && (
-            <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
-              {bet.bet_type === "FT" ? "Temps plein" : "Mi‑temps"}
-            </span>
-          )}
-        </div>
-
-        <span
-          className={`font-bold ${
-            t.amount > 0 ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          {t.amount > 0 ? `+${t.amount}` : t.amount} jetons
-        </span>
-      </div>
-
-      {/* Bloc pari */}
-      {isBet && (
-        <div className="mt-2 text-sm text-gray-700">
-          {/* Match */}
-          <div className="font-semibold">
-            {home}{" "}
-            {match.score_home !== null ? match.score_home : ""}
-
-            {match.score_home !== null ? " – " : " vs "}
-
-            {match.score_away !== null ? match.score_away : ""}{" "}
-            {away}
-          </div>
-
-          {/* Détails pari */}
-          <div className="text-gray-500">
-            Cote {bet.odds} • Mise {bet.stake}
-            {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
-          </div>
-
-          {/* Journée + date */}
-          {match.round && (
-            <div className="text-gray-500">
-              Journée {match.round} du {dateStr} - {timeStr}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Solde après transaction → tout à droite */}
-      <div className="mt-2 text-xs text-gray-500 flex justify-end">
-        Solde après transaction :{" "}
-        <span className="font-semibold ml-1">{t.balance_after}</span>
-      </div>
-
-      {/* Séparateur premium */}
-      <div className="mt-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-    </div>
-  );
-}
-
-
-
-
-export default function MaCagnotte() {
-  const navigate = useNavigate();
-
-  const [user, setUser] = useState(null);
-  const [userCredits, setUserCredits] = useState(null);
-  const [paris, setParis] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [stats, setStats] = useState({
-    totalBets: 0,
-    pendingBets: 0,
-    wonBets: 0,
-    lostBets: 0,
-    totalStaked: 0,
-    totalWon: 0,
-    netProfit: 0,
-    totalBonus: 0,
-    nbDistributions: 0
-  });
-
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
-
-  // Tri + filtre
-  const [sortMode, setSortMode] = useState("desc");
-  const [teamFilter, setTeamFilter] = useState("");
-
-  // Charger l’utilisateur
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
-        navigate("/login");
-        return;
-      }
-      setUser(data.user);
-    };
-    fetchUser();
-  }, []);
-
-  // Charger les données quand user.id existe
-  useEffect(() => {
-    if (!user?.id) return;
-    loadData(user.id);
-  }, [user]);
-
-  const loadData = async (userId) => {
-    try {
-      console.log("🔍 DEBUG userId:", userId);
-
-      // Crédits
-      const creditsResponse = await axios.get(
-        "https://top14-api-production.up.railway.app/api/user/credits",
-        { headers: { "x-user-id": userId } }
-      );
-      setUserCredits(creditsResponse.data);
-
-      // Paris enrichis
-      console.log("🔍 Appel API bets/v2 avec userId:", userId);
-
-      const parisResponse = await axios.get(
-        "https://top14-api-production.up.railway.app/api/user/bets/v2",
-        { headers: { "x-user-id": userId } }
-      );
-
-      console.log("✅ Réponse API bets/v2:", parisResponse.data);
-
-      const parisList = Array.isArray(parisResponse.data)
-        ? parisResponse.data
-        : [];
-
-      setParis(parisList);
-
-      // Stats
-      const pending = parisList.filter((b) => b.bets?.status === "pending").length;
-      const won = parisList.filter((b) => b.bets?.status === "won").length;
-      const lost = parisList.filter((b) => b.bets?.status === "lost").length;
-
-      const totalStaked = parisList.reduce(
-        (sum, b) => sum + (b.bets?.stake || 0),
-        0
-      );
-
-      const totalWon = parisList
-        .filter((b) => b.bets?.status === "won")
-        .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
-
-      setStats({
-        totalBets: parisList.length,
-        pendingBets: pending,
-        wonBets: won,
-        lostBets: lost,
-        totalStaked,
-        totalWon,
-        netProfit: totalWon - totalStaked,
-        totalBonus: parisList.filter((t) => t.type === "bonus").length,
-        nbDistributions: parisList.filter((t) => t.type === "monthly_distribution").length
-      });
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Erreur loadData:", error);
-      setLoading(false);
-    }
-  };
-
-  const navigateToBet = (transaction) => {
-    let matchId = null;
-
-    if (transaction.metadata?.match_id) {
-      matchId = transaction.metadata.match_id;
-    } else if (transaction.reference_id) {
-      const bet = paris.find((p) => p.id === transaction.reference_id);
-      if (bet?.match_id) matchId = bet.match_id;
-    } else if (transaction.description) {
-      const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
-      if (match) {
-        const [_, team1, team2] = match;
-        const bet = paris.find((p) => {
-          const parts = p.match_id?.split("_") || [];
-          const teams = parts.slice(2).join("_");
-          return (
-            teams.includes(team1.replace(/ /g, "_")) ||
-            teams.includes(team2.replace(/ /g, "_"))
-          );
-        });
-        if (bet?.match_id) matchId = bet.match_id;
-      }
-    }
-
-    if (matchId) {
-      window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
-    }
-  };
-
-  const getTransactionIcon = (type) => {
-    switch (type) {
-      case "bet_placed":
-        return <TrendingDown className="w-5 h-5 text-red-500" />;
-      case "bet_won":
-        return <Trophy className="w-5 h-5 text-green-500" />;
-      case "bet_lost":
-        return <TrendingDown className="w-5 h-5 text-gray-400" />;
-      case "monthly_distribution":
-        return <Gift className="w-5 h-5 text-blue-500" />;
-      case "bonus":
-      case "bonus_exact_score":
-        return <Award className="w-5 h-5 text-purple-500" />;
-      case "initial_capital":
-        return <Gift className="w-5 h-5 text-blue-500" />;
-      default:
-        return <Coins className="w-5 h-5 text-gray-400" />;
-    }
-  };
-
-  const getTransactionLabel = (type) => {
-    switch (type) {
-      case "bet_placed":
-        return "Pari placé";
-      case "bet_won":
-        return "Pari gagné";
-      case "bet_lost":
-        return "Pari perdu";
-      case "monthly_distribution":
-        return "Distribution mensuelle";
-      case "bonus_exact_score":
-        return "Bonus score exact";
-      case "bonus":
-        return "Bonus";
-      case "initial_capital":
-        return "Bonus de bienvenue";
-      default:
-        return "Transaction";
-    }
-  };
-
-  const getTransactionDetails = (trans) => {
-    if (!trans.metadata) return null;
-
-    if (["bet_placed", "bet_won", "bet_lost"].includes(trans.type)) {
-      return (
-        <p className="text-xs text-gray-500 mt-1">
-          {trans.metadata.bet_type === "FT" ? "Full Time" : "Mi-Temps"} • Cote:{" "}
-          {trans.metadata.odds} • Mise: {trans.metadata.stake} jetons
-        </p>
-      );
-    }
-
-    if (trans.type === "bonus_exact_score") {
-      return <p className="text-xs text-gray-500 mt-1">Score exact trouvé ! 🎯</p>;
-    }
-
-    if (trans.type === "initial_capital") {
-      return (
-        <p className="text-xs text-gray-500 mt-1">Jetons offerts à l’inscription</p>
-      );
-    }
-
-    return null;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-rugby-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rugby-gold"></div>
-      </div>
-    );
-  }
-
-  const winRate =
-    stats.totalBets > 0
-      ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
-      : 0;
-
-  const roi =
-    stats.totalStaked > 0
-      ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
-      : 0;
-
-
-// Normalisation des noms d’équipes
+  // Normalisation locale (obligatoire pour éviter l’erreur)
   const normalizeTeam = (name) => {
     if (!name) return "";
-
     const n = name.toUpperCase().replace(/\s+/g, "").trim();
 
     const map = {
@@ -421,20 +110,395 @@ export default function MaCagnotte() {
       "USMSAPIAC": "US MONTAUBAN",
     };
 
-    // Correspondance exacte
     if (map[n]) return map[n];
+    for (const key in map) if (n.includes(key)) return map[key];
+    return name.trim();
+  };
 
-    // Correspondance partielle (fallback intelligent)
-    for (const key in map) {
-      if (n.includes(key)) return map[key];
+  const home = normalizeTeam(match?.home_team);
+  const away = normalizeTeam(match?.away_team);
+
+  // Format date premium
+  const dateObj = new Date(t.created_at);
+  const dateStr = dateObj.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  const timeStr = dateObj.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="p-4 hover:bg-gray-50 transition cursor-pointer" onClick={() => navigateToBet(t)}>
+      <div className="flex justify-between items-center mb-1">
+        <div className="flex items-center gap-2">
+          {getTransactionIcon(t.type)}
+          <span className="font-semibold">{getTransactionLabel(t.type)}</span>
+
+          {isBet && (
+            <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
+              {bet.bet_type === "FT" ? "Temps plein" : "Mi‑temps"}
+            </span>
+          )}
+        </div>
+
+        <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-600"}`}>
+          {t.amount > 0 ? `+${t.amount}` : t.amount} jetons
+        </span>
+      </div>
+
+      {isBet && (
+        <div className="mt-2 text-sm text-gray-700">
+          <div className="font-semibold">
+            {home} {match.score_home ?? ""} {match.score_home !== null ? "–" : "vs"} {match.score_away ?? ""} {away}
+          </div>
+
+          <div className="text-gray-500">
+            Cote {bet.odds} • Mise {bet.stake}
+            {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
+          </div>
+
+          {match.round && (
+            <div className="text-gray-500">
+              Journée {match.round} du {dateStr} - {timeStr}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-2 text-xs text-gray-500 flex justify-end">
+        Solde après transaction : <span className="font-semibold ml-1">{t.balance_after}</span>
+      </div>
+
+      <div className="mt-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------
+// Fin de partie 01
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// MA CAGNOTTE — Début du composant
+// ---------------------------------------------------------
+export default function MaCagnotte() {
+  const navigate = useNavigate();
+
+  // États principaux
+  const [user, setUser] = useState(null);
+  const [userCredits, setUserCredits] = useState(null);
+  const [paris, setParis] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+
+  const [stats, setStats] = useState({
+    totalBets: 0,
+    pendingBets: 0,
+    wonBets: 0,
+    lostBets: 0,
+    totalStaked: 0,
+    totalWon: 0,
+    netProfit: 0,
+    totalBonus: 0,
+    nbDistributions: 0
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Tri + filtre
+  const [sortMode, setSortMode] = useState("desc");
+  const [teamFilter, setTeamFilter] = useState("");
+
+  // Charger l’utilisateur
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) {
+        navigate("/login");
+        return;
+      }
+      setUser(data.user);
+    };
+    fetchUser();
+  }, []);
+
+  // Charger les données quand user.id existe
+  useEffect(() => {
+    if (!user?.id) return;
+    loadData(user.id);
+  }, [user]);
+// ---------------------------------------------------------
+// Fin de partie 02
+// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // Chargement des données utilisateur (crédits + paris + stats)
+  // ---------------------------------------------------------
+  const loadData = async (userId) => {
+    try {
+      // Crédits
+      const creditsResponse = await axios.get(
+        "https://top14-api-production.up.railway.app/api/user/credits",
+        { headers: { "x-user-id": userId } }
+      );
+      setUserCredits(creditsResponse.data);
+
+      // Paris enrichis
+      const parisResponse = await axios.get(
+        "https://top14-api-production.up.railway.app/api/user/bets/v2",
+        { headers: { "x-user-id": userId } }
+      );
+
+      const parisList = Array.isArray(parisResponse.data)
+        ? parisResponse.data
+        : [];
+
+      setParis(parisList);
+
+      // Statistiques
+      const pending = parisList.filter((b) => b.bets?.status === "pending").length;
+      const won = parisList.filter((b) => b.bets?.status === "won").length;
+      const lost = parisList.filter((b) => b.bets?.status === "lost").length;
+
+      const totalStaked = parisList.reduce(
+        (sum, b) => sum + (b.bets?.stake || 0),
+        0
+      );
+
+      const totalWon = parisList
+        .filter((b) => b.bets?.status === "won")
+        .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
+
+      setStats({
+        totalBets: parisList.length,
+        pendingBets: pending,
+        wonBets: won,
+        lostBets: lost,
+        totalStaked,
+        totalWon,
+        netProfit: totalWon - totalStaked,
+        totalBonus: parisList.filter((t) => t.type === "bonus").length,
+        nbDistributions: parisList.filter((t) => t.type === "monthly_distribution").length
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Erreur loadData:", error);
+      setLoading(false);
+    }
+  };
+
+
+  // ---------------------------------------------------------
+  // Navigation vers un pari (depuis l’historique)
+  // ---------------------------------------------------------
+  const navigateToBet = (transaction) => {
+    let matchId = null;
+
+    if (transaction.metadata?.match_id) {
+      matchId = transaction.metadata.match_id;
+
+    } else if (transaction.reference_id) {
+      const bet = paris.find((p) => p.id === transaction.reference_id);
+      if (bet?.match_id) matchId = bet.match_id;
+
+    } else if (transaction.description) {
+      const match = transaction.description.match(/! (.+?) \d+-\d+ (.+?)$/);
+      if (match) {
+        const [_, team1, team2] = match;
+
+        const bet = paris.find((p) => {
+          const parts = p.match_id?.split("_") || [];
+          const teams = parts.slice(2).join("_");
+          return (
+            teams.includes(team1.replace(/ /g, "_")) ||
+            teams.includes(team2.replace(/ /g, "_"))
+          );
+        });
+
+        if (bet?.match_id) matchId = bet.match_id;
+      }
     }
 
-    // Sinon renvoyer le nom original propre
+    if (matchId) {
+      window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
+    }
+  };
+
+
+  // ---------------------------------------------------------
+  // Icônes des transactions
+  // ---------------------------------------------------------
+  const getTransactionIcon = (type) => {
+    switch (type) {
+      case "bet_placed":
+        return <TrendingDown className="w-5 h-5 text-red-500" />;
+      case "bet_won":
+        return <Trophy className="w-5 h-5 text-green-500" />;
+      case "bet_lost":
+        return <TrendingDown className="w-5 h-5 text-gray-400" />;
+      case "monthly_distribution":
+        return <Gift className="w-5 h-5 text-blue-500" />;
+      case "bonus":
+      case "bonus_exact_score":
+        return <Award className="w-5 h-5 text-purple-500" />;
+      case "initial_capital":
+        return <Gift className="w-5 h-5 text-blue-500" />;
+      default:
+        return <Coins className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+
+  // ---------------------------------------------------------
+  // Libellés des transactions
+  // ---------------------------------------------------------
+  const getTransactionLabel = (type) => {
+    switch (type) {
+      case "bet_placed":
+        return "Pari placé";
+      case "bet_won":
+        return "Pari gagné";
+      case "bet_lost":
+        return "Pari perdu";
+      case "monthly_distribution":
+        return "Distribution mensuelle";
+      case "bonus_exact_score":
+        return "Bonus score exact";
+      case "bonus":
+        return "Bonus";
+      case "initial_capital":
+        return "Bonus de bienvenue";
+      default:
+        return "Transaction";
+    }
+  };
+// ---------------------------------------------------------
+// Fin de partie 03
+// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // Loading screen
+  // ---------------------------------------------------------
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-rugby-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rugby-gold"></div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------
+  // Calculs statistiques
+  // ---------------------------------------------------------
+  const winRate =
+    stats.totalBets > 0
+      ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
+      : 0;
+
+  const roi =
+    stats.totalStaked > 0
+      ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
+      : 0;
+
+
+  // ---------------------------------------------------------
+  // Normalisation des équipes (version globale pour le FILTRE)
+  // ---------------------------------------------------------
+  const normalizeTeam = (name) => {
+    if (!name) return "";
+    const n = name.toUpperCase().replace(/\s+/g, "").trim();
+
+    const map = {
+      // TOP 14
+      "RACING": "RACING 92",
+      "92": "RACING 92",
+      "RACING92": "RACING 92",
+      "R92": "RACING 92",
+
+      "CASTRES": "CASTRES OLYMPIQUE",
+      "OLYMPIQUE": "CASTRES OLYMPIQUE",
+      "CASTRESOLYMPIQUE": "CASTRES OLYMPIQUE",
+      "CO": "CASTRES OLYMPIQUE",
+
+      "TOULOUSE": "STADE TOULOUSAIN",
+      "STADETOULOUSAIN": "STADE TOULOUSAIN",
+      "ST": "STADE TOULOUSAIN",
+
+      "STADEFRANCAIS": "STADE FRANÇAIS",
+      "PARIS": "STADE FRANÇAIS",
+
+      "TOULON": "RC TOULON",
+      "RCT": "RC TOULON",
+
+      "MONTPELLIER": "MONTPELLIER HÉRAULT",
+      "MHR": "MONTPELLIER HÉRAULT",
+
+      "CLERMONT": "ASM CLERMONT AUVERGNE",
+      "ASM": "ASM CLERMONT AUVERGNE",
+
+      "BORDEAUX": "BORDEAUX-BÈGLES",
+      "UBB": "BORDEAUX-BÈGLES",
+
+      "LYON": "LYON OU",
+      "LOU": "LYON OU",
+
+      "PAU": "SECTION PALOISE",
+      "SECTIONPALOISE": "SECTION PALOISE",
+
+      "PERPIGNAN": "USAP PERPIGNAN",
+      "USAP": "USAP PERPIGNAN",
+
+      "BAYONNE": "AVIRON BAYONNAIS",
+      "AB": "AVIRON BAYONNAIS",
+
+      // PRO D2
+      "AGEN": "SU AGEN",
+      "SUA": "SU AGEN",
+
+      "AURILLAC": "STADE AURILLACOIS",
+
+      "BEZIERS": "AS BEZIERS",
+      "ASBH": "AS BEZIERS",
+
+      "BIARRITZ": "BIARRITZ OLYMPIQUE",
+      "BO": "BIARRITZ OLYMPIQUE",
+
+      "CARCASSONNE": "US CARCASSONNE",
+      "USC": "US CARCASSONNE",
+
+      "COLOMIERS": "COLOMIERS RUGBY",
+
+      "DAX": "US DAX",
+
+      "GRENOBLE": "FC GRENOBLE",
+      "FCG": "FC GRENOBLE",
+
+      "MONTDEMARSAN": "STADO MONTOIS",
+      "MONTOIS": "STADO MONTOIS",
+
+      "NEVERS": "USON NEVERS",
+
+      "PROVENCE": "PROVENCE RUGBY",
+
+      "ROUEN": "ROUEN NORMANDIE",
+
+      "VALENCEROMANS": "VALENCE-ROMANS",
+      "VRDR": "VALENCE-ROMANS",
+
+      "VANNES": "RC VANNES",
+      "RCV": "RC VANNES",
+
+      // MONTAUBAN
+      "MONTAUBAN": "US MONTAUBAN",
+      "USMONTAUBAN": "US MONTAUBAN",
+      "USM": "US MONTAUBAN",
+      "SAPIAC": "US MONTAUBAN",
+      "USMSAPIAC": "US MONTAUBAN",
+    };
+
+    if (map[n]) return map[n];
+    for (const key in map) if (n.includes(key)) return map[key];
     return name.trim();
   };
 
 
-  // Calcul des équipes
+  // ---------------------------------------------------------
+  // Liste des équipes normalisées pour le filtre
+  // ---------------------------------------------------------
   const teams = Array.from(
     new Set(
       paris
@@ -447,12 +511,15 @@ export default function MaCagnotte() {
     )
   ).sort();
 
-
-  console.log("RENDER paris =", paris);
-
+// ---------------------------------------------------------
+// Fin de partie 04
+// ---------------------------------------------------------
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      {/* Header */}
+      
+      {/* ----------------------------------------------------- */}
+      {/* HEADER                                                */}
+      {/* ----------------------------------------------------- */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze p-6 shadow-lg">
         <button
           onClick={() => navigate(-1)}
@@ -477,7 +544,10 @@ export default function MaCagnotte() {
         </div>
       </div>
 
-      {/* Onglets */}
+
+      {/* ----------------------------------------------------- */}
+      {/* ONGLET OVERVIEW / TRANSACTIONS                       */}
+      {/* ----------------------------------------------------- */}
       <div className="bg-white border-b-2 border-rugby-gray sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto flex">
           <button
@@ -504,13 +574,14 @@ export default function MaCagnotte() {
         </div>
       </div>
 
-      {/* CONTENU */}
+
+      {/* ----------------------------------------------------- */}
+      {/* CONTENU OVERVIEW                                      */}
+      {/* ----------------------------------------------------- */}
       {activeTab === "overview" ? (
-        /* --------------------------------------------- */
-        /* PARTIE OVERVIEW                               */
-        /* --------------------------------------------- */
         <div className="p-6 space-y-4">
-          {/* Gains/Pertes */}
+
+          {/* Gains / Pertes */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <div className="flex items-center gap-2 mb-2">
@@ -532,8 +603,12 @@ export default function MaCagnotte() {
               </p>
             </div>
           </div>
-
-          {/* Bénéfice net */}
+// ---------------------------------------------------------
+// Fin de partie 05
+// ---------------------------------------------------------
+          {/* ----------------------------------------------------- */}
+          {/* BÉNÉFICE NET                                           */}
+          {/* ----------------------------------------------------- */}
           <div
             className={`rounded-lg p-4 border ${
               stats.netProfit >= 0
@@ -556,8 +631,7 @@ export default function MaCagnotte() {
                     <Info className="w-4 h-4 text-gray-400 cursor-help" />
                     <div className="invisible group-hover:visible absolute left-0 top-6 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg z-50">
                       <strong>Bénéfice net =</strong> Total gagné - Total misé
-                      <br />
-                      <br />
+                      <br /><br />
                       Représente votre profit/perte global sur tous vos paris.
                     </div>
                   </div>
@@ -581,7 +655,10 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Bonus et distributions */}
+
+          {/* ----------------------------------------------------- */}
+          {/* BONUS & DISTRIBUTIONS                                 */}
+          {/* ----------------------------------------------------- */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
               <div className="flex items-center gap-2 mb-2">
@@ -610,7 +687,10 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Statistiques paris */}
+
+          {/* ----------------------------------------------------- */}
+          {/* STATISTIQUES PARIS — Début                            */}
+          {/* ----------------------------------------------------- */}
           <div className="bg-white rounded-lg shadow-sm border border-rugby-gray p-4">
             <h2 className="text-lg font-bold text-rugby-gold mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5" />
@@ -642,7 +722,7 @@ export default function MaCagnotte() {
                 <p className="text-[10px] text-gray-600">Perdus</p>
               </div>
             </div>
-
+            {/* Suite des statistiques paris */}
             <div className="space-y-2">
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Total paris</span>
@@ -658,7 +738,7 @@ export default function MaCagnotte() {
                 </span>
               </div>
 
-                            {/* ROI */}
+              {/* ROI */}
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">ROI</span>
@@ -685,7 +765,7 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Info */}
+          {/* Astuce */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-xs text-blue-700">
               💡 <strong>Astuce :</strong> Diversifiez vos paris et ne misez jamais plus de 10% de votre cagnotte sur un seul match !
@@ -702,9 +782,9 @@ export default function MaCagnotte() {
 
         </div>
       ) : (
-        /* --------------------------------------------- */
-        /* PARTIE TRANSACTIONS                           */
-        /* --------------------------------------------- */
+        /* ----------------------------------------------------- */
+        /* PARTIE TRANSACTIONS                                   */
+        /* ----------------------------------------------------- */
         <div className="p-6 space-y-4">
 
           <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
@@ -757,8 +837,8 @@ export default function MaCagnotte() {
                 const match = t.bets?.matches;
                 if (!match) return false;
                 return (
-                  match.home_team === teamFilter ||
-                  match.away_team === teamFilter
+                  normalizeTeam(match.home_team) === teamFilter ||
+                  normalizeTeam(match.away_team) === teamFilter
                 );
               })
               .map(t => (
@@ -778,3 +858,6 @@ export default function MaCagnotte() {
     </div>
   );
 }
+
+
+
