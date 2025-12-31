@@ -7,6 +7,9 @@ import {
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { useLocation } from "react-router-dom";
+import useUserBets from "@/hooks/useUserBets";
+
+
 
 // ---------------------------------------------------------
 // Dropdown Premium (réutilisable)
@@ -276,6 +279,11 @@ export default function MaCagnotte() {
   // Tri + filtre
   const [sortMode, setSortMode] = useState("Plus récent");
   const [teamFilter, setTeamFilter] = useState("");
+  const sortLabels = {
+    "Plus récent": "Plus récent",
+    "Plus ancien": "Plus ancien",
+  };
+
 
   // Charger l’utilisateur
   useEffect(() => {
