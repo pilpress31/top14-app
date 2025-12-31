@@ -67,9 +67,10 @@ function BetItem({ t }) {
 }
 
 
-// 👉 TON COMPOSANT PRINCIPAL COMMENCE ENSUITE
 export default function MaCagnotte() {
   const navigate = useNavigate();
+
+  const [user, setUser] = useState(null);
   const [userCredits, setUserCredits] = useState(null);
   const [paris, setParis] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -84,131 +85,87 @@ export default function MaCagnotte() {
     totalBonus: 0,
     nbDistributions: 0
   });
+
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // 1️⃣ Charger l’utilisateur d’abord
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) {
         navigate('/login');
         return;
       }
+      setUser(data.user);
+    };
+    fetchUser();
+  }, []);
 
-      // Charger les crédits
-      try {
-        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
-          headers: { 'x-user-id': user.id }
-        });
-        setUserCredits(creditsResponse.data);
-      } catch (error) {
-        console.log('Crédits non disponibles:', error.message);
-        setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
-      }
+  // 2️⃣ Charger les données uniquement quand user.id existe
+  useEffect(() => {
+    if (!user?.id) return; // attendre que user soit prêt
+    loadData(user.id);
+  }, [user]);
 
-      try {
-        // Charger les paris enrichis (nouveau système)
-        const parisResponse = await axios.get(
-          'https://top14-api-production.up.railway.app/api/user/bets/v2',
-          {
-            headers: { 'x-user-id': user.id }
-          }
-        );
-        console.log("DEBUG parisResponse.data =", parisResponse.data);
+  // 3️⃣ loadData reçoit userId
+  const loadData = async (userId) => {
+    try {
+      // --- Crédits ---
+      const creditsResponse = await axios.get(
+        'https://top14-api-production.up.railway.app/api/user/credits',
+        { headers: { 'x-user-id': userId } }
+      );
+      setUserCredits(creditsResponse.data);
 
-        const parisList = Array.isArray(parisResponse.data)
-          ? parisResponse.data
-          : [];
+      // --- Paris enrichis ---
+      const parisResponse = await axios.get(
+        'https://top14-api-production.up.railway.app/api/user/bets/v2',
+        { headers: { 'x-user-id': userId } }
+      );
 
-        setParis(parisList);
+      console.log("DEBUG parisResponse.data =", parisResponse.data);
 
-        // Adaptation : les stats lisent maintenant dans parisList.bets
-        const pending = parisList.filter(b => b.bets?.status === 'pending').length;
-        const won = parisList.filter(b => b.bets?.status === 'won').length;
-        const lost = parisList.filter(b => b.bets?.status === 'lost').length;
+      const parisList = Array.isArray(parisResponse.data)
+        ? parisResponse.data
+        : [];
 
-        const totalStaked = parisList.reduce(
-          (sum, b) => sum + (b.bets?.stake || 0),
-          0
-        );
+      setParis(parisList);
 
-        const totalWon = parisList
-          .filter(b => b.bets?.status === 'won')
-          .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
+      // --- Stats ---
+      const pending = parisList.filter(b => b.bets?.status === 'pending').length;
+      const won = parisList.filter(b => b.bets?.status === 'won').length;
+      const lost = parisList.filter(b => b.bets?.status === 'lost').length;
 
-        // Charger les transactions depuis credit_transactions (source de vérité)
-        const { data: transData, error: transError } = await supabase
-          .from('credit_transactions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true })
-          .order('id', { ascending: true });
+      const totalStaked = parisList.reduce(
+        (sum, b) => sum + (b.bets?.stake || 0),
+        0
+      );
 
-        if (!transError && transData) {
-          setTransactions([...transData].reverse());
+      const totalWon = parisList
+        .filter(b => b.bets?.status === 'won')
+        .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
 
-          const nbDistributions = transData.filter(
-            t => t.type === 'monthly_distribution'
-          ).length;
+      setStats({
+        totalBets: parisList.length,
+        pendingBets: pending,
+        wonBets: won,
+        lostBets: lost,
+        totalStaked,
+        totalWon,
+        netProfit: totalWon - totalStaked,
+        totalBonus: parisList.filter(t => t.type === 'bonus').length,
+        nbDistributions: parisList.filter(t => t.type === 'monthly_distribution').length
+      });
 
-          const totalBonus = transData
-            .filter(t => t.type === 'bonus' || t.type === 'bonus_exact_score')
-            .reduce((sum, t) => sum + t.amount, 0);
+      setLoading(false);
 
-          setStats({
-            totalBets: parisList.length,
-            pendingBets: pending,
-            wonBets: won,
-            lostBets: lost,
-            totalStaked,
-            totalWon,
-            netProfit: totalWon - totalStaked,
-            totalBonus,
-            nbDistributions
-          });
-        } else {
-          setTransactions([]);
-          setStats({
-            totalBets: parisList.length,
-            pendingBets: pending,
-            wonBets: won,
-            lostBets: lost,
-            totalStaked,
-            totalWon,
-            netProfit: totalWon - totalStaked,
-            totalBonus: 0,
-            nbDistributions: 0
-          });
-        }
-
-      } catch (error) {
-        console.log('Stats non disponibles:', error.message);
-        setStats({
-          totalBets: 0,
-          pendingBets: 0,
-          wonBets: 0,
-          lostBets: 0,
-          totalStaked: 0,
-          totalWon: 0,
-          netProfit: 0,
-          totalBonus: 0,
-          nbDistributions: 0
-        });
-      }
-
-      } catch (error) {
-        console.error('Erreur chargement données:', error);
-      } finally {
-        setLoading(false);
-      }
-
-
-
+    } catch (error) {
+      console.error("Erreur loadData:", error);
+      setLoading(false);
+    }
   };
+}
 
   const navigateToBet = (transaction) => {
     let matchId = null;
