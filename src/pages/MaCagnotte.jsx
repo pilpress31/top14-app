@@ -19,8 +19,33 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 
   const isBet = !!bet;
 
+  // Normalisation des noms d’équipes
+  const normalizeTeam = (name) => {
+    if (!name) return "";
+    return name
+      .replace(/^RACING$/, "RACING 92")
+      .replace(/^92$/, "RACING 92")
+      .replace(/^CASTRES$/, "CASTRES OLYMPIQUE")
+      .replace(/^OLYMPIQUE$/, "CASTRES OLYMPIQUE")
+      .trim();
+  };
+
+  const home = normalizeTeam(match?.home_team);
+  const away = normalizeTeam(match?.away_team);
+
+  // Format date premium
+  const dateObj = new Date(t.created_at);
+  const dateStr = dateObj.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+  });
+  const timeStr = dateObj.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
-    <div 
+    <div
       className="p-4 hover:bg-gray-50 transition cursor-pointer"
       onClick={() => navigateToBet(t)}
     >
@@ -38,7 +63,11 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
           )}
         </div>
 
-        <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-600"}`}>
+        <span
+          className={`font-bold ${
+            t.amount > 0 ? "text-green-600" : "text-red-600"
+          }`}
+        >
           {t.amount > 0 ? `+${t.amount}` : t.amount} jetons
         </span>
       </div>
@@ -48,44 +77,34 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
         <div className="mt-2 text-sm text-gray-700">
           {/* Match */}
           <div className="font-semibold">
-            {match.home_team}{" "}
+            {home}{" "}
             {match.score_home !== null ? match.score_home : ""}
 
             {match.score_home !== null ? " – " : " vs "}
 
             {match.score_away !== null ? match.score_away : ""}{" "}
-            {match.away_team}
+            {away}
           </div>
 
           {/* Détails pari */}
           <div className="text-gray-500">
             Cote {bet.odds} • Mise {bet.stake}
-            {bet.payout && t.type === "bet_won" && (
-              <> • Gain {bet.payout}</>
-            )}
+            {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
           </div>
 
-          {/* Journée */}
+          {/* Journée + date */}
           {match.round && (
-            <div className="text-gray-500">Journée : {match.round}</div>
+            <div className="text-gray-500">
+              Journée {match.round} du {dateStr} - {timeStr}
+            </div>
           )}
         </div>
       )}
 
-      {/* Solde après transaction */}
-      <div className="mt-2 text-xs text-gray-500">
+      {/* Solde après transaction → tout à droite */}
+      <div className="mt-2 text-xs text-gray-500 flex justify-end">
         Solde après transaction :{" "}
-        <span className="font-semibold">{t.balance_after}</span>
-      </div>
-
-      {/* Date */}
-      <div className="text-xs text-gray-400">
-        {new Date(t.created_at).toLocaleString("fr-FR", {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit"
-        })}
+        <span className="font-semibold ml-1">{t.balance_after}</span>
       </div>
 
       {/* Séparateur premium */}
@@ -93,6 +112,7 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
     </div>
   );
 }
+
 
 
 
