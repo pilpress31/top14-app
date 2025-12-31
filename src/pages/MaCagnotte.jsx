@@ -188,7 +188,7 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 
           {isBet && (
             <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
-              {bet.bet_type === "FT" ? "Temps plein" : "Mi‑temps"}
+              {t.user_bets?.bet_type === "FT" ? "Temps plein" : "Mi‑temps"}
             </span>
           )}
         </div>
