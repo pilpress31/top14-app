@@ -9,7 +9,7 @@ import axios from 'axios';
 import { useLocation } from "react-router-dom";
 
 
-const [sortMode, setSortMode] = useState("desc");
+
 
 
 // 👉 TU COLLES BetItem ICI, juste après les imports
@@ -117,6 +117,9 @@ export default function MaCagnotte() {
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const [sortMode, setSortMode] = useState("desc");
+  const [teamFilter, setTeamFilter] = useState("");
 
   // 1️⃣ Charger l’utilisateur d’abord
   useEffect(() => {
