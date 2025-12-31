@@ -846,10 +846,42 @@ export default function MaCagnotte() {
         /* ----------------------------------------------------- */
         <div className="p-6 space-y-4">
 
-          <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-4">
-            <History className="w-5 h-5" />
-            Historique des paris
-          </h2>
+          {/* HEADER STICKY TRANSACTIONS */}
+          <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pb-3 pt-4">
+            <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 px-1 mb-3">
+              <History className="w-5 h-5" />
+              Historique des paris
+            </h2>
+
+            <div className="flex gap-3 px-1">
+              {/* Dropdown équipe */}
+              <div className="w-56">
+                <PremiumDropdown
+                  label="Toutes les équipes"
+                  value={teamFilter}
+                  onChange={(v) => setTeamFilter(v)}
+                  options={[
+                    { value: "", label: "Toutes les équipes" },
+                    ...teams.map((t) => ({ value: t, label: t }))
+                  ]}
+                />
+              </div>
+
+              {/* Dropdown tri */}
+              <div className="w-48">
+                <PremiumDropdown
+                  label="Trier par"
+                  value={sortMode}
+                  onChange={(v) => setSortMode(v)}
+                  options={[
+                    { value: "recent", label: "Récent → Ancien" },
+                    { value: "ancien", label: "Ancien → Récent" }
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+
 
           {/* Filtres */}
           <div className="flex gap-3 mb-4">
