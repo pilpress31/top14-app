@@ -255,7 +255,7 @@ export default function MaCagnotte() {
   const [activeTab, setActiveTab] = useState("overview");
 
   // Tri + filtre
-  const [sortMode, setSortMode] = useState("desc");
+  const [sortMode, setSortMode] = useState("Plus récent");
   const [teamFilter, setTeamFilter] = useState("");
 
   // Charger l’utilisateur
@@ -657,9 +657,7 @@ export default function MaCagnotte() {
               </p>
             </div>
           </div>
-// ---------------------------------------------------------
-// Fin de partie 05
-// ---------------------------------------------------------
+
           {/* ----------------------------------------------------- */}
           {/* BÉNÉFICE NET                                           */}
           {/* ----------------------------------------------------- */}
