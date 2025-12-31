@@ -9,6 +9,9 @@ import axios from 'axios';
 import { useLocation } from "react-router-dom";
 
 
+const [sortMode, setSortMode] = useState("desc");
+
+
 // 👉 TU COLLES BetItem ICI, juste après les imports
 function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) {
   const bet = t.bets;
@@ -18,7 +21,7 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 
   return (
     <div 
-      className="p-4 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+      className="p-4 hover:bg-gray-50 transition cursor-pointer"
       onClick={() => navigateToBet(t)}
     >
       {/* Ligne titre + montant */}
@@ -26,6 +29,13 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
         <div className="flex items-center gap-2">
           {getTransactionIcon(t.type)}
           <span className="font-semibold">{getTransactionLabel(t.type)}</span>
+
+          {/* Badge FT / MT */}
+          {isBet && (
+            <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
+              {bet.bet_type === "FT" ? "Temps plein" : "Mi‑temps"}
+            </span>
+          )}
         </div>
 
         <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-600"}`}>
@@ -77,6 +87,9 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
           minute: "2-digit"
         })}
       </div>
+
+      {/* Séparateur premium */}
+      <div className="mt-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
     </div>
   );
 }
@@ -542,23 +555,51 @@ export default function MaCagnotte() {
             Historique des paris
           </h2>
 
+          <div className="flex gap-3 mb-4">
+            <select
+              value={teamFilter}
+              onChange={(e) => setTeamFilter(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="">Toutes les équipes</option>
+                {teams.map(team => (
+              <option key={team} value={team}>{team}</option>
+              ))}
+            </select>
+          </div>
+
           {paris.length === 0 ? (
             <div className="p-8 text-center">
               <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500">Aucun pari pour le moment</p>
             </div>
           ) : (
-            paris.map(t => (
-              <BetItem
-                key={t.id}
-                t={t}
-                getTransactionIcon={getTransactionIcon}
-                getTransactionLabel={getTransactionLabel}
-                navigateToBet={navigateToBet}
-              />
-            ))
-
+            [...paris]
+              .sort((a, b) => {
+                return sortMode === "asc"
+                  ? new Date(a.created_at) - new Date(b.created_at)
+                  : new Date(b.created_at) - new Date(a.created_at);
+              })
+              .filter(t => {
+                if (!teamFilter) return true;
+                const match = t.bets?.matches;
+                if (!match) return false;
+                return (
+                  match.home_team === teamFilter ||
+                  match.away_team === teamFilter
+                );
+              })
+              .map(t => (
+                <BetItem
+                  key={t.id}
+                  t={t}
+                  getTransactionIcon={getTransactionIcon}
+                  getTransactionLabel={getTransactionLabel}
+                  navigateToBet={navigateToBet}
+                />
+              ))
           )}
+
 
         </div>
       )}
