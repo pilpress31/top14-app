@@ -143,10 +143,10 @@ export default function MesParisTab() {
           headers: { 'x-user-id': user.id }
         });
         console.log('✅ Réponse brute API:', parisResponse.data);
-
+        
         const parisList = parisResponse.data.bets || [];
         const wonTransactions = (parisResponse.data.transactions || []).filter(t => t.type === 'bet_won');
-
+        
         // ✅ Enrichir les paris avec le VRAI status
         const enrichedParis = parisList.map(bet => {
           const matchFinished = bet.matches?.status === 'finished' || bet.matches?.score_home !== null;
@@ -161,10 +161,15 @@ export default function MesParisTab() {
           
           return { ...bet, status: realStatus };
         });
-
+        
         console.log(`📊 Nombre de paris trouvés: ${enrichedParis.length}`);
         console.log('📊 Paris enrichis:', enrichedParis);
         setParis(enrichedParis);
+      } catch (error) {
+        console.error('❌ Erreur chargement paris:', error);
+        console.log('❌ Détails:', error.response?.data || error.message);
+        setParis([]);
+      }
 
       // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
@@ -174,14 +179,14 @@ export default function MesParisTab() {
         .order('created_at', { ascending: false });
 
       if (!pronosError) {
-        console.log(`?? Nombre de pronos trouvés: ${pronosData?.length || 0}`);
+        console.log(`📊 Nombre de pronos trouvés: ${pronosData?.length || 0}`);
         setPronos(pronosData || []);
       } else {
-        console.error('? Erreur chargement pronos:', pronosError);
+        console.error('❌ Erreur chargement pronos:', pronosError);
       }
 
     } catch (error) {
-      console.error('? Erreur globale chargement données:', error);
+      console.error('❌ Erreur globale chargement données:', error);
     } finally {
       setLoading(false);
     }
