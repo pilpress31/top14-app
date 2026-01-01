@@ -233,6 +233,7 @@ export default function MaCagnotte() {
 
   const [user, setUser] = useState(null);
   const [userCredits, setUserCredits] = useState(null);
+  const [userPoints, setUserPoints] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [bets, setBets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -278,245 +279,163 @@ export default function MaCagnotte() {
 
       // Crédits actuels
       const creditsResponse = await axios.get(
-        "https://top14-api-production.up.railway.app/api/user/credits",
+        `${import.meta.env.VITE_API_URL}/user/credits`,
         { headers: { "x-user-id": userId } }
       );
-      setUserCredits(creditsResponse.data);
+      setUserCredits(creditsResponse.data.credits || 0);
 
-      // Données V2
-      const v2Response = await axios.get(
-        "https://top14-api-production.up.railway.app/api/user/bets/v2",
+      // Points de classement
+      const { data: userStatsData, error: statsError } = await supabase
+        .from('user_stats')
+        .select('total_points')
+        .eq('user_id', userId)
+        .eq('saison', '2025-2026')
+        .single();
+
+      if (!statsError && userStatsData) {
+        setUserPoints(userStatsData.total_points || 0);
+      }
+
+      // Historique + Paris (endpoint V2)
+      const historyResponse = await axios.get(
+        `${import.meta.env.VITE_API_URL}/user/bets/v2`,
         { headers: { "x-user-id": userId } }
       );
 
-      console.log('API JSON =', v2Response.data);
-      console.log('BETS[0].matches =', v2Response.data.bets?.[0]?.matches);
+      const txs = historyResponse.data.transactions || [];
+      const allBets = historyResponse.data.bets || [];
 
-      const txList = v2Response.data.transactions || [];
-      const betsList = v2Response.data.bets || [];
+      setTransactions(txs);
+      setBets(allBets);
 
-      setTransactions(txList);
-      setBets(betsList);
+      // Calculer stats
+      const wonTxs = txs.filter((t) => t.type === "bet_won");
+      const placedTxs = txs.filter((t) => t.type === "bet_placed");
+      const distributions = txs.filter((t) => t.type === "monthly_distribution");
 
-      // Calculer les stats depuis transactions
-      const betPlaced = txList.filter(t => t.type === 'bet_placed');
-      const betWon = txList.filter(t => t.type === 'bet_won');
-      const betLost = txList.filter(t => t.type === 'bet_lost');
-      
-      console.log('📊 DEBUG STATS:');
-      console.log('Total bet_placed:', betPlaced.length);
-      console.log('Total bet_won:', betWon.length);
-      console.log('Total bet_lost:', betLost.length);
-      
-      // ✅ Paris en cours = bets avec status 'placed' ET match pas terminé
-      const pendingBets = betsList.filter(b => {
-        const match = b.matches;
-        const isPending = b.status === 'placed' && 
-               (match?.status === 'scheduled' || match?.score_home === null);
-        
-        if (b.status === 'placed') {
-          console.log('Bet:', b.id.substring(0, 8), 
-                     'Match status:', match?.status, 
-                     'Score:', match?.score_home, 
-                     'isPending:', isPending);
-        }
-        
-        return isPending;
-      }).length;
-      
-      console.log('📊 Pending bets:', pendingBets);
-      
-      // ✅ Paris gagnés = transactions bet_won
-      const wonBets = betWon.length;
-      
-      // ✅ Paris perdus explicites dans transactions
-      const lostBetsExplicit = betLost.length;
-      
-      // ✅ Paris perdus calculés = (total placés) - (en cours) - (gagnés)
-      const totalPlaced = betPlaced.length;
-      const lostBetsCalculated = totalPlaced - pendingBets - wonBets;
-      
-      console.log('📊 Lost bets calculated:', lostBetsCalculated);
-      
-      // Prendre le max entre explicites et calculés
-      const lostBets = Math.max(lostBetsExplicit, lostBetsCalculated > 0 ? lostBetsCalculated : 0);
+      const totalWon = wonTxs.reduce((s, tx) => s + (tx.amount || 0), 0);
+      const totalStaked = Math.abs(
+        placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
+      );
 
-      const totalStaked = betPlaced.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-      const totalWon = betWon.reduce((sum, t) => sum + t.amount, 0);
-
-      const nbDistributions = txList.filter(t => t.type === 'monthly_distribution').length;
+      const wonBets = wonTxs.length;
+      const lostBets = allBets.filter((b) => b.status === "lost").length;
+      const pendingBets = allBets.filter((b) => b.status === "placed").length;
 
       setStats({
-        totalBets: totalPlaced,
+        totalBets: wonBets + lostBets,
         pendingBets,
         wonBets,
-        lostBets: lostBets,
+        lostBets,
         totalStaked,
         totalWon,
         netProfit: totalWon - totalStaked,
-        nbDistributions
+        nbDistributions: distributions.length
       });
 
       setLoading(false);
-    } catch (error) {
-      console.error("Erreur loadData:", error);
+    } catch (err) {
+      console.error("Erreur chargement cagnotte:", err);
       setLoading(false);
     }
   };
 
-  // Navigation vers un pari
-  const navigateToBet = (transaction) => {
-    // Essayer de récupérer le match_id
-    let matchId = null;
-
-    // 1. Depuis metadata
-    if (transaction.metadata?.match_id) {
-      matchId = transaction.metadata.match_id;
-    }
-    // 2. Depuis bets.matches
-    else if (transaction.bets?.matches?.external_id) {
-      matchId = transaction.bets.matches.external_id;
-    }
-    // 3. Depuis bets.match_id (uuid)
-    else if (transaction.bets?.match_id) {
-      // Chercher dans bets pour avoir l'external_id
-      const bet = bets.find(b => b.id === transaction.bet_id);
-      if (bet?.matches?.external_id) {
-        matchId = bet.matches.external_id;
-      }
-    }
-
-    if (matchId) {
-      window.location.href = `/pronos?scrollToMatchId=${encodeURIComponent(matchId)}`;
-    }
-  };
-
-  // Fonction pour extraire les vrais noms d'équipes depuis external_id
-  const extractTeamsFromExternalId = (externalId) => {
-    if (!externalId) return null;
-    
-    const parts = externalId.split('_');
-    if (parts.length < 4) return null;
-    
-    // Format: 2025-2026_13_RACING_92_US_MONTAUBAN
-    const teams = parts.slice(2).join('_');
-    const possibleTeams = teams.split('_');
-    
-    // Essayer toutes les combinaisons possibles
-    for (let i = 1; i < possibleTeams.length; i++) {
-      const testHome = possibleTeams.slice(0, i).join(' ');
-      const testAway = possibleTeams.slice(i).join(' ');
-      
-      const homeData = getTeamData(testHome);
-      const awayData = getTeamData(testAway);
-      
-      if (homeData?.logo !== '/logos/default.svg' && 
-          awayData?.logo !== '/logos/default.svg') {
-        return {
-          home: homeData.name,
-          away: awayData.name
-        };
-      }
-    }
-    
-    return null;
-  };
-
-  // Normalisation des équipes avec teams.ts
-  const normalizeTeam = (name) => {
-    if (!name) return "";
-    
-    // Chercher dans TEAMS_DATA la clé qui correspond
-    const teamData = getTeamData(name);
-    if (teamData && teamData.logo !== '/logos/default.svg') {
-      return teamData.name;
-    }
-    
-    // Sinon retourner le nom original normalisé
-    return name.trim();
-  };
-
-  // Liste des équipes pour le filtre - extraire depuis external_id
-  const teams = Array.from(
-    new Set(
-      transactions
-        .filter(t => t.bets?.matches?.external_id)
-        .flatMap(t => {
-          const extracted = extractTeamsFromExternalId(t.bets.matches.external_id);
-          return extracted ? [extracted.home, extracted.away] : [];
-        })
-        .filter(Boolean)
-    )
-  ).sort();
-
-  // Filtrer les transactions
-  const filteredTransactions = transactions
-    .filter(t => {
-      // Filtre par équipe
-      if (teamFilter) {
-        const match = t.bets?.matches;
-        if (!match?.external_id) return false;
-        
-        const extracted = extractTeamsFromExternalId(match.external_id);
-        if (!extracted) return false;
-        
-        return extracted.home === teamFilter || extracted.away === teamFilter;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.created_at);
-      const dateB = new Date(b.created_at);
-      return sortMode === "recent" ? dateB - dateA : dateA - dateB;
+  const navigateToBet = (trans) => {
+    const matchId = trans.bets?.matches?.id;
+    if (!matchId) return;
+    navigate(`/pronos?scrollToMatchId=${matchId}`, {
+      state: { activeTab: "mes-paris" },
     });
+  };
 
-  // Stats
-  const winRate = stats.totalBets > 0 
+  // Filtrer transactions
+  const filteredTransactions = transactions.filter((t) => {
+    if (!teamFilter) return true;
+    const match = t.bets?.matches;
+    if (!match) return false;
+    return (
+      match.home_team?.includes(teamFilter) ||
+      match.away_team?.includes(teamFilter)
+    );
+  });
+
+  // Trier
+  if (sortMode === "recent") {
+    filteredTransactions.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+  } else {
+    filteredTransactions.sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    );
+  }
+
+  // Liste équipes
+  const teams = [...new Set(
+    transactions
+      .map((t) => t.bets?.matches?.home_team)
+      .concat(transactions.map((t) => t.bets?.matches?.away_team))
+      .filter(Boolean)
+  )].sort();
+
+  const winRate = stats.totalBets > 0
     ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
     : 0;
-
   const roi = stats.totalStaked > 0
-    ? Math.round(((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100)
+    ? (((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100).toFixed(1)
     : 0;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-rugby-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rugby-gold"></div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Coins className="w-12 h-12 text-rugby-gold mx-auto mb-3 animate-spin" />
+          <p className="text-gray-600">Chargement...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-rugby-white pb-24">
+    <div className="min-h-screen bg-gray-50 pb-32">
       {/* Header */}
-      <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze p-6 shadow-lg">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-white mb-4 hover:text-white/80 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm">Retour</span>
-        </button>
-
-        <div className="flex items-center gap-3 mb-4">
-          <Coins className="w-8 h-8 text-white" />
-          <h1 className="text-2xl font-bold text-white">Ma Cagnotte</h1>
+      <div className="sticky top-0 z-40 bg-rugby-bronze shadow-md">
+        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-white/10 rounded-full transition"
+          >
+            <ArrowLeft className="w-6 h-6 text-white" />
+          </button>
+          <h1 className="text-xl font-bold text-white">Ma Cagnotte</h1>
+          <div className="w-10" />
         </div>
 
-        {/* Solde */}
-        <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
-          <p className="text-white/80 text-sm mb-1">Solde actuel</p>
-          <p className="text-white text-4xl font-bold">
-            {userCredits?.credits || 0}
-          </p>
-          <p className="text-white/70 text-xs mt-1">jetons</p>
+        {/* Bandeau Credits + Points */}
+        <div className="max-w-md mx-auto px-4 pb-4 grid grid-cols-2 gap-3">
+          {/* Jetons */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+            <div className="flex items-center gap-2 mb-1">
+              <Coins className="w-4 h-4 text-white" />
+              <p className="text-xs text-white/90 font-semibold">Jetons</p>
+            </div>
+            <p className="text-2xl font-bold text-white">{userCredits || 0}</p>
+          </div>
+
+          {/* Points */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+            <div className="flex items-center gap-2 mb-1">
+              <Trophy className="w-4 h-4 text-white" />
+              <p className="text-xs text-white/90 font-semibold">Points</p>
+            </div>
+            <p className="text-2xl font-bold text-white">{userPoints}</p>
+          </div>
         </div>
       </div>
 
-      {/* Onglets */}
-      <div className="bg-white border-b-2 border-rugby-gray sticky top-0 z-40 shadow-sm">
-        <div className="container mx-auto flex">
+      {/* Tabs */}
+      <div className="sticky top-[120px] z-30 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-md mx-auto flex">
           <button
             onClick={() => setActiveTab("overview")}
             className={`flex-1 py-3 font-semibold transition-colors ${
