@@ -363,7 +363,19 @@ export default function MaCagnotte() {
 
   // Normalisation des équipes avec teams.ts
   const normalizeTeam = (name) => {
-    return getTeamData(name)?.name || name;
+    if (!name) return "";
+    
+    // Chercher dans TEAMS_DATA la clé qui correspond
+    const upperName = name.toUpperCase().trim();
+    
+    // Chercher une correspondance exacte d'abord
+    const teamData = getTeamData(name);
+    if (teamData && teamData.logo !== '/logos/default.svg') {
+      return teamData.name;
+    }
+    
+    // Sinon retourner le nom original normalisé
+    return name.trim();
   };
 
   // Liste des équipes pour le filtre
