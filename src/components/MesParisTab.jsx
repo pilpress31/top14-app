@@ -139,23 +139,32 @@ export default function MesParisTab() {
 
       // Charger les paris
       try {
-        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets', {
+        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets/v2', {
           headers: { 'x-user-id': user.id }
         });
-        console.log('? Réponse brute API:', parisResponse.data);
-        
-        const parisList = Array.isArray(parisResponse.data) 
-          ? parisResponse.data 
-          : (parisResponse.data.bets || []);
-        
-        console.log(`?? Nombre de paris trouvés: ${parisList.length}`);
-        console.log('?? Liste paris:', parisList);
-        setParis(parisList);
-      } catch (error) {
-        console.error('? Erreur chargement paris:', error);
-        console.log('? Détails:', error.response?.data || error.message);
-        setParis([]);
-      }
+        console.log('✅ Réponse brute API:', parisResponse.data);
+
+        const parisList = parisResponse.data.bets || [];
+        const wonTransactions = (parisResponse.data.transactions || []).filter(t => t.type === 'bet_won');
+
+        // ✅ Enrichir les paris avec le VRAI status
+        const enrichedParis = parisList.map(bet => {
+          const matchFinished = bet.matches?.status === 'finished' || bet.matches?.score_home !== null;
+          const hasWonTransaction = wonTransactions.some(tx => tx.bet_id === bet.id);
+          
+          let realStatus = bet.status;
+          if (matchFinished) {
+            realStatus = hasWonTransaction ? 'won' : 'lost';
+          } else {
+            realStatus = 'pending';
+          }
+          
+          return { ...bet, status: realStatus };
+        });
+
+        console.log(`📊 Nombre de paris trouvés: ${enrichedParis.length}`);
+        console.log('📊 Paris enrichis:', enrichedParis);
+        setParis(enrichedParis);
 
       // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
@@ -232,7 +241,7 @@ export default function MesParisTab() {
       </div>
 
 
-      
+
       {/* Stats paris */}
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-white rounded-lg shadow-sm p-3 text-center border border-rugby-gray">
