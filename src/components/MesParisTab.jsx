@@ -200,11 +200,12 @@ export default function MesParisTab() {
   console.log('?? Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
 
   return (
-    <div className="space-y-4">
-      {/* Dashboard cagnotte - ? ICÔNE CLIQUABLE */}
+    <div className="space-y-3">
+      
+      {/* ✅ BANDEAU AVEC ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          {/* ? ZONE CLIQUABLE */}
+          {/* ✅ ZONE CLIQUABLE VERS MA CAGNOTTE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -215,8 +216,8 @@ export default function MesParisTab() {
               <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
             </div>
           </button>
-
-
+          
+          {/* ✅ TOTAL GAGNÉ AUSSI CLIQUABLE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -227,9 +228,11 @@ export default function MesParisTab() {
               {userCredits?.total_earned || 0}
             </p>
           </button>
-        </div>
+        </div>  {/* ← IL MANQUAIT CETTE BALISE */}
       </div>
 
+
+      
       {/* Stats paris */}
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-white rounded-lg shadow-sm p-3 text-center border border-rugby-gray">

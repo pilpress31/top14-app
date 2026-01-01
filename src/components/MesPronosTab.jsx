@@ -204,8 +204,8 @@ export default function MesPronosTab({ goToMesParis }) {
               <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
             </div>
           </button>
-
-
+          
+          {/* ✅ TOTAL GAGNÉ AUSSI CLIQUABLE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -216,9 +216,8 @@ export default function MesPronosTab({ goToMesParis }) {
               {userCredits?.total_earned || 0}
             </p>
           </button>
-      </div>
-
-      
+        </div>  {/* ← IL MANQUAIT CETTE BALISE */}
+      </div>    
 
       {/* Liste des journées */}
       {journees.length === 0 ? (
