@@ -411,7 +411,7 @@ export default function MaCagnotte() {
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-rugby-bronze shadow-md">
+      <div className="sticky top-0 z-40 bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
