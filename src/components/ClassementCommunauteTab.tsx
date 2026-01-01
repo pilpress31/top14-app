@@ -236,7 +236,7 @@ export default function ClassementCommunauteTab() {
   };
 
   // Fonction pour tronquer les pseudos
-  const truncatePseudo = (pseudo: string, maxLength: number = 12): string => {
+  const truncatePseudo = (pseudo: string, maxLength: number = 9): string => {
     if (pseudo.length <= maxLength) return pseudo;
     return pseudo.substring(0, maxLength) + '...';
   };
@@ -337,14 +337,14 @@ export default function ClassementCommunauteTab() {
             {top3[1] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(2)}</div>
-                <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center flex flex-col justify-between" style={{ height: '110px' }}>
-                  <p className="font-bold text-white text-sm leading-tight">{truncatePseudo(top3[1].pseudo)}</p>
+                <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '110px' }}>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{truncatePseudo(top3[1].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="text-3xl font-bold text-white">
+                    <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[1].jetons || 0) : (top3[1].points || 0)}
                     </p>
                   </div>
-                  <p className="text-xs text-white/90 uppercase tracking-wide">
+                  <p className="text-[10px] text-white/90 uppercase tracking-wider font-semibold">
                     {classementType === 'jetons' ? 'jetons' : 'points'}
                   </p>
                 </div>
@@ -355,14 +355,14 @@ export default function ClassementCommunauteTab() {
             {top3[0] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(1)}</div>
-                <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center flex flex-col justify-between" style={{ height: '130px' }}>
-                  <p className="font-bold text-white text-sm leading-tight">{truncatePseudo(top3[0].pseudo)}</p>
+                <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '130px' }}>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{truncatePseudo(top3[0].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="text-3xl font-bold text-white">
+                    <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[0].jetons || 0) : (top3[0].points || 0)}
                     </p>
                   </div>
-                  <p className="text-xs text-white/90 uppercase tracking-wide">
+                  <p className="text-[10px] text-white/90 uppercase tracking-wider font-semibold">
                     {classementType === 'jetons' ? 'jetons' : 'points'}
                   </p>
                 </div>
@@ -373,14 +373,14 @@ export default function ClassementCommunauteTab() {
             {top3[2] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
-                <div className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-3 text-center flex flex-col justify-between" style={{ height: '95px' }}>
-                  <p className="font-bold text-white text-sm leading-tight">{truncatePseudo(top3[2].pseudo)}</p>
+                <div className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '95px' }}>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{truncatePseudo(top3[2].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="text-3xl font-bold text-white">
+                    <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[2].jetons || 0) : (top3[2].points || 0)}
                     </p>
                   </div>
-                  <p className="text-xs text-white/90 uppercase tracking-wide">
+                  <p className="text-[10px] text-white/90 uppercase tracking-wider font-semibold">
                     {classementType === 'jetons' ? 'jetons' : 'points'}
                   </p>
                 </div>
