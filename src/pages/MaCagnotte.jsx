@@ -242,9 +242,6 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
 }
 
 // ---------------------------------------------------------
-// Fin de partie 01
-// ---------------------------------------------------------
-// ---------------------------------------------------------
 // MA CAGNOTTE — Début du composant
 // ---------------------------------------------------------
 export default function MaCagnotte() {
@@ -289,7 +286,7 @@ export default function MaCagnotte() {
   };
 
 
-  // Charger l’utilisateur
+  // Charger l'utilisateur
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -307,9 +304,7 @@ export default function MaCagnotte() {
     if (!user?.id) return;
     loadData(user.id);
   }, [user]);
-// ---------------------------------------------------------
-// Fin de partie 02
-// ---------------------------------------------------------
+
   // ---------------------------------------------------------
   // Chargement des données utilisateur (crédits + paris + stats)
   // ---------------------------------------------------------
@@ -369,7 +364,7 @@ export default function MaCagnotte() {
 
 
   // ---------------------------------------------------------
-  // Navigation vers un pari (depuis l’historique)
+  // Navigation vers un pari (depuis l'historique)
   // ---------------------------------------------------------
   const navigateToBet = (transaction) => {
     let matchId = null;
@@ -400,7 +395,7 @@ export default function MaCagnotte() {
     }
 
     if (matchId) {
-      window.location.href = `/pronos?match=${encodeURIComponent(matchId)}`;
+      window.location.href = `/pronos?scrollToMatchId=${encodeURIComponent(matchId)}`;
     }
   };
 
@@ -452,9 +447,7 @@ export default function MaCagnotte() {
         return "Transaction";
     }
   };
-// ---------------------------------------------------------
-// Fin de partie 03
-// ---------------------------------------------------------
+
   // ---------------------------------------------------------
   // Loading screen
   // ---------------------------------------------------------
@@ -596,9 +589,6 @@ export default function MaCagnotte() {
     )
   ).sort();
 
-// ---------------------------------------------------------
-// Fin de partie 04
-// ---------------------------------------------------------
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
       
@@ -666,7 +656,9 @@ export default function MaCagnotte() {
       {activeTab === "overview" ? (
         <div className="p-6 space-y-4">
 
-          {/* Gains / Pertes */}
+          {/* ----------------------------------------------------- */}
+          {/* Gains / Pertes                                        */}
+          {/* ----------------------------------------------------- */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <div className="flex items-center gap-2 mb-2">
@@ -769,12 +761,8 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-        </div>
-      ) : null}
-
-
           {/* ----------------------------------------------------- */}
-          {/* STATISTIQUES PARIS — Début                            */}
+          {/* STATISTIQUES PARIS                                    */}
           {/* ----------------------------------------------------- */}
           <div className="bg-white rounded-lg shadow-sm border border-rugby-gray p-4">
             <h2 className="text-lg font-bold text-rugby-gold mb-4 flex items-center gap-2">
@@ -849,14 +837,18 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Astuce */}
+          {/* ----------------------------------------------------- */}
+          {/* Astuce                                                */}
+          {/* ----------------------------------------------------- */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-xs text-blue-700">
               💡 <strong>Astuce :</strong> Diversifiez vos paris et ne misez jamais plus de 10% de votre cagnotte sur un seul match !
             </p>
           </div>
 
-          {/* Bouton retour vers paris */}
+          {/* ----------------------------------------------------- */}
+          {/* Bouton retour vers paris                              */}
+          {/* ----------------------------------------------------- */}
           <button
             onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris' } })}
             className="w-full bg-rugby-gold text-white py-3 rounded-lg font-semibold hover:bg-rugby-bronze transition-colors shadow-md"
@@ -864,79 +856,87 @@ export default function MaCagnotte() {
             Voir mes paris
           </button>
 
-          {/* ----------------------------------------------------- */}
-          {/* PARTIE TRANSACTIONS                                   */}
-          {/* ----------------------------------------------------- */}
-          </div>  {/* ← FIN DU OVERVIEW */}
-          ) : (
-          <div className="p-6 space-y-4">
+        </div>
+      ) : (
+        /* ----------------------------------------------------- */
+        /* PARTIE TRANSACTIONS                                   */}
+        /* ----------------------------------------------------- */}
+        <div className="p-6 space-y-4">
 
-            {/* HEADER STICKY TRANSACTIONS */}
-            <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pb-3 pt-4">
-              <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 px-1 mb-3">
-                <History className="w-5 h-5" />
-                Historique des paris
-              </h2>
+          {/* HEADER STICKY TRANSACTIONS */}
+          <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pb-3 pt-4">
+            <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 px-1 mb-3">
+              <History className="w-5 h-5" />
+              Historique des paris
+            </h2>
 
-              <div className="flex gap-3 px-1">
-                <div className="w-56">
-                  <PremiumDropdown
-                    label="Toutes les équipes"
-                    value={teamFilter}
-                    onChange={(v) => setTeamFilter(v)}
-                    options={[
-                      { value: "", label: "Toutes les équipes" },
-                      ...teams.map((t) => ({ value: t, label: t }))
-                    ]}
-                  />
-                </div>
+            <div className="flex gap-3 px-1">
 
-                <div className="w-48">
-                  <PremiumDropdown
-                    label="Trier par"
-                    value={sortMode}
-                    onChange={(v) => setSortMode(v)}
-                    options={[
-                      { value: "recent", label: "Récent → Ancien" },
-                      { value: "ancien", label: "Ancien → Récent" }
-                    ]}
-                  />
-                </div>
+              {/* Dropdown équipe */}
+              <div className="w-56">
+                <PremiumDropdown
+                  label="Toutes les équipes"
+                  value={teamFilter}
+                  onChange={(v) => setTeamFilter(v)}
+                  options={[
+                    { value: "", label: "Toutes les équipes" },
+                    ...teams.map((t) => ({ value: t, label: t }))
+                  ]}
+                />
               </div>
+
+              {/* Dropdown tri */}
+              <div className="w-48">
+                <PremiumDropdown
+                  label="Trier par"
+                  value={sortMode}
+                  onChange={(v) => setSortMode(v)}
+                  options={[
+                    { value: "recent", label: "Récent → Ancien" },
+                    { value: "ancien", label: "Ancien → Récent" }
+                  ]}
+                />
+              </div>
+
             </div>
-
-            {/* Liste des paris */}
-            {paris.length === 0 ? (
-              <div className="p-8 text-center">
-                <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">Aucun pari pour le moment</p>
-              </div>
-            ) : (
-              [...paris]
-                .sort((a, b) => {
-                  const da = new Date(a.created_at);
-                  const db = new Date(b.created_at);
-                  return sortMode === "ancien" ? da - db : db - da;
-                })
-                .filter(t => {
-                  if (!teamFilter) return true;
-                  const match = t.matches;
-                  if (!match) return false;
-                  return (
-                    normalizeTeam(match.home_team) === teamFilter ||
-                    normalizeTeam(match.away_team) === teamFilter
-                  );
-                })
-                .map(t => (
-                  <BetItem
-                    key={t.id}
-                    t={t}
-                    getTransactionIcon={getTransactionIcon}
-                    getTransactionLabel={getTransactionLabel}
-                    navigateToBet={navigateToBet}
-                  />
-                ))
-            )}
-
           </div>
-)}
+
+          {/* ----------------------------------------------------- */}
+          {/* LISTE DES PARIS                                       */}
+          {/* ----------------------------------------------------- */}
+          {paris.length === 0 ? (
+            <div className="p-8 text-center">
+              <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">Aucun pari pour le moment</p>
+            </div>
+          ) : (
+            [...paris]
+              .sort((a, b) => {
+                const da = new Date(a.created_at);
+                const db = new Date(b.created_at);
+                return sortMode === "ancien" ? da - db : db - da;
+              })
+              .filter(t => {
+                if (!teamFilter) return true;
+                const match = t.matches;
+                if (!match) return false;
+                return (
+                  normalizeTeam(match.home_team) === teamFilter ||
+                  normalizeTeam(match.away_team) === teamFilter
+                );
+              })
+              .map(t => (
+                <BetItem
+                  key={t.id}
+                  t={t}
+                  getTransactionIcon={getTransactionIcon}
+                  getTransactionLabel={getTransactionLabel}
+                  navigateToBet={navigateToBet}
+                />
+              ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
