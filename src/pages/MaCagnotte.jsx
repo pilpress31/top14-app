@@ -137,11 +137,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
     day: "2-digit", 
     month: "short" 
   });
-  const timeStr = dateObj.toLocaleTimeString("fr-FR", { 
-    hour: "2-digit", 
-    minute: "2-digit" 
-  });
-
   const dateObj = new Date(trans.created_at);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
     weekday: "short",
