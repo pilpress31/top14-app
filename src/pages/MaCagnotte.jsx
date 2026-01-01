@@ -858,12 +858,10 @@ export default function MaCagnotte() {
 
         </div>
       ) : (
-        /* ----------------------------------------------------- */
-        /* PARTIE TRANSACTIONS                                   */}
-        /* ----------------------------------------------------- */}
         <div className="p-6 space-y-4">
-
-          {/* HEADER STICKY TRANSACTIONS */}
+          {/* ----------------------------------------------------- */}
+          {/* HEADER STICKY TRANSACTIONS                            */}
+          {/* ----------------------------------------------------- */}
           <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pb-3 pt-4">
             <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 px-1 mb-3">
               <History className="w-5 h-5" />
