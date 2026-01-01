@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Coins, TrendingUp, TrendingDown, Trophy, 
@@ -11,11 +11,29 @@ import { ChevronDown, Check } from "lucide-react";
 // ---------------------------------------------------------
 // Dropdown Premium
 // ---------------------------------------------------------
-function PremiumDropdown({ label, value, onChange, options }) {
+function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = false }) {
   const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Fermer au clic extérieur
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-3 py-2 border rounded-lg bg-white shadow-sm hover:shadow-md transition-all"
@@ -31,7 +49,11 @@ function PremiumDropdown({ label, value, onChange, options }) {
       </button>
 
       {open && (
-        <div className="absolute mt-2 w-full bg-white border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div
+          className={`absolute mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto ${
+            fullWidthMenu ? 'left-0 right-0' : 'w-full'
+          }`}
+        >
           {options.map((opt) => (
             <div
               key={opt.value}
@@ -247,16 +269,28 @@ export default function MaCagnotte() {
       // Calculer les stats depuis transactions
       const betPlaced = txList.filter(t => t.type === 'bet_placed');
       const betWon = txList.filter(t => t.type === 'bet_won');
+      const betLost = txList.filter(t => t.type === 'bet_lost');
       
-      // Paris en cours = bets avec status 'placed'
-      const pendingBets = betsList.filter(b => b.status === 'placed').length;
+      // ✅ Paris en cours = bets avec status 'placed' ET match pas terminé
+      const pendingBets = betsList.filter(b => {
+        const match = b.matches;
+        // En cours si : status placed ET (pas de score OU status scheduled)
+        return b.status === 'placed' && 
+               (match?.status === 'scheduled' || match?.score_home === null);
+      }).length;
       
-      // Paris gagnés = transactions bet_won
+      // ✅ Paris gagnés = transactions bet_won
       const wonBets = betWon.length;
       
-      // Paris perdus = (total paris placés) - (en cours) - (gagnés)
+      // ✅ Paris perdus explicites dans transactions
+      const lostBetsExplicit = betLost.length;
+      
+      // ✅ Paris perdus calculés = (total placés) - (en cours) - (gagnés)
       const totalPlaced = betPlaced.length;
-      const lostBets = totalPlaced - pendingBets - wonBets;
+      const lostBetsCalculated = totalPlaced - pendingBets - wonBets;
+      
+      // Prendre le max entre explicites et calculés
+      const lostBets = Math.max(lostBetsExplicit, lostBetsCalculated > 0 ? lostBetsCalculated : 0);
 
       const totalStaked = betPlaced.reduce((sum, t) => sum + Math.abs(t.amount), 0);
       const totalWon = betWon.reduce((sum, t) => sum + t.amount, 0);
@@ -267,7 +301,7 @@ export default function MaCagnotte() {
         totalBets: totalPlaced,
         pendingBets,
         wonBets,
-        lostBets: lostBets > 0 ? lostBets : 0,
+        lostBets: lostBets,
         totalStaked,
         totalWon,
         netProfit: totalWon - totalStaked,
@@ -581,6 +615,7 @@ export default function MaCagnotte() {
                 label="Toutes les équipes"
                 value={teamFilter}
                 onChange={setTeamFilter}
+                fullWidthMenu={true}
                 options={[
                   { value: "", label: "Toutes les équipes" },
                   ...teams.map(t => ({ value: t, label: t }))
