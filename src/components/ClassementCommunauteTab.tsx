@@ -314,7 +314,8 @@ export default function ClassementCommunauteTab() {
               </div>
             </div>
 
-            <div className="text-right">
+            <div className="text-right min-w-[100px]">
+
               <p className="text-sm text-gray-600">
                 {classementType === 'jetons' ? 'Jetons' : 'Points'}
               </p>
