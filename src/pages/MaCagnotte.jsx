@@ -738,7 +738,6 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-
           {/* ----------------------------------------------------- */}
           {/* BONUS & DISTRIBUTIONS                                 */}
           {/* ----------------------------------------------------- */}
@@ -769,6 +768,9 @@ export default function MaCagnotte() {
               <p className="text-[10px] text-blue-500 mt-1">reçues</p>
             </div>
           </div>
+
+        </div>
+      ) : null}
 
 
           {/* ----------------------------------------------------- */}
@@ -805,7 +807,7 @@ export default function MaCagnotte() {
                 <p className="text-[10px] text-gray-600">Perdus</p>
               </div>
             </div>
-            {/* Suite des statistiques paris */}
+
             <div className="space-y-2">
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-sm text-gray-600">Total paris</span>
@@ -821,7 +823,6 @@ export default function MaCagnotte() {
                 </span>
               </div>
 
-              {/* ROI */}
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">ROI</span>
@@ -863,97 +864,79 @@ export default function MaCagnotte() {
             Voir mes paris
           </button>
 
-        </div>
-      ) : (
-        /* ----------------------------------------------------- */
-        /* PARTIE TRANSACTIONS                                   */
-        /* ----------------------------------------------------- */
-        <div className="p-6 space-y-4">
-
-          {/* HEADER STICKY TRANSACTIONS */}
-          <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pb-3 pt-4">
-            <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 px-1 mb-3">
-              <History className="w-5 h-5" />
-              Historique des paris
-            </h2>
-
-            <div className="flex gap-3 px-1">
-              {/* Dropdown équipe */}
-              <div className="w-56">
-                <PremiumDropdown
-                  label="Toutes les équipes"
-                  value={teamFilter}
-                  onChange={(v) => setTeamFilter(v)}
-                  options={[
-                    { value: "", label: "Toutes les équipes" },
-                    ...teams.map((t) => ({ value: t, label: t }))
-                  ]}
-                />
-              </div>
-
-              {/* Dropdown tri */}
-              <div className="w-48">
-                <PremiumDropdown
-                  label="Trier par"
-                  value={sortMode}
-                  onChange={(v) => setSortMode(v)}
-                  options={[
-                    { value: "recent", label: "Récent → Ancien" },
-                    { value: "ancien", label: "Ancien → Récent" }
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
-
-
-          
-
-          {/* Liste des transactions */}
-          {paris.length === 0 ? (
-            <div className="p-8 text-center">
-              <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">Aucun pari pour le moment</p>
-            </div>
+          {/* ----------------------------------------------------- */}
+          {/* PARTIE TRANSACTIONS                                   */}
+          {/* ----------------------------------------------------- */}
+          </div>  {/* ← FIN DU OVERVIEW */}
           ) : (
-            [...paris]
-              .sort((a, b) => {
-                const da = new Date(a.created_at);
-                const db = new Date(b.created_at);
+          <div className="p-6 space-y-4">
 
-                return sortMode === "ancien" ? da - db : db - da;
-              })
-              .filter(t => {
-                if (!teamFilter) return true;
+            {/* HEADER STICKY TRANSACTIONS */}
+            <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 pb-3 pt-4">
+              <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 px-1 mb-3">
+                <History className="w-5 h-5" />
+                Historique des paris
+              </h2>
 
-                // 👉 API v2 : matches est directement dans t
-                const match = t.matches;
-                if (!match) return false;
+              <div className="flex gap-3 px-1">
+                <div className="w-56">
+                  <PremiumDropdown
+                    label="Toutes les équipes"
+                    value={teamFilter}
+                    onChange={(v) => setTeamFilter(v)}
+                    options={[
+                      { value: "", label: "Toutes les équipes" },
+                      ...teams.map((t) => ({ value: t, label: t }))
+                    ]}
+                  />
+                </div>
 
-                return (
-                  normalizeTeam(match.home_team) === teamFilter ||
-                  normalizeTeam(match.away_team) === teamFilter
-                );
-              })
-              .map(t => (
-                <BetItem
-                  key={t.id}
-                  t={t}
-                  getTransactionIcon={getTransactionIcon}
-                  getTransactionLabel={getTransactionLabel}
-                  navigateToBet={navigateToBet}
-                />
-              ))
-          )}
+                <div className="w-48">
+                  <PremiumDropdown
+                    label="Trier par"
+                    value={sortMode}
+                    onChange={(v) => setSortMode(v)}
+                    options={[
+                      { value: "recent", label: "Récent → Ancien" },
+                      { value: "ancien", label: "Ancien → Récent" }
+                    ]}
+                  />
+                </div>
+              </div>
+            </div>
 
+            {/* Liste des paris */}
+            {paris.length === 0 ? (
+              <div className="p-8 text-center">
+                <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Aucun pari pour le moment</p>
+              </div>
+            ) : (
+              [...paris]
+                .sort((a, b) => {
+                  const da = new Date(a.created_at);
+                  const db = new Date(b.created_at);
+                  return sortMode === "ancien" ? da - db : db - da;
+                })
+                .filter(t => {
+                  if (!teamFilter) return true;
+                  const match = t.matches;
+                  if (!match) return false;
+                  return (
+                    normalizeTeam(match.home_team) === teamFilter ||
+                    normalizeTeam(match.away_team) === teamFilter
+                  );
+                })
+                .map(t => (
+                  <BetItem
+                    key={t.id}
+                    t={t}
+                    getTransactionIcon={getTransactionIcon}
+                    getTransactionLabel={getTransactionLabel}
+                    navigateToBet={navigateToBet}
+                  />
+                ))
+            )}
 
-
-        </div>
-      )}
-
-    </div>
-  );
-}
-
-
-
+          </div>
+)}
