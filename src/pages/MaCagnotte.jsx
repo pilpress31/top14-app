@@ -94,31 +94,21 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
-  // ✅ Extraire les vrais noms depuis external_id si nécessaire
+  // ✅ Extraire les vrais noms depuis external_id
   let homeTeam = match?.home_team;
   let awayTeam = match?.away_team;
 
   if (match?.external_id) {
     const parts = match.external_id.split('_');
     if (parts.length >= 4) {
-      // Format: 2025-2026_13_RACING_92_US_MONTAUBAN
-      // Extraire tout sauf saison et journée
       const teams = parts.slice(2).join('_');
-      
-      // Chercher le séparateur (généralement au milieu)
-      // On va chercher les équipes connues dans teams.ts
       const possibleTeams = teams.split('_');
       
-      // Reconstruction intelligente
-      let foundHome = false;
-      let homeWords = [];
-      let awayWords = [];
-      
-      for (let i = 0; i < possibleTeams.length; i++) {
-        const testHome = possibleTeams.slice(0, i + 1).join(' ');
-        const testAway = possibleTeams.slice(i + 1).join(' ');
+      // Essayer toutes les combinaisons
+      for (let i = 1; i < possibleTeams.length; i++) {
+        const testHome = possibleTeams.slice(0, i).join(' ');
+        const testAway = possibleTeams.slice(i).join(' ');
         
-        // Utiliser getTeamData pour vérifier
         const homeData = getTeamData(testHome);
         const awayData = getTeamData(testAway);
         
@@ -401,14 +391,42 @@ export default function MaCagnotte() {
     }
   };
 
+  // Fonction pour extraire les vrais noms d'équipes depuis external_id
+  const extractTeamsFromExternalId = (externalId) => {
+    if (!externalId) return null;
+    
+    const parts = externalId.split('_');
+    if (parts.length < 4) return null;
+    
+    // Format: 2025-2026_13_RACING_92_US_MONTAUBAN
+    const teams = parts.slice(2).join('_');
+    const possibleTeams = teams.split('_');
+    
+    // Essayer toutes les combinaisons possibles
+    for (let i = 1; i < possibleTeams.length; i++) {
+      const testHome = possibleTeams.slice(0, i).join(' ');
+      const testAway = possibleTeams.slice(i).join(' ');
+      
+      const homeData = getTeamData(testHome);
+      const awayData = getTeamData(testAway);
+      
+      if (homeData?.logo !== '/logos/default.svg' && 
+          awayData?.logo !== '/logos/default.svg') {
+        return {
+          home: homeData.name,
+          away: awayData.name
+        };
+      }
+    }
+    
+    return null;
+  };
+
   // Normalisation des équipes avec teams.ts
   const normalizeTeam = (name) => {
     if (!name) return "";
     
     // Chercher dans TEAMS_DATA la clé qui correspond
-    const upperName = name.toUpperCase().trim();
-    
-    // Chercher une correspondance exacte d'abord
     const teamData = getTeamData(name);
     if (teamData && teamData.logo !== '/logos/default.svg') {
       return teamData.name;
@@ -418,15 +436,15 @@ export default function MaCagnotte() {
     return name.trim();
   };
 
-  // Liste des équipes pour le filtre
+  // Liste des équipes pour le filtre - extraire depuis external_id
   const teams = Array.from(
     new Set(
       transactions
-        .filter(t => t.bets?.matches)
-        .flatMap(t => [
-          normalizeTeam(t.bets.matches.home_team),
-          normalizeTeam(t.bets.matches.away_team)
-        ])
+        .filter(t => t.bets?.matches?.external_id)
+        .flatMap(t => {
+          const extracted = extractTeamsFromExternalId(t.bets.matches.external_id);
+          return extracted ? [extracted.home, extracted.away] : [];
+        })
         .filter(Boolean)
     )
   ).sort();
@@ -437,10 +455,12 @@ export default function MaCagnotte() {
       // Filtre par équipe
       if (teamFilter) {
         const match = t.bets?.matches;
-        if (!match) return false;
-        const homeNorm = normalizeTeam(match.home_team);
-        const awayNorm = normalizeTeam(match.away_team);
-        if (homeNorm !== teamFilter && awayNorm !== teamFilter) return false;
+        if (!match?.external_id) return false;
+        
+        const extracted = extractTeamsFromExternalId(match.external_id);
+        if (!extracted) return false;
+        
+        return extracted.home === teamFilter || extracted.away === teamFilter;
       }
       return true;
     })
