@@ -7,6 +7,7 @@ import {
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { ChevronDown, Check } from "lucide-react";
+import { getTeamData } from '../utils/teams';
 
 // ---------------------------------------------------------
 // Dropdown Premium
@@ -51,8 +52,9 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
       {open && (
         <div
           className={`absolute mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto ${
-            fullWidthMenu ? 'left-0 right-0' : 'w-full'
+            fullWidthMenu ? 'left-0 right-0 min-w-max' : 'w-full'
           }`}
+          style={fullWidthMenu ? { minWidth: '300px' } : {}}
         >
           {options.map((opt) => (
             <div
@@ -271,13 +273,28 @@ export default function MaCagnotte() {
       const betWon = txList.filter(t => t.type === 'bet_won');
       const betLost = txList.filter(t => t.type === 'bet_lost');
       
+      console.log('📊 DEBUG STATS:');
+      console.log('Total bet_placed:', betPlaced.length);
+      console.log('Total bet_won:', betWon.length);
+      console.log('Total bet_lost:', betLost.length);
+      
       // ✅ Paris en cours = bets avec status 'placed' ET match pas terminé
       const pendingBets = betsList.filter(b => {
         const match = b.matches;
-        // En cours si : status placed ET (pas de score OU status scheduled)
-        return b.status === 'placed' && 
+        const isPending = b.status === 'placed' && 
                (match?.status === 'scheduled' || match?.score_home === null);
+        
+        if (b.status === 'placed') {
+          console.log('Bet:', b.id.substring(0, 8), 
+                     'Match status:', match?.status, 
+                     'Score:', match?.score_home, 
+                     'isPending:', isPending);
+        }
+        
+        return isPending;
       }).length;
+      
+      console.log('📊 Pending bets:', pendingBets);
       
       // ✅ Paris gagnés = transactions bet_won
       const wonBets = betWon.length;
@@ -288,6 +305,8 @@ export default function MaCagnotte() {
       // ✅ Paris perdus calculés = (total placés) - (en cours) - (gagnés)
       const totalPlaced = betPlaced.length;
       const lostBetsCalculated = totalPlaced - pendingBets - wonBets;
+      
+      console.log('📊 Lost bets calculated:', lostBetsCalculated);
       
       // Prendre le max entre explicites et calculés
       const lostBets = Math.max(lostBetsExplicit, lostBetsCalculated > 0 ? lostBetsCalculated : 0);
@@ -342,32 +361,9 @@ export default function MaCagnotte() {
     }
   };
 
-  // Normalisation des équipes
+  // Normalisation des équipes avec teams.ts
   const normalizeTeam = (name) => {
-    if (!name) return "";
-    const n = name.toUpperCase().replace(/\s+/g, "").trim();
-
-    const map = {
-      "RACING": "RACING 92", "92": "RACING 92", "RACING92": "RACING 92", "R92": "RACING 92",
-      "CASTRES": "CASTRES OLYMPIQUE", "OLYMPIQUE": "CASTRES OLYMPIQUE", "CO": "CASTRES OLYMPIQUE",
-      "TOULOUSE": "STADE TOULOUSAIN", "STADETOULOUSAIN": "STADE TOULOUSAIN", "ST": "STADE TOULOUSAIN",
-      "STADEFRANCAIS": "STADE FRANÇAIS", "PARIS": "STADE FRANÇAIS",
-      "TOULON": "RC TOULON", "RCT": "RC TOULON",
-      "MONTPELLIER": "MONTPELLIER HÉRAULT", "MHR": "MONTPELLIER HÉRAULT",
-      "CLERMONT": "ASM CLERMONT", "ASM": "ASM CLERMONT",
-      "BORDEAUX": "BORDEAUX-BÈGLES", "UBB": "BORDEAUX-BÈGLES",
-      "LYON": "LYON OU", "LOU": "LYON OU",
-      "PAU": "SECTION PALOISE", "SECTIONPALOISE": "SECTION PALOISE",
-      "PERPIGNAN": "USAP", "USAP": "USAP",
-      "BAYONNE": "AVIRON BAYONNAIS", "AB": "AVIRON BAYONNAIS",
-      "LAROCHELLE": "STADE ROCHELAIS", "ROCHELAIS": "STADE ROCHELAIS", "SR": "STADE ROCHELAIS",
-      "MONTAUBAN": "US MONTAUBAN", "USM": "US MONTAUBAN",
-      "VANNES": "RC VANNES", "RCV": "RC VANNES"
-    };
-
-    if (map[n]) return map[n];
-    for (const key in map) if (n.includes(key)) return map[key];
-    return name.trim();
+    return getTeamData(name)?.name || name;
   };
 
   // Liste des équipes pour le filtre
