@@ -71,10 +71,9 @@ function PremiumDropdown({ label, value, onChange, options }) {
 function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) {
   console.log("BET ITEM t =", t);
 
-  // 👉 Nouveau format API v2 : le pari est directement dans t
+  // ✅ Structure corrigée : accès direct
   const bet = t; 
   const match = t.matches; 
-  const isBet = true; // toujours un pari dans cette liste
 
   // FT / MT
   const isFT = t.description?.includes("FT");
@@ -196,16 +195,22 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
       {/* Ligne principale */}
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-2">
-          {getTransactionIcon(t.type)}
-          <span className="font-semibold">{getTransactionLabel(t.type)}</span>
+          {getTransactionIcon(t.status)}
+          <span className="font-semibold">{getTransactionLabel(t.status)}</span>
 
           <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
             {periodLabel}
           </span>
         </div>
 
-        <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-600"}`}>
-          {t.amount > 0 ? `+${t.amount}` : t.amount} jetons
+        <span className={`font-bold ${
+          (t.status === "won") ? "text-green-600" : 
+          (t.status === "placed" || t.status === "pending") ? "text-orange-600" : 
+          "text-red-600"
+        }`}>
+          {(t.status === "won" && t.payout) ? `+${t.payout}` : 
+           (t.status === "placed" || t.status === "pending") ? `-${t.stake}` : 
+           `-${t.stake}`} jetons
         </span>
       </div>
 
@@ -227,14 +232,16 @@ function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) 
         {/* Cote / Mise / Gain */}
         <div className="text-gray-500">
           Cote {bet.odds} • Mise {bet.stake}
-          {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
+          {bet.payout && (bet.status === "won") && <> • Gain {bet.payout}</>}
         </div>
       </div>
 
       {/* Solde après transaction */}
-      <div className="mt-2 text-xs text-gray-500 flex justify-end">
-        Solde après transaction : <span className="font-semibold ml-1">{t.balance_after}</span>
-      </div>
+      {bet.balance_after && (
+        <div className="mt-2 text-xs text-gray-500 flex justify-end">
+          Solde après transaction : <span className="font-semibold ml-1">{bet.balance_after}</span>
+        </div>
+      )}
 
       <div className="mt-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
     </div>
@@ -329,19 +336,19 @@ export default function MaCagnotte() {
 
       setParis(parisList);
 
-      // Statistiques
-      const pending = parisList.filter((b) => b.bets?.status === "pending").length;
-      const won = parisList.filter((b) => b.bets?.status === "won").length;
-      const lost = parisList.filter((b) => b.bets?.status === "lost").length;
+      // Statistiques - ✅ CORRIGÉ : accès direct aux propriétés
+      const pending = parisList.filter((b) => b.status === "placed" || b.status === "pending").length;
+      const won = parisList.filter((b) => b.status === "won").length;
+      const lost = parisList.filter((b) => b.status === "lost").length;
 
       const totalStaked = parisList.reduce(
-        (sum, b) => sum + (b.bets?.stake || 0),
+        (sum, b) => sum + (b.stake || 0),
         0
       );
 
       const totalWon = parisList
-        .filter((b) => b.bets?.status === "won")
-        .reduce((sum, b) => sum + (b.bets?.payout || 0), 0);
+        .filter((b) => b.status === "won")
+        .reduce((sum, b) => sum + (b.payout || 0), 0);
 
       setStats({
         totalBets: parisList.length,
@@ -403,14 +410,15 @@ export default function MaCagnotte() {
   // ---------------------------------------------------------
   // Icônes des transactions
   // ---------------------------------------------------------
-  const getTransactionIcon = (type) => {
-    switch (type) {
-      case "bet_placed":
-        return <TrendingDown className="w-5 h-5 text-red-500" />;
-      case "bet_won":
+  const getTransactionIcon = (status) => {
+    switch (status) {
+      case "placed":
+      case "pending":
+        return <TrendingDown className="w-5 h-5 text-orange-500" />;
+      case "won":
         return <Trophy className="w-5 h-5 text-green-500" />;
-      case "bet_lost":
-        return <TrendingDown className="w-5 h-5 text-gray-400" />;
+      case "lost":
+        return <TrendingDown className="w-5 h-5 text-red-400" />;
       case "monthly_distribution":
         return <Gift className="w-5 h-5 text-blue-500" />;
       case "bonus":
@@ -427,13 +435,14 @@ export default function MaCagnotte() {
   // ---------------------------------------------------------
   // Libellés des transactions
   // ---------------------------------------------------------
-  const getTransactionLabel = (type) => {
-    switch (type) {
-      case "bet_placed":
-        return "Pari placé";
-      case "bet_won":
+  const getTransactionLabel = (status) => {
+    switch (status) {
+      case "placed":
+      case "pending":
+        return "Pari en cours";
+      case "won":
         return "Pari gagné";
-      case "bet_lost":
+      case "lost":
         return "Pari perdu";
       case "monthly_distribution":
         return "Distribution mensuelle";
@@ -580,10 +589,10 @@ export default function MaCagnotte() {
   const teams = Array.from(
     new Set(
       paris
-        .filter((t) => t.bets?.matches)
+        .filter((t) => t.matches) // ✅ Accès direct à matches
         .flatMap((t) => [
-          normalizeTeam(t.bets.matches.home_team),
-          normalizeTeam(t.bets.matches.away_team),
+          normalizeTeam(t.matches.home_team),
+          normalizeTeam(t.matches.away_team),
         ])
         .filter(Boolean)
     )
