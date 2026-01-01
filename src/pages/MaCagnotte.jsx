@@ -272,7 +272,8 @@ export default function MaCagnotte() {
   });
 
   // 👉 AJOUT ICI
-  const { transactions: apiTransactions, bets: apiBets, loading, error } = useUserBets();
+  const { transactions: apiTransactions, bets: apiBets, loading: apiLoading, error: apiError } = useUserBets();
+
 
   useEffect(() => {
     if (apiTransactions) setTransactions(apiTransactions);
