@@ -80,13 +80,79 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 }
 
 // ---------------------------------------------------------
-// Transaction Item Component
+// Transaction Item Component  
 // ---------------------------------------------------------
-function TransactionItem({ trans, navigateToBet }) {
+function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const isPositive = trans.amount > 0;
   const isFT = trans.description?.includes('FT');
   const isMT = trans.description?.includes('MT');
   const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
+
+  // Extraire les détails du match depuis bets.matches si disponible
+  const match = trans.bets?.matches;
+  const odds = trans.bets?.odds || trans.metadata?.odds;
+  const stake = trans.bets?.stake;
+  const payout = trans.metadata?.payout;
+
+  // ✅ Extraire les vrais noms depuis external_id si nécessaire
+  let homeTeam = match?.home_team;
+  let awayTeam = match?.away_team;
+
+  if (match?.external_id) {
+    const parts = match.external_id.split('_');
+    if (parts.length >= 4) {
+      // Format: 2025-2026_13_RACING_92_US_MONTAUBAN
+      // Extraire tout sauf saison et journée
+      const teams = parts.slice(2).join('_');
+      
+      // Chercher le séparateur (généralement au milieu)
+      // On va chercher les équipes connues dans teams.ts
+      const possibleTeams = teams.split('_');
+      
+      // Reconstruction intelligente
+      let foundHome = false;
+      let homeWords = [];
+      let awayWords = [];
+      
+      for (let i = 0; i < possibleTeams.length; i++) {
+        const testHome = possibleTeams.slice(0, i + 1).join(' ');
+        const testAway = possibleTeams.slice(i + 1).join(' ');
+        
+        // Utiliser getTeamData pour vérifier
+        const homeData = getTeamData(testHome);
+        const awayData = getTeamData(testAway);
+        
+        if (homeData?.logo !== '/logos/default.svg' && 
+            awayData?.logo !== '/logos/default.svg') {
+          homeTeam = homeData.name;
+          awayTeam = awayData.name;
+          break;
+        }
+      }
+    }
+  }
+
+  const dateObj = new Date(trans.created_at);
+  const dateStr = dateObj.toLocaleDateString("fr-FR", { 
+    day: "2-digit", 
+    month: "short" 
+  });
+  const timeStr = dateObj.toLocaleTimeString("fr-FR", { 
+    hour: "2-digit", 
+    minute: "2-digit" 
+  });
+
+  const dateObj = new Date(trans.created_at);
+  const dateStr = dateObj.toLocaleDateString("fr-FR", { 
+    weekday: "short",
+    day: "2-digit", 
+    month: "short",
+    year: "numeric"
+  });
+  const timeStr = dateObj.toLocaleTimeString("fr-FR", { 
+    hour: "2-digit", 
+    minute: "2-digit" 
+  });
 
   // Icône selon le type
   const getIcon = () => {
@@ -120,22 +186,6 @@ function TransactionItem({ trans, navigateToBet }) {
     }
   };
 
-  // Extraire les détails du match depuis bets.matches si disponible
-  const match = trans.bets?.matches;
-  const odds = trans.bets?.odds || trans.metadata?.odds;
-  const stake = trans.bets?.stake;
-  const payout = trans.metadata?.payout;
-
-  const dateObj = new Date(trans.created_at);
-  const dateStr = dateObj.toLocaleDateString("fr-FR", { 
-    day: "2-digit", 
-    month: "short" 
-  });
-  const timeStr = dateObj.toLocaleTimeString("fr-FR", { 
-    hour: "2-digit", 
-    minute: "2-digit" 
-  });
-
   return (
     <div 
       className="p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
@@ -145,8 +195,8 @@ function TransactionItem({ trans, navigateToBet }) {
       <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2">
           {getIcon()}
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-sm">{getTitle()}</span>
               {periodLabel && (
                 <span className="px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border">
@@ -154,12 +204,14 @@ function TransactionItem({ trans, navigateToBet }) {
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">
-              {dateStr} • {timeStr}
+            {/* Journée + Date/Heure */}
+            <p className="text-xs text-gray-500 mt-1">
+              {match?.round && <span className="font-medium">Journée {match.round} du </span>}
+              {dateStr} <span className="mx-1">•</span> {timeStr}
             </p>
           </div>
         </div>
-        <span className={`font-bold text-lg ${
+        <span className={`font-bold text-lg flex-shrink-0 ml-2 ${
           isPositive ? "text-green-600" : "text-red-600"
         }`}>
           {isPositive && '+'}{trans.amount}
@@ -170,11 +222,8 @@ function TransactionItem({ trans, navigateToBet }) {
       {match && (
         <div className="mt-2 text-sm text-gray-700 pl-7">
           <p className="font-medium">
-            {match.home_team} {match.score_home !== null ? `${match.score_home} - ${match.score_away}` : 'vs'} {match.away_team}
+            {homeTeam} {match.score_home !== null ? `${match.score_home} - ${match.score_away}` : 'vs'} {awayTeam}
           </p>
-          {match.round && (
-            <p className="text-xs text-gray-500">Journée {match.round}</p>
-          )}
         </div>
       )}
 
@@ -261,6 +310,7 @@ export default function MaCagnotte() {
       );
 
       console.log('API JSON =', v2Response.data);
+      console.log('BETS[0].matches =', v2Response.data.bets?.[0]?.matches);
 
       const txList = v2Response.data.transactions || [];
       const betsList = v2Response.data.bets || [];
@@ -655,6 +705,7 @@ export default function MaCagnotte() {
                   key={trans.id} 
                   trans={trans} 
                   navigateToBet={navigateToBet}
+                  getTeamData={getTeamData}
                 />
               ))}
             </div>
