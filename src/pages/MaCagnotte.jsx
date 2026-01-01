@@ -254,7 +254,6 @@ console.log("PERIOD:", periodLabel);
 export default function MaCagnotte() {
   const navigate = useNavigate();
 
-  // États principaux
   const [user, setUser] = useState(null);
   const [userCredits, setUserCredits] = useState(null);
   const [paris, setParis] = useState([]);
@@ -271,6 +270,15 @@ export default function MaCagnotte() {
     totalBonus: 0,
     nbDistributions: 0
   });
+
+  // 👉 AJOUT ICI
+  const { transactions: apiTransactions, bets: apiBets, loading, error } = useUserBets();
+
+  useEffect(() => {
+    if (apiTransactions) setTransactions(apiTransactions);
+    if (apiBets) setParis(apiBets);
+  }, [apiTransactions, apiBets]);
+
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
