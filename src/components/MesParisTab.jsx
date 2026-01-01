@@ -217,13 +217,16 @@ export default function MesParisTab() {
           </button>
 
 
-          <div className="text-right">
+          <button
+            onClick={() => window.location.href = '/ma-cagnotte'}
+            className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
+          >
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
               {userCredits?.total_earned || 0}
             </p>
-          </div>
+          </button>
         </div>
       </div>
 
