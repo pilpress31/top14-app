@@ -330,24 +330,26 @@ export default function ClassementCommunauteTab() {
       </div>
 
       {/* Podium Top 3 — VERSION STABLE */}
+      {/* ================= PODIUM TOP 3 ================= */}
       {top3.length >= 3 && (
         <div className="bg-gradient-to-b from-rugby-gold/10 to-transparent rounded-xl p-6 mb-6">
-          <div className="flex gap-3 justify-center items-end max-w-md mx-auto">
+          <div className="flex justify-center items-end gap-3 max-w-md mx-auto">
 
-            {/* 2ème place */}
+            {/* ================= 2ᵉ PLACE ================= */}
             {top3[1] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(2)}</div>
+
                 <div
-                  className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center flex flex-col justify-end"
+                  className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center"
                   style={{ height: "110px" }}
                 >
                   <p className="font-bold text-white text-sm truncate">
                     {truncatePseudo(top3[1].pseudo)}
                   </p>
 
-                  <p className="text-2xl font-bold text-white mt-1 w-full text-center truncate tabular-nums">
-                    {formatNumber(
+                  <p className="text-2xl font-bold text-white mt-1 tabular-nums">
+                    {new Intl.NumberFormat("fr-FR").format(
                       classementType === "jetons"
                         ? top3[1].jetons || 0
                         : top3[1].points || 0
@@ -361,20 +363,21 @@ export default function ClassementCommunauteTab() {
               </div>
             )}
 
-            {/* 1ère place */}
+            {/* ================= 1ʳᵉ PLACE ================= */}
             {top3[0] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(1)}</div>
+
                 <div
-                  className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center flex flex-col justify-end"
+                  className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center"
                   style={{ height: "130px" }}
                 >
                   <p className="font-bold text-white text-sm truncate">
                     {truncatePseudo(top3[0].pseudo)}
                   </p>
 
-                  <p className="text-2xl font-bold text-white mt-1 w-full text-center truncate tabular-nums">
-                    {formatNumber(
+                  <p className="text-2xl font-bold text-white mt-1 tabular-nums">
+                    {new Intl.NumberFormat("fr-FR").format(
                       classementType === "jetons"
                         ? top3[0].jetons || 0
                         : top3[0].points || 0
@@ -388,20 +391,21 @@ export default function ClassementCommunauteTab() {
               </div>
             )}
 
-            {/* 3ème place */}
+            {/* ================= 3ᵉ PLACE ================= */}
             {top3[2] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
+
                 <div
-                  className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-3 text-center flex flex-col justify-end"
+                  className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-3 text-center"
                   style={{ height: "95px" }}
                 >
                   <p className="font-bold text-white text-sm truncate">
                     {truncatePseudo(top3[2].pseudo)}
                   </p>
 
-                  <p className="text-2xl font-bold text-white mt-1 w-full text-center truncate tabular-nums">
-                    {formatNumber(
+                  <p className="text-2xl font-bold text-white mt-1 tabular-nums">
+                    {new Intl.NumberFormat("fr-FR").format(
                       classementType === "jetons"
                         ? top3[2].jetons || 0
                         : top3[2].points || 0
