@@ -313,7 +313,7 @@ export default function MaCagnotte() {
       const placedTxs = txs.filter((t) => t.type === "bet_placed");
       const distributions = txs.filter((t) => t.type === "monthly_distribution");
 
-      const totalWon = wonTxs.reduce((s, tx) => s + (tx.amount || 0), 0);
+      const totalWon = historyResponse.data.user_credits?.total_earned || 0;
       const totalStaked = Math.abs(
         placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
       );
