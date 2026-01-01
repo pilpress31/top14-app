@@ -225,6 +225,22 @@ export default function ClassementCommunauteTab() {
     return <span className="text-sm font-bold text-rugby-bronze">{rang}</span>;
   };
 
+  // Fonction pour formater les grands nombres
+  const formatNumber = (num: number): string => {
+    if (num >= 100000) {
+      return `${(num / 1000).toFixed(0)}k`; // 123456 → 123k
+    } else if (num >= 10000) {
+      return `${(num / 1000).toFixed(1)}k`; // 12345 → 12.3k
+    }
+    return num.toString(); // < 10000 → affichage normal
+  };
+
+  // Fonction pour tronquer les pseudos
+  const truncatePseudo = (pseudo: string, maxLength: number = 12): string => {
+    if (pseudo.length <= maxLength) return pseudo;
+    return pseudo.substring(0, maxLength) + '...';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -238,13 +254,13 @@ export default function ClassementCommunauteTab() {
   return (
     <div className="pb-24 space-y-4">
       {/* Toggle Jetons/Points */}
-      <div className="bg-white rounded-lg shadow-sm p-1 flex gap-1">
+      <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm">
         <button
           onClick={() => setClassementType('jetons')}
-          className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
+          className={`flex-1 py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
             classementType === 'jetons'
-              ? 'bg-rugby-gold text-white'
-              : 'text-gray-600 hover:bg-gray-100'
+              ? 'bg-rugby-gold text-white shadow-md'
+              : 'text-gray-600 hover:bg-gray-50'
           }`}
         >
           <Coins className="w-4 h-4" />
@@ -252,82 +268,79 @@ export default function ClassementCommunauteTab() {
         </button>
         <button
           onClick={() => setClassementType('points')}
-          className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
+          className={`flex-1 py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
             classementType === 'points'
-              ? 'bg-rugby-gold text-white'
-              : 'text-gray-600 hover:bg-gray-100'
+              ? 'bg-rugby-gold text-white shadow-md'
+              : 'text-gray-600 hover:bg-gray-50'
           }`}
         >
           <Award className="w-4 h-4" />
           Par Points
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowReglementPoints(true);
+            }}
+            className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
         </button>
       </div>
 
-      {/* Bouton Règlement Points */}
-      {classementType === 'points' && (
-        <button
-          onClick={() => setShowReglementPoints(true)}
-          className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg transition-colors text-sm font-semibold"
-        >
-          <HelpCircle className="w-4 h-4" />
-          Comment sont calculés les points ?
-        </button>
-      )}
-
-      {/* Barre de recherche */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Rechercher un utilisateur..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-lg border-2 border-rugby-gray focus:border-rugby-gold focus:outline-none text-sm"
-        />
-      </div>
-
-      {/* Info utilisateur actuel */}
+      {/* User position banner */}
       {currentUserRank && (
-        <div className="bg-gradient-to-r from-rugby-gold/20 to-rugby-bronze/20 rounded-lg p-3 border-2 border-rugby-gold">
-          <p className="text-sm text-gray-700">
-            🎯 Votre position : <span className="font-bold text-rugby-gold">#{currentUserRank}</span>
-          </p>
+        <div className="bg-gradient-to-r from-rugby-gold/20 to-rugby-bronze/20 border border-rugby-gold/30 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rugby-gold to-rugby-bronze flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                {currentUserRank}
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Votre position</p>
+                <p className="font-bold text-rugby-gold">
+                  {currentUserRank === 1 ? '🏆 1er' : `${currentUserRank}${currentUserRank === 2 ? 'ème' : 'ème'}`}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">
+                {classementType === 'jetons' ? 'Jetons' : 'Points'}
+              </p>
+              <p className="text-2xl font-bold text-rugby-gold">
+                {classementType === 'jetons' 
+                  ? filteredUsers.find(u => u.user_id === currentUserId)?.jetons 
+                  : filteredUsers.find(u => u.user_id === currentUserId)?.points}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Podium Top 3 */}
-      {top3.length > 0 && (
-        <div className="bg-gradient-to-br from-rugby-gold/10 to-rugby-bronze/10 rounded-xl p-6 border border-rugby-gold/30">
-          <h3 className="text-lg font-bold text-rugby-gold mb-4 flex items-center gap-2">
-            <Trophy className="w-5 h-5" />
-            Podium
-          </h3>
-          
-          <div className="flex items-end justify-center gap-4">
-            {/* 2ème place */}
-            {top3[1] && (
-              <div className="flex flex-col items-center flex-1">
-                <div className="mb-2">{getPodiumIcon(2)}</div>
-                <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center" style={{ height: '100px' }}>
-                  <p className="font-bold text-white text-sm truncate">{top3[1].pseudo}</p>
-                  <p className="text-2xl font-bold text-white mt-1">
-                    {classementType === 'jetons' ? top3[1].jetons : top3[1].points}
-                  </p>
-                  <p className="text-xs text-white/80">
-                    {classementType === 'jetons' ? 'jetons' : 'pts'}
-                  </p>
-                </div>
-              </div>
-            )}
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Rechercher un joueur..."
+          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rugby-gold focus:border-transparent"
+        />
+      </div>
 
-            {/* 1ère place */}
-            {top3[0] && (
-              <div className="flex flex-col items-center flex-1">
-                <div className="mb-2">{getPodiumIcon(1)}</div>
-                <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center" style={{ height: '130px' }}>
-                  <p className="font-bold text-white text-sm truncate">{top3[0].pseudo}</p>
-                  <p className="text-3xl font-bold text-white mt-1">
-                    {classementType === 'jetons' ? top3[0].jetons : top3[0].points}
+      {/* Podium Top 3 - CORRIGÉ */}
+      {top3.length >= 3 && (
+        <div className="bg-gradient-to-b from-rugby-gold/10 to-transparent rounded-xl p-6 mb-6">
+          <div className="flex gap-3 justify-center items-end max-w-md mx-auto">
+            {/* 2ème place - LARGEUR FIXE */}
+            {top3[1] && (
+              <div className="flex flex-col items-center w-28">
+                <div className="mb-2">{getPodiumIcon(2)}</div>
+                <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center" style={{ height: '110px' }}>
+                  <p className="font-bold text-white text-sm">{truncatePseudo(top3[1].pseudo)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">
+                    {classementType === 'jetons' ? formatNumber(top3[1].jetons || 0) : (top3[1].points || 0)}
                   </p>
                   <p className="text-xs text-white/90">
                     {classementType === 'jetons' ? 'jetons' : 'pts'}
@@ -336,14 +349,30 @@ export default function ClassementCommunauteTab() {
               </div>
             )}
 
-            {/* 3ème place - HAUTEUR CORRIGÉE 95px */}
+            {/* 1ère place - LARGEUR FIXE */}
+            {top3[0] && (
+              <div className="flex flex-col items-center w-28">
+                <div className="mb-2">{getPodiumIcon(1)}</div>
+                <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center" style={{ height: '130px' }}>
+                  <p className="font-bold text-white text-sm">{truncatePseudo(top3[0].pseudo)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">
+                    {classementType === 'jetons' ? formatNumber(top3[0].jetons || 0) : (top3[0].points || 0)}
+                  </p>
+                  <p className="text-xs text-white/90">
+                    {classementType === 'jetons' ? 'jetons' : 'pts'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 3ème place - LARGEUR FIXE */}
             {top3[2] && (
-              <div className="flex flex-col items-center flex-1">
+              <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
                 <div className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-3 text-center" style={{ height: '95px' }}>
-                  <p className="font-bold text-white text-sm truncate">{top3[2].pseudo}</p>
+                  <p className="font-bold text-white text-sm">{truncatePseudo(top3[2].pseudo)}</p>
                   <p className="text-2xl font-bold text-white mt-1">
-                    {classementType === 'jetons' ? top3[2].jetons : top3[2].points}
+                    {classementType === 'jetons' ? formatNumber(top3[2].jetons || 0) : (top3[2].points || 0)}
                   </p>
                   <p className="text-xs text-white/90">
                     {classementType === 'jetons' ? 'jetons' : 'pts'}
