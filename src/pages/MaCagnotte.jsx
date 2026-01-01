@@ -70,22 +70,21 @@ function PremiumDropdown({ label, value, onChange, options }) {
 // ---------------------------------------------------------
 function BetItem({ t, getTransactionIcon, getTransactionLabel, navigateToBet }) {
   console.log("BET ITEM t =", t);
-  
-  const bet = t.bets;
-  const match = bet?.matches;
-  const isBet = !!bet;
 
-  // 👉 Ajoute ceci juste en dessous
+  // 👉 Nouveau format API v2 : le pari est directement dans t
+  const bet = t; 
+  const match = t.matches; 
+  const isBet = true; // toujours un pari dans cette liste
+
+  // FT / MT
   const isFT = t.description?.includes("FT");
   const periodLabel = isFT ? "Temps plein" : "Mi-temps";
 
-// 👉 Mets les logs ici
-console.log("TRANSACTION:", t);
-console.log("DESCRIPTION:", t.description);
-console.log("PERIOD:", periodLabel);
+  console.log("TRANSACTION:", t);
+  console.log("DESCRIPTION:", t.description);
+  console.log("PERIOD:", periodLabel);
 
-
-  // Normalisation locale (obligatoire pour éviter l’erreur)
+  // Normalisation locale
   const normalizeTeam = (name) => {
     if (!name) return "";
     const n = name.toUpperCase().replace(/\s+/g, "").trim();
@@ -193,16 +192,16 @@ console.log("PERIOD:", periodLabel);
 
   return (
     <div className="p-4 hover:bg-gray-50 transition cursor-pointer" onClick={() => navigateToBet(t)}>
+      
+      {/* Ligne principale */}
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-2">
           {getTransactionIcon(t.type)}
           <span className="font-semibold">{getTransactionLabel(t.type)}</span>
 
-          {isBet && (
-            <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
-              {periodLabel}
-            </span>
-          )}
+          <span className="ml-2 px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border border-gray-300">
+            {periodLabel}
+          </span>
         </div>
 
         <span className={`font-bold ${t.amount > 0 ? "text-green-600" : "text-red-600"}`}>
@@ -210,32 +209,29 @@ console.log("PERIOD:", periodLabel);
         </span>
       </div>
 
-      
-      {isBet && (
-        <div className="mt-2 text-sm text-gray-700">
+      {/* Détails du pari */}
+      <div className="mt-2 text-sm text-gray-700">
 
-          {/* Journée + date + heure */}
-          {match.round && (
-            <div className="text-gray-500 mb-1">
-              Journée {match.round} — {dateStr} • {timeStr}
-            </div>
-          )}
-
-          {/* Score */}
-          <div className="font-semibold">
-            {home} {match.score_home ?? ""} {match.score_home !== null ? "–" : "vs"} {match.score_away ?? ""} {away}
+        {/* Journée + date + heure */}
+        {match?.round && (
+          <div className="text-gray-500 mb-1">
+            Journée {match.round} — {dateStr} • {timeStr}
           </div>
+        )}
 
-          {/* Cote / Mise / Gain */}
-          <div className="text-gray-500">
-            Cote {bet.odds} • Mise {bet.stake}
-            {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
-          </div>
-
+        {/* Score */}
+        <div className="font-semibold">
+          {home} {match?.score_home ?? ""} {match?.score_home !== null ? "–" : "vs"} {match?.score_away ?? ""} {away}
         </div>
-      )}
 
+        {/* Cote / Mise / Gain */}
+        <div className="text-gray-500">
+          Cote {bet.odds} • Mise {bet.stake}
+          {bet.payout && t.type === "bet_won" && <> • Gain {bet.payout}</>}
+        </div>
+      </div>
 
+      {/* Solde après transaction */}
       <div className="mt-2 text-xs text-gray-500 flex justify-end">
         Solde après transaction : <span className="font-semibold ml-1">{t.balance_after}</span>
       </div>
