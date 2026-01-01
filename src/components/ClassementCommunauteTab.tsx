@@ -253,8 +253,11 @@ export default function ClassementCommunauteTab() {
 
   return (
     <div className="pb-24 space-y-4">
+
       {/* Toggle Jetons/Points */}
       <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm">
+
+        {/* Onglet Jetons */}
         <button
           onClick={() => setClassementType('jetons')}
           className={`flex-1 py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
@@ -266,6 +269,8 @@ export default function ClassementCommunauteTab() {
           <Coins className="w-4 h-4" />
           Par Jetons
         </button>
+
+        {/* Onglet Points */}
         <button
           onClick={() => setClassementType('points')}
           className={`flex-1 py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
@@ -276,22 +281,26 @@ export default function ClassementCommunauteTab() {
         >
           <Award className="w-4 h-4" />
           Par Points
-          <button
+
+          {/* Bouton aide (corrigé → span cliquable) */}
+          <span
             onClick={(e) => {
-              e.stopPropagation();
-              setShowReglementPoints(true);
+              e.stopPropagation()
+              setShowReglementPoints(true)
             }}
-            className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors"
+            className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
           >
             <HelpCircle className="w-4 h-4" />
-          </button>
+          </span>
         </button>
+
       </div>
 
       {/* User position banner */}
       {currentUserRank && (
         <div className="bg-gradient-to-r from-rugby-gold/20 to-rugby-bronze/20 border border-rugby-gold/30 rounded-lg p-4">
           <div className="flex items-center justify-between">
+
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rugby-gold to-rugby-bronze flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 {currentUserRank}
@@ -299,20 +308,24 @@ export default function ClassementCommunauteTab() {
               <div>
                 <p className="text-sm text-gray-600">Votre position</p>
                 <p className="font-bold text-rugby-gold">
-                  {currentUserRank === 1 ? '🏆 1er' : `${currentUserRank}${currentUserRank === 2 ? 'ème' : 'ème'}`}
+                  {currentUserRank === 1
+                    ? '🏆 1er'
+                    : `${currentUserRank}${currentUserRank === 2 ? 'ème' : 'ème'}`}
                 </p>
               </div>
             </div>
+
             <div className="text-right">
               <p className="text-sm text-gray-600">
                 {classementType === 'jetons' ? 'Jetons' : 'Points'}
               </p>
               <p className="text-2xl font-bold text-rugby-gold">
-                {classementType === 'jetons' 
-                  ? filteredUsers.find(u => u.user_id === currentUserId)?.jetons 
+                {classementType === 'jetons'
+                  ? filteredUsers.find(u => u.user_id === currentUserId)?.jetons
                   : filteredUsers.find(u => u.user_id === currentUserId)?.points}
               </p>
             </div>
+
           </div>
         </div>
       )}
@@ -329,7 +342,7 @@ export default function ClassementCommunauteTab() {
         />
       </div>
 
-      {/* Podium Top 3 - CORRIGÉ */}
+      {/* Podium Top 3 */}
       {top3.length >= 3 && (
         <div className="bg-gradient-to-b from-rugby-gold/10 to-transparent rounded-xl p-6 mb-6">
           <div className="flex gap-3 justify-center items-end max-w-md mx-auto">
@@ -430,7 +443,8 @@ export default function ClassementCommunauteTab() {
                     : 'hover:bg-gray-50'
                 }`}
               >
-                {/* Rang / Médaille */}
+
+                {/* Rang */}
                 <div className="w-10 flex justify-center">
                   {getMedalIcon(user.rang)}
                 </div>
@@ -460,6 +474,7 @@ export default function ClassementCommunauteTab() {
                       </span>
                     )}
                   </p>
+
                   {classementType === 'jetons' && user.benefice_net !== undefined && (
                     <p className={`text-xs mt-0.5 ${
                       user.benefice_net >= 0 ? 'text-green-600' : 'text-red-600'
@@ -468,6 +483,7 @@ export default function ClassementCommunauteTab() {
                       {user.benefice_net >= 0 ? '+' : ''}{user.benefice_net} net
                     </p>
                   )}
+
                   {classementType === 'points' && user.tauxReussite !== undefined && (
                     <p className="text-xs text-gray-500 mt-0.5">
                       {user.tauxReussite.toFixed(1)}% de réussite
@@ -484,6 +500,7 @@ export default function ClassementCommunauteTab() {
                     {classementType === 'jetons' ? 'jetons' : 'pts'}
                   </p>
                 </div>
+
               </div>
             ))}
           </div>
@@ -497,11 +514,14 @@ export default function ClassementCommunauteTab() {
             className="fixed inset-0 bg-black/50 z-50"
             onClick={() => setShowReglementPoints(false)}
           />
+
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <div 
               className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
+
+              {/* Header */}
               <div className="sticky top-0 bg-rugby-gold text-white p-4 flex items-center justify-between z-10">
                 <h3 className="text-lg font-bold flex items-center gap-2">
                   <Award className="w-5 h-5" />
@@ -515,6 +535,7 @@ export default function ClassementCommunauteTab() {
                 </button>
               </div>
 
+              {/* Content */}
               <div className="p-6 space-y-4">
                 <p className="text-sm text-gray-700">
                   Le classement par points récompense la <strong>précision de vos pronostics</strong>, indépendamment des mises.
@@ -573,6 +594,7 @@ export default function ClassementCommunauteTab() {
                 </p>
               </div>
 
+              {/* Footer */}
               <div className="sticky bottom-0 bg-gray-50 p-4 border-t">
                 <button
                   onClick={() => setShowReglementPoints(false)}
@@ -581,10 +603,12 @@ export default function ClassementCommunauteTab() {
                   Compris !
                 </button>
               </div>
+
             </div>
           </div>
         </>
       )}
+
     </div>
   );
 }
