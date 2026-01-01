@@ -251,7 +251,7 @@ export default function ClassementCommunauteTab() {
 
   const top3 = filteredUsers.slice(0, 3);
 
-  return (
+    return (
     <div className="pb-24 space-y-4">
 
       {/* Toggle Jetons/Points */}
@@ -260,7 +260,7 @@ export default function ClassementCommunauteTab() {
         {/* Onglet Jetons */}
         <button
           onClick={() => setClassementType('jetons')}
-          className={`flex-1 py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[150px] py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
             classementType === 'jetons'
               ? 'bg-rugby-gold text-white shadow-md'
               : 'text-gray-600 hover:bg-gray-50'
@@ -273,7 +273,7 @@ export default function ClassementCommunauteTab() {
         {/* Onglet Points */}
         <button
           onClick={() => setClassementType('points')}
-          className={`flex-1 py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 min-w-[150px] py-2.5 rounded-md font-semibold transition-all flex items-center justify-center gap-2 ${
             classementType === 'points'
               ? 'bg-rugby-gold text-white shadow-md'
               : 'text-gray-600 hover:bg-gray-50'
@@ -282,7 +282,6 @@ export default function ClassementCommunauteTab() {
           <Award className="w-4 h-4" />
           Par Points
 
-          {/* Bouton aide (corrigé → span cliquable) */}
           <span
             onClick={(e) => {
               e.stopPropagation()
@@ -611,4 +610,5 @@ export default function ClassementCommunauteTab() {
 
     </div>
   );
+
 }
