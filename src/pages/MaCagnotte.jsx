@@ -921,17 +921,15 @@ export default function MaCagnotte() {
                 const da = new Date(a.created_at);
                 const db = new Date(b.created_at);
 
-                // Nouveau tri basé sur "recent" / "ancien"
-                if (sortMode === "ancien") {
-                  return da - db; // plus ancien en premier
-                } else {
-                  return db - da; // plus récent en premier
-                }
+                return sortMode === "ancien" ? da - db : db - da;
               })
               .filter(t => {
                 if (!teamFilter) return true;
-                const match = t.bets?.matches;
+
+                // 👉 API v2 : matches est directement dans t
+                const match = t.matches;
                 if (!match) return false;
+
                 return (
                   normalizeTeam(match.home_team) === teamFilter ||
                   normalizeTeam(match.away_team) === teamFilter
@@ -947,6 +945,7 @@ export default function MaCagnotte() {
                 />
               ))
           )}
+
 
 
         </div>
