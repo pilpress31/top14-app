@@ -319,8 +319,20 @@ export default function MaCagnotte() {
       );
 
       const wonBets = wonTxs.length;
-      const lostBets = allBets.filter((b) => b.status === "lost").length;
-      const pendingBets = allBets.filter((b) => b.status === "placed").length;
+      const lostBets = allBets.filter((b) => {
+        // Un pari est perdu si le match est terminé et qu'il n'y a pas de transaction bet_won
+        const matchFinished = b.matches?.status === 'finished' || 
+                             b.matches?.score_home !== null;
+        const hasWonTransaction = wonTxs.some(tx => tx.bet_id === b.id);
+        return matchFinished && !hasWonTransaction;
+      }).length;
+      
+      const pendingBets = allBets.filter((b) => {
+        // Un pari est en cours si le match n'est pas terminé
+        const matchFinished = b.matches?.status === 'finished' || 
+                             b.matches?.score_home !== null;
+        return !matchFinished;
+      }).length;
 
       setStats({
         totalBets: wonBets + lostBets,
@@ -407,7 +419,10 @@ export default function MaCagnotte() {
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h1 className="text-xl font-bold text-white">Ma Cagnotte</h1>
+          <div className="flex items-center gap-2">
+            <Coins className="w-6 h-6 text-white" />
+            <h1 className="text-xl font-bold text-white">Ma Cagnotte</h1>
+          </div>
           <div className="w-10" />
         </div>
 
