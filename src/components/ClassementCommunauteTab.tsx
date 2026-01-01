@@ -329,100 +329,60 @@ export default function ClassementCommunauteTab() {
         />
       </div>
 
-      {/* Podium Top 3 — VERSION STABLE */}
-      {/* ================= PODIUM TOP 3 ================= */}
+      {/* Podium Top 3 - CORRIGÉ */}
       {top3.length >= 3 && (
         <div className="bg-gradient-to-b from-rugby-gold/10 to-transparent rounded-xl p-6 mb-6">
-          <div className="flex justify-center items-end gap-3 max-w-md mx-auto">
-
-            {/* ================= 2ᵉ PLACE ================= */}
+          <div className="flex gap-3 justify-center items-end max-w-md mx-auto">
+            {/* 2ème place - LARGEUR FIXE */}
             {top3[1] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(2)}</div>
-
-                <div
-                  className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center"
-                  style={{ height: "110px" }}
-                >
-                  <p className="font-bold text-white text-sm truncate">
-                    {truncatePseudo(top3[1].pseudo)}
+                <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-3 text-center" style={{ height: '110px' }}>
+                  <p className="font-bold text-white text-sm">{truncatePseudo(top3[1].pseudo)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">
+                    {classementType === 'jetons' ? formatNumber(top3[1].jetons || 0) : (top3[1].points || 0)}
                   </p>
-
-                  <p className="text-2xl font-bold text-white mt-1 tabular-nums">
-                    {new Intl.NumberFormat("fr-FR").format(
-                      classementType === "jetons"
-                        ? top3[1].jetons || 0
-                        : top3[1].points || 0
-                    )}
-                  </p>
-
                   <p className="text-xs text-white/90">
-                    {classementType === "jetons" ? "jetons" : "pts"}
+                    {classementType === 'jetons' ? 'jetons' : 'pts'}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* ================= 1ʳᵉ PLACE ================= */}
+            {/* 1ère place - LARGEUR FIXE */}
             {top3[0] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(1)}</div>
-
-                <div
-                  className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center"
-                  style={{ height: "130px" }}
-                >
-                  <p className="font-bold text-white text-sm truncate">
-                    {truncatePseudo(top3[0].pseudo)}
+                <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-3 text-center" style={{ height: '130px' }}>
+                  <p className="font-bold text-white text-sm">{truncatePseudo(top3[0].pseudo)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">
+                    {classementType === 'jetons' ? formatNumber(top3[0].jetons || 0) : (top3[0].points || 0)}
                   </p>
-
-                  <p className="text-2xl font-bold text-white mt-1 tabular-nums">
-                    {new Intl.NumberFormat("fr-FR").format(
-                      classementType === "jetons"
-                        ? top3[0].jetons || 0
-                        : top3[0].points || 0
-                    )}
-                  </p>
-
                   <p className="text-xs text-white/90">
-                    {classementType === "jetons" ? "jetons" : "pts"}
+                    {classementType === 'jetons' ? 'jetons' : 'pts'}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* ================= 3ᵉ PLACE ================= */}
+            {/* 3ème place - LARGEUR FIXE */}
             {top3[2] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
-
-                <div
-                  className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-3 text-center"
-                  style={{ height: "95px" }}
-                >
-                  <p className="font-bold text-white text-sm truncate">
-                    {truncatePseudo(top3[2].pseudo)}
+                <div className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-3 text-center" style={{ height: '95px' }}>
+                  <p className="font-bold text-white text-sm">{truncatePseudo(top3[2].pseudo)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">
+                    {classementType === 'jetons' ? formatNumber(top3[2].jetons || 0) : (top3[2].points || 0)}
                   </p>
-
-                  <p className="text-2xl font-bold text-white mt-1 tabular-nums">
-                    {new Intl.NumberFormat("fr-FR").format(
-                      classementType === "jetons"
-                        ? top3[2].jetons || 0
-                        : top3[2].points || 0
-                    )}
-                  </p>
-
                   <p className="text-xs text-white/90">
-                    {classementType === "jetons" ? "jetons" : "pts"}
+                    {classementType === 'jetons' ? 'jetons' : 'pts'}
                   </p>
                 </div>
               </div>
             )}
-
           </div>
         </div>
       )}
-
 
       {/* Liste classement */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
