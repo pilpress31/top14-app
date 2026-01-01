@@ -30,6 +30,8 @@ export default function useUserBets() {
         }
 
         const json = await res.json();
+        console.log("API JSON =", json);
+
 
         setTransactions(json.transactions || []);
         setBets(json.bets || []);
