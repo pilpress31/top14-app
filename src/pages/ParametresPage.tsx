@@ -13,10 +13,15 @@ export default function ParametresPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Scroll en haut à l'ouverture
+  /// Forcer le scroll immédiatement ET au changement de location
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location]);
+
+  // AUSSI ajouter un scroll direct dans le render
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
 
   // ✅ Push notifications
   const { permission, isSupported } = usePushNotifications();
