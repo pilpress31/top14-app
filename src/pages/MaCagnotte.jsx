@@ -82,7 +82,7 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 // ---------------------------------------------------------
 // Transaction Item Component  
 // ---------------------------------------------------------
-function TransactionItem({ trans, navigateToBet, getTeamData }) {
+function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   const isPositive = trans.amount > 0;
   const isPending = trans.type === 'bet_pending';
   const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
@@ -94,6 +94,11 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
+
+  // Calculer le solde pour les paris en cours
+  const calculatedBalance = isPending && trans.balance_after === null 
+    ? (userCredits || 0) - stake 
+    : trans.balance_after;
 
   // Pour les paris en cours, le montant à afficher est la mise (négatif)
   const displayAmount = isPending ? -stake : trans.amount;
@@ -232,12 +237,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
         <span>{timeStr}</span>
       </p>
 
-      {/* Solde après - uniquement si disponible */}
-      {trans.balance_after !== null && trans.balance_after !== undefined && (
-        <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
-          Solde: {trans.balance_after}
-        </div>
-      )}
+      {/* Solde après */}
+      <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
+        Solde: {calculatedBalance}
+      </div>
     </div>
   );
 }
@@ -692,6 +695,7 @@ export default function MaCagnotte() {
                   trans={trans} 
                   navigateToBet={navigateToBet}
                   getTeamData={getTeamData}
+                  userCredits={userCredits}
                 />
               ))}
             </div>
