@@ -335,12 +335,20 @@ export default function MaCagnotte() {
         placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
       );
 
-      // ✅ CORRECTION: Compter UNIQUEMENT les vrais paris gagnés (avec bet_id)
-      const wonBets = wonTxs.filter(tx => tx.bet_id).length;
+      // ✅ CORRECTION 1: Compter les paris avec status='won' au lieu des transactions
+      const wonBets = allBets.filter(b => b.status === 'won').length;
 
+      // ✅ CORRECTION 2: Gérer les IDs avec suffixe _FT/_MT pour les perdus
       const lostBets = allBets.filter((b) => {
         const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
-        const hasWonTransaction = wonTxs.some(tx => tx.bet_id === b.id);
+        
+        // Enlever le suffixe _FT ou _MT pour matcher avec les transactions
+        const betIdWithoutSuffix = b.id.replace(/_FT$|_MT$/g, '');
+        
+        const hasWonTransaction = wonTxs.some(tx => 
+          tx.bet_id === b.id || tx.bet_id === betIdWithoutSuffix
+        );
+        
         return matchFinished && !hasWonTransaction;
       }).length;
 
