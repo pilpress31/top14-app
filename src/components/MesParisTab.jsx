@@ -143,28 +143,12 @@ export default function MesParisTab() {
           headers: { 'x-user-id': user.id }
         });
         console.log('✅ Réponse brute API:', parisResponse.data);
-        
+
         const parisList = parisResponse.data.bets || [];
-        const wonTransactions = (parisResponse.data.transactions || []).filter(t => t.type === 'bet_won');
-        
-        // ✅ Enrichir les paris avec le VRAI status
-        const enrichedParis = parisList.map(bet => {
-          const matchFinished = bet.matches?.status === 'finished' || bet.matches?.score_home !== null;
-          const hasWonTransaction = wonTransactions.some(tx => tx.bet_id === bet.id);
-          
-          let realStatus;
-          if (matchFinished) {
-            realStatus = hasWonTransaction ? 'won' : 'lost';
-          } else {
-            realStatus = 'pending';  // ← Si match pas fini = TOUJOURS pending
-          }
-          
-          return { ...bet, status: realStatus };
-        });
-        
-        console.log(`📊 Nombre de paris trouvés: ${enrichedParis.length}`);
-        console.log('📊 Paris enrichis:', enrichedParis);
-        setParis(enrichedParis);
+
+        console.log(`📊 Nombre de paris trouvés: ${parisList.length}`);
+        console.log('📊 Paris:', parisList);
+        setParis(parisList);  // ✅ Pas d'enrichissement, utiliser directement
       } catch (error) {
         console.error('❌ Erreur chargement paris:', error);
         console.log('❌ Détails:', error.response?.data || error.message);
