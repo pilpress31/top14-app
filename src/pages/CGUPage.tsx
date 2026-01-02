@@ -39,7 +39,7 @@ export default function CGUPage() {
       </div>
 
       {/* CONTENU avec padding-top plus grand pour compenser le bandeau fixe */}
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 pt-40">
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 pt-48">
         {/* Préambule */}
         <section className="bg-blue-50 rounded-xl p-6 border-2 border-blue-300">
           <h2 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
