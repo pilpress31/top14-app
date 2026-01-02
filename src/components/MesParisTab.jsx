@@ -139,7 +139,7 @@ export default function MesParisTab() {
 
       // Charger les paris
       try {
-        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets/v2', {
+        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets/detailed', {
           headers: { 'x-user-id': user.id }
         });
         console.log('✅ Réponse brute API:', parisResponse.data);
@@ -171,6 +171,8 @@ export default function MesParisTab() {
         setParis([]);
       }
 
+
+      
       // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
         .from('user_pronos')
