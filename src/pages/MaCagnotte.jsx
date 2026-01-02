@@ -349,6 +349,7 @@ export default function MaCagnotte() {
         return !matchFinished;
       }).length;
 
+      console.log('Transactions avec bet_id:', wonTxs.filter(tx => tx.bet_id).map(tx => ({ type: tx.type, bet_id: tx.bet_id })));
       console.log('🔍 DEBUG pendingBets:');
       console.log('Total bets:', allBets.length);
       console.log('Pending bets:', pendingBets);
