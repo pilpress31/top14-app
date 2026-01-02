@@ -152,11 +152,11 @@ export default function MesParisTab() {
           const matchFinished = bet.matches?.status === 'finished' || bet.matches?.score_home !== null;
           const hasWonTransaction = wonTransactions.some(tx => tx.bet_id === bet.id);
           
-          let realStatus = bet.status;
+          let realStatus;
           if (matchFinished) {
             realStatus = hasWonTransaction ? 'won' : 'lost';
           } else {
-            realStatus = 'pending';
+            realStatus = 'pending';  // ← Si match pas fini = TOUJOURS pending
           }
           
           return { ...bet, status: realStatus };
@@ -172,7 +172,7 @@ export default function MesParisTab() {
       }
 
 
-      
+
       // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
         .from('user_pronos')
