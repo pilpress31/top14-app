@@ -84,8 +84,9 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 // ---------------------------------------------------------
 function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const isPositive = trans.amount > 0;
-  const isFT = trans.description?.includes('FT');
-  const isMT = trans.description?.includes('MT');
+  const isPending = trans.type === 'bet_pending';
+  const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
+  const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
   const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
 
   // Extraire les détails du match depuis bets.matches si disponible
@@ -93,6 +94,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
+
+  // Pour les paris en cours, le montant à afficher est la mise (négatif)
+  const displayAmount = isPending ? -stake : trans.amount;
+  const displayIsPositive = isPending ? false : isPositive;
 
   // ✅ Extraire les vrais noms depuis external_id
   let homeTeam = match?.home_team;
@@ -189,19 +194,13 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
                   {periodLabel}
                 </span>
               )}
-            
             </div>
-            <span className={`font-bold text-lg flex-shrink-0 ml-2 ${
-              isPositive ? "text-green-600" : "text-red-600"
-            }`}>
-              {isPositive && '+'}{trans.amount}
-            </span>
           </div>
         </div>
         <span className={`font-bold text-lg flex-shrink-0 ml-2 ${
-          isPositive ? "text-green-600" : "text-red-600"
+          displayIsPositive ? "text-green-600" : "text-red-600"
         }`}>
-          {isPositive && '+'}{trans.amount}
+          {displayIsPositive && '+'}{displayAmount}
         </span>
       </div>
 
@@ -224,9 +223,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
         </div>
       )}
 
-
       {/* Date EN BAS */}
-      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1 pl-7">
         {match?.round && <span className="font-medium">J{match.round}</span>}
         {match?.round && <span>•</span>}
         <span>{dateStr}</span>
@@ -234,10 +232,12 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
         <span>{timeStr}</span>
       </p>
 
-      {/* Solde après */}
-      <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
-        Solde: {trans.balance_after}
-      </div>
+      {/* Solde après - uniquement si disponible */}
+      {trans.balance_after && (
+        <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
+          Solde: {trans.balance_after}
+        </div>
+      )}
     </div>
   );
 }
@@ -335,37 +335,10 @@ export default function MaCagnotte() {
         placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
       );
 
-      // ✅ CORRECTION 1: Compter les paris avec status='won' au lieu des transactions
+      // ✅ Calcul identique à MesParisTab
       const wonBets = allBets.filter(b => b.status === 'won').length;
-
-      // ✅ CORRECTION 2: Gérer les IDs avec suffixe _FT/_MT pour les perdus
-      const lostBets = allBets.filter((b) => {
-        const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
-        
-        // Enlever le suffixe _FT ou _MT pour matcher avec les transactions
-        const betIdWithoutSuffix = b.id.replace(/_FT$|_MT$/g, '');
-        
-        const hasWonTransaction = wonTxs.some(tx => 
-          tx.bet_id === b.id || tx.bet_id === betIdWithoutSuffix
-        );
-        
-        return matchFinished && !hasWonTransaction;
-      }).length;
-
-      const pendingBets = allBets.filter((b) => {
-        const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
-        return !matchFinished;
-      }).length;
-
-      console.log('Transactions avec bet_id:', wonTxs.filter(tx => tx.bet_id).map(tx => ({ type: tx.type, bet_id: tx.bet_id })));
-      console.log('🔍 DEBUG pendingBets:');
-      console.log('Total bets:', allBets.length);
-      console.log('Pending bets:', pendingBets);
-      console.log('Sample bet:', allBets[0]);
-      console.log('🔍 allBets:', allBets.length);
-      console.log('🔍 Premier pari:', allBets[0]);
-      console.log('🔍 wonTxs:', wonTxs.length);
-      console.log('🔍 Won with bet_id:', wonTxs.filter(tx => tx.bet_id).length);
+      const lostBets = allBets.filter(b => b.status === 'lost').length;
+      const pendingBets = allBets.filter(b => b.status === 'pending').length;
 
       setStats({
         totalBets: wonBets + lostBets,
@@ -451,11 +424,11 @@ export default function MaCagnotte() {
     return filtered;
   }, [transactions, bets, teamFilter, sortMode]);
 
-  // Liste équipes
+  // Liste équipes depuis les paris (pas les transactions)
   const teams = [...new Set(
-    transactions
-      .map((t) => t.bets?.matches?.home_team)
-      .concat(transactions.map((t) => t.bets?.matches?.away_team))
+    bets
+      .map((b) => b.matches?.home_team)
+      .concat(bets.map((b) => b.matches?.away_team))
       .filter(Boolean)
   )].sort();
 
