@@ -21,8 +21,8 @@ export default function CGUPage() {
             onClick={() => navigate(-1)} 
             className="flex items-center gap-2 text-white hover:text-gray-100 transition mb-3"
           >
-            <ArrowLeft className="w-8 h-8" />
-            <span className="text-base font-semibold">Retour</span>
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-semibold">Retour</span>
           </button>
           
           {/* Ligne 2 : Titre centré plus grand */}
