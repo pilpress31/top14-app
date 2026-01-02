@@ -353,6 +353,10 @@ export default function MaCagnotte() {
       console.log('Total bets:', allBets.length);
       console.log('Pending bets:', pendingBets);
       console.log('Sample bet:', allBets[0]);
+      console.log('🔍 allBets:', allBets.length);
+      console.log('🔍 Premier pari:', allBets[0]);
+      console.log('🔍 wonTxs:', wonTxs.length);
+      console.log('🔍 Won with bet_id:', wonTxs.filter(tx => tx.bet_id).length);
 
       setStats({
         totalBets: wonBets + lostBets,
