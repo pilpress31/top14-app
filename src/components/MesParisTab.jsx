@@ -378,7 +378,7 @@ export default function MesParisTab() {
                   )}
                   {bet.status === 'won' && (
                     <div className="flex items-center justify-between bg-green-50 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-green-700">? Gagné:</span>
+                      <span className="text-xs font-semibold text-green-700">Gagné:</span>
                       <span className="text-sm font-bold text-green-700">
                         +{bet.payout} jetons
                       </span>
@@ -386,7 +386,7 @@ export default function MesParisTab() {
                   )}
                   {bet.status === 'lost' && (
                     <div className="flex items-center justify-between bg-red-50 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-red-700">? Perdu:</span>
+                      <span className="text-xs font-semibold text-red-700">Perdu:</span>
                       <span className="text-sm font-bold text-red-700">
                         -{bet.stake} jetons
                       </span>
