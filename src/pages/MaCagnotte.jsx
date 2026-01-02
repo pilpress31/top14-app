@@ -95,12 +95,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
-  console.log('DEBUG:', { isPending, userCredits, stake, balance_after: trans.balance_after, calculatedBalance });
+  
 
   // Calculer le solde pour les paris en cours
   const calculatedBalance = isPending && trans.balance_after === null 
     ? (userCredits || 0) - stake 
     : trans.balance_after;
+
+  console.log('DEBUG:', { isPending, userCredits, stake, balance_after: trans.balance_after, calculatedBalance });
 
   // Pour les paris en cours, le montant à afficher est la mise (négatif)
   const displayAmount = isPending ? -stake : trans.amount;
