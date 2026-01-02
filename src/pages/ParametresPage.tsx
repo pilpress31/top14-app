@@ -16,7 +16,7 @@ export default function ParametresPage() {
   // ✅ Scroll en haut à l'ouverture
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+  }, [location.pathname]);
 
   // ✅ Push notifications
   const { permission, isSupported } = usePushNotifications();
