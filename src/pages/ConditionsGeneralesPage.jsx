@@ -21,20 +21,26 @@ function ConditionsGeneralesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="max-w-4xl mx-auto p-6">
-        {/* Bouton retour */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-rugby-gold hover:text-rugby-orange mb-6 transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          <span className="text-sm font-semibold">Retour</span>
-        </button>
+    <div className="relative min-h-screen bg-gray-50 pb-24">
 
+      {/* Bouton retour FIXÉ en haut à gauche */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-4 left-4 flex items-center gap-2 text-rugby-gold hover:text-rugby-orange transition-colors"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="text-sm font-semibold">Retour</span>
+      </button>
+
+      <div className="max-w-4xl mx-auto p-6 pt-16">
         {/* Titre */}
-        <h1 className="text-3xl font-bold text-rugby-gold mb-2">Conditions Générales d'Utilisation</h1>
-        <p className="text-sm text-gray-500 mb-8">Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}</p>
+        <h1 className="text-3xl font-bold text-rugby-gold mb-2">
+          Conditions Générales d'Utilisation
+        </h1>
+
+        <p className="text-sm text-gray-500 mb-8">
+          Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
+        </p>
 
         {/* Contenu */}
         <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
