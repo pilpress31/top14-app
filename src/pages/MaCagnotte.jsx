@@ -315,7 +315,7 @@ export default function MaCagnotte() {
 
       // Historique + Paris (endpoint V2)
       const historyResponse = await axios.get(
-        `${import.meta.env.VITE_API_URL}/user/bets/v2`,
+        `${import.meta.env.VITE_API_URL}/user/bets/detailed`,
         { headers: { "x-user-id": userId } }
       );
 
