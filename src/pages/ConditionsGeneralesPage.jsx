@@ -21,20 +21,20 @@ function ConditionsGeneralesPage() {
   }
 
   return (
-    
-
     <div className="relative min-h-screen bg-gray-50 pb-24">
+      {/* Bandeau supérieur rugby-gold */}
+      <div className="fixed top-0 left-0 right-0 bg-rugby-gold shadow-md z-40 h-16"></div>
 
-      {/* Bouton retour FIXÉ en haut à gauche, toujours visible */}
+      {/* Bouton retour FIXÉ dans le bandeau */}
       <button
         onClick={() => navigate(-1)}
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 text-rugby-gold hover:text-rugby-orange transition-colors"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-100 transition-colors"
       >
-        <ArrowLeft className="h-5 w-5" />
+        <ArrowLeft className="h-6 w-6" />
         <span className="text-sm font-semibold">Retour</span>
       </button>
 
-      <div className="max-w-4xl mx-auto p-6 pt-16">
+      <div className="max-w-4xl mx-auto p-6 pt-24">
         <h1 className="text-3xl font-bold text-rugby-gold mb-2">
           Conditions Générales d'Utilisation
         </h1>
@@ -217,7 +217,7 @@ function ConditionsGeneralesPage() {
 
       {/* Cookie Banner */}
       {showCookieBanner && (
-        <div className="fixed bottom-16 left-0 right-0 bg-gray-900 text-white p-4 shadow-2xl animate-slide-up">
+        <div className="fixed bottom-16 left-0 right-0 bg-gray-900 text-white p-4 shadow-2xl animate-slide-up z-50">
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
               <Cookie className="h-6 w-6 text-yellow-400 flex-shrink-0 mt-1" />
