@@ -3,44 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Scale, ArrowRight, FileText, Shield } from 'lucide-react';
 
 export default function CGUPage() {
-  const navigate = useNavigate();
-
-  // 1️⃣ Scroll auto en haut quand on arrive sur la page
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-rugby-white pb-24">
-
-      {/* 2️⃣ Bandeau rugby-gold + 3️⃣ Flèche retour */}
-      <div className="relative bg-rugby-gold text-white p-6 shadow-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-
-          {/* Titre + icône */}
-          <div className="flex items-center gap-3">
-            <Scale className="w-8 h-8 text-white" />
-            <h1 className="text-2xl font-bold">Conditions Générales d'Utilisation</h1>
-          </div>
-
-          {/* Flèche retour */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-white hover:text-gray-200 transition"
-          >
-            <span className="text-sm font-semibold">Retour</span>
-            <ArrowRight className="w-6 h-6" />
-          </button>
-        </div>
-
-        <p className="max-w-4xl mx-auto text-gray-100 text-sm mt-2">
-          Dernière mise à jour : Janvier 2026
-        </p>
-      </div>
-
-      {/* CONTENU */}
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-
+  return ( <div className="min-h-screen bg-rugby-white pb-24"> {/* 2️⃣ Bandeau rugby-gold + 3️⃣ Flèche retour */} <div className="relative bg-rugby-gold text-white p-6 shadow-md"> <div className="max-w-4xl mx-auto flex items-center justify-between"> {/* Titre + icône */} <div className="flex items-center gap-3"> <Scale className="w-8 h-8 text-white" /> <h1 className="text-2xl font-bold">Conditions Générales d'Utilisation</h1> </div> {/* Flèche retour */} <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white hover:text-gray-200 transition" > <span className="text-sm font-semibold">Retour</span> <ArrowRight className="w-6 h-6" /> </button> </div> <p className="max-w-4xl mx-auto text-gray-100 text-sm mt-2"> Dernière mise à jour : Janvier 2026 </p> </div> {/* CONTENU */} <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* Préambule */}
         <section className="bg-blue-50 rounded-xl p-6 border-2 border-blue-300">
           <h2 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
@@ -56,7 +19,6 @@ export default function CGUPage() {
 
         {/* Articles */}
         <div className="space-y-6">
-
           {/* Article 1 */}
           <article className="bg-white rounded-lg p-6 shadow-md border border-gray-200">
             <h2 className="text-lg font-bold text-rugby-gold mb-3">
@@ -65,10 +27,19 @@ export default function CGUPage() {
             <div className="text-gray-700 space-y-2">
               <p>L'Application <strong>TOP 14 PRONOS</strong> propose les services suivants :</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li><strong>Prédictions statistiques</strong> basées sur des données historiques</li>
-                <li><strong>Jeu de pronostics gratuit</strong> entre utilisateurs</li>
-                <li><strong>Simulation de paris</strong> en monnaie virtuelle</li>
-                <li><strong>Consultation de l'historique</strong> des matchs</li>
+                <li>
+                  <strong>Prédictions statistiques</strong> de scores de matchs de Top 14, 
+                  générées par un algorithme propriétaire basé sur des données historiques
+                </li>
+                <li>
+                  <strong>Jeu de pronostics gratuit</strong> entre utilisateurs avec système de classement par points
+                </li>
+                <li>
+                  <strong>Simulation de paris</strong> en monnaie virtuelle sans valeur monétaire réelle
+                </li>
+                <li>
+                  <strong>Consultation de l'historique</strong> des matchs et des prédictions passées
+                </li>
               </ul>
             </div>
           </article>
@@ -81,22 +52,30 @@ export default function CGUPage() {
             <div className="text-gray-700 space-y-3">
               <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
                 <p className="font-semibold text-yellow-900 mb-2">⚠️ Important :</p>
-                <p>L'Application ne propose <strong>PAS</strong> :</p>
+                <p>
+                  L'Application ne propose <strong>PAS</strong> :
+                </p>
                 <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
                   <li>De paris en argent réel</li>
-                  <li>De liens d'affiliation vers des bookmakers</li>
-                  <li>De garantie de gains</li>
-                  <li>De conseils d'investissement</li>
+                  <li>De liens d'affiliation vers des sites de paris sportifs</li>
+                  <li>De garantie de gains sur des paris réels</li>
+                  <li>De conseils en investissement</li>
                 </ul>
               </div>
 
-              <p>Les prédictions sont fournies <strong>à titre informatif et éducatif</strong>.</p>
+              <p>
+                Les prédictions fournies sont le résultat d'un <strong>traitement statistique automatisé</strong> 
+                et sont fournies <strong>à titre purement informatif et éducatif</strong>.
+              </p>
 
-              <p>Elles ne constituent en aucun cas :</p>
+              <p>
+                Ces prédictions ne constituent <strong>en aucun cas</strong> :
+              </p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Une incitation au jeu</li>
-                <li>Une garantie de résultat</li>
-                <li>Un conseil financier</li>
+                <li>Une incitation au jeu d'argent</li>
+                <li>Une garantie de résultat sportif</li>
+                <li>Un conseil d'investissement ou de paris</li>
+                <li>Une analyse financière</li>
               </ul>
             </div>
           </article>
@@ -108,19 +87,29 @@ export default function CGUPage() {
             </h2>
             <div className="text-gray-700 space-y-3">
               <p>
-                Les modèles statistiques utilisés <strong>ne garantissent pas</strong> l'exactitude des résultats futurs.
+                L'Utilisateur reconnaît que les prédictions sont basées sur des modèles statistiques 
+                qui, bien que rigoureux, <strong>ne peuvent garantir l'exactitude des résultats futurs</strong>.
               </p>
 
-              <p>L'Utilisateur est seul responsable de l'usage qu'il fait des informations fournies.</p>
+              <p>
+                L'Utilisateur est <strong>seul responsable</strong> de l'usage qu'il fait des informations 
+                fournies par l'Application, notamment s'il décide :
+              </p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li>D'utiliser ces informations pour formuler ses propres pronostics</li>
+                <li>De placer des paris sur des plateformes légales et agréées</li>
+                <li>De partager ces informations avec des tiers</li>
+              </ul>
 
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mt-4">
                 <p className="font-semibold text-red-900">
-                  Si l'Utilisateur décide de parier en argent réel :
+                  Si l'Utilisateur décide de parier en argent réel sur des sites de paris sportifs :
                 </p>
                 <ul className="list-disc list-inside ml-4 mt-2 space-y-1 text-red-800">
-                  <li>Utiliser uniquement des sites agréés par l’ANJ</li>
-                  <li>Assumer les risques associés</li>
-                  <li>Être conscient du risque d’addiction</li>
+                  <li>Il doit utiliser exclusivement des sites agréés par l'ANJ (Autorité Nationale des Jeux)</li>
+                  <li>Il le fait sous sa propre responsabilité et à ses propres risques</li>
+                  <li>L'éditeur de l'Application ne saurait être tenu responsable des pertes financières</li>
+                  <li>Les paris comportent un risque de dépendance - Aide : <a href="tel:09-74-75-13-13" className="underline">09 74 75 13 13</a></li>
                 </ul>
               </div>
             </div>
@@ -132,9 +121,18 @@ export default function CGUPage() {
               ARTICLE 4 - Jeu communautaire et classement
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>Le jeu est <strong>entièrement gratuit</strong>.</p>
-              <p>Les points n'ont <strong>aucune valeur monétaire</strong>.</p>
-              <p>L’éditeur peut modifier le système de points.</p>
+              <p>
+                Le jeu de pronostics entre utilisateurs est <strong>entièrement gratuit</strong>. 
+                Aucun enjeu financier n'est associé au classement.
+              </p>
+              <p>
+                Les points attribués selon le barème (voir Règlement) n'ont <strong>aucune valeur monétaire </strong> 
+                et ne peuvent être convertis, échangés ou vendus.
+              </p>
+              <p>
+                L'éditeur se réserve le droit de modifier le système de points en cours de saison, 
+                en informant préalablement les utilisateurs.
+              </p>
             </div>
           </article>
 
@@ -144,15 +142,18 @@ export default function CGUPage() {
               ARTICLE 5 - Simulation de paris (Portefeuille virtuel)
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>Le mode Simulation utilise une <strong>monnaie virtuelle fictive</strong>.</p>
-
+              <p>
+                Le mode "Simulation de paris" permet aux utilisateurs de tester des stratégies 
+                avec une <strong>monnaie virtuelle fictive</strong>.
+              </p>
+              
               <div className="bg-blue-50 border border-blue-300 p-4 rounded">
                 <p className="font-semibold text-blue-900 mb-2">Caractéristiques :</p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
-                  <li>Monnaie sans valeur réelle</li>
-                  <li>Non convertible</li>
-                  <li>Cotes basées sur nos statistiques internes</li>
-                  <li>Mode éducatif et ludique</li>
+                  <li>La monnaie virtuelle n'a <strong>aucune valeur réelle</strong></li>
+                  <li>Elle ne peut être <strong>ni achetée, ni vendue, ni convertie</strong> en argent réel</li>
+                  <li>Les cotes affichées sont calculées sur nos statistiques historiques et <strong>n'ont aucun lien avec des bookmakers réels</strong></li>
+                  <li>Ce mode est purement <strong>éducatif et ludique</strong></li>
                 </ul>
               </div>
             </div>
@@ -164,13 +165,22 @@ export default function CGUPage() {
               ARTICLE 6 - Propriété intellectuelle
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>L’ensemble des éléments de l’Application est protégé.</p>
-              <p>Toute reproduction non autorisée est interdite.</p>
-              <p>Les prédictions ne peuvent être :</p>
+              <p>
+                L'ensemble des éléments de l'Application (algorithme, base de données, design, textes, logos) 
+                sont la <strong>propriété exclusive</strong> de l'éditeur et sont protégés par les lois 
+                relatives à la propriété intellectuelle.
+              </p>
+              <p>
+                Toute reproduction, représentation, modification, ou exploitation non autorisée 
+                est strictement interdite et constitue une contrefaçon sanctionnée par le Code de la propriété intellectuelle.
+              </p>
+              <p>
+                Les prédictions générées par l'algorithme ne peuvent être :
+              </p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Revendues</li>
-                <li>Redistribuées massivement</li>
-                <li>Utilisées commercialement sans autorisation</li>
+                <li>Revendues ou commercialisées</li>
+                <li>Redistribuées à grande échelle</li>
+                <li>Utilisées à des fins commerciales sans autorisation écrite préalable</li>
               </ul>
             </div>
           </article>
@@ -181,10 +191,17 @@ export default function CGUPage() {
               ARTICLE 7 - Données personnelles
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>Données traitées selon le RGPD.</p>
-              <p>Droits : accès, rectification, suppression.</p>
-              <p>Contact : <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">contact@top14pronos.fr</a></p>
-              <p>Données jamais vendues.</p>
+              <p>
+                Les données personnelles collectées (pseudo, email, historique de pronos) 
+                sont traitées conformément au <strong>Règlement Général sur la Protection des Données (RGPD)</strong>.
+              </p>
+              <p>
+                L'Utilisateur dispose d'un droit d'accès, de rectification et de suppression de ses données. 
+                Pour exercer ces droits, contactez : <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">contact@top14pronos.fr</a>
+              </p>
+              <p>
+                Les données ne sont <strong>jamais vendues</strong> à des tiers.
+              </p>
             </div>
           </article>
 
@@ -194,18 +211,20 @@ export default function CGUPage() {
               ARTICLE 8 - Limitation de responsabilité
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>L’éditeur n’est pas responsable :</p>
+              <p>
+                L'éditeur ne saurait être tenu responsable :
+              </p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Des pertes financières</li>
-                <li>Des erreurs de prédiction</li>
-                <li>Des interruptions</li>
-                <li>Des bugs</li>
-                <li>Des usages frauduleux</li>
+                <li>Des pertes financières résultant de paris placés par l'Utilisateur</li>
+                <li>De l'inexactitude des prédictions fournies</li>
+                <li>Des interruptions temporaires du service</li>
+                <li>Des bugs ou dysfonctionnements techniques</li>
+                <li>De l'usage abusif ou frauduleux de l'Application par des tiers</li>
               </ul>
 
               <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded mt-3">
                 <p className="font-semibold text-orange-900">
-                  🔒 Utilisation responsable exigée.
+                  🔒 L'Utilisateur s'engage à utiliser l'Application de manière responsable et légale.
                 </p>
               </div>
             </div>
@@ -217,8 +236,13 @@ export default function CGUPage() {
               ARTICLE 9 - Modification des CGU
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>Les CGU peuvent être modifiées.</p>
-              <p>L’utilisation continue vaut acceptation.</p>
+              <p>
+                L'éditeur se réserve le droit de modifier les présentes CGU à tout moment. 
+                Les utilisateurs seront informés de toute modification substantielle.
+              </p>
+              <p>
+                L'utilisation continue de l'Application après modification vaut acceptation des nouvelles CGU.
+              </p>
             </div>
           </article>
 
@@ -228,8 +252,13 @@ export default function CGUPage() {
               ARTICLE 10 - Droit applicable et juridiction
             </h2>
             <div className="text-gray-700 space-y-2">
-              <p>CGU régies par le droit français.</p>
-              <p>Litiges → tribunaux français.</p>
+              <p>
+                Les présentes CGU sont régies par le <strong>droit français</strong>.
+              </p>
+              <p>
+                En cas de litige, les parties s'efforceront de trouver une solution amiable. 
+                À défaut, compétence exclusive est attribuée aux tribunaux français compétents.
+              </p>
             </div>
           </article>
         </div>
@@ -241,9 +270,15 @@ export default function CGUPage() {
             Contact
           </h2>
           <div className="text-gray-700 space-y-2">
-            <p><strong>Éditeur :</strong> [Votre Nom / Raison sociale]</p>
-            <p><strong>Email :</strong> <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">contact@top14pronos.fr</a></p>
-            <p><strong>Hébergement :</strong> [Nom hébergeur et coordonnées]</p>
+            <p>
+              <strong>Éditeur :</strong> [Votre Nom / Raison sociale]
+            </p>
+            <p>
+              <strong>Email :</strong> <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">contact@top14pronos.fr</a>
+            </p>
+            <p>
+              <strong>Hébergement :</strong> [Nom hébergeur et coordonnées]
+            </p>
           </div>
         </section>
 
