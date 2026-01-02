@@ -351,6 +351,11 @@ export default function MaCagnotte() {
         return !matchFinished;
       }).length;
 
+      console.log('🔍 DEBUG pendingBets:');
+      console.log('Total bets:', allBets.length);
+      console.log('Pending bets:', pendingBets);
+      console.log('Sample bet:', allBets[0]);
+
       setStats({
         totalBets: wonBets + lostBets,
         pendingBets,
