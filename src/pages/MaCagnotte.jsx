@@ -94,37 +94,38 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
-  // ✅ Extraire les vrais noms depuis external_id
-  let homeTeam = match?.home_team;
-  let awayTeam = match?.away_team;
+  
+  
 
-  if (match?.external_id) {
-    const parts = match.external_id.split('_');
-    if (parts.length >= 4) {
-      const teams = parts.slice(2).join('_');
-      const possibleTeams = teams.split('_');
-      
-      // Essayer toutes les combinaisons
-      for (let i = 1; i < possibleTeams.length; i++) {
-        const testHome = possibleTeams.slice(0, i).join(' ');
-        const testAway = possibleTeams.slice(i).join(' ');
+  // ✅ CORRECTION: Utiliser external_id pour récupérer les vrais noms depuis matchs_results
+    if (match?.external_id) {
+      const parts = match.external_id.split('_');
+      if (parts.length >= 4) {
+        // Format: 2025-2026_13_EQUIPE1_EQUIPE2 ou EQUIPE1_AVEC_ESPACES_EQUIPE2
+        const teams = parts.slice(2).join('_');
+        const possibleTeams = teams.split('_');
         
-        const homeData = getTeamData(testHome);
-        const awayData = getTeamData(testAway);
-        
-        if (homeData?.logo !== '/logos/default.svg' && 
-            awayData?.logo !== '/logos/default.svg') {
-          homeTeam = homeData.name;
-          awayTeam = awayData.name;
-          break;
+        // Essayer toutes les combinaisons pour trouver les 2 équipes
+        for (let i = 1; i < possibleTeams.length; i++) {
+          const testHome = possibleTeams.slice(0, i).join(' ');
+          const testAway = possibleTeams.slice(i).join(' ');
+          
+          const homeData = getTeamData(testHome);
+          const awayData = getTeamData(testAway);
+          
+          if (homeData?.logo !== '/logos/default.svg' && 
+              awayData?.logo !== '/logos/default.svg') {
+            homeTeam = homeData.name;
+            awayTeam = awayData.name;
+            break;
+          }
         }
       }
     }
-  }
+
 
   const dateObj = new Date(trans.created_at);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
-    weekday: "short",
     day: "2-digit", 
     month: "short",
     year: "numeric"
@@ -162,7 +163,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
       case 'initial_capital':
         return 'Bonus de bienvenue';
       default:
-        return 'Transaction';
+        return 'Régularisation système';
     }
   };
 
@@ -183,12 +184,13 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
                   {periodLabel}
                 </span>
               )}
+            
             </div>
-            {/* Journée + Date/Heure */}
-            <p className="text-xs text-gray-500 mt-1">
-              {match?.round && <span className="font-medium">Journée {match.round} du </span>}
-              {dateStr} <span className="mx-1">•</span> {timeStr}
-            </p>
+            <span className={`font-bold text-lg flex-shrink-0 ml-2 ${
+              isPositive ? "text-green-600" : "text-red-600"
+            }`}>
+              {isPositive && '+'}{trans.amount}
+            </span>
           </div>
         </div>
         <span className={`font-bold text-lg flex-shrink-0 ml-2 ${
@@ -216,6 +218,16 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
           {payout && <span> • Gain {payout} jetons</span>}
         </div>
       )}
+
+
+      {/* Date EN BAS */}
+      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+        {match?.round && <span className="font-medium">J{match.round}</span>}
+        {match?.round && <span>•</span>}
+        <span>{dateStr}</span>
+        <span>•</span>
+        <span>{timeStr}</span>
+      </p>
 
       {/* Solde après */}
       <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
@@ -318,9 +330,11 @@ export default function MaCagnotte() {
         placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
       );
 
-      const wonBets = wonTxs.length;
+      const wonBets = wonTxs.filter(tx => 
+        tx.type === 'bet_won' && !['adjustment', 'initial_capital', 'monthly_distribution'].includes(tx.type)
+      ).length;
+      
       const lostBets = allBets.filter((b) => {
-        // Un pari est perdu si le match est terminé et qu'il n'y a pas de transaction bet_won
         const matchFinished = b.matches?.status === 'finished' || 
                              b.matches?.score_home !== null;
         const hasWonTransaction = wonTxs.some(tx => tx.bet_id === b.id);
@@ -360,27 +374,62 @@ export default function MaCagnotte() {
     });
   };
 
-  // Filtrer transactions
-  const filteredTransactions = transactions.filter((t) => {
-    if (!teamFilter) return true;
-    const match = t.bets?.matches;
-    if (!match) return false;
-    return (
-      match.home_team?.includes(teamFilter) ||
-      match.away_team?.includes(teamFilter)
-    );
-  });
+  // Filtrer et fusionner transactions + paris pending
+  const filteredTransactions = useMemo(() => {
+    // 1. Récupérer les transactions
+    const txList = transactions.filter((t) => {
+      if (!teamFilter) return true;
+      const match = t.bets?.matches;
+      if (!match) return false;
+      return (
+        match.home_team?.includes(teamFilter) ||
+        match.away_team?.includes(teamFilter)
+      );
+    });
 
-  // Trier
-  if (sortMode === "recent") {
-    filteredTransactions.sort(
-      (a, b) => new Date(b.created_at) - new Date(a.created_at)
-    );
-  } else {
-    filteredTransactions.sort(
-      (a, b) => new Date(a.created_at) - new Date(b.created_at)
-    );
-  }
+    // 2. Récupérer les paris pending (qui n'ont pas encore de transaction)
+    const pendingBetsList = bets
+      .filter(b => {
+        const matchFinished = b.matches?.status === 'finished' || b.matches?.score_home !== null;
+        return !matchFinished; // Seulement les paris en cours
+      })
+      .map(b => ({
+        id: b.id + '_pending',
+        type: 'bet_pending',
+        amount: 0,
+        created_at: b.created_at,
+        bet_id: b.id,
+        bets: {
+          id: b.id,
+          stake: b.stake,
+          odds: b.odds,
+          matches: b.matches
+        }
+      }));
+
+    // 3. Fusionner
+    const allItems = [...txList, ...pendingBetsList];
+
+    // 4. Filtrer par équipe si nécessaire
+    const filtered = allItems.filter((t) => {
+      if (!teamFilter) return true;
+      const match = t.bets?.matches;
+      if (!match) return false;
+      return (
+        match.home_team?.includes(teamFilter) ||
+        match.away_team?.includes(teamFilter)
+      );
+    });
+
+    // 5. Trier
+    if (sortMode === "recent") {
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else {
+      filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+
+    return filtered;
+  }, [transactions, bets, teamFilter, sortMode]);
 
   // Liste équipes
   const teams = [...new Set(
