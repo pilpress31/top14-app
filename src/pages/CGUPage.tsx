@@ -1,9 +1,50 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Scale, ArrowRight, FileText, Shield } from 'lucide-react';
+import { Scale, ArrowLeft, FileText, Shield } from 'lucide-react';
 
 export default function CGUPage() {
-  return ( <div className="min-h-screen bg-rugby-white pb-24"> {/* 2️⃣ Bandeau rugby-gold + 3️⃣ Flèche retour */} <div className="relative bg-rugby-gold text-white p-6 shadow-md"> <div className="max-w-4xl mx-auto flex items-center justify-between"> {/* Titre + icône */} <div className="flex items-center gap-3"> <Scale className="w-8 h-8 text-white" /> <h1 className="text-2xl font-bold">Conditions Générales d'Utilisation</h1> </div> {/* Flèche retour */} <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white hover:text-gray-200 transition" > <span className="text-sm font-semibold">Retour</span> <ArrowRight className="w-6 h-6" /> </button> </div> <p className="max-w-4xl mx-auto text-gray-100 text-sm mt-2"> Dernière mise à jour : Janvier 2026 </p> </div> {/* CONTENU */} <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+  
+  const navigate = useNavigate();
+
+  // Scroll automatique en haut de la page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  return (
+    <div className="min-h-screen bg-rugby-white pb-24">
+      {/* Bandeau rugby-gold fixe en haut */}
+      <div className="fixed top-0 left-0 right-0 bg-rugby-gold text-white shadow-md z-50">
+        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
+          {/* Flèche retour en haut à gauche */}
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center gap-2 text-white hover:text-gray-100 transition"
+          >
+            <ArrowLeft className="w-6 h-6" />
+            <span className="text-sm font-semibold">Retour</span>
+          </button>
+          
+          {/* Titre centré */}
+          <div className="flex items-center gap-3 flex-1 justify-center">
+            <Scale className="w-7 h-7 text-white" />
+            <h1 className="text-xl font-bold">Conditions Générales d'Utilisation</h1>
+          </div>
+          
+          {/* Espace vide pour équilibrer (même largeur que le bouton retour) */}
+          <div className="w-24"></div>
+        </div>
+        
+        {/* Date de mise à jour */}
+        <div className="max-w-4xl mx-auto px-4 pb-3">
+          <p className="text-gray-100 text-sm">
+            Dernière mise à jour : Janvier 2026
+          </p>
+        </div>
+      </div>
+
+      {/* CONTENU avec padding-top pour compenser le bandeau fixe */}
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 pt-32">
         {/* Préambule */}
         <section className="bg-blue-50 rounded-xl p-6 border-2 border-blue-300">
           <h2 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
