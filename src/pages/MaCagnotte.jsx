@@ -338,6 +338,8 @@ export default function MaCagnotte() {
       const distributions = txs.filter((t) => t.type === "monthly_distribution");
       // ✅ AJOUT : Calculer le total des distributions
       const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      // ✅ AJOUT : Récupérer le bonus initial
+      const bonusInitial = txs.find((t) => t.type === "initial_capital")?.amount || 0;
       const totalWon = historyResponse.data.user_credits?.total_earned || 0;
       // Total misé = Argent bloqué (en cours + perdus, exclut les gagnés)
       const totalStaked = allBets.reduce((sum, b) => sum + (b.stake || 0), 0);
@@ -356,7 +358,8 @@ export default function MaCagnotte() {
         totalWon,
         netProfit: totalWon - totalStaked,
         nbDistributions: distributions.length,
-        totalDistributions
+        totalDistributions,
+        bonusInitial
       });
 
       setLoading(false);
@@ -598,6 +601,9 @@ export default function MaCagnotte() {
               </div>
             </div>
             <p className="text-xs text-gray-600">reçues / jetons cumulés</p>
+            {stats.bonusInitial > 0 && (
+              <p className="text-xs text-gray-500 mt-1">Solde de bienvenue : {stats.bonusInitial}</p>
+            )}
           </div>
 
           {/* Stats Paris */}
