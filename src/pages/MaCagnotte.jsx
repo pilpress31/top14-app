@@ -336,7 +336,8 @@ export default function MaCagnotte() {
       const wonTxs = txs.filter((t) => t.type === "bet_won");
       const placedTxs = txs.filter((t) => t.type === "bet_placed");
       const distributions = txs.filter((t) => t.type === "monthly_distribution");
-
+      // ✅ AJOUT : Calculer le total des distributions
+      const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       const totalWon = historyResponse.data.user_credits?.total_earned || 0;
       // Total misé = Argent bloqué (en cours + perdus, exclut les gagnés)
       const totalStaked = allBets.reduce((sum, b) => sum + (b.stake || 0), 0);
@@ -354,7 +355,8 @@ export default function MaCagnotte() {
         totalStaked,
         totalWon,
         netProfit: totalWon - totalStaked,
-        nbDistributions: distributions.length
+        nbDistributions: distributions.length,
+        totalDistributions
       });
 
       setLoading(false);
@@ -584,13 +586,18 @@ export default function MaCagnotte() {
           </div>
 
           {/* Distributions */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Gift className="w-5 h-5 text-blue-600" />
-              <p className="text-xs text-blue-700 font-semibold">Distributions mensuelles</p>
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Gift className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-semibold text-gray-700">Distributions mensuelles</span>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-blue-600">{stats.nbDistributions}</span>
+                <span className="text-lg font-semibold text-blue-500 ml-2">/ {stats.totalDistributions}</span>
+              </div>
             </div>
-            <p className="text-2xl font-bold text-blue-600">{stats.nbDistributions}</p>
-            <p className="text-[10px] text-blue-500 mt-1">reçues</p>
+            <p className="text-xs text-gray-600">reçues / jetons cumulés</p>
           </div>
 
           {/* Stats Paris */}
