@@ -7,7 +7,9 @@ function ConditionsGeneralesPage() {
   const [showCookieBanner, setShowCookieBanner] = useState(false)
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     // Vérifier si l'utilisateur a déjà accepté les cookies
+    
     const cookiesAccepted = localStorage.getItem('cookies-accepted')
     if (!cookiesAccepted) {
       // Afficher le banner après 1 seconde
