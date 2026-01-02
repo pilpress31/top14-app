@@ -97,9 +97,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
 
   
 
-  // Calculer le solde pour les paris en cours
+  // Pour les paris en cours, pas de solde (en attente de résolution)
   const calculatedBalance = isPending 
-    ? (userCredits || 0) - (stake || 0)
+    ? 'En attente'
     : trans.balance_after;
 
   console.log('DEBUG:', { isPending, userCredits, stake, balance_after: trans.balance_after, calculatedBalance });
