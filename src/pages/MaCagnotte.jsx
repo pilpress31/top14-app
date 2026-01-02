@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Coins, TrendingUp, TrendingDown, Trophy, 
@@ -142,6 +142,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
         return <Trophy className="w-5 h-5 text-green-500" />;
       case 'bet_placed':
         return <TrendingDown className="w-5 h-5 text-orange-500" />;
+      case 'bet_pending':
+        return <Clock className="w-5 h-5 text-orange-500" />;
       case 'monthly_distribution':
         return <Gift className="w-5 h-5 text-blue-500" />;
       case 'initial_capital':
@@ -158,6 +160,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
         return 'Pari gagné';
       case 'bet_placed':
         return 'Pari placé';
+      case 'bet_pending':
+        return 'Pari en cours';
       case 'monthly_distribution':
         return 'Distribution mensuelle';
       case 'initial_capital':
@@ -170,7 +174,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   return (
     <div 
       className="p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
-      onClick={() => trans.bet_id && navigateToBet(trans)}
+      onClick={() => (trans.type === 'bet_won' || trans.type === 'bet_pending') && trans.bet_id && navigateToBet(trans)}
     >
       {/* En-tête */}
       <div className="flex justify-between items-start mb-2">
@@ -395,7 +399,7 @@ export default function MaCagnotte() {
         id: b.id + '_pending',
         type: 'bet_pending',
         amount: 0,
-        created_at: b.created_at,
+        created_at: b.placed_at || b.created_at,
         bet_id: b.id,
         bets: {
           id: b.id,
