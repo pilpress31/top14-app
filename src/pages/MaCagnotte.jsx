@@ -339,15 +339,13 @@ export default function MaCagnotte() {
       const wonBets = wonTxs.filter(tx => tx.bet_id).length;
 
       const lostBets = allBets.filter((b) => {
-        const matchFinished = b.matches?.status === 'finished' || 
-                            b.matches?.score_home !== null;
+        const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
         const hasWonTransaction = wonTxs.some(tx => tx.bet_id === b.id);
         return matchFinished && !hasWonTransaction;
       }).length;
 
       const pendingBets = allBets.filter((b) => {
-        const matchFinished = b.matches?.status === 'finished' || 
-                            b.matches?.score_home !== null;
+        const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
         return !matchFinished;
       }).length;
 
@@ -395,10 +393,11 @@ export default function MaCagnotte() {
       );
     });
 
+    
     // 2. Récupérer les paris pending (qui n'ont pas encore de transaction)
     const pendingBetsList = bets
       .filter(b => {
-        const matchFinished = b.matches?.status === 'finished' || b.matches?.score_home !== null;
+        const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
         return !matchFinished; // Seulement les paris en cours
       })
       .map(b => ({
