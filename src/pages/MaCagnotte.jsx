@@ -385,7 +385,14 @@ export default function MaCagnotte() {
       );
     });
 
-    
+    // DEBUG: Vérifier une transaction bet_won
+    const wonTx = transactions.find(t => t.type === 'bet_won');
+    console.log('DEBUG TRANSACTION BET_WON:', wonTx);
+    console.log('bet_id:', wonTx?.bet_id);
+    console.log('bets:', wonTx?.bets);
+    console.log('matches:', wonTx?.bets?.matches);
+
+
     // 2. Récupérer les paris pending (qui n'ont pas encore de transaction)
     const pendingBetsList = bets
       .filter(b => {
