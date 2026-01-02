@@ -15,36 +15,31 @@ export default function CGUPage() {
     <div className="min-h-screen bg-rugby-white pb-24">
       {/* Bandeau rugby-gold fixe en haut */}
       <div className="fixed top-0 left-0 right-0 bg-rugby-gold text-white shadow-md z-50">
-        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
-          {/* Flèche retour en haut à gauche */}
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          {/* Ligne 1 : Flèche retour plus grande */}
           <button 
             onClick={() => navigate(-1)} 
-            className="flex items-center gap-2 text-white hover:text-gray-100 transition"
+            className="flex items-center gap-2 text-white hover:text-gray-100 transition mb-3"
           >
-            <ArrowLeft className="w-6 h-6" />
-            <span className="text-sm font-semibold">Retour</span>
+            <ArrowLeft className="w-8 h-8" />
+            <span className="text-base font-semibold">Retour</span>
           </button>
           
-          {/* Titre centré */}
-          <div className="flex items-center gap-3 flex-1 justify-center">
-            <Scale className="w-7 h-7 text-white" />
-            <h1 className="text-xl font-bold">Conditions Générales d'Utilisation</h1>
+          {/* Ligne 2 : Titre centré plus grand */}
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Scale className="w-8 h-8 text-white" />
+            <h1 className="text-2xl md:text-3xl font-bold">Conditions Générales d'Utilisation</h1>
           </div>
           
-          {/* Espace vide pour équilibrer (même largeur que le bouton retour) */}
-          <div className="w-24"></div>
-        </div>
-        
-        {/* Date de mise à jour */}
-        <div className="max-w-4xl mx-auto px-4 pb-3">
-          <p className="text-gray-100 text-sm">
+          {/* Ligne 3 : Date de mise à jour */}
+          <p className="text-gray-100 text-sm text-center">
             Dernière mise à jour : Janvier 2026
           </p>
         </div>
       </div>
 
-      {/* CONTENU avec padding-top pour compenser le bandeau fixe */}
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 pt-32">
+      {/* CONTENU avec padding-top plus grand pour compenser le bandeau fixe */}
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8 pt-40">
         {/* Préambule */}
         <section className="bg-blue-50 rounded-xl p-6 border-2 border-blue-300">
           <h2 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
