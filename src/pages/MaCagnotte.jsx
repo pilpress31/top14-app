@@ -100,8 +100,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const displayIsPositive = isPending ? false : isPositive;
 
   // ✅ Extraire les vrais noms depuis external_id
-  let homeTeam = match?.home_team;
-  let awayTeam = match?.away_team;
+  let homeTeam = match?.home_team || 'Équipe domicile';
+  let awayTeam = match?.away_team || 'Équipe extérieure';
 
   // ✅ CORRECTION: Utiliser external_id pour récupérer les vrais noms depuis matchs_results
     if (match?.external_id) {
@@ -205,7 +205,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
       </div>
 
       {/* Détails du match si disponible */}
-      {match && (
+      {match && homeTeam && awayTeam && (
         <div className="mt-2 text-sm text-gray-700 pl-7">
           <p className="font-medium">
             {homeTeam} {match.score_home !== null ? `${match.score_home} - ${match.score_away}` : 'vs'} {awayTeam}
@@ -233,7 +233,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
       </p>
 
       {/* Solde après - uniquement si disponible */}
-      {trans.balance_after && (
+      {trans.balance_after !== null && trans.balance_after !== undefined && (
         <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
           Solde: {trans.balance_after}
         </div>
