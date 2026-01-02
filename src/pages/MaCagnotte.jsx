@@ -339,9 +339,7 @@ export default function MaCagnotte() {
 
       const totalWon = historyResponse.data.user_credits?.total_earned || 0;
       // Total misé = Argent bloqué (en cours + perdus, exclut les gagnés)
-      const totalStaked = allBets
-        .filter(b => b.status !== 'won')
-        .reduce((sum, b) => sum + (b.stake || 0), 0);
+      const totalStaked = allBets.reduce((sum, b) => sum + (b.stake || 0), 0);
 
       // ✅ Calcul identique à MesParisTab
       const wonBets = allBets.filter(b => b.status === 'won').length;
