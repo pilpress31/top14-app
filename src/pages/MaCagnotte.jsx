@@ -94,8 +94,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
-  
-  
+  // ✅ Extraire les vrais noms depuis external_id
+  let homeTeam = match?.home_team;
+  let awayTeam = match?.away_team;
 
   // ✅ CORRECTION: Utiliser external_id pour récupérer les vrais noms depuis matchs_results
     if (match?.external_id) {
@@ -334,8 +335,8 @@ export default function MaCagnotte() {
         placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
       );
 
-      // ✅ CORRECTION: Exclure les adjustments/bonus des paris gagnés
-      const wonBets = wonTxs.length;
+      // ✅ CORRECTION: Compter UNIQUEMENT les vrais paris gagnés (avec bet_id)
+      const wonBets = wonTxs.filter(tx => tx.bet_id).length;
 
       const lostBets = allBets.filter((b) => {
         const matchFinished = b.matches?.status === 'finished' || 
