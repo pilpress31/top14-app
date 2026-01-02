@@ -330,21 +330,19 @@ export default function MaCagnotte() {
         placedTxs.reduce((s, tx) => s + (tx.amount || 0), 0)
       );
 
-      const wonBets = wonTxs.filter(tx => 
-        tx.type === 'bet_won' && !['adjustment', 'initial_capital', 'monthly_distribution'].includes(tx.type)
-      ).length;
-      
+      // ✅ CORRECTION: Exclure les adjustments/bonus des paris gagnés
+      const wonBets = wonTxs.length;
+
       const lostBets = allBets.filter((b) => {
         const matchFinished = b.matches?.status === 'finished' || 
-                             b.matches?.score_home !== null;
+                            b.matches?.score_home !== null;
         const hasWonTransaction = wonTxs.some(tx => tx.bet_id === b.id);
         return matchFinished && !hasWonTransaction;
       }).length;
-      
+
       const pendingBets = allBets.filter((b) => {
-        // Un pari est en cours si le match n'est pas terminé
         const matchFinished = b.matches?.status === 'finished' || 
-                             b.matches?.score_home !== null;
+                            b.matches?.score_home !== null;
         return !matchFinished;
       }).length;
 
