@@ -95,6 +95,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
+  console.log('DEBUG:', { isPending, userCredits, stake, balance_after: trans.balance_after, calculatedBalance });
+
   // Calculer le solde pour les paris en cours
   const calculatedBalance = isPending && trans.balance_after === null 
     ? (userCredits || 0) - stake 
@@ -172,7 +174,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
       case 'bet_placed':
         return 'Pari placé';
       case 'bet_pending':
-        return 'Pari en cours';
+        return 'Pari en placé';
       case 'monthly_distribution':
         return 'Distribution mensuelle';
       case 'initial_capital':
