@@ -353,22 +353,30 @@ export default function MaCagnotte() {
       const txs = historyResponse.data.transactions || [];
       const allBets = historyResponse.data.bets || [];
 
-      setTransactions(txs);
+      // ✅ AJOUT : Filtrer les transactions pour masquer les paris en cours
+      const transactionsFiltered = txs.filter(trans => {
+        // ❌ Masquer les paris en cours (bet_placed pour paris pending)
+        if (trans.type === 'bet_placed') {
+          const bet = allBets.find(b => b.id === trans.bet_id);
+          if (bet?.status === 'pending') return false;
+        }
+        
+        // ✅ Garder tout le reste (bet_won, bet_lost, distributions, etc.)
+        return true;
+      });
+
+      setTransactions(transactionsFiltered); // ← Utiliser les transactions filtrées
       setBets(allBets);
 
-      // Calculer stats
-      const wonTxs = txs.filter((t) => t.type === "bet_won");
-      const placedTxs = txs.filter((t) => t.type === "bet_placed");
-      const distributions = txs.filter((t) => t.type === "monthly_distribution");
-      // ✅ AJOUT : Calculer le total des distributions
+      // Calculer stats (utiliser transactionsFiltered au lieu de txs)
+      const wonTxs = transactionsFiltered.filter((t) => t.type === "bet_won");
+      const placedTxs = transactionsFiltered.filter((t) => t.type === "bet_placed");
+      const distributions = transactionsFiltered.filter((t) => t.type === "monthly_distribution");
       const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
-      // ✅ AJOUT : Récupérer le bonus initial
-      const bonusInitial = txs.find((t) => t.type === "initial_capital")?.amount || 0;
+      const bonusInitial = transactionsFiltered.find((t) => t.type === "initial_capital")?.amount || 0;
       const totalWonFromBets = wonTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
-      // Total misé = Argent bloqué (en cours + perdus, exclut les gagnés)
       const totalStaked = allBets.reduce((sum, b) => sum + (b.stake || 0), 0);
 
-      // ✅ Calcul identique à MesParisTab
       const wonBets = allBets.filter(b => b.status === 'won').length;
       const lostBets = allBets.filter(b => b.status === 'lost').length;
       const pendingBets = allBets.filter(b => b.status === 'pending').length;
@@ -726,6 +734,43 @@ export default function MaCagnotte() {
                 ]}
               />
             </div>
+
+            {/* ✅ BANDEAU PARIS EN COURS - juste sous les dropdowns */}
+            {(() => {
+              const pendingBets = bets.filter(b => b.status === 'pending');
+              const totalStakePending = pendingBets.reduce((sum, b) => sum + (b.stake || 0), 0);
+              
+              if (pendingBets.length === 0) return null;
+              
+              return (
+                <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="text-sm font-semibold text-orange-900">
+                          {pendingBets.length} pari{pendingBets.length > 1 ? 's' : ''} en cours
+                        </p>
+                        <p className="text-xs text-orange-700">
+                          Mise totale : {totalStakePending} jetons
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => window.location.href = '/mes-paris'}
+                      className="px-3 py-1 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition"
+                    >
+                      Voir
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Historique des transactions */}
+            <h3 className="text-lg font-bold mb-3">Historique des transactions</h3>
+
+
           </div>
 
           {/* Liste */}
