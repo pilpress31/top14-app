@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Coins, TrendingUp, TrendingDown, Trophy, 
-  DollarSign, History, Gift, Award, Clock, Info 
+  DollarSign, History, Gift, Award, Clock, Info, X
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -80,7 +80,7 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 }
 
 // ---------------------------------------------------------
-// Transaction Item Component  
+// Transaction Item Component - CORRIGÉ
 // ---------------------------------------------------------
 function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   const isPositive = trans.amount > 0;
@@ -95,54 +95,62 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
   
-  // ✅ AJOUT : Détecter l'état du pari
+  // ✅ Détecter l'état du pari
   const matchFinished = match && (match.status === 'finished' || match.score_home !== null);
   const isLostBet = trans.type === 'bet_placed' && matchFinished && !isPositive;
   const isPendingBet = trans.type === 'bet_placed' && !matchFinished;
-
-  
 
   // Pour les paris en cours, pas de solde (en attente de résolution)
   const calculatedBalance = isPending 
     ? 'En attente'
     : trans.balance_after;
 
-  console.log('DEBUG:', { isPending, userCredits, stake, balance_after: trans.balance_after, calculatedBalance });
-
   // Pour les paris en cours, le montant à afficher est la mise (négatif)
   const displayAmount = isPending ? -stake : trans.amount;
   const displayIsPositive = isPending ? false : isPositive;
 
-  // ✅ Extraire les vrais noms depuis external_id
+  // ✅ CORRECTION : Extraire les noms d'équipes depuis match_id ou external_id
   let homeTeam = match?.home_team || 'Équipe domicile';
   let awayTeam = match?.away_team || 'Équipe extérieure';
 
-  // ✅ CORRECTION: Utiliser external_id pour récupérer les vrais noms depuis matchs_results
-    if (match?.external_id) {
-      const parts = match.external_id.split('_');
-      if (parts.length >= 4) {
-        // Format: 2025-2026_13_EQUIPE1_EQUIPE2 ou EQUIPE1_AVEC_ESPACES_EQUIPE2
-        const teams = parts.slice(2).join('_');
-        const possibleTeams = teams.split('_');
-        
-        // Essayer toutes les combinaisons pour trouver les 2 équipes
-        for (let i = 1; i < possibleTeams.length; i++) {
-          const testHome = possibleTeams.slice(0, i).join(' ');
-          const testAway = possibleTeams.slice(i).join(' ');
-          
-          const homeData = getTeamData(testHome);
-          const awayData = getTeamData(testAway);
-          
-          if (homeData?.logo !== '/logos/default.svg' && 
-              awayData?.logo !== '/logos/default.svg') {
-            homeTeam = homeData.name;
-            awayTeam = awayData.name;
-            break;
-          }
-        }
+  // Fonction helper pour extraire depuis un ID
+  const extractTeamsFromId = (id) => {
+    if (!id) return null;
+    
+    const parts = id.split('_');
+    if (parts.length < 4) return null;
+    
+    const teams = parts.slice(2).join('_');
+    const possibleTeams = teams.split('_');
+    
+    // Essayer toutes les combinaisons pour trouver les 2 équipes
+    for (let i = 1; i < possibleTeams.length; i++) {
+      const testHome = possibleTeams.slice(0, i).join(' ');
+      const testAway = possibleTeams.slice(i).join(' ');
+      
+      const homeData = getTeamData(testHome);
+      const awayData = getTeamData(testAway);
+      
+      if (homeData?.logo !== '/logos/default.svg' && 
+          awayData?.logo !== '/logos/default.svg') {
+        return { home: homeData.name, away: awayData.name };
       }
     }
+    return null;
+  };
 
+  // ✅ Essayer d'extraire depuis external_id ou match_id
+  let extracted = null;
+  if (match?.external_id) {
+    extracted = extractTeamsFromId(match.external_id);
+  } else if (trans.bets?.match_id) {
+    extracted = extractTeamsFromId(trans.bets.match_id);
+  }
+
+  if (extracted) {
+    homeTeam = extracted.home;
+    awayTeam = extracted.away;
+  }
 
   const dateObj = new Date(trans.created_at);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
@@ -161,6 +169,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
       case 'bet_won':
         return <Trophy className="w-5 h-5 text-green-500" />;
       case 'bet_placed':
+        if (isLostBet) return <X className="w-5 h-5 text-red-500" />;
+        if (isPendingBet) return <Clock className="w-5 h-5 text-orange-500" />;
         return <TrendingDown className="w-5 h-5 text-orange-500" />;
       case 'bet_pending':
         return <Clock className="w-5 h-5 text-orange-500" />;
@@ -178,8 +188,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
       case 'bet_won':
         return 'Pari gagné';
       case 'bet_placed':
-        if (isLostBet) return 'Pari perdu';  // ✅
-        if (isPendingBet) return 'Pari en cours';  // ✅
+        if (isLostBet) return 'Pari perdu';
+        if (isPendingBet) return 'Pari en cours';
         return 'Pari placé';
       case 'bet_pending':
         return 'Pari placé';
@@ -220,10 +230,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
       </div>
 
       {/* Détails du match si disponible */}
-      {match && homeTeam && awayTeam && (
+      {homeTeam && awayTeam && homeTeam !== 'Équipe domicile' && (
         <div className="mt-2 text-sm text-gray-700 pl-7">
           <p className="font-medium">
-            {homeTeam} {match.score_home !== null ? `${match.score_home} - ${match.score_away}` : 'vs'} {awayTeam}
+            {homeTeam} {match?.score_home !== null ? `${match.score_home} - ${match.score_away}` : 'vs'} {awayTeam}
           </p>
         </div>
       )}
@@ -248,9 +258,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
       </p>
 
       {/* Solde après */}
-      <div className="mt-2 text-xs text-gray-400 pl-7 flex justify-end">
-        Solde: {calculatedBalance}
-      </div>
+      <p className="text-xs text-gray-400 mt-1 pl-7">
+        Solde: {calculatedBalance !== 'En attente' ? calculatedBalance : 'En attente'}
+      </p>
     </div>
   );
 }
