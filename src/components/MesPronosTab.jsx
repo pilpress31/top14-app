@@ -123,25 +123,30 @@ export default function MesPronosTab({ goToMesParis }) {
           headers: { 'x-user-id': user.id }
         });
         
-        
+        // ✅ Charger les gains de paris uniquement
+        const { data: wonTxData } = await supabase
+          .from('credit_transactions')
+          .select('amount')
+          .eq('user_id', user.id)
+          .eq('type', 'bet_won');
 
-        // Enrichir userCredits avec totalWonFromBets
+        const totalWonFromBets = wonTxData?.reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0;
+
         setUserCredits({
           ...creditsResponse.data,
-        totalWonFromBets: creditsResponse.data.total_earned || 0  // ✅ Directement !
+          totalWonFromBets
         });
         
       } catch (creditsError) {
         console.log('Crédits non disponibles:', creditsError.message);
         setUserCredits({ credits: 1000, total_earned: 0, totalWonFromBets: 0 });
       }
-    } catch (error) {  // ✅ AJOUTE CETTE LIGNE
-      console.error('Erreur chargement data:', error);  // ✅ AJOUTE CETTE LIGNE
-    } finally {  // ✅ AJOUTE CETTE LIGNE
-      setLoading(false);  // ✅ AJOUTE CETTE LIGNE
-    }  // ✅ AJOUTE CETTE LIGNE
-  };  // ← Fin de loadData
-
+    } catch (error) {
+      console.error('Erreur chargement data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const ouvrirModal = (match) => {
     const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
@@ -194,9 +199,6 @@ export default function MesPronosTab({ goToMesParis }) {
     return numA - numB;
   });
 
-
-  
-
   return (
     <div className="space-y-3">
       
@@ -226,7 +228,7 @@ export default function MesPronosTab({ goToMesParis }) {
               {userCredits?.totalWonFromBets || 0}
             </p>
           </button>
-        </div>  {/* ← IL MANQUAIT CETTE BALISE */}
+        </div>
       </div>    
 
       {/* Liste des journées */}
@@ -297,7 +299,6 @@ export default function MesPronosTab({ goToMesParis }) {
         />
       )}
 
-
       {/* Bouton Règlement en bas de page */}
       <div className="flex justify-center mt-6 mb-4">
         <button
@@ -309,7 +310,7 @@ export default function MesPronosTab({ goToMesParis }) {
         </button>
       </div>
 
-            <ReglementModal 
+      <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />
