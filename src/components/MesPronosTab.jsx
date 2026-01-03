@@ -115,7 +115,6 @@ export default function MesPronosTab({ goToMesParis }) {
         .eq('user_id', user.id)
         .eq('match_termine', false)
         .order('journee', { ascending: true });
-
       if (error) throw error;
       setMesPronos(pronos || []);
 
@@ -123,18 +122,29 @@ export default function MesPronosTab({ goToMesParis }) {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
         });
-        setUserCredits(creditsResponse.data);
+        
+        // ✅ AJOUT : Charger les transactions pour calculer le total gagné
+        const { data: txData } = await supabase
+          .from('credit_transactions')
+          .select('type, amount')
+          .eq('user_id', user.id)
+          .in('type', ['monthly_distribution', 'initial_capital']);
+
+        const distributions = txData?.filter(t => t.type === 'monthly_distribution') || [];
+        const bonusInitial = txData?.find(t => t.type === 'initial_capital')?.amount || 0;
+        const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+        const totalWonFromBets = (creditsResponse.data.total_earned || 0) - totalDistributions - bonusInitial;
+
+        // Enrichir userCredits avec totalWonFromBets
+        setUserCredits({
+          ...creditsResponse.data,
+          totalWonFromBets
+        });
+        
       } catch (creditsError) {
         console.log('Crédits non disponibles:', creditsError.message);
-        setUserCredits({ credits: 1000, total_earned: 0 });
+        setUserCredits({ credits: 1000, total_earned: 0, totalWonFromBets: 0 });
       }
-
-    } catch (error) {
-      console.error('Erreur chargement data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const ouvrirModal = (match) => {
     const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
@@ -188,9 +198,7 @@ export default function MesPronosTab({ goToMesParis }) {
   });
 
 
-  const totalWonFromBets = mesPronos
-    .filter(p => p.est_correct === true)
-    .reduce((sum, p) => sum + ((p.gain_ft || 0) + (p.gain_mt || 0)), 0);
+  
 
   return (
     <div className="space-y-3">
@@ -218,7 +226,7 @@ export default function MesPronosTab({ goToMesParis }) {
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
-              {userCredits?.total_earned || 0}
+              {userCredits?.totalWonFromBets || 0}
             </p>
           </button>
         </div>  {/* ← IL MANQUAIT CETTE BALISE */}
