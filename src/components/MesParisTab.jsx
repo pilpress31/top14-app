@@ -199,7 +199,7 @@ export default function MesParisTab() {
 
   console.log('?? Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
 
-  const totalWonFromBets = bets.filter(b => b.status === 'won').reduce((sum, b) => sum + (b.payout || 0), 0);
+  const totalWonFromBets = paris.filter(p => p.status === 'won').reduce((sum, p) => sum + (p.payout || 0), 0);
 
   return (
     <div className="space-y-3">
