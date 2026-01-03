@@ -445,11 +445,7 @@ export default function ClassementCommunauteTab() {
                       {user.benefice_net >= 0 ? '+' : ''}{user.benefice_net} net
                     </p>
                   )}
-                  {classementType === 'points' && user.tauxReussite !== undefined && (
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {user.tauxReussite.toFixed(1)}% de réussite
-                    </p>
-                  )}
+                  
                 </div>
 
                 {/* Valeur principale */}
