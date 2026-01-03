@@ -145,6 +145,13 @@ export default function MesPronosTab({ goToMesParis }) {
         console.log('Crédits non disponibles:', creditsError.message);
         setUserCredits({ credits: 1000, total_earned: 0, totalWonFromBets: 0 });
       }
+    } catch (error) {  // ✅ AJOUTE CETTE LIGNE
+      console.error('Erreur chargement data:', error);  // ✅ AJOUTE CETTE LIGNE
+    } finally {  // ✅ AJOUTE CETTE LIGNE
+      setLoading(false);  // ✅ AJOUTE CETTE LIGNE
+    }  // ✅ AJOUTE CETTE LIGNE
+  };  // ← Fin de loadData
+
 
   const ouvrirModal = (match) => {
     const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
