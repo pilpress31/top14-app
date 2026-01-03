@@ -218,7 +218,7 @@ export default function MesPronosTab({ goToMesParis }) {
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
-              {totalWonFromBets}
+              {userCredits?.total_earned || 0}
             </p>
           </button>
         </div>  {/* ← IL MANQUAIT CETTE BALISE */}
