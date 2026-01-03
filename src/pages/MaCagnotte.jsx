@@ -16,7 +16,6 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Fermer au clic extérieur
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -80,40 +79,23 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 }
 
 // ---------------------------------------------------------
-// Transaction Item Component - CORRIGÉ
+// Transaction Item Component - SIMPLIFIÉ
 // ---------------------------------------------------------
-function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
+function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const isPositive = trans.amount > 0;
-  const isPending = trans.type === 'bet_pending';
   const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
   const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
   const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
   
-  // Extraire les détails du match depuis bets.matches si disponible
   const match = trans.bets?.matches;
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
-  
-  // ✅ Détecter l'état du pari
-  const matchFinished = match && (match.status === 'finished' || match.score_home !== null);
-  const isLostBet = trans.type === 'bet_placed' && matchFinished && !isPositive;
-  const isPendingBet = trans.type === 'bet_placed' && !matchFinished;
 
-  // Pour les paris en cours, pas de solde (en attente de résolution)
-  const calculatedBalance = isPending 
-    ? 'En attente'
-    : trans.balance_after;
-
-  // Pour les paris en cours, le montant à afficher est la mise (négatif)
-  const displayAmount = isPending ? -stake : trans.amount;
-  const displayIsPositive = isPending ? false : isPositive;
-
-  // ✅ CORRECTION : Extraire les noms d'équipes depuis match_id ou external_id
+  // Extraire les noms d'équipes
   let homeTeam = match?.home_team || 'Équipe domicile';
   let awayTeam = match?.away_team || 'Équipe extérieure';
 
-  // Fonction helper pour extraire depuis un ID
   const extractTeamsFromId = (id) => {
     if (!id) return null;
     
@@ -123,7 +105,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
     const teams = parts.slice(2).join('_');
     const possibleTeams = teams.split('_');
     
-    // Essayer toutes les combinaisons pour trouver les 2 équipes
     for (let i = 1; i < possibleTeams.length; i++) {
       const testHome = possibleTeams.slice(0, i).join(' ');
       const testAway = possibleTeams.slice(i).join(' ');
@@ -139,7 +120,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
     return null;
   };
 
-  // ✅ Essayer d'extraire depuis external_id ou match_id
   let extracted = null;
   if (match?.external_id) {
     extracted = extractTeamsFromId(match.external_id);
@@ -163,17 +143,12 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
     minute: "2-digit" 
   });
 
-  // Icône selon le type
   const getIcon = () => {
     switch(trans.type) {
       case 'bet_won':
         return <Trophy className="w-5 h-5 text-green-500" />;
-      case 'bet_placed':
-        if (isLostBet) return <X className="w-5 h-5 text-red-500" />;
-        if (isPendingBet) return <Clock className="w-5 h-5 text-orange-500" />;
-        return <TrendingDown className="w-5 h-5 text-orange-500" />;
-      case 'bet_pending':
-        return <Clock className="w-5 h-5 text-orange-500" />;
+      case 'bet_lost':
+        return <X className="w-5 h-5 text-red-500" />;
       case 'monthly_distribution':
         return <Gift className="w-5 h-5 text-blue-500" />;
       case 'initial_capital':
@@ -187,12 +162,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
     switch(trans.type) {
       case 'bet_won':
         return 'Pari gagné';
-      case 'bet_placed':
-        if (isLostBet) return 'Pari perdu';
-        if (isPendingBet) return 'Pari en cours';
-        return 'Pari placé';
-      case 'bet_pending':
-        return 'Pari placé';
+      case 'bet_lost':
+        return 'Pari perdu';
       case 'monthly_distribution':
         return 'Distribution mensuelle';
       case 'initial_capital':
@@ -205,7 +176,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   return (
     <div 
       className="p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
-      onClick={() => (trans.type === 'bet_won' || trans.type === 'bet_pending') && trans.bet_id && navigateToBet(trans)}
+      onClick={() => trans.type === 'bet_won' && trans.bet_id && navigateToBet(trans)}
     >
       {/* En-tête */}
       <div className="flex justify-between items-start mb-2">
@@ -223,19 +194,15 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
           </div>
         </div>
         
-        {/* ✅ Colonne droite : Montant + Solde */}
+        {/* Colonne droite : Montant + Solde */}
         <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
           <span className={`font-bold text-lg ${
-            displayIsPositive ? "text-green-600" : "text-red-600"
+            isPositive ? "text-green-600" : "text-red-600"
           }`}>
-            {displayIsPositive && '+'}{displayAmount}
+            {isPositive && '+'}{trans.amount}
           </span>
-          <p className={`text-xs ${
-            calculatedBalance === 'En attente' 
-              ? 'text-orange-500 font-medium' 
-              : 'text-gray-400'
-          }`}>
-            Solde: {calculatedBalance}
+          <p className="text-xs text-gray-400">
+            Solde: {trans.balance_after}
           </p>
         </div>
       </div>
@@ -267,8 +234,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
         <span>•</span>
         <span>{timeStr}</span>
       </p>
-
-      
     </div>
   );
 }
@@ -287,7 +252,6 @@ export default function MaCagnotte() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   
-  // Filtres
   const [sortMode, setSortMode] = useState("recent");
   const [teamFilter, setTeamFilter] = useState("");
 
@@ -302,7 +266,6 @@ export default function MaCagnotte() {
     nbDistributions: 0
   });
 
-  // Charger l'utilisateur
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -315,7 +278,6 @@ export default function MaCagnotte() {
     fetchUser();
   }, []);
 
-  // Charger les données
   useEffect(() => {
     if (!user?.id) return;
     loadData(user.id);
@@ -325,14 +287,12 @@ export default function MaCagnotte() {
     try {
       setLoading(true);
 
-      // Crédits actuels
       const creditsResponse = await axios.get(
         `${import.meta.env.VITE_API_URL}/user/credits`,
         { headers: { "x-user-id": userId } }
       );
       setUserCredits(creditsResponse.data.credits || 0);
 
-      // Points de classement
       const { data: userStatsData, error: statsError } = await supabase
         .from('user_stats')
         .select('total_points')
@@ -344,7 +304,6 @@ export default function MaCagnotte() {
         setUserPoints(userStatsData.total_points || 0);
       }
 
-      // Historique + Paris (endpoint V2)
       const historyResponse = await axios.get(
         `${import.meta.env.VITE_API_URL}/user/bets/detailed`,
         { headers: { "x-user-id": userId } }
@@ -353,22 +312,19 @@ export default function MaCagnotte() {
       const txs = historyResponse.data.transactions || [];
       const allBets = historyResponse.data.bets || [];
 
-      // ✅ AJOUT : Filtrer les transactions pour masquer les paris en cours
+      // ✅ Filtrer : garder uniquement bet_won, bet_lost, distributions, bonus
       const transactionsFiltered = txs.filter(trans => {
-        // ❌ Masquer les paris en cours (bet_placed pour paris pending)
+        // ❌ Masquer TOUS les bet_placed
         if (trans.type === 'bet_placed') return false;
         
-        
-        // ✅ Garder tout le reste (bet_won, bet_lost, distributions, etc.)
+        // ✅ Garder bet_won, bet_lost, distributions, bonus initial
         return true;
       });
 
-      setTransactions(transactionsFiltered); // ← Utiliser les transactions filtrées
+      setTransactions(transactionsFiltered);
       setBets(allBets);
 
-      // Calculer stats (utiliser transactionsFiltered au lieu de txs)
       const wonTxs = transactionsFiltered.filter((t) => t.type === "bet_won");
-      const placedTxs = transactionsFiltered.filter((t) => t.type === "bet_placed");
       const distributions = transactionsFiltered.filter((t) => t.type === "monthly_distribution");
       const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       const bonusInitial = transactionsFiltered.find((t) => t.type === "initial_capital")?.amount || 0;
@@ -407,10 +363,9 @@ export default function MaCagnotte() {
     });
   };
 
-  // Filtrer et fusionner transactions + paris pending
+  // Filtrer les transactions (sans les paris pending)
   const filteredTransactions = useMemo(() => {
-    // 1. Récupérer les transactions
-    const txList = transactions.filter((t) => {
+    const filtered = transactions.filter((t) => {
       if (!teamFilter) return true;
       const match = t.bets?.matches;
       if (!match) return false;
@@ -420,49 +375,6 @@ export default function MaCagnotte() {
       );
     });
 
-    // DEBUG: Vérifier une transaction bet_won
-    const wonTx = transactions.find(t => t.type === 'bet_won');
-    console.log('DEBUG TRANSACTION BET_WON:', wonTx);
-    console.log('bet_id:', wonTx?.bet_id);
-    console.log('bets:', wonTx?.bets);
-    console.log('matches:', wonTx?.bets?.matches);
-
-
-    // 2. Récupérer les paris pending (qui n'ont pas encore de transaction)
-    const pendingBetsList = bets
-      .filter(b => {
-        const matchFinished = b.matches && (b.matches.status === 'finished' || b.matches.score_home !== null);
-        return !matchFinished; // Seulement les paris en cours
-      })
-      .map(b => ({
-        id: b.id + '_pending',
-        type: 'bet_pending',
-        amount: 0,
-        created_at: b.placed_at || b.created_at,
-        bet_id: b.id,
-        bets: {
-          id: b.id,
-          stake: b.stake,
-          odds: b.odds,
-          matches: b.matches
-        }
-      }));
-
-    // 3. Fusionner
-    const allItems = [...txList, ...pendingBetsList];
-
-    // 4. Filtrer par équipe si nécessaire
-    const filtered = allItems.filter((t) => {
-      if (!teamFilter) return true;
-      const match = t.bets?.matches;
-      if (!match) return false;
-      return (
-        match.home_team?.includes(teamFilter) ||
-        match.away_team?.includes(teamFilter)
-      );
-    });
-
-    // 5. Trier
     if (sortMode === "recent") {
       filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else {
@@ -470,9 +382,8 @@ export default function MaCagnotte() {
     }
 
     return filtered;
-  }, [transactions, bets, teamFilter, sortMode]);
+  }, [transactions, teamFilter, sortMode]);
 
-  // Liste équipes depuis les paris (pas les transactions)
   const teams = [...new Set(
     bets
       .map((b) => b.matches?.home_team)
@@ -516,9 +427,7 @@ export default function MaCagnotte() {
           <div className="w-10" />
         </div>
 
-        {/* Bandeau Credits + Points */}
         <div className="max-w-md mx-auto px-4 pb-4 grid grid-cols-2 gap-3">
-          {/* Jetons */}
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
             <div className="flex items-center gap-2 mb-1">
               <Coins className="w-4 h-4 text-white" />
@@ -527,7 +436,6 @@ export default function MaCagnotte() {
             <p className="text-2xl font-bold text-white">{userCredits || 0}</p>
           </div>
 
-          {/* Points */}
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
             <div className="flex items-center gap-2 mb-1">
               <Trophy className="w-4 h-4 text-white" />
@@ -568,7 +476,6 @@ export default function MaCagnotte() {
       {/* Contenu */}
       {activeTab === "overview" ? (
         <div className="p-6 space-y-4">
-          {/* Gains / Pertes */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">
               <div className="flex items-center gap-2 mb-2">
@@ -587,7 +494,6 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Bénéfice Net */}
           <div className={`rounded-lg p-4 border ${
             stats.netProfit >= 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
           }`}>
@@ -618,7 +524,6 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Distributions */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -636,7 +541,6 @@ export default function MaCagnotte() {
             )}
           </div>
 
-          {/* Stats Paris */}
           <div className="bg-white rounded-lg shadow-sm border border-rugby-gray p-4">
             <h2 className="text-lg font-bold text-rugby-gold mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5" />
@@ -693,7 +597,6 @@ export default function MaCagnotte() {
             </div>
           </div>
 
-          {/* Bouton */}
           <button
             onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris' } })}
             className="w-full bg-rugby-gold text-white py-3 rounded-lg font-semibold hover:bg-rugby-bronze transition-colors shadow-md"
@@ -703,14 +606,13 @@ export default function MaCagnotte() {
         </div>
       ) : (
         <div className="p-6 space-y-4">
-          {/* Filtres */}
           <div className="sticky top-16 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200 pb-3 pt-4 -mx-6 px-6">
             <h2 className="text-lg font-bold text-rugby-gold flex items-center gap-2 mb-3">
               <History className="w-5 h-5" />
               Historique des transactions
             </h2>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 mb-3">
               <PremiumDropdown
                 label="Toutes les équipes"
                 value={teamFilter}
@@ -733,7 +635,7 @@ export default function MaCagnotte() {
               />
             </div>
 
-            {/* ✅ BANDEAU PARIS EN COURS - juste sous les dropdowns */}
+            {/* ✅ BANDEAU PARIS EN COURS */}
             {(() => {
               const pendingBets = bets.filter(b => b.status === 'pending');
               const totalStakePending = pendingBets.reduce((sum, b) => sum + (b.stake || 0), 0);
@@ -741,9 +643,9 @@ export default function MaCagnotte() {
               if (pendingBets.length === 0) return null;
               
               return (
-                <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4 mb-4">
+                <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-3 mb-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <Clock className="w-5 h-5 text-orange-500" />
                       <div>
                         <p className="text-sm font-semibold text-orange-900">
@@ -755,8 +657,8 @@ export default function MaCagnotte() {
                       </div>
                     </div>
                     <button
-                      onClick={() => window.location.href = '/mes-paris'}
-                      className="px-3 py-1 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition"
+                      onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', filterStatus: 'pending' } })}
+                      className="px-3 py-1.5 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition"
                     >
                       Voir
                     </button>
@@ -764,11 +666,6 @@ export default function MaCagnotte() {
                 </div>
               );
             })()}
-
-            {/* Historique des transactions */}
-            <h3 className="text-lg font-bold mb-3">Historique des transactions</h3>
-
-
           </div>
 
           {/* Liste */}
@@ -785,7 +682,6 @@ export default function MaCagnotte() {
                   trans={trans} 
                   navigateToBet={navigateToBet}
                   getTeamData={getTeamData}
-                  userCredits={userCredits}
                 />
               ))}
             </div>
