@@ -1,5 +1,5 @@
 // ============================================
-// MODAL DE PARI - VERSION OPTIMISÉE
+// MODAL DE PARI - VERSION OPTIMISÉE ET CORRIGÉE
 // ============================================
 
 import { useState, useRef, useEffect } from 'react';
@@ -126,18 +126,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
     setErrorsMT(mtErrors);
     setErrorsGeneral(generalErrors);
 
-    // Debug (à retirer en production)
-    if (validation.allMessages.length > 0) {
-      console.log('🔍 Validation complète:', {
-        total: validation.allMessages.length,
-        FT: ftErrors.length,
-        MT: mtErrors.length,
-        coherence: coherenceErrors.length,
-        general: generalErrors.length,
-        details: validation.allMessages
-      });
-    }
-
   }, [betOnFT, betOnMT, scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT, stakeFT, stakeMT, userCredits, hasFT, hasMT]);
 
   // Validation onBlur pour les scores (sans popup, juste focus)
@@ -181,7 +169,9 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
     (betOnFT && !hasFT ? toInt(stakeFT) || 0 : 0) +
     (betOnMT && !hasMT ? toInt(stakeMT) || 0 : 0);
 
-  // Sauvegarde
+  // ============================================
+  // ✅ FONCTION DE SAUVEGARDE CORRIGÉE
+  // ============================================
   const handleSave = async () => {
     const validation = validateBet({
       betOnFT, betOnMT, scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT,
@@ -205,55 +195,28 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       const stakeFTNum = betOnFT ? toInt(stakeFT) : 0;
       const stakeMTNum = betOnMT ? toInt(stakeMT) : 0;
 
-      const pronoData = {
-        user_id: user.id,
-        match_id: match.match_id,
-        journee: parseInt(match.journee.replace('J', '')),
-        saison: match.saison || '2025-2026',
-        equipe_domicile: match.equipe_domicile,
-        equipe_exterieure: match.equipe_exterieure,
-        equipe_pronostiquee: betOnFT
-          ? (dFT > eFT ? match.equipe_domicile : match.equipe_exterieure)
-          : (dMT > eMT ? match.equipe_domicile : match.equipe_exterieure),
-        score_dom_pronos: betOnFT ? dFT : null,
-        score_ext_pronos: betOnFT ? eFT : null,
-        score_dom_mt: betOnMT ? dMT : null,
-        score_ext_mt: betOnMT ? eMT : null,
-        mise_ft: stakeFTNum,
-        mise_mt: stakeMTNum,
-        mise_totale: stakeFTNum + stakeMTNum,
-        match_termine: false,
-        match_date: match.date_match ? new Date(match.date_match).toISOString() : null,
-        date_pronos: new Date().toISOString()
-      };
+      // ✅ CORRECTION : Ne plus créer dans user_pronos
+      // Les paris sont créés uniquement dans user_bets via l'API
 
-      await supabase.from('user_pronos').upsert(pronoData, {
-        onConflict: 'user_id,match_id'
-      });
+      // Créer les paris dans user_bets via l'API
+      if (betOnFT && !hasFT) {
+        await axios.post('https://top14-api-production.up.railway.app/api/bets', {
+          match_id: match.match_id,
+          bet_type: 'FT',
+          score_domicile: dFT,
+          score_exterieur: eFT,
+          stake: stakeFTNum
+        }, { headers: { 'x-user-id': user.id } });
+      }
 
-      // Appels API externes (non bloquants)
-      try {
-        if (betOnFT && !hasFT) {
-          await axios.post('https://top14-api-production.up.railway.app/api/bets', {
-            match_id: match.match_id,
-            bet_type: 'FT',
-            score_domicile: dFT,
-            score_exterieur: eFT,
-            stake: stakeFTNum
-          }, { headers: { 'x-user-id': user.id } });
-        }
-
-        if (betOnMT && !hasMT) {
-          await axios.post('https://top14-api-production.up.railway.app/api/bets', {
-            match_id: match.match_id,
-            bet_type: 'MT',
-            score_domicile: dMT,
-            score_exterieur: eMT,
-            stake: stakeMTNum
-          }, { headers: { 'x-user-id': user.id } });
-        }
-      } catch (betError) {
-        console.log('API externe non disponible:', betError.message);
+      if (betOnMT && !hasMT) {
+        await axios.post('https://top14-api-production.up.railway.app/api/bets', {
+          match_id: match.match_id,
+          bet_type: 'MT',
+          score_domicile: dMT,
+          score_exterieur: eMT,
+          stake: stakeMTNum
+        }, { headers: { 'x-user-id': user.id } });
       }
 
       onSuccess();
@@ -354,7 +317,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
                     className="w-4 h-4 text-rugby-gold focus:ring-rugby-gold"
                   />
                   <span className={`font-bold text-sm ${betOnFT ? 'text-gray-900' : 'text-gray-500'}`}>
-                    ⏱️ TEMPS PLEIN (80 min)
+                    🏉 TEMPS PLEIN (80 min)
                   </span>
                 </label>
               </div>
@@ -371,7 +334,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
                 </div>
               )}
 
-              {/* Scores FT */}
               <div className="grid grid-cols-3 gap-2 items-start mb-1">
                 <div>
                   <label className="block text-[10px] font-semibold text-gray-700 mb-1 text-center truncate">
@@ -428,7 +390,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
                 )}
               </div>
 
-              {/* Cotes + Mise FT */}
               <div className="grid grid-cols-3 gap-2 items-end -mt-6 mb-1">
                 <div className="col-span-2 flex justify-center gap-2">
                   <div className="bg-blue-100 rounded h-6 w-24 flex items-center justify-center">
