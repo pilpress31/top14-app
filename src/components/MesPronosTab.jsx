@@ -123,22 +123,12 @@ export default function MesPronosTab({ goToMesParis }) {
           headers: { 'x-user-id': user.id }
         });
         
-        // ✅ AJOUT : Charger les transactions pour calculer le total gagné
-        const { data: txData } = await supabase
-          .from('credit_transactions')
-          .select('type, amount')
-          .eq('user_id', user.id)
-          .in('type', ['monthly_distribution', 'initial_capital']);
-
-        const distributions = txData?.filter(t => t.type === 'monthly_distribution') || [];
-        const bonusInitial = txData?.find(t => t.type === 'initial_capital')?.amount || 0;
-        const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
-        const totalWonFromBets = (creditsResponse.data.total_earned || 0) - totalDistributions - bonusInitial;
+        
 
         // Enrichir userCredits avec totalWonFromBets
         setUserCredits({
-          ...creditsResponse.data,
-          totalWonFromBets
+          creditsResponse.data,
+        totalWonFromBets: creditsResponse.data.total_earned || 0  // ✅ Directement !
         });
         
       } catch (creditsError) {
