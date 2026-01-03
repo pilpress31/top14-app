@@ -127,7 +127,7 @@ export default function MesPronosTab({ goToMesParis }) {
 
         // Enrichir userCredits avec totalWonFromBets
         setUserCredits({
-          creditsResponse.data,
+          ...creditsResponse.data,
         totalWonFromBets: creditsResponse.data.total_earned || 0  // ✅ Directement !
         });
         
