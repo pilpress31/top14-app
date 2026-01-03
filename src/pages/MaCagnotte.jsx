@@ -279,7 +279,7 @@ export default function MaCagnotte() {
     wonBets: 0,
     lostBets: 0,
     totalStaked: 0,
-    totalWon: 0,
+    totalWonFromBets: 0,
     netProfit: 0,
     nbDistributions: 0
   });
@@ -346,7 +346,7 @@ export default function MaCagnotte() {
       const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       // ✅ AJOUT : Récupérer le bonus initial
       const bonusInitial = txs.find((t) => t.type === "initial_capital")?.amount || 0;
-      const totalWon = historyResponse.data.user_credits?.total_earned || 0;
+      const totalWonFromBets = wonTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       // Total misé = Argent bloqué (en cours + perdus, exclut les gagnés)
       const totalStaked = allBets.reduce((sum, b) => sum + (b.stake || 0), 0);
 
@@ -361,8 +361,8 @@ export default function MaCagnotte() {
         wonBets,
         lostBets,
         totalStaked,
-        totalWon,
-        netProfit: totalWon - totalStaked,
+        totalWonFromBets,
+        netProfit: totalWonFromBets - totalStaked,
         nbDistributions: distributions.length,
         totalDistributions,
         bonusInitial
@@ -460,7 +460,7 @@ export default function MaCagnotte() {
     ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
     : 0;
   const roi = stats.totalStaked > 0
-    ? (((stats.totalWon - stats.totalStaked) / stats.totalStaked) * 100).toFixed(1)
+    ? (((stats.totalWonFromBets - stats.totalStaked) / stats.totalStaked) * 100).toFixed(1)
     : 0;
 
   if (loading) {
@@ -551,7 +551,7 @@ export default function MaCagnotte() {
                 <TrendingUp className="w-5 h-5 text-green-600" />
                 <p className="text-xs text-green-700 font-semibold">Total gagné</p>
               </div>
-              <p className="text-2xl font-bold text-green-600">{stats.totalWon}</p>
+              <p className="text-2xl font-bold text-green-600">{stats.totalWonFromBets}</p>
             </div>
 
             <div className="bg-red-50 rounded-lg p-4 border border-red-200">
