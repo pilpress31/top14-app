@@ -356,10 +356,8 @@ export default function MaCagnotte() {
       // ✅ AJOUT : Filtrer les transactions pour masquer les paris en cours
       const transactionsFiltered = txs.filter(trans => {
         // ❌ Masquer les paris en cours (bet_placed pour paris pending)
-        if (trans.type === 'bet_placed') {
-          const bet = allBets.find(b => b.id === trans.bet_id);
-          if (bet?.status === 'pending') return false;
-        }
+        if (trans.type === 'bet_placed') return false;
+        
         
         // ✅ Garder tout le reste (bet_won, bet_lost, distributions, etc.)
         return true;
