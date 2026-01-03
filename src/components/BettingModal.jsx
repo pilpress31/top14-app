@@ -179,7 +179,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
     });
 
     if (!validation.isValid) {
-      // Les alertes sont déjà visibles contextuellement
       return;
     }
 
@@ -195,10 +194,35 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       const stakeFTNum = betOnFT ? toInt(stakeFT) : 0;
       const stakeMTNum = betOnMT ? toInt(stakeMT) : 0;
 
-      // ✅ CORRECTION : Ne plus créer dans user_pronos
-      // Les paris sont créés uniquement dans user_bets via l'API
+      // ✅ Créer/Update dans user_pronos (SANS MISES - juste pour tracking UI)
+      const pronoData = {
+        user_id: user.id,
+        match_id: match.match_id,
+        journee: parseInt(match.journee.replace('J', '')),
+        saison: match.saison || '2025-2026',
+        equipe_domicile: match.equipe_domicile,
+        equipe_exterieure: match.equipe_exterieure,
+        equipe_pronostiquee: betOnFT
+          ? (dFT > eFT ? match.equipe_domicile : match.equipe_exterieure)
+          : (dMT > eMT ? match.equipe_domicile : match.equipe_exterieure),
+        score_dom_pronos: betOnFT ? dFT : existingProno?.score_dom_pronos || null,
+        score_ext_pronos: betOnFT ? eFT : existingProno?.score_ext_pronos || null,
+        score_dom_mt: betOnMT ? dMT : existingProno?.score_dom_mt || null,
+        score_ext_mt: betOnMT ? eMT : existingProno?.score_ext_mt || null,
+        mise_ft: (betOnFT && !hasFT) ? stakeFTNum : (existingProno?.mise_ft || 0),
+        mise_mt: (betOnMT && !hasMT) ? stakeMTNum : (existingProno?.mise_mt || 0),
+        mise_totale: ((betOnFT && !hasFT) ? stakeFTNum : (existingProno?.mise_ft || 0)) + 
+                     ((betOnMT && !hasMT) ? stakeMTNum : (existingProno?.mise_mt || 0)),
+        match_termine: false,
+        match_date: match.date_match ? new Date(match.date_match).toISOString() : null,
+        date_pronos: new Date().toISOString()
+      };
 
-      // Créer les paris dans user_bets via l'API
+      await supabase.from('user_pronos').upsert(pronoData, {
+        onConflict: 'user_id,match_id'
+      });
+
+      // ✅ Créer les paris dans user_bets via l'API (pour les jetons)
       if (betOnFT && !hasFT) {
         await axios.post('https://top14-api-production.up.railway.app/api/bets', {
           match_id: match.match_id,
@@ -222,7 +246,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       onSuccess();
     } catch (error) {
       console.error('Erreur sauvegarde:', error);
-      // Afficher l'erreur en général
       setErrorsGeneral([{
         type: 'error',
         message: error.response?.data?.error || 'Erreur lors de la sauvegarde'
@@ -232,6 +255,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
     }
   };
 
+  
   // Filtrer les erreurs bloquantes
   const blockingErrors = validationErrors.filter(e => e.type !== 'warning');
   const canSave = blockingErrors.length === 0 && totalStake >= 10 && totalStake <= userCredits;
