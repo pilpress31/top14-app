@@ -88,12 +88,17 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
   const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
   const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
   const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
-
+  
   // Extraire les détails du match depuis bets.matches si disponible
   const match = trans.bets?.matches;
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
+  
+  // ✅ AJOUT : Détecter l'état du pari
+  const matchFinished = match && (match.status === 'finished' || match.score_home !== null);
+  const isLostBet = trans.type === 'bet_placed' && matchFinished && !isPositive;
+  const isPendingBet = trans.type === 'bet_placed' && !matchFinished;
 
   
 
@@ -168,12 +173,13 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
     }
   };
 
-  // Titre selon le type
   const getTitle = () => {
     switch(trans.type) {
       case 'bet_won':
         return 'Pari gagné';
       case 'bet_placed':
+        if (isLostBet) return 'Pari perdu';  // ✅
+        if (isPendingBet) return 'Pari en cours';  // ✅
         return 'Pari placé';
       case 'bet_pending':
         return 'Pari placé';
