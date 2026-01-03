@@ -199,6 +199,8 @@ export default function MesParisTab() {
 
   console.log('?? Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
 
+  const totalWonFromBets = bets.filter(b => b.status === 'won').reduce((sum, b) => sum + (b.payout || 0), 0);
+
   return (
     <div className="space-y-3">
       
@@ -225,7 +227,7 @@ export default function MesParisTab() {
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
-              {bets.filter(b => b.status === 'won').reduce((sum, b) => sum + (b.payout || 0), 0)}
+              {totalWonFromBets}
             </p>
           </button>
         </div>  {/* ← IL MANQUAIT CETTE BALISE */}
