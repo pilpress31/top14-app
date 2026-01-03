@@ -258,8 +258,12 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
       </p>
 
       {/* Solde après */}
-      <p className="text-xs text-gray-400 mt-1 pl-7">
-        Solde: {calculatedBalance !== 'En attente' ? calculatedBalance : 'En attente'}
+      <p className={`text-xs mt-1 pl-7 ${
+        calculatedBalance === 'En attente' 
+          ? 'text-orange-500 font-medium' 
+          : 'text-gray-400'
+      }`}>
+        Solde: {calculatedBalance}
       </p>
     </div>
   );
