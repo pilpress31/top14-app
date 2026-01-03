@@ -209,7 +209,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
     >
       {/* En-tête */}
       <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           {getIcon()}
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -222,11 +222,22 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
             </div>
           </div>
         </div>
-        <span className={`font-bold text-lg flex-shrink-0 ml-2 ${
-          displayIsPositive ? "text-green-600" : "text-red-600"
-        }`}>
-          {displayIsPositive && '+'}{displayAmount}
-        </span>
+        
+        {/* ✅ Colonne droite : Montant + Solde */}
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
+          <span className={`font-bold text-lg ${
+            displayIsPositive ? "text-green-600" : "text-red-600"
+          }`}>
+            {displayIsPositive && '+'}{displayAmount}
+          </span>
+          <p className={`text-xs ${
+            calculatedBalance === 'En attente' 
+              ? 'text-orange-500 font-medium' 
+              : 'text-gray-400'
+          }`}>
+            Solde: {calculatedBalance}
+          </p>
+        </div>
       </div>
 
       {/* Détails du match si disponible */}
@@ -257,14 +268,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, userCredits }) {
         <span>{timeStr}</span>
       </p>
 
-      {/* Solde après */}
-      <p className={`text-xs mt-1 pl-7 ${
-        calculatedBalance === 'En attente' 
-          ? 'text-orange-500 font-medium' 
-          : 'text-gray-400'
-      }`}>
-        Solde: {calculatedBalance}
-      </p>
+      
     </div>
   );
 }
