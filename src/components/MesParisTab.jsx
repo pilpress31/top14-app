@@ -15,125 +15,99 @@ export default function MesParisTab() {
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
   
-  // ✅ Stocker le match_id cible pour le scroll après changement d'onglet
   const [targetMatchId, setTargetMatchId] = useState(null);
-
-  // ? Refs pour chaque pari
   const betRefs = useRef({});
+
+  // ✅ FONCTION HELPER : Extraire les noms d'équipes depuis match_id
+  const extractTeamsFromMatchId = (matchId) => {
+    if (!matchId) return { home: null, away: null };
+    
+    // Format: 2025-2026_14_EQUIPE_DOMICILE_EQUIPE_EXTERIEURE
+    const parts = matchId.split('_');
+    if (parts.length < 4) return { home: null, away: null };
+    
+    const teams = parts.slice(2).join('_');
+    const possibleTeams = teams.split('_');
+    
+    // Essayer toutes les combinaisons pour trouver les 2 équipes
+    for (let i = 1; i < possibleTeams.length; i++) {
+      const testHome = possibleTeams.slice(0, i).join(' ');
+      const testAway = possibleTeams.slice(i).join(' ');
+      
+      const homeData = getTeamData(testHome);
+      const awayData = getTeamData(testAway);
+      
+      if (homeData?.logo !== '/logos/default.svg' && 
+          awayData?.logo !== '/logos/default.svg') {
+        return { home: homeData, away: awayData };
+      }
+    }
+    
+    return { home: null, away: null };
+  };
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // ? Scroll auto vers un pari spécifique
   useEffect(() => {
-    // ✅ Lire depuis location.state OU depuis les query params de l'URL
     const matchIdFromState = location.state?.scrollToMatchId;
     const urlParams = new URLSearchParams(window.location.search);
     const matchIdFromUrl = urlParams.get('scrollToMatchId');
     const matchId = matchIdFromState || matchIdFromUrl;
 
     if (matchId && paris.length > 0) {
-      console.log('🎯 Navigation vers match_id:', matchId);
-      
-      // ? Trouver le bet qui a ce match_id
       const targetBet = paris.find(bet => bet.match_id === matchId);
       
       if (targetBet) {
-        console.log('✅ Pari trouvé:', targetBet);
-        console.log('📊 Status du pari:', targetBet.status);
-        
-        // ✅ Stocker le match_id pour le scroll après le changement d'onglet
         setTargetMatchId(matchId);
         
-        // ? Changer l'onglet selon le status du pari
         if (targetBet.status === 'pending') {
-          console.log('🔄 Changement vers onglet: En cours');
           setFilter('pending');
         } else if (targetBet.status === 'won') {
-          console.log('🔄 Changement vers onglet: Gagnés');
           setFilter('won');
         } else if (targetBet.status === 'lost') {
-          console.log('🔄 Changement vers onglet: Perdus');
           setFilter('lost');
         }
-      } else {
-        console.log('❌ Aucun pari trouvé pour match_id:', matchId);
-        console.log('❌ Paris disponibles:', paris.map(p => p.match_id));
       }
 
-      // Nettoyer le state ET l'URL
       if (window.history?.replaceState) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   }, [location.state, paris]);
 
-  // ✅ Nouveau useEffect pour gérer le scroll APRÈS le changement d'onglet
   useEffect(() => {
     if (targetMatchId && paris.length > 0) {
-      console.log('🎯 Tentative de scroll vers:', targetMatchId);
-      
-      // Attendre que React ait re-rendu la liste avec le bon filtre
       setTimeout(() => {
         const element = betRefs.current[targetMatchId];
-        console.log('🔍 Recherche élément pour match_id:', targetMatchId);
-        console.log('🔍 Élément trouvé:', element);
-        console.log('🔍 Tous les refs disponibles:', Object.keys(betRefs.current));
         
         if (element) {
-          console.log('📜 Scroll vers l\'élément');
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
-          // ✅ Effet de highlight temporaire
           element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-          console.log('✨ Classes ajoutées pour highlight');
           
           setTimeout(() => {
             element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-            console.log('🔄 Classes retirées');
           }, 3000);
           
-          // ✅ Nettoyer targetMatchId après le scroll
           setTargetMatchId(null);
-        } else {
-          console.log('❌ Élément non trouvé, nouvelle tentative dans 500ms');
-          // Réessayer une fois au cas où le DOM n'est pas encore prêt
-          setTimeout(() => {
-            const retryElement = betRefs.current[targetMatchId];
-            if (retryElement) {
-              retryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              retryElement.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-              setTimeout(() => {
-                retryElement.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-              }, 3000);
-            }
-            setTargetMatchId(null);
-          }, 500);
         }
-      }, 300); // Délai court car on attend déjà le changement de filter
+      }, 300);
     }
-  }, [targetMatchId, filter, paris]); // ✅ Se déclenche quand filter change
+  }, [filter, targetMatchId]);
 
   const loadData = async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
-      if (!user) {
-        console.log('? Pas de user connecté');
-        return;
-      }
-
-      console.log('? User ID:', user.id);
+      if (!user) return;
 
       // Charger les crédits
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
         });
-        console.log('? Crédits chargés:', creditsResponse.data);
         setUserCredits(creditsResponse.data);
       } catch (error) {
-        console.log('?? Crédits non disponibles:', error.message);
         setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
       }
 
@@ -142,20 +116,11 @@ export default function MesParisTab() {
         const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets/detailed', {
           headers: { 'x-user-id': user.id }
         });
-        console.log('✅ Réponse brute API:', parisResponse.data);
-
         const parisList = parisResponse.data.bets || [];
-
-        console.log(`📊 Nombre de paris trouvés: ${parisList.length}`);
-        console.log('📊 Paris:', parisList);
-        setParis(parisList);  // ✅ Pas d'enrichissement, utiliser directement
+        setParis(parisList);
       } catch (error) {
-        console.error('❌ Erreur chargement paris:', error);
-        console.log('❌ Détails:', error.response?.data || error.message);
         setParis([]);
       }
-
-
 
       // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
@@ -165,10 +130,7 @@ export default function MesParisTab() {
         .order('created_at', { ascending: false });
 
       if (!pronosError) {
-        console.log(`📊 Nombre de pronos trouvés: ${pronosData?.length || 0}`);
         setPronos(pronosData || []);
-      } else {
-        console.error('❌ Erreur chargement pronos:', pronosError);
       }
 
     } catch (error) {
@@ -197,17 +159,14 @@ export default function MesParisTab() {
   const parisWon = paris.filter(b => b.status === 'won').length;
   const parisLost = paris.filter(b => b.status === 'lost').length;
 
-  console.log('?? Stats paris:', { total: paris.length, pending: parisPending, won: parisWon, lost: parisLost });
-
   const totalWonFromBets = paris.filter(p => p.status === 'won').reduce((sum, p) => sum + (p.payout || 0), 0);
 
   return (
     <div className="space-y-3">
       
-      {/* ✅ BANDEAU AVEC ICÔNE CLIQUABLE */}
+      {/* BANDEAU AVEC ICÔNE CLIQUABLE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
-          {/* ✅ ZONE CLIQUABLE VERS MA CAGNOTTE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -219,7 +178,6 @@ export default function MesParisTab() {
             </div>
           </button>
           
-          {/* ✅ TOTAL GAGNÉ AUSSI CLIQUABLE */}
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -230,69 +188,66 @@ export default function MesParisTab() {
               {totalWonFromBets}
             </p>
           </button>
-        </div>  {/* ← IL MANQUAIT CETTE BALISE */}
+        </div>
       </div>
 
-
-
-      {/* Stats paris */}
+      {/* ✅ STATS PARIS AVEC FILTRES INTÉGRÉS - SUPPRESSION DU BANDEAU DOUBLON */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-white rounded-lg shadow-sm p-3 text-center border border-rugby-gray">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Clock className="w-4 h-4 text-orange-500" />
-            <p className="text-xl font-bold text-orange-500">{parisPending}</p>
-          </div>
-          <p className="text-[10px] text-gray-600">En cours</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-3 text-center border border-rugby-gray">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <Trophy className="w-4 h-4 text-green-600" />
-            <p className="text-xl font-bold text-green-600">{parisWon}</p>
-          </div>
-          <p className="text-[10px] text-gray-600">Gagnés</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-3 text-center border border-rugby-gray">
-          <div className="flex items-center justify-center gap-1 mb-1">
-            <TrendingDown className="w-4 h-4 text-red-600" />
-            <p className="text-xl font-bold text-red-600">{parisLost}</p>
-          </div>
-          <p className="text-[10px] text-gray-600">Perdus</p>
-        </div>
-      </div>
-
-      {/* Filtres */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
         <button
           onClick={() => setFilter('pending')}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
-            filter === 'pending'
-              ? 'bg-orange-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`rounded-lg shadow-sm p-3 text-center border transition-all ${
+            filter === 'pending' 
+              ? 'bg-orange-500 border-orange-600 ring-2 ring-orange-300' 
+              : 'bg-white border-rugby-gray hover:shadow-md'
           }`}
         >
-          En cours ({parisPending})
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Clock className={`w-4 h-4 ${filter === 'pending' ? 'text-white' : 'text-orange-500'}`} />
+            <p className={`text-xl font-bold ${filter === 'pending' ? 'text-white' : 'text-orange-500'}`}>
+              {parisPending}
+            </p>
+          </div>
+          <p className={`text-[10px] ${filter === 'pending' ? 'text-white' : 'text-gray-600'}`}>
+            En cours
+          </p>
         </button>
+
         <button
           onClick={() => setFilter('won')}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
-            filter === 'won'
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`rounded-lg shadow-sm p-3 text-center border transition-all ${
+            filter === 'won' 
+              ? 'bg-green-600 border-green-700 ring-2 ring-green-300' 
+              : 'bg-white border-rugby-gray hover:shadow-md'
           }`}
         >
-          Gagnés ({parisWon})
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Trophy className={`w-4 h-4 ${filter === 'won' ? 'text-white' : 'text-green-600'}`} />
+            <p className={`text-xl font-bold ${filter === 'won' ? 'text-white' : 'text-green-600'}`}>
+              {parisWon}
+            </p>
+          </div>
+          <p className={`text-[10px] ${filter === 'won' ? 'text-white' : 'text-gray-600'}`}>
+            Gagnés
+          </p>
         </button>
+
         <button
           onClick={() => setFilter('lost')}
-          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
-            filter === 'lost'
-              ? 'bg-red-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`rounded-lg shadow-sm p-3 text-center border transition-all ${
+            filter === 'lost' 
+              ? 'bg-red-600 border-red-700 ring-2 ring-red-300' 
+              : 'bg-white border-rugby-gray hover:shadow-md'
           }`}
         >
-          Perdus ({parisLost})
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <TrendingDown className={`w-4 h-4 ${filter === 'lost' ? 'text-white' : 'text-red-600'}`} />
+            <p className={`text-xl font-bold ${filter === 'lost' ? 'text-white' : 'text-red-600'}`}>
+              {parisLost}
+            </p>
+          </div>
+          <p className={`text-[10px] ${filter === 'lost' ? 'text-white' : 'text-gray-600'}`}>
+            Perdus
+          </p>
         </button>
       </div>
 
@@ -308,14 +263,22 @@ export default function MesParisTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
+            // ✅ Essayer d'abord de charger depuis user_pronos
             const prono = pronos.find(p => p.match_id === bet.match_id);
-            const teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
-            const teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
+            let teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
+            let teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
+            
+            // ✅ Si pas trouvé dans pronos, extraire depuis match_id
+            if (!teamDom || !teamExt) {
+              const extracted = extractTeamsFromMatchId(bet.match_id);
+              teamDom = extracted.home;
+              teamExt = extracted.away;
+            }
 
             return (
               <div 
                 key={bet.id}
-                ref={el => betRefs.current[bet.match_id] = el}  // ? Ref par match_id
+                ref={el => betRefs.current[bet.match_id] = el}
                 className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all duration-300"
                 style={{
                   borderLeftColor: 
@@ -324,7 +287,7 @@ export default function MesParisTab() {
                 }}
               >
                 {/* Match */}
-                {prono && teamDom && teamExt && (
+                {teamDom && teamExt && (
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <img 
@@ -348,72 +311,64 @@ export default function MesParisTab() {
                   </div>
                 )}
 
-                {/* Infos pari */}
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <p className="text-gray-500">Type</p>
-                    <p className="font-bold">{bet.bet_type === 'FT' ? 'Temps plein' : 'Mi-temps'}</p>
+                {/* Détails */}
+                <div className="space-y-1 text-xs text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Type</span>
+                    <span>{bet.bet_type === 'FT' ? 'Temps plein' : 'Mi-temps'}</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500">Prono</p>
-                    <p className="font-bold">{bet.score_domicile}-{bet.score_exterieur}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Prono</span>
+                    <span>{bet.score_domicile}-{bet.score_exterieur}</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500">Mise</p>
-                    <p className="font-bold text-rugby-gold">{bet.stake} jetons</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Mise</span>
+                    <span>{bet.stake} jetons</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500">Cote</p>
-                    <p className="font-bold">×{bet.odds?.toFixed(2)}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Cote</span>
+                    <span>×{bet.odds?.toFixed(2) || '1.00'}</span>
                   </div>
-                </div>
-
-                {/* Gain */}
-                <div className="mt-3 pt-3 border-t border-gray-100">
                   {bet.status === 'pending' && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Gain potentiel:</span>
-                      <span className="text-sm font-bold text-green-600">
-                        {Math.floor(bet.stake * bet.odds)} jetons
-                      </span>
+                    <div className="flex items-center gap-2 text-orange-600">
+                      <span className="font-semibold">Gain potentiel:</span>
+                      <span>{Math.floor(bet.stake * (bet.odds || 1))} jetons</span>
                     </div>
                   )}
                   {bet.status === 'won' && (
-                    <div className="flex items-center justify-between bg-green-50 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-green-700">Gagné:</span>
-                      <span className="text-sm font-bold text-green-700">
-                        +{bet.payout} jetons
-                      </span>
+                    <div className="flex items-center gap-2 text-green-600">
+                      <span className="font-semibold">Gagné:</span>
+                      <span>+{bet.payout} jetons</span>
                     </div>
                   )}
                   {bet.status === 'lost' && (
-                    <div className="flex items-center justify-between bg-red-50 rounded px-2 py-1">
-                      <span className="text-xs font-semibold text-red-700">Perdu:</span>
-                      <span className="text-sm font-bold text-red-700">
-                        -{bet.stake} jetons
-                      </span>
+                    <div className="flex items-center gap-2 text-red-600">
+                      <span className="font-semibold">Perdu:</span>
+                      <span>-{bet.stake} jetons</span>
                     </div>
                   )}
                 </div>
 
                 {/* Date */}
-                <div className="mt-2 flex items-center gap-1 text-[10px] text-gray-400">
-                  <Calendar className="w-3 h-3" />
-                  {new Date(bet.placed_at).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                <p className="text-xs text-gray-400 mt-2">
+                  {new Date(bet.placed_at).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric' 
                   })}
-                </div>
+                  {', '}
+                  {new Date(bet.placed_at).toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
               </div>
             );
           })}
         </div>
       )}
 
-
-      {/* Bouton Règlement en bas de page */}
+      {/* Bouton Règlement */}
       <div className="flex justify-center mt-6 mb-4">
         <button
           onClick={() => setShowReglementModal(true)}
@@ -424,7 +379,7 @@ export default function MesParisTab() {
         </button>
       </div>
 
-            <ReglementModal 
+      <ReglementModal 
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />
