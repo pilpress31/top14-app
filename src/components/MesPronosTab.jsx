@@ -187,6 +187,11 @@ export default function MesPronosTab({ goToMesParis }) {
     return numA - numB;
   });
 
+
+  const totalWonFromBets = mesPronos
+    .filter(p => p.est_correct === true)
+    .reduce((sum, p) => sum + ((p.gain_ft || 0) + (p.gain_mt || 0)), 0);
+
   return (
     <div className="space-y-3">
       
@@ -213,7 +218,7 @@ export default function MesPronosTab({ goToMesParis }) {
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
-              {userCredits?.total_earned || 0}
+              {totalWonFromBets}
             </p>
           </button>
         </div>  {/* ← IL MANQUAIT CETTE BALISE */}
