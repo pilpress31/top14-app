@@ -271,32 +271,36 @@ export default function MesParisTab() {
             }
 
             const potentialWin = Math.floor(bet.stake * (bet.odds || 1));
+            const isWon = bet.payout > 0;
+            const isPending = bet.status === 'pending';
+            const isLost = bet.status === 'lost';
 
             return (
               <div 
                 key={bet.id}
                 ref={el => betRefs.current[bet.match_id] = el}
                 className={`bg-white rounded-xl shadow-md border-2 hover:shadow-lg transition-all duration-300 overflow-hidden ${
-                  bet.status === 'pending' ? 'border-orange-400' : 
-                  bet.status === 'won' ? 'border-green-500' : 'border-red-500'
+                  isPending ? 'border-orange-400' : 
+                  isWon ? 'border-green-500' : 'border-red-500'
                 }`}
               >
-                {/* Header avec statut */}
+                {/* Header */}
                 <div className={`px-4 py-2 flex items-center justify-between ${
-                  bet.status === 'pending' ? 'bg-orange-50' : 
-                  bet.status === 'won' ? 'bg-green-50' : 'bg-red-50'
+                  isPending ? 'bg-orange-50' : 
+                  isWon ? 'bg-green-50' : 'bg-red-50'
                 }`}>
                   <div className="flex items-center gap-2">
-                    {bet.status === 'pending' && <Clock className="w-4 h-4 text-orange-600" />}
-                    {bet.status === 'won' && <Trophy className="w-4 h-4 text-green-600" />}
-                    {bet.status === 'lost' && <TrendingDown className="w-4 h-4 text-red-600" />}
+                    {isPending && <Clock className="w-4 h-4 text-orange-600" />}
+                    {isWon && <Trophy className="w-4 h-4 text-green-600" />}
+                    {isLost && <TrendingDown className="w-4 h-4 text-red-600" />}
+
                     <span className={`text-xs font-bold uppercase ${
-                      bet.status === 'pending' ? 'text-orange-700' : 
-                      bet.status === 'won' ? 'text-green-700' : 'text-red-700'
+                      isPending ? 'text-orange-700' : 
+                      isWon ? 'text-green-700' : 'text-red-700'
                     }`}>
-                      {bet.status === 'pending' && 'En cours'}
-                      {bet.status === 'won' && 'Gagné'}
-                      {bet.status === 'lost' && 'Perdu'}
+                      {isPending && 'En cours'}
+                      {isWon && 'Gagné'}
+                      {isLost && 'Perdu'}
                     </span>
                   </div>
                   
@@ -344,7 +348,7 @@ export default function MesParisTab() {
                     </div>
                   )}
 
-                  {/* Détails du pari */}
+                  {/* Mise + Cote */}
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div className="bg-blue-50 rounded-lg p-2.5 border border-blue-200">
                       <p className="text-[10px] text-blue-700 font-semibold mb-1">Mise</p>
@@ -358,7 +362,7 @@ export default function MesParisTab() {
                   </div>
 
                   {/* Résultat */}
-                  {bet.status === 'pending' && (
+                  {isPending && (
                     <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-3 border-2 border-orange-200">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-orange-700">Gain potentiel :</span>
@@ -367,7 +371,7 @@ export default function MesParisTab() {
                     </div>
                   )}
 
-                  {bet.status > 0 && (
+                  {isWon && (
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-300">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-green-700">Gain :</span>
@@ -376,7 +380,7 @@ export default function MesParisTab() {
                     </div>
                   )}
 
-                  {bet.status === 'lost' && (
+                  {isLost && (
                     <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-3 border-2 border-red-200">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-red-700">Perte :</span>
@@ -401,6 +405,7 @@ export default function MesParisTab() {
                 </div>
               </div>
             );
+
           })}
         </div>
       )}
