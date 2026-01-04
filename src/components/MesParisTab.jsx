@@ -367,7 +367,7 @@ export default function MesParisTab() {
                     </div>
                   )}
 
-                  {bet.status === > 0 && (
+                  {bet.status > 0 && (
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-300">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-green-700">Gain :</span>
