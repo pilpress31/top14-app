@@ -110,7 +110,7 @@ export default function MesPronosTab({ goToMesParis }) {
       }
 
       const { data: pronos, error } = await supabase
-        .from('user_bets')
+        .from('user_pronos_view')
         .select('*')
         .eq('user_id', user.id)
         .eq('match_termine', false)
@@ -151,7 +151,7 @@ export default function MesPronosTab({ goToMesParis }) {
   };
 
   const ouvrirModal = (match) => {
-    const dejaPronos = mesPronos.find(p => p.match_id === match.match_id);
+    const dejaPronos = mesPronos.filter(p => p.match_id === match.match_id);
     const hasFT = dejaPronos?.mise_ft > 0;
     const hasMT = dejaPronos?.mise_mt > 0;
 
@@ -268,7 +268,7 @@ export default function MesPronosTab({ goToMesParis }) {
                 {isExpanded && (
                   <div className="divide-y divide-rugby-gray">
                     {matchsJournee.map(match => {
-                      const existingProno = mesPronos.find(p => p.match_id === match.match_id);
+                      const existingProno = mesPronos.filter(p => p.match_id === match.match_id);
                       
                       return (
                         <MatchCard
