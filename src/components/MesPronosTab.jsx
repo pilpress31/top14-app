@@ -291,7 +291,7 @@ export default function MesPronosTab({ goToMesParis }) {
       {showModal && selectedMatch && (
         <BettingModal 
           match={selectedMatch}
-          existingProno={mesPronos.find(p => p.match_id === selectedMatch.match_id)}
+          existingProno={mesPronos.filter(p => p.match_id === selectedMatch.match_id)}
           userCredits={userCredits?.credits || 0}
           onClose={fermerModal}
           onSuccess={() => {
@@ -300,6 +300,7 @@ export default function MesPronosTab({ goToMesParis }) {
           }}
         />
       )}
+
 
       {/* Bouton Règlement en bas de page */}
       <div className="flex justify-center mt-6 mb-4">
