@@ -78,7 +78,8 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
   );
 }
 
-// Transaction Item Component - AMÉLIORÉ AVEC DÉTAILS
+// ---------------------------------------------------------
+// Transaction Item Component - SIMPLIFIÉ
 // ---------------------------------------------------------
 function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const isPositive = trans.amount > 0;
@@ -90,16 +91,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
-
-  // Scores du pari et du match réel
-  const pronoHome = trans.bets?.score_domicile;
-  const pronoAway = trans.bets?.score_exterieur;
-  const realHome = match?.score_home;
-  const realAway = match?.score_away;
-
-  // Calculer l'écart
-  const hasRealScore = realHome !== null && realHome !== undefined;
-  const ecartProno = hasRealScore ? Math.abs((pronoHome - pronoAway) - (realHome - realAway)) : null;
 
   // Extraire les noms d'équipes
   let homeTeam = match?.home_team || 'Équipe domicile';
@@ -143,7 +134,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
 
   const dateObj = new Date(trans.created_at);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
-    weekday: 'short',
     day: "2-digit", 
     month: "short",
     year: "numeric"
@@ -167,57 +157,86 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
         return <Coins className="w-5 h-5 text-gray-400" />;
     }
   };
-  // -----------------------------
-  // RENDU
-  // -----------------------------
+
+  const getTitle = () => {
+    switch(trans.type) {
+      case 'bet_won':
+        return 'Pari gagné';
+      case 'bet_lost':
+        return 'Pari perdu';
+      case 'monthly_distribution':
+        return 'Distribution mensuelle';
+      case 'initial_capital':
+        return 'Bonus de bienvenue';
+      default:
+        return 'Régularisation système';
+    }
+  };
+
   return (
-    <div
-      className={`p-4 rounded-xl shadow-md border-2 transition-all ${
-        isWin
-          ? "border-green-400 bg-green-50"
-          : isLoss
-          ? "border-red-400 bg-red-50"
-          : "border-gray-200 bg-white"
-      }`}
+    <div 
+      className="p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer"
+      onClick={() => trans.type === 'bet_won' && trans.bet_id && navigateToBet(trans)}
     >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+      {/* En-tête */}
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex items-center gap-2 flex-1">
           {getIcon()}
-          <span className="font-semibold">
-            {isWin ? "Gain" : isLoss ? "Perte" : "Transaction"}
-          </span>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-sm">{getTitle()}</span>
+              {periodLabel && (
+                <span className="px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border">
+                  {periodLabel}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-
-        {periodLabel && (
-          <span className="text-xs px-2 py-1 bg-white/60 rounded-full font-bold">
-            {periodLabel}
+        
+        {/* Colonne droite : Montant + Solde */}
+        <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
+          <span className={`font-bold text-lg ${
+            isPositive ? "text-green-600" : "text-red-600"
+          }`}>
+            {isPositive && '+'}{trans.amount}
           </span>
-        )}
+          <p className="text-xs text-gray-400">
+            Solde: {trans.balance_after}
+          </p>
+        </div>
       </div>
 
-      <div className="text-sm text-gray-700">
-        {homeTeam} vs {awayTeam}
-      </div>
-
-      <div className="text-xs text-gray-400 mt-1">
-        {dateStr} — {timeStr}
-      </div>
-
-      {isWin && payout && (
-        <div className="mt-2 text-green-700 font-bold text-lg">
-          +{payout} 🪙
+      {/* Détails du match si disponible */}
+      {homeTeam && awayTeam && homeTeam !== 'Équipe domicile' && (
+        <div className="mt-2 text-sm text-gray-700 pl-7">
+          <p className="font-medium">
+            {homeTeam} {match?.score_home !== null ? `${match.score_home} - ${match.score_away}` : 'vs'} {awayTeam}
+          </p>
         </div>
       )}
 
-      {isLoss && stake && (
-        <div className="mt-2 text-red-700 font-bold text-lg">
-          -{stake} 🪙
+      {/* Détails du pari */}
+      {(odds || stake) && (
+        <div className="mt-2 text-xs text-gray-500 pl-7">
+          {odds && <span>Cote {parseFloat(odds).toFixed(2)}</span>}
+          {odds && stake && <span> • </span>}
+          {stake && <span>Mise {stake} jetons</span>}
+          {payout && <span> • Gain {payout} jetons</span>}
         </div>
       )}
+
+      {/* Date EN BAS */}
+      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1 pl-7">
+        {match?.round && <span className="font-medium">J{match.round}</span>}
+        {match?.round && <span>•</span>}
+        <span>{dateStr}</span>
+        <span>•</span>
+        <span>{timeStr}</span>
+      </p>
     </div>
   );
 }
-
 
 // ---------------------------------------------------------
 // Main Component
@@ -293,48 +312,14 @@ export default function MaCagnotte() {
       const txs = historyResponse.data.transactions || [];
       const allBets = historyResponse.data.bets || [];
 
-      // 🔍 DEBUG : Vérifier les types de transactions
-      console.log('🔍 DEBUG - Transactions brutes:', txs);
-      console.log('🔍 DEBUG - Types présents:', [...new Set(txs.map(t => t.type))]);
-      console.log('🔍 DEBUG - Nombre de bet_lost:', txs.filter(t => t.type === 'bet_lost').length);
-      console.log('🔍 DEBUG - Nombre de bet_won:', txs.filter(t => t.type === 'bet_won').length);
-      console.log('🔍 DEBUG - Paris perdus dans bets:', allBets.filter(b => b.status === 'lost').length);
-
-      // ✅ Filtrer les transactions existantes
+      // ✅ Filtrer : garder uniquement bet_won, bet_lost, distributions, bonus
       const transactionsFiltered = txs.filter(trans => {
-        // ❌ Masquer UNIQUEMENT les bet_placed
+        // ❌ Masquer TOUS les bet_placed
         if (trans.type === 'bet_placed') return false;
+        
+        // ✅ Garder bet_won, bet_lost, distributions, bonus initial
         return true;
       });
-
-      // ✅ AJOUTER les paris perdus manuellement (ils n'existent pas dans transactions)
-      const lostBetsToAdd = allBets.filter(b => b.status === 'lost');
-      
-      lostBetsToAdd.forEach(bet => {
-        // Trouver la transaction bet_placed correspondante pour avoir le balance_after
-        const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
-        
-        transactionsFiltered.push({
-          id: `lost_${bet.id}`,
-          type: 'bet_lost',
-          amount: -bet.stake, // Perte = mise négative
-          balance_after: placedTx?.balance_after || null,
-          created_at: bet.result_at || bet.placed_at,
-          bet_id: bet.id,
-          bets: {
-            ...bet,
-            matches: bet.matches,
-            bet_type: bet.bet_type,
-            odds: bet.odds,
-            stake: bet.stake,
-            score_domicile: bet.score_domicile,
-            score_exterieur: bet.score_exterieur
-          }
-        });
-      });
-
-      console.log('🔍 DEBUG - Transactions après ajout lost:', transactionsFiltered.length);
-      console.log('🔍 DEBUG - Types après ajout:', [...new Set(transactionsFiltered.map(t => t.type))]);
 
       setTransactions(transactionsFiltered);
       setBets(allBets);
@@ -690,7 +675,7 @@ export default function MaCagnotte() {
               <p className="text-gray-500">Aucune transaction</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden">
               {filteredTransactions.map(trans => (
                 <TransactionItem 
                   key={trans.id} 
