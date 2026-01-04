@@ -119,6 +119,7 @@ export default function MesPronosTab({ goToMesParis }) {
       if (error) throw error;
       setMesPronos(pronos || []);
 
+      console.log("🟩 mesPronos chargés :", pronos);
 
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
