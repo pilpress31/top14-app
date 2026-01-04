@@ -398,9 +398,9 @@ export default function MaCagnotte() {
       });
 
       // ✅ AJOUTER les paris perdus manuellement (ils n'existent pas dans transactions)
-      const lostBets = allBets.filter(b => b.status === 'lost');
+      const lostBetsToAdd = allBets.filter(b => b.status === 'lost');
       
-      lostBets.forEach(bet => {
+      lostBetsToAdd.forEach(bet => {
         // Trouver la transaction bet_placed correspondante pour avoir le balance_after
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         
