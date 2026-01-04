@@ -123,14 +123,15 @@ export default function MesParisTab() {
       }
 
       const { data: pronosData, error: pronosError } = await supabase
-        .from('user_bets')
+        .from('user_pronos_view')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('match_date', { ascending: true });
 
       if (!pronosError) {
         setPronos(pronosData || []);
       }
+
 
 
     } catch (error) {
