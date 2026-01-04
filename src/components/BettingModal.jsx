@@ -49,6 +49,8 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
   console.log('🎯 BettingModal - existingFT:', existingFT);
   console.log('🎯 BettingModal - existingMT:', existingMT);
   console.log('🎯 BettingModal - hasFT:', hasFT, 'hasMT:', hasMT);
+  console.log("🟦 match_id du modal :", match.match_id);
+
 
   // Données équipes
   const teamDom = getTeamData(match.equipe_domicile);
