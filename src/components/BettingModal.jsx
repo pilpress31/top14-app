@@ -40,6 +40,11 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
   const hasFT = existingProno?.bet_type === 'FT' || existingProno?.score_dom_pronos !== null;
   const hasMT = existingProno?.bet_type === 'MT' || existingProno?.score_dom_mt !== null;
 
+  // 🔍 DEBUG
+    console.log('🎯 BettingModal - existingProno:', existingProno);
+    console.log('🎯 BettingModal - hasFT:', hasFT, 'hasMT:', hasMT);
+
+
   // Données équipes
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
