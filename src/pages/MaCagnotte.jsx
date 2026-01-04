@@ -388,19 +388,43 @@ export default function MaCagnotte() {
       console.log('🔍 DEBUG - Types présents:', [...new Set(txs.map(t => t.type))]);
       console.log('🔍 DEBUG - Nombre de bet_lost:', txs.filter(t => t.type === 'bet_lost').length);
       console.log('🔍 DEBUG - Nombre de bet_won:', txs.filter(t => t.type === 'bet_won').length);
-      console.log('🔍 DEBUG - Nombre de bet_placed:', txs.filter(t => t.type === 'bet_placed').length);
+      console.log('🔍 DEBUG - Paris perdus dans bets:', allBets.filter(b => b.status === 'lost').length);
 
-      // ✅ Filtrer : garder bet_won, bet_lost, distributions, bonus
+      // ✅ Filtrer les transactions existantes
       const transactionsFiltered = txs.filter(trans => {
         // ❌ Masquer UNIQUEMENT les bet_placed
         if (trans.type === 'bet_placed') return false;
-        
-        // ✅ Garder bet_won, bet_lost, distributions, bonus initial
         return true;
       });
 
-      console.log('🔍 DEBUG - Transactions après filtre:', transactionsFiltered.length);
-      console.log('🔍 DEBUG - Types après filtre:', [...new Set(transactionsFiltered.map(t => t.type))]);
+      // ✅ AJOUTER les paris perdus manuellement (ils n'existent pas dans transactions)
+      const lostBets = allBets.filter(b => b.status === 'lost');
+      
+      lostBets.forEach(bet => {
+        // Trouver la transaction bet_placed correspondante pour avoir le balance_after
+        const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
+        
+        transactionsFiltered.push({
+          id: `lost_${bet.id}`,
+          type: 'bet_lost',
+          amount: -bet.stake, // Perte = mise négative
+          balance_after: placedTx?.balance_after || null,
+          created_at: bet.result_at || bet.placed_at,
+          bet_id: bet.id,
+          bets: {
+            ...bet,
+            matches: bet.matches,
+            bet_type: bet.bet_type,
+            odds: bet.odds,
+            stake: bet.stake,
+            score_domicile: bet.score_domicile,
+            score_exterieur: bet.score_exterieur
+          }
+        });
+      });
+
+      console.log('🔍 DEBUG - Transactions après ajout lost:', transactionsFiltered.length);
+      console.log('🔍 DEBUG - Types après ajout:', [...new Set(transactionsFiltered.map(t => t.type))]);
 
       setTransactions(transactionsFiltered);
       setBets(allBets);
@@ -756,7 +780,7 @@ export default function MaCagnotte() {
               <p className="text-gray-500">Aucune transaction</p>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden">
+            <div className="space-y-3">
               {filteredTransactions.map(trans => (
                 <TransactionItem 
                   key={trans.id} 
