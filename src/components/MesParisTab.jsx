@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Coins, TrendingUp, TrendingDown, Trophy, Calendar, Clock, FileText } from 'lucide-react';
+import { Coins, TrendingUp, TrendingDown, Trophy, Calendar, Clock, FileText, Target } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
@@ -18,18 +18,15 @@ export default function MesParisTab() {
   const [targetMatchId, setTargetMatchId] = useState(null);
   const betRefs = useRef({});
 
-  // ✅ FONCTION HELPER : Extraire les noms d'équipes depuis match_id
   const extractTeamsFromMatchId = (matchId) => {
     if (!matchId) return { home: null, away: null };
     
-    // Format: 2025-2026_14_EQUIPE_DOMICILE_EQUIPE_EXTERIEURE
     const parts = matchId.split('_');
     if (parts.length < 4) return { home: null, away: null };
     
     const teams = parts.slice(2).join('_');
     const possibleTeams = teams.split('_');
     
-    // Essayer toutes les combinaisons pour trouver les 2 équipes
     for (let i = 1; i < possibleTeams.length; i++) {
       const testHome = possibleTeams.slice(0, i).join(' ');
       const testAway = possibleTeams.slice(i).join(' ');
@@ -101,7 +98,6 @@ export default function MesParisTab() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // Charger les crédits
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
           headers: { 'x-user-id': user.id }
@@ -111,7 +107,6 @@ export default function MesParisTab() {
         setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
       }
 
-      // Charger les paris
       try {
         const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets/detailed', {
           headers: { 'x-user-id': user.id }
@@ -131,8 +126,6 @@ export default function MesParisTab() {
       if (!pronosError) {
         setPronos(pronosData || []);
       }
-
-
 
     } catch (error) {
       console.error('❌ Erreur globale chargement données:', error);
@@ -165,7 +158,7 @@ export default function MesParisTab() {
   return (
     <div className="space-y-3">
       
-      {/* BANDEAU AVEC ICÔNE CLIQUABLE */}
+      {/* BANDEAU CAGNOTTE */}
       <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <button
@@ -192,7 +185,7 @@ export default function MesParisTab() {
         </div>
       </div>
 
-      {/* ✅ STATS PARIS AVEC FILTRES INTÉGRÉS - SUPPRESSION DU BANDEAU DOUBLON */}
+      {/* STATS PARIS AVEC FILTRES */}
       <div className="grid grid-cols-3 gap-2">
         <button
           onClick={() => setFilter('pending')}
@@ -264,105 +257,145 @@ export default function MesParisTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
-            // ✅ Essayer d'abord de charger depuis user_pronos
             const prono = pronos.find(p => p.match_id === bet.match_id);
             let teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
             let teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
             
-            // ✅ Si pas trouvé dans pronos, extraire depuis match_id
             if (!teamDom || !teamExt) {
               const extracted = extractTeamsFromMatchId(bet.match_id);
               teamDom = extracted.home;
               teamExt = extracted.away;
             }
 
+            const potentialWin = Math.floor(bet.stake * (bet.odds || 1));
+
             return (
               <div 
                 key={bet.id}
                 ref={el => betRefs.current[bet.match_id] = el}
-                className="bg-white rounded-lg shadow-sm p-4 border-l-4 hover:shadow-md transition-all duration-300"
-                style={{
-                  borderLeftColor: 
-                    bet.status === 'pending' ? '#f97316' : 
-                    bet.status === 'won' ? '#16a34a' : '#dc2626'
-                }}
+                className={`bg-white rounded-xl shadow-md border-2 hover:shadow-lg transition-all duration-300 overflow-hidden ${
+                  bet.status === 'pending' ? 'border-orange-400' : 
+                  bet.status === 'won' ? 'border-green-500' : 'border-red-500'
+                }`}
               >
-                {/* Match */}
-                {teamDom && teamExt && (
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src={teamDom.logo} 
-                        alt={teamDom.name} 
-                        className="w-6 h-6 object-contain"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                      <span className="text-sm font-bold">{teamDom.name}</span>
-                    </div>
-                    <span className="text-gray-400 font-semibold text-xs">vs</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold">{teamExt.name}</span>
-                      <img 
-                        src={teamExt.logo} 
-                        alt={teamExt.name} 
-                        className="w-6 h-6 object-contain"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Détails */}
-                <div className="space-y-1 text-xs text-gray-600">
+                {/* Header avec statut */}
+                <div className={`px-4 py-2 flex items-center justify-between ${
+                  bet.status === 'pending' ? 'bg-orange-50' : 
+                  bet.status === 'won' ? 'bg-green-50' : 'bg-red-50'
+                }`}>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">Type</span>
-                    <span>{bet.bet_type === 'FT' ? 'Temps plein' : 'Mi-temps'}</span>
+                    {bet.status === 'pending' && <Clock className="w-4 h-4 text-orange-600" />}
+                    {bet.status === 'won' && <Trophy className="w-4 h-4 text-green-600" />}
+                    {bet.status === 'lost' && <TrendingDown className="w-4 h-4 text-red-600" />}
+                    <span className={`text-xs font-bold uppercase ${
+                      bet.status === 'pending' ? 'text-orange-700' : 
+                      bet.status === 'won' ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {bet.status === 'pending' && 'En cours'}
+                      {bet.status === 'won' && 'Gagné'}
+                      {bet.status === 'lost' && 'Perdu'}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">Prono</span>
-                    <span>{bet.score_domicile}-{bet.score_exterieur}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">Mise</span>
-                    <span>{bet.stake} jetons</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">Cote</span>
-                    <span>×{bet.odds?.toFixed(2) || '1.00'}</span>
-                  </div>
-                  {bet.status === 'pending' && (
-                    <div className="flex items-center gap-2 text-orange-600">
-                      <span className="font-semibold">Gain potentiel:</span>
-                      <span>{Math.floor(bet.stake * (bet.odds || 1))} jetons</span>
-                    </div>
-                  )}
-                  {bet.status === 'won' && (
-                    <div className="flex items-center gap-2 text-green-600">
-                      <span className="font-semibold">Gagné:</span>
-                      <span>+{bet.payout} jetons</span>
-                    </div>
-                  )}
-                  {bet.status === 'lost' && (
-                    <div className="flex items-center gap-2 text-red-600">
-                      <span className="font-semibold">Perdu:</span>
-                      <span>-{bet.stake} jetons</span>
-                    </div>
-                  )}
+                  
+                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
+                    {bet.bet_type === 'FT' ? '🏉 Temps plein' : '⏱️ Mi-temps'}
+                  </span>
                 </div>
 
-                {/* Date */}
-                <p className="text-xs text-gray-400 mt-2">
-                  {new Date(bet.placed_at).toLocaleDateString('fr-FR', { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric' 
-                  })}
-                  {', '}
-                  {new Date(bet.placed_at).toLocaleTimeString('fr-FR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
+                <div className="p-4">
+                  {/* Match */}
+                  {teamDom && teamExt && (
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 flex-1">
+                          <img 
+                            src={teamDom.logo} 
+                            alt={teamDom.name} 
+                            className="w-8 h-8 object-contain"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                          <span className="font-bold text-gray-900">{teamDom.name}</span>
+                        </div>
+                        <div className="px-3">
+                          <span className="text-gray-400 font-bold">vs</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-1 justify-end">
+                          <span className="font-bold text-gray-900">{teamExt.name}</span>
+                          <img 
+                            src={teamExt.logo} 
+                            alt={teamExt.name} 
+                            className="w-8 h-8 object-contain"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Score pronostiqué */}
+                      <div className="bg-gray-50 rounded-lg py-2 px-4 flex items-center justify-center gap-3">
+                        <Target className="w-4 h-4 text-rugby-gold" />
+                        <span className="text-sm text-gray-600">Pronostic :</span>
+                        <span className="text-2xl font-bold text-rugby-gold">
+                          {bet.score_domicile} - {bet.score_exterieur}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Détails du pari */}
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-blue-50 rounded-lg p-2.5 border border-blue-200">
+                      <p className="text-[10px] text-blue-700 font-semibold mb-1">Mise</p>
+                      <p className="text-lg font-bold text-blue-900">{bet.stake} 🪙</p>
+                    </div>
+
+                    <div className="bg-purple-50 rounded-lg p-2.5 border border-purple-200">
+                      <p className="text-[10px] text-purple-700 font-semibold mb-1">Cote</p>
+                      <p className="text-lg font-bold text-purple-900">×{bet.odds?.toFixed(2) || '1.00'}</p>
+                    </div>
+                  </div>
+
+                  {/* Résultat */}
+                  {bet.status === 'pending' && (
+                    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg p-3 border-2 border-orange-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-orange-700">Gain potentiel :</span>
+                        <span className="text-xl font-bold text-orange-600">{potentialWin} 🪙</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {bet.status === 'won' && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-300">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-green-700">Gain :</span>
+                        <span className="text-xl font-bold text-green-600">+{bet.payout} 🪙</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {bet.status === 'lost' && (
+                    <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-3 border-2 border-red-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-red-700">Perte :</span>
+                        <span className="text-xl font-bold text-red-600">-{bet.stake} 🪙</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Date */}
+                  <p className="text-xs text-gray-400 mt-3 text-center">
+                    {new Date(bet.placed_at).toLocaleDateString('fr-FR', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                    {' à '}
+                    {new Date(bet.placed_at).toLocaleTimeString('fr-FR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
               </div>
             );
           })}
