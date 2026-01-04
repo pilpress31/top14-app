@@ -36,6 +36,10 @@ const getBlockingMessage = (match) => {
 };
 
 export default function MatchCard({ match, existingProno, onBetClick, goToMesParis }) {
+  
+  console.log("🟦 MatchCard", match.match_id, "→ existingProno =", existingProno);
+
+
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
