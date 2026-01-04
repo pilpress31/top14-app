@@ -78,77 +78,51 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
   );
 }
 
-// ---------------------------------------------------------
 // Transaction Item Component - AMÉLIORÉ AVEC DÉTAILS
 // ---------------------------------------------------------
 function TransactionItem({ trans, navigateToBet, getTeamData }) {
-
-  // -----------------------------
-  // LOGIQUE ROBUSTE
-  // -----------------------------
-  const isBet = !!trans.bets;
-
-  const isWin =
-    trans.reference_type === "prono_won" ||
-    (isBet && trans.amount > 0);
-
-  const isLoss =
-    trans.reference_type === "prono_lost" ||
-    (isBet && trans.amount < 0);
-
-  const isNeutral = !isWin && !isLoss;
-
-  const isFT =
-    trans.bets?.bet_type === "FT" ||
-    trans.description?.includes("FT");
-
-  const isMT =
-    trans.bets?.bet_type === "MT" ||
-    trans.description?.includes("MT");
-
-  const periodLabel = isFT ? "Temps plein" : isMT ? "Mi-temps" : "";
-
-  // -----------------------------
-  // MATCH & DONNÉES
-  // -----------------------------
+  const isPositive = trans.amount > 0;
+  const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
+  const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
+  const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
+  
   const match = trans.bets?.matches;
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
+  // Scores du pari et du match réel
   const pronoHome = trans.bets?.score_domicile;
   const pronoAway = trans.bets?.score_exterieur;
   const realHome = match?.score_home;
   const realAway = match?.score_away;
 
+  // Calculer l'écart
   const hasRealScore = realHome !== null && realHome !== undefined;
-  const ecartProno = hasRealScore
-    ? Math.abs((pronoHome - pronoAway) - (realHome - realAway))
-    : null;
+  const ecartProno = hasRealScore ? Math.abs((pronoHome - pronoAway) - (realHome - realAway)) : null;
 
-  let homeTeam = match?.home_team || "Équipe domicile";
-  let awayTeam = match?.away_team || "Équipe extérieure";
+  // Extraire les noms d'équipes
+  let homeTeam = match?.home_team || 'Équipe domicile';
+  let awayTeam = match?.away_team || 'Équipe extérieure';
 
-  // Extraction robuste des équipes
   const extractTeamsFromId = (id) => {
     if (!id) return null;
-    const parts = id.split("_");
+    
+    const parts = id.split('_');
     if (parts.length < 4) return null;
-
-    const teams = parts.slice(2).join("_");
-    const possibleTeams = teams.split("_");
-
+    
+    const teams = parts.slice(2).join('_');
+    const possibleTeams = teams.split('_');
+    
     for (let i = 1; i < possibleTeams.length; i++) {
-      const testHome = possibleTeams.slice(0, i).join(" ");
-      const testAway = possibleTeams.slice(i).join(" ");
-
+      const testHome = possibleTeams.slice(0, i).join(' ');
+      const testAway = possibleTeams.slice(i).join(' ');
+      
       const homeData = getTeamData(testHome);
       const awayData = getTeamData(testAway);
-
-      if (
-        homeData?.logo !== "/logos/default.svg" &&
-        awayData?.logo !== "/logos/default.svg"
-      ) {
+      
+      if (homeData?.logo !== '/logos/default.svg' && 
+          awayData?.logo !== '/logos/default.svg') {
         return { home: homeData.name, away: awayData.name };
       }
     }
@@ -156,46 +130,43 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   };
 
   let extracted = null;
-  if (match?.external_id) extracted = extractTeamsFromId(match.external_id);
-  else if (trans.bets?.match_id) extracted = extractTeamsFromId(trans.bets.match_id);
+  if (match?.external_id) {
+    extracted = extractTeamsFromId(match.external_id);
+  } else if (trans.bets?.match_id) {
+    extracted = extractTeamsFromId(trans.bets.match_id);
+  }
 
   if (extracted) {
     homeTeam = extracted.home;
     awayTeam = extracted.away;
   }
 
-  // -----------------------------
-  // DATE
-  // -----------------------------
   const dateObj = new Date(trans.created_at);
-  const dateStr = dateObj.toLocaleDateString("fr-FR", {
-    weekday: "short",
-    day: "2-digit",
+  const dateStr = dateObj.toLocaleDateString("fr-FR", { 
+    weekday: 'short',
+    day: "2-digit", 
     month: "short",
-    year: "numeric",
+    year: "numeric"
   });
-  const timeStr = dateObj.toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
+  const timeStr = dateObj.toLocaleTimeString("fr-FR", { 
+    hour: "2-digit", 
+    minute: "2-digit" 
   });
 
-  // -----------------------------
-  // ICÔNE ROBUSTE
-  // -----------------------------
   const getIcon = () => {
-    if (isWin) return <Trophy className="w-5 h-5 text-green-500" />;
-    if (isLoss) return <X className="w-5 h-5 text-red-500" />;
-
-    switch (trans.type) {
-      case "monthly_distribution":
+    switch(trans.type) {
+      case 'bet_won':
+        return <Trophy className="w-5 h-5 text-green-500" />;
+      case 'bet_lost':
+        return <X className="w-5 h-5 text-red-500" />;
+      case 'monthly_distribution':
         return <Gift className="w-5 h-5 text-blue-500" />;
-      case "initial_capital":
+      case 'initial_capital':
         return <Award className="w-5 h-5 text-purple-500" />;
       default:
         return <Coins className="w-5 h-5 text-gray-400" />;
     }
   };
-
   // -----------------------------
   // RENDU
   // -----------------------------
