@@ -188,7 +188,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
 
   return (
     <div 
-      className={`p-4 bg-white border-l-4 hover:bg-gray-50 transition cursor-pointer ${
+      className={`p-4 bg-white border-l-4 hover:bg-gray-50 transition cursor-pointer mb-3 rounded-lg shadow-sm ${
         trans.type === 'bet_won' ? 'border-green-500' :
         trans.type === 'bet_lost' ? 'border-red-500' :
         trans.type === 'monthly_distribution' ? 'border-blue-500' :
@@ -197,17 +197,31 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
       onClick={() => trans.type === 'bet_won' && trans.bet_id && navigateToBet(trans)}
     >
       {/* En-tête */}
-      <div className="flex justify-between items-start mb-3">
+      <div className="flex justify-between items-start mb-2">
         <div className="flex items-center gap-2 flex-1">
           {getIcon()}
           <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-sm">{getTitle()}</span>
-              {periodLabel && (
-                <span className="px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border">
-                  {periodLabel}
-                </span>
-              )}
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-sm">{getTitle()}</span>
+                {periodLabel && (
+                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border">
+                    {periodLabel}
+                  </span>
+                )}
+              </div>
+              {/* Date et journée sous le titre */}
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                {match?.round && (
+                  <>
+                    <span className="font-semibold text-rugby-gold">J{match.round}</span>
+                    <span>•</span>
+                  </>
+                )}
+                <span>{dateStr}</span>
+                <span>•</span>
+                <span>{timeStr}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -227,7 +241,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
 
       {/* Détails du match pour les paris */}
       {isPari && homeTeam && awayTeam && homeTeam !== 'Équipe domicile' && (
-        <div className="space-y-2 mb-3">
+        <div className="space-y-2 mb-2">
           {/* Noms des équipes */}
           <div className="flex items-center justify-between text-sm font-medium text-gray-700 bg-gray-50 rounded-lg p-2">
             <span>{homeTeam}</span>
@@ -265,25 +279,12 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
               </div>
             )}
           </div>
-
-          {/* Écart */}
-          {ecartProno !== null && (
-            <div className="bg-yellow-50 rounded-lg p-2 border border-yellow-200">
-              <p className="text-xs text-yellow-800">
-                <span className="font-semibold">Écart : </span>
-                {ecartProno === 0 
-                  ? '🎯 Score exact !' 
-                  : `${ecartProno} point${ecartProno > 1 ? 's' : ''} de différence`
-                }
-              </p>
-            </div>
-          )}
         </div>
       )}
 
       {/* Détails du pari (cote, mise) */}
       {(odds || stake) && (
-        <div className="flex flex-wrap gap-3 text-xs text-gray-600 bg-gray-50 rounded-lg p-2 mb-2">
+        <div className="flex flex-wrap gap-3 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
           {stake && (
             <span className="flex items-center gap-1">
               <span className="font-semibold">Mise:</span>
@@ -304,20 +305,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
           )}
         </div>
       )}
-
-      {/* Date et journée */}
-      <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
-        <span className="flex items-center gap-1">
-          {match?.round && (
-            <>
-              <span className="font-semibold text-rugby-gold">J{match.round}</span>
-              <span>•</span>
-            </>
-          )}
-          <span>{dateStr}</span>
-        </span>
-        <span>{timeStr}</span>
-      </div>
     </div>
   );
 }
@@ -396,6 +383,13 @@ export default function MaCagnotte() {
       const txs = historyResponse.data.transactions || [];
       const allBets = historyResponse.data.bets || [];
 
+      // 🔍 DEBUG : Vérifier les types de transactions
+      console.log('🔍 DEBUG - Transactions brutes:', txs);
+      console.log('🔍 DEBUG - Types présents:', [...new Set(txs.map(t => t.type))]);
+      console.log('🔍 DEBUG - Nombre de bet_lost:', txs.filter(t => t.type === 'bet_lost').length);
+      console.log('🔍 DEBUG - Nombre de bet_won:', txs.filter(t => t.type === 'bet_won').length);
+      console.log('🔍 DEBUG - Nombre de bet_placed:', txs.filter(t => t.type === 'bet_placed').length);
+
       // ✅ Filtrer : garder bet_won, bet_lost, distributions, bonus
       const transactionsFiltered = txs.filter(trans => {
         // ❌ Masquer UNIQUEMENT les bet_placed
@@ -404,6 +398,9 @@ export default function MaCagnotte() {
         // ✅ Garder bet_won, bet_lost, distributions, bonus initial
         return true;
       });
+
+      console.log('🔍 DEBUG - Transactions après filtre:', transactionsFiltered.length);
+      console.log('🔍 DEBUG - Types après filtre:', [...new Set(transactionsFiltered.map(t => t.type))]);
 
       setTransactions(transactionsFiltered);
       setBets(allBets);
