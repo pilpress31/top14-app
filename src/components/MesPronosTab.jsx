@@ -113,7 +113,6 @@ export default function MesPronosTab({ goToMesParis }) {
         .from('user_pronos_view')
         .select('*')
         .eq('user_id', user.id)
-        .eq('match_termine', false)
         .order('journee', { ascending: true });
 
       if (error) throw error;
