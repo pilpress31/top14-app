@@ -110,13 +110,15 @@ export default function MesPronosTab({ goToMesParis }) {
       }
 
       const { data: pronos, error } = await supabase
-        .from('user_pronos')
+        .from('user_bets')
         .select('*')
         .eq('user_id', user.id)
         .eq('match_termine', false)
         .order('journee', { ascending: true });
+
       if (error) throw error;
       setMesPronos(pronos || []);
+
 
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {

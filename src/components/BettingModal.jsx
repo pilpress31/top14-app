@@ -1,5 +1,5 @@
 // ============================================
-// MODAL DE PARI - VERSION OPTIMISÉE ET CORRIGÉE
+// MODAL DE PARI - ADAPTÉ POUR USER_BETS UNIQUEMENT
 // ============================================
 
 import { useState, useRef, useEffect } from 'react';
@@ -35,9 +35,10 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
   const domMTRef = useRef(null);
   const extMTRef = useRef(null);
 
-  // Détection des paris existants
-  const hasFT = existingProno?.mise_ft > 0;
-  const hasMT = existingProno?.mise_mt > 0;
+  // ✅ Détecter les paris existants depuis existingProno (qui vient de la vue user_pronos_view)
+  // existingProno contient maintenant les paris FT et MT fusionnés
+  const hasFT = existingProno?.bet_type === 'FT' || existingProno?.score_dom_pronos !== null;
+  const hasMT = existingProno?.bet_type === 'MT' || existingProno?.score_dom_mt !== null;
 
   // Données équipes
   const teamDom = getTeamData(match.equipe_domicile);
@@ -54,10 +55,16 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       if (existingProno.score_ext_pronos !== null) setScoreExtFT(existingProno.score_ext_pronos.toString());
       if (existingProno.score_dom_mt !== null) setScoreDomMT(existingProno.score_dom_mt.toString());
       if (existingProno.score_ext_mt !== null) setScoreExtMT(existingProno.score_ext_mt.toString());
-      if (existingProno.mise_ft) setStakeFT(existingProno.mise_ft.toString());
-      if (existingProno.mise_mt) setStakeMT(existingProno.mise_mt.toString());
-      setBetOnFT(existingProno.mise_ft > 0);
-      setBetOnMT(existingProno.mise_mt > 0);
+      
+      // Déterminer les types de paris existants
+      const hasFTBet = existingProno.score_dom_pronos !== null;
+      const hasMTBet = existingProno.score_dom_mt !== null;
+      
+      if (hasFTBet) setStakeFT('10');
+      if (hasMTBet) setStakeMT('10');
+      
+      setBetOnFT(!hasFTBet);
+      setBetOnMT(!hasMTBet);
     }
   }, [existingProno]);
 
@@ -79,26 +86,17 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
 
     setValidationErrors(validation.allMessages);
 
-    // Séparer les erreurs par contexte
     const ftErrors = validation.allMessages.filter(err => {
-      // Erreurs explicitement liées au FT
       if (err.field?.includes('FT') || err.field === 'scoreFT') return true;
       if (err.message.includes('FT') || err.message.includes('Temps Plein')) return true;
-      
-      // Erreurs de stake FT
       if (err.type === 'stake' && betOnFT && !betOnMT && !err.message.includes('MT')) return true;
-      
       return false;
     });
 
     const mtErrors = validation.allMessages.filter(err => {
-      // Erreurs explicitement liées au MT
       if (err.field?.includes('MT') || err.field === 'scoreMT') return true;
       if (err.message.includes('MT') || err.message.includes('Mi-temps')) return true;
-      
-      // Erreurs de stake MT
       if (err.type === 'stake' && betOnMT && !betOnFT && !err.message.includes('FT')) return true;
-      
       return false;
     });
 
@@ -107,14 +105,10 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
     );
 
     const generalErrors = validation.allMessages.filter(err => {
-      // Erreurs générales (crédits, etc.)
       if (err.type === 'credits') return true;
       if (err.type === 'missing') return true;
-      
-      // Erreur de stake général (les deux paris cochés mais total < 10)
       if (err.type === 'stake' && betOnFT && betOnMT && !err.message.includes('FT') && !err.message.includes('MT')) return true;
       
-      // Erreurs qui ne sont ni FT, ni MT, ni cohérence
       const isFT = err.field?.includes('FT') || err.field === 'scoreFT' || err.message.includes('FT');
       const isMT = err.field?.includes('MT') || err.field === 'scoreMT' || err.message.includes('MT');
       const isCoherence = err.type === 'coherence';
@@ -128,11 +122,9 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
 
   }, [betOnFT, betOnMT, scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT, stakeFT, stakeMT, userCredits, hasFT, hasMT]);
 
-  // Validation onBlur pour les scores (sans popup, juste focus)
   const handleScoreBlur = (score, field, refToFocus) => {
     const error = validateScoreInput(score, field);
     if (error) {
-      // On garde le focus, l'alerte contextuelle s'affichera automatiquement
       setTimeout(() => refToFocus?.current?.focus(), 100);
     }
   };
@@ -170,7 +162,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
     (betOnMT && !hasMT ? toInt(stakeMT) || 0 : 0);
 
   // ============================================
-  // ✅ FONCTION DE SAUVEGARDE CORRIGÉE
+  // ✅ FONCTION DE SAUVEGARDE - USER_BETS UNIQUEMENT
   // ============================================
   const handleSave = async () => {
     const validation = validateBet({
@@ -194,37 +186,11 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       const stakeFTNum = betOnFT ? toInt(stakeFT) : 0;
       const stakeMTNum = betOnMT ? toInt(stakeMT) : 0;
 
-      // ✅ Créer/Update dans user_pronos (SANS MISES - juste pour tracking UI)
-      const pronoData = {
-        user_id: user.id,
-        match_id: match.match_id,
-        journee: parseInt(match.journee.replace('J', '')),
-        saison: match.saison || '2025-2026',
-        equipe_domicile: match.equipe_domicile,
-        equipe_exterieure: match.equipe_exterieure,
-        equipe_pronostiquee: betOnFT
-          ? (dFT > eFT ? match.equipe_domicile : match.equipe_exterieure)
-          : (dMT > eMT ? match.equipe_domicile : match.equipe_exterieure),
-        score_dom_pronos: betOnFT ? dFT : existingProno?.score_dom_pronos || null,
-        score_ext_pronos: betOnFT ? eFT : existingProno?.score_ext_pronos || null,
-        score_dom_mt: betOnMT ? dMT : existingProno?.score_dom_mt || null,
-        score_ext_mt: betOnMT ? eMT : existingProno?.score_ext_mt || null,
-        mise_ft: (betOnFT && !hasFT) ? stakeFTNum : (existingProno?.mise_ft || 0),
-        mise_mt: (betOnMT && !hasMT) ? stakeMTNum : (existingProno?.mise_mt || 0),
-        mise_totale: ((betOnFT && !hasFT) ? stakeFTNum : (existingProno?.mise_ft || 0)) + 
-                     ((betOnMT && !hasMT) ? stakeMTNum : (existingProno?.mise_mt || 0)),
-        match_termine: false,
-        match_date: match.date_match ? new Date(match.date_match).toISOString() : null,
-        date_pronos: new Date().toISOString()
-      };
-
-      await supabase.from('user_pronos').upsert(pronoData, {
-        onConflict: 'user_id,match_id'
-      });
-
-      // ✅ Créer les paris dans user_bets via l'API (pour les jetons)
+      // ✅ Créer les paris dans user_bets via l'API
+      // L'API s'occupe de tout : déduction des jetons, création dans user_bets, transactions
+      
       if (betOnFT && !hasFT) {
-        await axios.post('https://top14-api-production.up.railway.app/api/bets', {
+        await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
           match_id: match.match_id,
           bet_type: 'FT',
           score_domicile: dFT,
@@ -234,7 +200,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       }
 
       if (betOnMT && !hasMT) {
-        await axios.post('https://top14-api-production.up.railway.app/api/bets', {
+        await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
           match_id: match.match_id,
           bet_type: 'MT',
           score_domicile: dMT,
@@ -256,13 +222,11 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
   };
 
   
-  // Filtrer les erreurs bloquantes
   const blockingErrors = validationErrors.filter(e => e.type !== 'warning');
   const canSave = blockingErrors.length === 0 && totalStake >= 10 && totalStake <= userCredits;
 
   return (
     <>
-      {/* Modal principale */}
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto">
         <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl border-2 border-rugby-gold my-8">
           
@@ -290,7 +254,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
 
           <div className="p-4 space-y-3">
             
-            {/* Erreurs générales (crédits, etc.) */}
+            {/* Erreurs générales */}
             {errorsGeneral.length > 0 && (
               <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-3 space-y-1">
                 {errorsGeneral.map((err, idx) => (
@@ -346,7 +310,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
                 </label>
               </div>
 
-              {/* Alertes contextuelles TEMPS PLEIN */}
               {errorsFT.length > 0 && (
                 <div className="bg-red-50 border-l-4 border-red-500 rounded p-2 mb-2 space-y-1">
                   {errorsFT.map((err, idx) => (
@@ -478,7 +441,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
                 </label>
               </div>
 
-              {/* Alertes contextuelles MI-TEMPS */}
               {errorsMT.length > 0 && (
                 <div className="bg-red-50 border-l-4 border-red-500 rounded p-2 mb-2 space-y-1">
                   {errorsMT.map((err, idx) => (
@@ -593,10 +555,6 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
 
             {/* Résumé */}
             <div className="bg-rugby-gold/10 rounded-lg p-2.5 border border-rugby-gold/30">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-semibold">Total misé:</span>
-                <span className="font-bold text-rugby-bronze">{totalStake} jetons</span>
-              </div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="font-semibold">Gains potentiels:</span>
                 <span className="font-bold text-green-600">{totalPotentialWin} jetons</span>

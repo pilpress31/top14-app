@@ -122,9 +122,8 @@ export default function MesParisTab() {
         setParis([]);
       }
 
-      // Charger les pronos
       const { data: pronosData, error: pronosError } = await supabase
-        .from('user_pronos')
+        .from('user_bets')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -132,6 +131,7 @@ export default function MesParisTab() {
       if (!pronosError) {
         setPronos(pronosData || []);
       }
+
 
     } catch (error) {
       console.error('❌ Erreur globale chargement données:', error);
