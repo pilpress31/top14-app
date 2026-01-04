@@ -35,15 +35,20 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
   const domMTRef = useRef(null);
   const extMTRef = useRef(null);
 
-  // ✅ Détecter les paris existants depuis existingProno (qui vient de la vue user_pronos_view)
-  // existingProno contient maintenant les paris FT et MT fusionnés
-  const hasFT = existingProno?.bet_type === 'FT' || existingProno?.score_dom_pronos !== null;
-  const hasMT = existingProno?.bet_type === 'MT' || existingProno?.score_dom_mt !== null;
+  // ============================================
+  // 🔥 NOUVELLE LOGIQUE : existingProno = tableau
+  // ============================================
+
+  const existingFT = existingProno?.find(p => p.bet_type === 'FT') || null;
+  const existingMT = existingProno?.find(p => p.bet_type === 'MT') || null;
+
+  const hasFT = !!existingFT;
+  const hasMT = !!existingMT;
 
   // 🔍 DEBUG
-    console.log('🎯 BettingModal - existingProno:', existingProno);
-    console.log('🎯 BettingModal - hasFT:', hasFT, 'hasMT:', hasMT);
-
+  console.log('🎯 BettingModal - existingFT:', existingFT);
+  console.log('🎯 BettingModal - existingMT:', existingMT);
+  console.log('🎯 BettingModal - hasFT:', hasFT, 'hasMT:', hasMT);
 
   // Données équipes
   const teamDom = getTeamData(match.equipe_domicile);
@@ -53,27 +58,29 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
 
-  // Initialisation avec prono existant
+  // ============================================
+  // 🔥 Initialisation avec prono existant
+  // ============================================
   useEffect(() => {
-    if (existingProno) {
-      if (existingProno.score_dom_pronos !== null) setScoreDomFT(existingProno.score_dom_pronos.toString());
-      if (existingProno.score_ext_pronos !== null) setScoreExtFT(existingProno.score_ext_pronos.toString());
-      if (existingProno.score_dom_mt !== null) setScoreDomMT(existingProno.score_dom_mt.toString());
-      if (existingProno.score_ext_mt !== null) setScoreExtMT(existingProno.score_ext_mt.toString());
-      
-      // Déterminer les types de paris existants
-      const hasFTBet = existingProno.score_dom_pronos !== null;
-      const hasMTBet = existingProno.score_dom_mt !== null;
-      
-      if (hasFTBet) setStakeFT('10');
-      if (hasMTBet) setStakeMT('10');
-      
-      setBetOnFT(!hasFTBet);
-      setBetOnMT(!hasMTBet);
+    if (existingFT) {
+      if (existingFT.score_dom_pronos !== null) setScoreDomFT(existingFT.score_dom_pronos.toString());
+      if (existingFT.score_ext_pronos !== null) setScoreExtFT(existingFT.score_ext_pronos.toString());
+      setStakeFT('10');
+      setBetOnFT(false);
     }
-  }, [existingProno]);
 
-  // Validation en temps réel
+    if (existingMT) {
+      if (existingMT.score_dom_mt !== null) setScoreDomMT(existingMT.score_dom_mt.toString());
+      if (existingMT.score_ext_mt !== null) setScoreExtMT(existingMT.score_ext_mt.toString());
+      setStakeMT('10');
+      setBetOnMT(false);
+    }
+
+  }, [existingFT, existingMT]);
+
+  // ============================================
+  // 🔥 Validation en temps réel (inchangée)
+  // ============================================
   useEffect(() => {
     const validation = validateBet({
       betOnFT,
@@ -105,9 +112,7 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       return false;
     });
 
-    const coherenceErrors = validation.allMessages.filter(err => 
-      err.type === 'coherence'
-    );
+    const coherenceErrors = validation.allMessages.filter(err => err.type === 'coherence');
 
     const generalErrors = validation.allMessages.filter(err => {
       if (err.type === 'credits') return true;
