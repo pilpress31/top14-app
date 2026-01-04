@@ -40,11 +40,16 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
 
-  const hasFT = existingProno?.mise_ft > 0;
-  const hasMT = existingProno?.mise_mt > 0;
+  const pronoFT = existingProno?.find(p => p.bet_type === 'FT');
+  const pronoMT = existingProno?.find(p => p.bet_type === 'MT');
+
+  const hasFT = !!pronoFT;
+  const hasMT = !!pronoMT;
+
   const pariComplet = hasFT && hasMT;
   const pariPartiel = (hasFT && !hasMT) || (!hasFT && hasMT);
   const aucunPari = !hasFT && !hasMT;
+
 
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
@@ -128,15 +133,15 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
       }`}>
 
         {/* Bloc vert des pronos existants */}
-        {existingProno && (
+        {(hasFT || hasMT) && (
           !bettingAllowed ? (
-            // ✅ Paris fermés → zone verte cliquable avec scroll auto
+            // Paris fermés → zone verte cliquable
             <div 
               onClick={() => {
                 navigate('/pronos', { 
                   state: { 
                     activeTab: 'mes-paris',
-                    scrollToMatchId: match.id  // ✅ Utiliser match.id pour cohérence
+                    scrollToMatchId: match.id
                   } 
                 });
               }}
@@ -144,14 +149,14 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             >
               <CheckCircle className="w-3 h-3 text-green-600" />
               <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
-                {existingProno.score_dom_pronos !== null && existingProno.score_ext_pronos !== null && (
+                {pronoFT && (
                   <span>
-                    Prono FT : {existingProno.score_dom_pronos} - {existingProno.score_ext_pronos} | Mise : {existingProno.mise_ft}
+                    Prono FT : {pronoFT.score_dom_pronos} - {pronoFT.score_ext_pronos}
                   </span>
                 )}
-                {existingProno.score_dom_mt !== null && existingProno.score_ext_mt !== null && (
+                {pronoMT && (
                   <span>
-                    Prono MT : {existingProno.score_dom_mt} - {existingProno.score_ext_mt} | Mise : {existingProno.mise_mt}
+                    Prono MT : {pronoMT.score_dom_mt} - {pronoMT.score_ext_mt}
                   </span>
                 )}
               </div>
@@ -161,14 +166,14 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <div className="flex items-center gap-2 px-2 py-1 bg-green-50 rounded border border-green-200">
               <CheckCircle className="w-3 h-3 text-green-600" />
               <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
-                {existingProno.score_dom_pronos !== null && existingProno.score_ext_pronos !== null && (
+                {pronoFT && (
                   <span>
-                    Prono FT : {existingProno.score_dom_pronos} - {existingProno.score_ext_pronos} | Mise : {existingProno.mise_ft}
+                    Prono FT : {pronoFT.score_dom_pronos} - {pronoFT.score_ext_pronos}
                   </span>
                 )}
-                {existingProno.score_dom_mt !== null && existingProno.score_ext_mt !== null && (
+                {pronoMT && (
                   <span>
-                    Prono MT : {existingProno.score_dom_mt} - {existingProno.score_ext_mt} | Mise : {existingProno.mise_mt}
+                    Prono MT : {pronoMT.score_dom_mt} - {pronoMT.score_ext_mt}
                   </span>
                 )}
               </div>
