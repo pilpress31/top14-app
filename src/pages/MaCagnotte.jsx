@@ -82,48 +82,73 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 // Transaction Item Component - AMÉLIORÉ AVEC DÉTAILS
 // ---------------------------------------------------------
 function TransactionItem({ trans, navigateToBet, getTeamData }) {
-  const isPositive = trans.amount > 0;
-  const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
-  const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
-  const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
-  
+
+  // -----------------------------
+  // LOGIQUE ROBUSTE
+  // -----------------------------
+  const isBet = !!trans.bets;
+
+  const isWin =
+    trans.reference_type === "prono_won" ||
+    (isBet && trans.amount > 0);
+
+  const isLoss =
+    trans.reference_type === "prono_lost" ||
+    (isBet && trans.amount < 0);
+
+  const isNeutral = !isWin && !isLoss;
+
+  const isFT =
+    trans.bets?.bet_type === "FT" ||
+    trans.description?.includes("FT");
+
+  const isMT =
+    trans.bets?.bet_type === "MT" ||
+    trans.description?.includes("MT");
+
+  const periodLabel = isFT ? "Temps plein" : isMT ? "Mi-temps" : "";
+
+  // -----------------------------
+  // MATCH & DONNÉES
+  // -----------------------------
   const match = trans.bets?.matches;
   const odds = trans.bets?.odds || trans.metadata?.odds;
   const stake = trans.bets?.stake;
   const payout = trans.metadata?.payout;
 
-  // Scores du pari et du match réel
   const pronoHome = trans.bets?.score_domicile;
   const pronoAway = trans.bets?.score_exterieur;
   const realHome = match?.score_home;
   const realAway = match?.score_away;
 
-  // Calculer l'écart
   const hasRealScore = realHome !== null && realHome !== undefined;
-  const ecartProno = hasRealScore ? Math.abs((pronoHome - pronoAway) - (realHome - realAway)) : null;
+  const ecartProno = hasRealScore
+    ? Math.abs((pronoHome - pronoAway) - (realHome - realAway))
+    : null;
 
-  // Extraire les noms d'équipes
-  let homeTeam = match?.home_team || 'Équipe domicile';
-  let awayTeam = match?.away_team || 'Équipe extérieure';
+  let homeTeam = match?.home_team || "Équipe domicile";
+  let awayTeam = match?.away_team || "Équipe extérieure";
 
+  // Extraction robuste des équipes
   const extractTeamsFromId = (id) => {
     if (!id) return null;
-    
-    const parts = id.split('_');
+    const parts = id.split("_");
     if (parts.length < 4) return null;
-    
-    const teams = parts.slice(2).join('_');
-    const possibleTeams = teams.split('_');
-    
+
+    const teams = parts.slice(2).join("_");
+    const possibleTeams = teams.split("_");
+
     for (let i = 1; i < possibleTeams.length; i++) {
-      const testHome = possibleTeams.slice(0, i).join(' ');
-      const testAway = possibleTeams.slice(i).join(' ');
-      
+      const testHome = possibleTeams.slice(0, i).join(" ");
+      const testAway = possibleTeams.slice(i).join(" ");
+
       const homeData = getTeamData(testHome);
       const awayData = getTeamData(testAway);
-      
-      if (homeData?.logo !== '/logos/default.svg' && 
-          awayData?.logo !== '/logos/default.svg') {
+
+      if (
+        homeData?.logo !== "/logos/default.svg" &&
+        awayData?.logo !== "/logos/default.svg"
+      ) {
         return { home: homeData.name, away: awayData.name };
       }
     }
@@ -131,183 +156,97 @@ function TransactionItem({ trans, navigateToBet, getTeamData }) {
   };
 
   let extracted = null;
-  if (match?.external_id) {
-    extracted = extractTeamsFromId(match.external_id);
-  } else if (trans.bets?.match_id) {
-    extracted = extractTeamsFromId(trans.bets.match_id);
-  }
+  if (match?.external_id) extracted = extractTeamsFromId(match.external_id);
+  else if (trans.bets?.match_id) extracted = extractTeamsFromId(trans.bets.match_id);
 
   if (extracted) {
     homeTeam = extracted.home;
     awayTeam = extracted.away;
   }
 
+  // -----------------------------
+  // DATE
+  // -----------------------------
   const dateObj = new Date(trans.created_at);
-  const dateStr = dateObj.toLocaleDateString("fr-FR", { 
-    weekday: 'short',
-    day: "2-digit", 
+  const dateStr = dateObj.toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "2-digit",
     month: "short",
-    year: "numeric"
+    year: "numeric",
   });
-  const timeStr = dateObj.toLocaleTimeString("fr-FR", { 
-    hour: "2-digit", 
-    minute: "2-digit" 
+  const timeStr = dateObj.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
+  // -----------------------------
+  // ICÔNE ROBUSTE
+  // -----------------------------
   const getIcon = () => {
-    switch(trans.type) {
-      case 'bet_won':
-        return <Trophy className="w-5 h-5 text-green-500" />;
-      case 'bet_lost':
-        return <X className="w-5 h-5 text-red-500" />;
-      case 'monthly_distribution':
+    if (isWin) return <Trophy className="w-5 h-5 text-green-500" />;
+    if (isLoss) return <X className="w-5 h-5 text-red-500" />;
+
+    switch (trans.type) {
+      case "monthly_distribution":
         return <Gift className="w-5 h-5 text-blue-500" />;
-      case 'initial_capital':
+      case "initial_capital":
         return <Award className="w-5 h-5 text-purple-500" />;
       default:
         return <Coins className="w-5 h-5 text-gray-400" />;
     }
   };
 
-  const getTitle = () => {
-    switch(trans.type) {
-      case 'bet_won':
-        return 'Pari gagné';
-      case 'bet_lost':
-        return 'Pari perdu';
-      case 'monthly_distribution':
-        return 'Distribution mensuelle';
-      case 'initial_capital':
-        return 'Bonus de bienvenue';
-      default:
-        return 'Régularisation système';
-    }
-  };
-
-  const isPari = trans.type === 'bet_won' || trans.type === 'bet_lost';
-
+  // -----------------------------
+  // RENDU
+  // -----------------------------
   return (
-    <div 
-      className={`p-4 bg-white border-l-4 hover:bg-gray-50 transition cursor-pointer mb-3 rounded-lg shadow-sm ${
-        trans.type === 'bet_won' ? 'border-green-500' :
-        trans.type === 'bet_lost' ? 'border-red-500' :
-        trans.type === 'monthly_distribution' ? 'border-blue-500' :
-        'border-purple-500'
+    <div
+      className={`p-4 rounded-xl shadow-md border-2 transition-all ${
+        isWin
+          ? "border-green-400 bg-green-50"
+          : isLoss
+          ? "border-red-400 bg-red-50"
+          : "border-gray-200 bg-white"
       }`}
-      onClick={() => trans.type === 'bet_won' && trans.bet_id && navigateToBet(trans)}
     >
-      {/* En-tête */}
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
           {getIcon()}
-          <div className="flex-1">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-sm">{getTitle()}</span>
-                {periodLabel && (
-                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border">
-                    {periodLabel}
-                  </span>
-                )}
-              </div>
-              {/* Date et journée sous le titre */}
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                {match?.round && (
-                  <>
-                    <span className="font-semibold text-rugby-gold">J{match.round}</span>
-                    <span>•</span>
-                  </>
-                )}
-                <span>{dateStr}</span>
-                <span>•</span>
-                <span>{timeStr}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Colonne droite : Montant + Solde */}
-        <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
-          <span className={`font-bold text-lg ${
-            isPositive ? "text-green-600" : "text-red-600"
-          }`}>
-            {isPositive && '+'}{trans.amount}
+          <span className="font-semibold">
+            {isWin ? "Gain" : isLoss ? "Perte" : "Transaction"}
           </span>
-          <p className="text-xs text-gray-400">
-            Solde: {trans.balance_after}
-          </p>
         </div>
+
+        {periodLabel && (
+          <span className="text-xs px-2 py-1 bg-white/60 rounded-full font-bold">
+            {periodLabel}
+          </span>
+        )}
       </div>
 
-      {/* Détails du match pour les paris */}
-      {isPari && homeTeam && awayTeam && homeTeam !== 'Équipe domicile' && (
-        <div className="space-y-2 mb-2">
-          {/* Noms des équipes */}
-          <div className="flex items-center justify-between text-sm font-medium text-gray-700 bg-gray-50 rounded-lg p-2">
-            <span>{homeTeam}</span>
-            <span className="text-gray-400">vs</span>
-            <span>{awayTeam}</span>
-          </div>
+      <div className="text-sm text-gray-700">
+        {homeTeam} vs {awayTeam}
+      </div>
 
-          {/* Scores */}
-          <div className="grid grid-cols-2 gap-2">
-            {/* Ton pronostic */}
-            <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
-              <p className="text-[10px] text-blue-700 font-semibold mb-1">Ton pronostic</p>
-              <p className="text-lg font-bold text-blue-900 text-center">
-                {pronoHome} - {pronoAway}
-              </p>
-            </div>
+      <div className="text-xs text-gray-400 mt-1">
+        {dateStr} — {timeStr}
+      </div>
 
-            {/* Score réel */}
-            {hasRealScore && (
-              <div className={`rounded-lg p-2 border ${
-                trans.type === 'bet_won' 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'bg-red-50 border-red-200'
-              }`}>
-                <p className={`text-[10px] font-semibold mb-1 ${
-                  trans.type === 'bet_won' ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  Score réel
-                </p>
-                <p className={`text-lg font-bold text-center ${
-                  trans.type === 'bet_won' ? 'text-green-900' : 'text-red-900'
-                }`}>
-                  {realHome} - {realAway}
-                </p>
-              </div>
-            )}
-          </div>
+      {isWin && payout && (
+        <div className="mt-2 text-green-700 font-bold text-lg">
+          +{payout} 🪙
         </div>
       )}
 
-      {/* Détails du pari (cote, mise) */}
-      {(odds || stake) && (
-        <div className="flex flex-wrap gap-3 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
-          {stake && (
-            <span className="flex items-center gap-1">
-              <span className="font-semibold">Mise:</span>
-              <span className="font-bold text-gray-800">{stake} jetons</span>
-            </span>
-          )}
-          {odds && (
-            <span className="flex items-center gap-1">
-              <span className="font-semibold">Cote:</span>
-              <span className="font-bold text-gray-800">×{parseFloat(odds).toFixed(2)}</span>
-            </span>
-          )}
-          {payout && (
-            <span className="flex items-center gap-1">
-              <span className="font-semibold">Gain:</span>
-              <span className="font-bold text-green-600">{payout} jetons</span>
-            </span>
-          )}
+      {isLoss && stake && (
+        <div className="mt-2 text-red-700 font-bold text-lg">
+          -{stake} 🪙
         </div>
       )}
     </div>
   );
 }
+
 
 // ---------------------------------------------------------
 // Main Component
