@@ -432,8 +432,11 @@ export default function MaCagnotte() {
       const wonBetsInBets = allBets.filter(b => b.status === 'won');
       
       wonBetsInBets.forEach(bet => {
-        // Vérifier si cette transaction existe déjà
-        const existingTx = txs.find(t => t.type === 'bet_won' && t.bet_id === bet.id);
+        // Vérifier si cette transaction existe déjà en cherchant plus largement
+        const existingTx = transactionsFiltered.find(t => 
+          t.type === 'bet_won' && 
+          (t.bet_id === bet.id || t.id?.includes(bet.id))
+        );
         
         if (!existingTx) {
           console.log('⚠️ Transaction bet_won manquante pour pari:', bet.id, bet.bet_type);
@@ -462,6 +465,8 @@ export default function MaCagnotte() {
               score_exterieur: bet.score_exterieur
             }
           });
+        } else {
+          console.log('✅ Transaction bet_won existe déjà pour:', bet.id, bet.bet_type);
         }
       });
 
