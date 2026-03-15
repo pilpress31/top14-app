@@ -118,8 +118,15 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   // Scores du pari et du match réel
   const pronoHome = fullBet?.score_domicile ?? trans.bets?.score_domicile;
   const pronoAway = fullBet?.score_exterieur ?? trans.bets?.score_exterieur;
-  const realHome = match?.score_home;
-  const realAway = match?.score_away;
+  // ✅ Pour un pari MT, afficher le score de mi-temps, pas le score final
+  const betType = fullBet?.bet_type || trans.bets?.bet_type;
+  const isMTPari = betType === 'MT';
+  const realHome = isMTPari
+    ? (match?.score_home_mt ?? match?.score_home)
+    : match?.score_home;
+  const realAway = isMTPari
+    ? (match?.score_away_mt ?? match?.score_away)
+    : match?.score_away;
 
   // Calculer l'écart
   const hasRealScore = realHome !== null && realHome !== undefined;
@@ -270,9 +277,11 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
           }`}>
             {isPositive && '+'}{trans.amount}
           </span>
-          <p className="text-xs text-gray-400">
-            Solde: {trans.balance_after}
-          </p>
+          {trans.balance_after !== null && trans.balance_after !== undefined && (
+            <p className="text-xs text-gray-400">
+              Solde: {trans.balance_after}
+            </p>
+          )}
         </div>
       </div>
 
@@ -433,52 +442,63 @@ export default function MaCagnotte() {
       console.log('🔍 DEBUG - Transactions bet_won avec FT:', txs.filter(t => t.type === 'bet_won' && t.bets?.bet_type === 'FT').length);
 
       // ✅ Filtrer les transactions existantes ET enrichir les orphelines
+      // Construire un Set des bet_id déjà liés pour éviter les doublons de matching
+      const linkedBetIds = new Set(txs.filter(t => t.bet_id).map(t => t.bet_id));
+
       const transactionsFiltered = txs
         .filter(trans => trans.type !== 'bet_placed')
         .map(trans => {
           // Si la transaction a déjà un pari avec des infos de match → OK
           if (trans.bets?.matches?.home_team) return trans;
+          // Si elle a déjà un bet_id mais pas de match → sera résolu dans TransactionItem
+          if (trans.bet_id) return trans;
           
-          // Transaction orpheline : chercher le pari correspondant dans allBets
-          if (trans.type === 'bet_won' || trans.type === 'bet_placed') {
+          // Transaction orpheline (pas de bet_id) : chercher le pari correspondant
+          if (trans.type === 'bet_won') {
             const betTypeFromDesc = trans.description?.includes('MT') ? 'MT' 
               : trans.description?.includes('FT') ? 'FT' : null;
             
-            // Chercher un pari won du même type dans la même fenêtre de temps (±12h)
+            // Chercher un pari won du même type, non encore lié, dans ±2h
             const matchingBet = betTypeFromDesc ? allBets.find(b => 
               b.bet_type === betTypeFromDesc && 
               b.status === 'won' &&
+              !linkedBetIds.has(b.id) &&
               b.result_at &&
-              Math.abs(new Date(b.result_at) - new Date(trans.created_at)) < 12 * 60 * 60 * 1000
+              Math.abs(new Date(b.result_at) - new Date(trans.created_at)) < 2 * 60 * 60 * 1000
             ) : null;
-            
+
             if (matchingBet) {
-              console.log('✅ Orpheline enrichie:', trans.id, '→ pari', matchingBet.id);
+              linkedBetIds.add(matchingBet.id); // marquer comme utilisé
+              console.log('✅ Orpheline enrichie:', trans.id, '→ pari', matchingBet.id, matchingBet.bet_type);
               return {
                 ...trans,
-                bet_id: trans.bet_id || matchingBet.id,
-                bets: {
-                  ...matchingBet,
-                  matches: matchingBet.matches,
-                }
+                bet_id: matchingBet.id,
+                bets: { ...matchingBet, matches: matchingBet.matches }
               };
+            } else {
+              console.warn('⚠️ Orpheline non résolue:', trans.id, trans.description, trans.created_at);
             }
           }
           return trans;
         });
 
       // ✅ AJOUTER les paris perdus manuellement (ils n'existent pas dans transactions)
+      // Trier toutes les tx par date pour calculer le solde glissant
+      const allTxsSorted = [...txs].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      
       const lostBetsToAdd = allBets.filter(b => b.status === 'lost');
       
       lostBetsToAdd.forEach(bet => {
-        // Trouver la transaction bet_placed correspondante pour avoir le balance_after
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
+        // balance_after pour un pari perdu = balance après la mise (= le solde déduit de la mise)
+        // placedTx.balance_after est le solde APRES déduction de la mise → c'est le bon solde "résultant"
+        const balanceAfter = placedTx?.balance_after ?? null;
         
         transactionsFiltered.push({
           id: `lost_${bet.id}`,
           type: 'bet_lost',
           amount: -bet.stake,
-          balance_after: placedTx?.balance_after || null,
+          balance_after: balanceAfter,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
           bets: {
