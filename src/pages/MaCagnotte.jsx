@@ -118,15 +118,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   // Scores du pari et du match réel
   const pronoHome = fullBet?.score_domicile ?? trans.bets?.score_domicile;
   const pronoAway = fullBet?.score_exterieur ?? trans.bets?.score_exterieur;
-  // ✅ Pour un pari MT, afficher le score de mi-temps, pas le score final
+  // ✅ Pour un pari MT, afficher le score de mi-temps (champs match_results)
   const betType = fullBet?.bet_type || trans.bets?.bet_type || (isMT ? 'MT' : isFT ? 'FT' : null);
   const isMTPari = betType === 'MT';
-  // Chercher score MT dans plusieurs champs possibles selon le schéma Supabase
   const realHome = isMTPari
-    ? (match?.score_home_mt ?? match?.halftime_home ?? match?.ht_home ?? match?.score_home)
+    ? (match?.score_ht_domicile ?? match?.score_home)
     : match?.score_home;
   const realAway = isMTPari
-    ? (match?.score_away_mt ?? match?.halftime_away ?? match?.ht_away ?? match?.score_away)
+    ? (match?.score_ht_exterieur ?? match?.score_away)
     : match?.score_away;
 
   // Calculer l'écart
@@ -430,28 +429,60 @@ export default function MaCagnotte() {
       const txs = historyResponse.data.transactions || [];
       const allBets = historyResponse.data.bets || [];
 
-      // 🔍 DEBUG : Vérifier les types de transactions
-      console.log('🔍 DEBUG - Transactions brutes:', txs);
-      console.log('🔍 DEBUG - Types présents:', [...new Set(txs.map(t => t.type))]);
-      console.log('🔍 DEBUG - Nombre de bet_won:', txs.filter(t => t.type === 'bet_won').length);
-      console.log('🔍 DEBUG - Paris perdus dans bets:', allBets.filter(b => b.status === 'lost').length);
-      
-      // 🔍 DEBUG PARIS MT
-      console.log('🔍 DEBUG - Paris MT gagnés dans bets:', allBets.filter(b => b.status === 'won' && b.bet_type === 'MT').length);
-      console.log('🔍 DEBUG - Paris FT gagnés dans bets:', allBets.filter(b => b.status === 'won' && b.bet_type === 'FT').length);
-      console.log('🔍 DEBUG - Transactions bet_won avec MT:', txs.filter(t => t.type === 'bet_won' && t.bets?.bet_type === 'MT').length);
-      console.log('🔍 DEBUG - Transactions bet_won avec FT:', txs.filter(t => t.type === 'bet_won' && t.bets?.bet_type === 'FT').length);
+      // ✅ Charger les match_results pour avoir les scores MT (score_ht_domicile / score_ht_exterieur)
+      const matchIds = [...new Set(allBets.map(b => b.match_id).filter(Boolean))];
+      let matchResultsMap = {};
+      if (matchIds.length > 0) {
+        const { data: matchResults } = await supabase
+          .from('matchs_results')
+          .select('id, score_ht_domicile, score_ht_exterieur, score_domicile, score_exterieur')
+          .in('id', matchIds);
+        if (matchResults) {
+          matchResults.forEach(mr => {
+            matchResultsMap[mr.id] = mr;
+          });
+        }
+      }
+
+      // ✅ Enrichir allBets avec les données match_results
+      const enrichedBets = allBets.map(bet => {
+        const mr = matchResultsMap[bet.match_id];
+        if (!mr) return bet;
+        return {
+          ...bet,
+          matches: {
+            ...bet.matches,
+            score_ht_domicile: mr.score_ht_domicile,
+            score_ht_exterieur: mr.score_ht_exterieur,
+          }
+        };
+      });
 
       // ✅ Filtrer les transactions existantes ET enrichir les orphelines
-      // Construire un Set des bet_id déjà liés pour éviter les doublons de matching
       const linkedBetIds = new Set(txs.filter(t => t.bet_id).map(t => t.bet_id));
 
       const transactionsFiltered = txs
         .filter(trans => trans.type !== 'bet_placed')
         .map(trans => {
-          // Si la transaction a déjà un pari avec des infos de match → OK
-          if (trans.bets?.matches?.home_team) return trans;
-          // Si elle a déjà un bet_id mais pas de match → sera résolu dans TransactionItem
+          // Transaction avec match déjà chargé → enrichir avec scores MT depuis match_results
+          if (trans.bets?.matches?.home_team) {
+            const mr = matchResultsMap[trans.bets?.match_id];
+            if (mr) {
+              return {
+                ...trans,
+                bets: {
+                  ...trans.bets,
+                  matches: {
+                    ...trans.bets.matches,
+                    score_ht_domicile: mr.score_ht_domicile,
+                    score_ht_exterieur: mr.score_ht_exterieur,
+                  }
+                }
+              };
+            }
+            return trans;
+          }
+          // Si elle a déjà un bet_id → sera résolu dans TransactionItem via enrichedBets
           if (trans.bet_id) return trans;
           
           // Transaction orpheline (pas de bet_id) : chercher le pari correspondant
@@ -459,9 +490,8 @@ export default function MaCagnotte() {
             const betTypeFromDesc = trans.description?.includes('MT') ? 'MT' 
               : trans.description?.includes('FT') ? 'FT' : null;
             
-            // Chercher un pari won du même type, non encore lié
             // Stratégie 1 : même type dans ±6h
-            let matchingBet = betTypeFromDesc ? allBets.find(b => 
+            let matchingBet = betTypeFromDesc ? enrichedBets.find(b => 
               b.bet_type === betTypeFromDesc && 
               b.status === 'won' &&
               !linkedBetIds.has(b.id) &&
@@ -472,12 +502,24 @@ export default function MaCagnotte() {
             // Stratégie 2 : même montant de gain, même jour
             if (!matchingBet) {
               const txDate = new Date(trans.created_at).toDateString();
-              matchingBet = allBets.find(b => 
+              matchingBet = enrichedBets.find(b => 
                 b.status === 'won' &&
                 !linkedBetIds.has(b.id) &&
                 b.result_at &&
                 new Date(b.result_at).toDateString() === txDate &&
                 (b.payout || Math.floor(b.stake * (b.odds || 1))) === trans.amount
+              );
+            }
+
+            // Stratégie 3 : même type, même jour (toute heure)
+            if (!matchingBet && betTypeFromDesc) {
+              const txDate = new Date(trans.created_at).toDateString();
+              matchingBet = enrichedBets.find(b => 
+                b.bet_type === betTypeFromDesc &&
+                b.status === 'won' &&
+                !linkedBetIds.has(b.id) &&
+                (b.result_at || b.placed_at) &&
+                new Date(b.result_at || b.placed_at).toDateString() === txDate
               );
             }
 
@@ -490,17 +532,19 @@ export default function MaCagnotte() {
                 bets: { ...matchingBet, matches: matchingBet.matches }
               };
             } else {
-              console.warn('⚠️ Orpheline non résolue:', trans.id, '| desc:', trans.description, '| date:', trans.created_at, '| amount:', trans.amount);
+              console.warn('⚠️ Orpheline non résolue:', trans.id, 
+                '| desc:', trans.description, 
+                '| date:', trans.created_at, 
+                '| amount:', trans.amount,
+                '| paris MT won disponibles:', enrichedBets.filter(b => b.status==='won' && b.bet_type==='MT' && !linkedBetIds.has(b.id)).map(b => ({id:b.id.slice(0,8), result_at:b.result_at}))
+              );
             }
           }
           return trans;
         });
 
-      // ✅ AJOUTER les paris perdus manuellement (ils n'existent pas dans transactions)
-      // Trier toutes les tx par date pour calculer le solde glissant
-      const allTxsSorted = [...txs].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      
-      const lostBetsToAdd = allBets.filter(b => b.status === 'lost');
+      // ✅ AJOUTER les paris perdus manuellement
+      const lostBetsToAdd = enrichedBets.filter(b => b.status === 'lost');
       
       lostBetsToAdd.forEach(bet => {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
@@ -517,12 +561,7 @@ export default function MaCagnotte() {
           bet_id: bet.id,
           bets: {
             ...bet,
-            matches: bet.matches,
-            bet_type: bet.bet_type,
-            odds: bet.odds,
-            stake: bet.stake,
-            score_domicile: bet.score_domicile,
-            score_exterieur: bet.score_exterieur
+            matches: bet.matches, // déjà enrichi avec score_ht_* via enrichedBets
           }
         });
       });
@@ -535,7 +574,7 @@ export default function MaCagnotte() {
           .map(t => t.bet_id)
       );
 
-      const wonBetsInBets = allBets.filter(b => b.status === 'won');
+      const wonBetsInBets = enrichedBets.filter(b => b.status === 'won');
       
       wonBetsInBets.forEach(bet => {
         if (coveredWonBetIds.has(bet.id)) {
@@ -565,18 +604,18 @@ export default function MaCagnotte() {
       console.log('🔍 DEBUG - Types après ajout:', [...new Set(transactionsFiltered.map(t => t.type))]);
 
       setTransactions(transactionsFiltered);
-      setBets(allBets);
+      setBets(enrichedBets);
 
       const wonTxs = transactionsFiltered.filter((t) => t.type === "bet_won");
       const distributions = transactionsFiltered.filter((t) => t.type === "monthly_distribution");
       const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       const bonusInitial = transactionsFiltered.find((t) => t.type === "initial_capital")?.amount || 0;
       const totalWonFromBets = wonTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
-      const totalStaked = allBets.reduce((sum, b) => sum + (b.stake || 0), 0);
+      const totalStaked = enrichedBets.reduce((sum, b) => sum + (b.stake || 0), 0);
 
-      const wonBets = allBets.filter(b => b.status === 'won').length;
-      const lostBets = allBets.filter(b => b.status === 'lost').length;
-      const pendingBets = allBets.filter(b => b.status === 'pending').length;
+      const wonBets = enrichedBets.filter(b => b.status === 'won').length;
+      const lostBets = enrichedBets.filter(b => b.status === 'lost').length;
+      const pendingBets = enrichedBets.filter(b => b.status === 'pending').length;
 
       setStats({
         totalBets: wonBets + lostBets,
@@ -626,6 +665,33 @@ export default function MaCagnotte() {
       filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else {
       filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+
+    // ✅ Recalculer les soldes de façon cohérente
+    // Trier chronologiquement pour recalculer, puis remettre dans l'ordre voulu
+    const chronological = [...filtered].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    
+    // Trouver le solde de départ (le plus ancien solde connu)
+    let runningBalance = null;
+    for (const tx of chronological) {
+      if (tx.balance_after !== null && tx.balance_after !== undefined) {
+        runningBalance = tx.balance_after - tx.amount;
+        break;
+      }
+    }
+
+    // Recalculer tous les balance_after en partant du début
+    if (runningBalance !== null) {
+      const balanceMap = {};
+      for (const tx of chronological) {
+        runningBalance += tx.amount;
+        balanceMap[tx.id] = runningBalance;
+      }
+      // Appliquer les soldes recalculés
+      return filtered.map(tx => ({
+        ...tx,
+        balance_after: balanceMap[tx.id] ?? tx.balance_after
+      }));
     }
 
     return filtered;
