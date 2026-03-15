@@ -87,20 +87,37 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
   const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
   
-  // ✅ Chercher le pari complet si les infos manquent
-  const fullBet = bets?.find(b => 
+  // ✅ Chercher le pari complet : plusieurs stratégies de matching
+  const fullBetById = bets?.find(b => b.id === trans.bet_id);
+  const fullBetByMatch = bets?.find(b => 
     b.match_id === trans.bets?.match_id && 
     b.bet_type === trans.bets?.bet_type
-  ) || trans.bets;
+  );
+  // Pour les transactions orphelines (pas de bet_id ni match_id) : déduire depuis description
+  // Description format: "Gain pari MT J15 ..." ou "Pari gagné MT ..."
+  const betTypeFromDesc = trans.description?.includes('MT') ? 'MT' : trans.description?.includes('FT') ? 'FT' : null;
+  const fullBetByDesc = (!fullBetById && !fullBetByMatch && betTypeFromDesc)
+    ? bets?.find(b => 
+        b.bet_type === betTypeFromDesc && 
+        b.status === 'won' &&
+        // Correspondance approximative par date (même jour)
+        b.result_at && trans.created_at &&
+        Math.abs(new Date(b.result_at) - new Date(trans.created_at)) < 24 * 60 * 60 * 1000 &&
+        // Pas déjà utilisé par une autre transaction
+        !bets?.some((_, __) => false) // placeholder
+      )
+    : null;
+  const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
-  const match = fullBet?.matches;
-  const odds = fullBet?.odds || trans.metadata?.odds;
-  const stake = fullBet?.stake;
-  const payout = fullBet?.payout;
+  // ✅ Le match peut venir du pari trouvé OU directement de trans.bets
+  const match = fullBet?.matches || trans.bets?.matches;
+  const odds = fullBet?.odds || trans.bets?.odds || trans.metadata?.odds;
+  const stake = fullBet?.stake || trans.bets?.stake;
+  const payout = fullBet?.payout || trans.metadata?.payout;
 
   // Scores du pari et du match réel
-  const pronoHome = trans.bets?.score_domicile;
-  const pronoAway = trans.bets?.score_exterieur;
+  const pronoHome = fullBet?.score_domicile ?? trans.bets?.score_domicile;
+  const pronoAway = fullBet?.score_exterieur ?? trans.bets?.score_exterieur;
   const realHome = match?.score_home;
   const realAway = match?.score_away;
 
@@ -108,9 +125,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const hasRealScore = realHome !== null && realHome !== undefined;
   const ecartProno = hasRealScore ? Math.abs((pronoHome - pronoAway) - (realHome - realAway)) : null;
 
-  // Extraire les noms d'équipes
-  let homeTeam = match?.home_team || 'Équipe domicile';
-  let awayTeam = match?.away_team || 'Équipe extérieure';
+  // Extraire les noms d'équipes - essayer toutes les sources disponibles
+  let homeTeam = match?.home_team || fullBet?.matches?.home_team || 'Équipe domicile';
+  let awayTeam = match?.away_team || fullBet?.matches?.away_team || 'Équipe extérieure';
 
   const extractTeamsFromId = (id) => {
     if (!id) return null;
@@ -137,15 +154,29 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   };
 
   let extracted = null;
-  if (match?.external_id) {
-    extracted = extractTeamsFromId(match.external_id);
-  } else if (trans.bets?.match_id) {
-    extracted = extractTeamsFromId(trans.bets.match_id);
+  // Essayer toutes les sources d'external_id/match_id disponibles
+  const externalId = match?.external_id || fullBet?.matches?.external_id;
+  const matchIdStr = trans.bets?.match_id || fullBet?.match_id;
+
+  if (externalId) {
+    extracted = extractTeamsFromId(externalId);
+  }
+  if (!extracted && matchIdStr) {
+    extracted = extractTeamsFromId(matchIdStr);
   }
 
   if (extracted) {
     homeTeam = extracted.home;
     awayTeam = extracted.away;
+  }
+
+  // ✅ Dernier recours : extraire depuis la description de la transaction
+  if ((homeTeam === 'Équipe domicile' || awayTeam === 'Équipe extérieure') && trans.description) {
+    const vsMatch = trans.description.match(/([A-Za-z\s]+)\s+vs\.?\s+([A-Za-z\s]+)/i);
+    if (vsMatch) {
+      homeTeam = vsMatch[1].trim();
+      awayTeam = vsMatch[2].trim();
+    }
   }
 
   const dateObj = new Date(trans.created_at);
@@ -401,12 +432,40 @@ export default function MaCagnotte() {
       console.log('🔍 DEBUG - Transactions bet_won avec MT:', txs.filter(t => t.type === 'bet_won' && t.bets?.bet_type === 'MT').length);
       console.log('🔍 DEBUG - Transactions bet_won avec FT:', txs.filter(t => t.type === 'bet_won' && t.bets?.bet_type === 'FT').length);
 
-      // ✅ Filtrer les transactions existantes
-      const transactionsFiltered = txs.filter(trans => {
-        // ❌ Masquer UNIQUEMENT les bet_placed
-        if (trans.type === 'bet_placed') return false;
-        return true;
-      });
+      // ✅ Filtrer les transactions existantes ET enrichir les orphelines
+      const transactionsFiltered = txs
+        .filter(trans => trans.type !== 'bet_placed')
+        .map(trans => {
+          // Si la transaction a déjà un pari avec des infos de match → OK
+          if (trans.bets?.matches?.home_team) return trans;
+          
+          // Transaction orpheline : chercher le pari correspondant dans allBets
+          if (trans.type === 'bet_won' || trans.type === 'bet_placed') {
+            const betTypeFromDesc = trans.description?.includes('MT') ? 'MT' 
+              : trans.description?.includes('FT') ? 'FT' : null;
+            
+            // Chercher un pari won du même type dans la même fenêtre de temps (±12h)
+            const matchingBet = betTypeFromDesc ? allBets.find(b => 
+              b.bet_type === betTypeFromDesc && 
+              b.status === 'won' &&
+              b.result_at &&
+              Math.abs(new Date(b.result_at) - new Date(trans.created_at)) < 12 * 60 * 60 * 1000
+            ) : null;
+            
+            if (matchingBet) {
+              console.log('✅ Orpheline enrichie:', trans.id, '→ pari', matchingBet.id);
+              return {
+                ...trans,
+                bet_id: trans.bet_id || matchingBet.id,
+                bets: {
+                  ...matchingBet,
+                  matches: matchingBet.matches,
+                }
+              };
+            }
+          }
+          return trans;
+        });
 
       // ✅ AJOUTER les paris perdus manuellement (ils n'existent pas dans transactions)
       const lostBetsToAdd = allBets.filter(b => b.status === 'lost');
