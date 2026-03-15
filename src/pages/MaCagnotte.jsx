@@ -81,16 +81,22 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 // ---------------------------------------------------------
 // Transaction Item Component - AMÉLIORÉ AVEC DÉTAILS
 // ---------------------------------------------------------
-function TransactionItem({ trans, navigateToBet, getTeamData }) {
+function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const isPositive = trans.amount > 0;
   const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
   const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
   const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
   
-  const match = trans.bets?.matches;
-  const odds = trans.bets?.odds || trans.metadata?.odds;
-  const stake = trans.bets?.stake;
-  const payout = trans.metadata?.payout;
+  // ✅ Chercher le pari complet si les infos manquent
+  const fullBet = bets?.find(b => 
+    b.match_id === trans.bets?.match_id && 
+    b.bet_type === trans.bets?.bet_type
+  ) || trans.bets;
+
+  const match = fullBet?.matches;
+  const odds = fullBet?.odds || trans.metadata?.odds;
+  const stake = fullBet?.stake;
+  const payout = fullBet?.payout;
 
   // Scores du pari et du match réel
   const pronoHome = trans.bets?.score_domicile;
@@ -515,9 +521,13 @@ export default function MaCagnotte() {
     });
   };
 
-  // Filtrer les transactions (sans les paris pending)
+  // Filtrer les transactions (SANS les paris en cours)
   const filteredTransactions = useMemo(() => {
     const filtered = transactions.filter((t) => {
+      // ❌ Exclure les bet_placed (paris en cours)
+      if (t.type === 'bet_placed') return false;
+      
+      // Filtrer par équipe si nécessaire
       if (!teamFilter) return true;
       const match = t.bets?.matches;
       if (!match) return false;
@@ -834,6 +844,7 @@ export default function MaCagnotte() {
                   trans={trans} 
                   navigateToBet={navigateToBet}
                   getTeamData={getTeamData}
+                  bets={bets}  // ✅ Ajouter cette prop
                 />
               ))}
             </div>
