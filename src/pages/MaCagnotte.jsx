@@ -119,13 +119,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const pronoHome = fullBet?.score_domicile ?? trans.bets?.score_domicile;
   const pronoAway = fullBet?.score_exterieur ?? trans.bets?.score_exterieur;
   // ✅ Pour un pari MT, afficher le score de mi-temps, pas le score final
-  const betType = fullBet?.bet_type || trans.bets?.bet_type;
+  const betType = fullBet?.bet_type || trans.bets?.bet_type || (isMT ? 'MT' : isFT ? 'FT' : null);
   const isMTPari = betType === 'MT';
+  // Chercher score MT dans plusieurs champs possibles selon le schéma Supabase
   const realHome = isMTPari
-    ? (match?.score_home_mt ?? match?.score_home)
+    ? (match?.score_home_mt ?? match?.halftime_home ?? match?.ht_home ?? match?.score_home)
     : match?.score_home;
   const realAway = isMTPari
-    ? (match?.score_away_mt ?? match?.score_away)
+    ? (match?.score_away_mt ?? match?.halftime_away ?? match?.ht_away ?? match?.score_away)
     : match?.score_away;
 
   // Calculer l'écart
@@ -458,25 +459,38 @@ export default function MaCagnotte() {
             const betTypeFromDesc = trans.description?.includes('MT') ? 'MT' 
               : trans.description?.includes('FT') ? 'FT' : null;
             
-            // Chercher un pari won du même type, non encore lié, dans ±2h
-            const matchingBet = betTypeFromDesc ? allBets.find(b => 
+            // Chercher un pari won du même type, non encore lié
+            // Stratégie 1 : même type dans ±6h
+            let matchingBet = betTypeFromDesc ? allBets.find(b => 
               b.bet_type === betTypeFromDesc && 
               b.status === 'won' &&
               !linkedBetIds.has(b.id) &&
               b.result_at &&
-              Math.abs(new Date(b.result_at) - new Date(trans.created_at)) < 2 * 60 * 60 * 1000
+              Math.abs(new Date(b.result_at) - new Date(trans.created_at)) < 6 * 60 * 60 * 1000
             ) : null;
 
+            // Stratégie 2 : même montant de gain, même jour
+            if (!matchingBet) {
+              const txDate = new Date(trans.created_at).toDateString();
+              matchingBet = allBets.find(b => 
+                b.status === 'won' &&
+                !linkedBetIds.has(b.id) &&
+                b.result_at &&
+                new Date(b.result_at).toDateString() === txDate &&
+                (b.payout || Math.floor(b.stake * (b.odds || 1))) === trans.amount
+              );
+            }
+
             if (matchingBet) {
-              linkedBetIds.add(matchingBet.id); // marquer comme utilisé
-              console.log('✅ Orpheline enrichie:', trans.id, '→ pari', matchingBet.id, matchingBet.bet_type);
+              linkedBetIds.add(matchingBet.id);
+              console.log('✅ Orpheline enrichie:', trans.id, '→', matchingBet.id, matchingBet.bet_type);
               return {
                 ...trans,
                 bet_id: matchingBet.id,
                 bets: { ...matchingBet, matches: matchingBet.matches }
               };
             } else {
-              console.warn('⚠️ Orpheline non résolue:', trans.id, trans.description, trans.created_at);
+              console.warn('⚠️ Orpheline non résolue:', trans.id, '| desc:', trans.description, '| date:', trans.created_at, '| amount:', trans.amount);
             }
           }
           return trans;
@@ -513,46 +527,38 @@ export default function MaCagnotte() {
         });
       });
 
-      // ✅ AJOUTER les paris gagnés manquants (certains paris MT n'ont pas de transaction)
+      // ✅ AJOUTER les paris gagnés UNIQUEMENT s'ils n'ont pas déjà une transaction
+      // Construire un Set complet des bet_ids déjà couverts (après enrichissement des orphelines)
+      const coveredWonBetIds = new Set(
+        transactionsFiltered
+          .filter(t => t.type === 'bet_won' && t.bet_id)
+          .map(t => t.bet_id)
+      );
+
       const wonBetsInBets = allBets.filter(b => b.status === 'won');
       
       wonBetsInBets.forEach(bet => {
-        // Vérifier si cette transaction existe déjà en cherchant plus largement
-        const existingTx = transactionsFiltered.find(t => 
-          t.type === 'bet_won' && 
-          (t.bet_id === bet.id || t.id?.includes(bet.id))
-        );
-        
-        if (!existingTx) {
-          console.log('⚠️ Transaction bet_won manquante pour pari:', bet.id, bet.bet_type);
-          
-          // Trouver la transaction bet_placed pour avoir le balance
-          const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
-          const payout = Math.floor(bet.stake * (bet.odds || 1));
-          
-          transactionsFiltered.push({
-            id: `won_${bet.id}`,
-            type: 'bet_won',
-            amount: payout,
-            balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
-            created_at: bet.result_at || bet.placed_at,
-            bet_id: bet.id,
-            metadata: {
-              payout: payout
-            },
-            bets: {
-              ...bet,
-              matches: bet.matches,
-              bet_type: bet.bet_type,
-              odds: bet.odds,
-              stake: bet.stake,
-              score_domicile: bet.score_domicile,
-              score_exterieur: bet.score_exterieur
-            }
-          });
-        } else {
-          console.log('✅ Transaction bet_won existe déjà pour:', bet.id, bet.bet_type);
+        if (coveredWonBetIds.has(bet.id)) {
+          // Déjà couvert → pas de doublon
+          return;
         }
+        
+        console.log('⚠️ Transaction bet_won manquante pour pari:', bet.id, bet.bet_type);
+        const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
+        const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
+        
+        transactionsFiltered.push({
+          id: `won_${bet.id}`,
+          type: 'bet_won',
+          amount: payout,
+          balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
+          created_at: bet.result_at || bet.placed_at,
+          bet_id: bet.id,
+          bets: {
+            ...bet,
+            matches: bet.matches,
+          }
+        });
       });
 
       console.log('🔍 DEBUG - Transactions après ajout lost:', transactionsFiltered.length);
