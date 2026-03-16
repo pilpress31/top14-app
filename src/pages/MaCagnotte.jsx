@@ -85,7 +85,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const isPositive = trans.amount > 0;
 
   // ✅ Chercher le pari complet AVANT de calculer isFT/isMT
-  const fullBetById = bets?.find(b => b.id === trans.bet_id);
+  // L'API utilise reference_id (pas bet_id) pour lier transactions → paris
+  const fullBetById = bets?.find(b => b.id === (trans.bet_id || trans.reference_id));
   const fullBetByMatch = bets?.find(b => 
     b.match_id === trans.bets?.match_id && 
     b.bet_type === trans.bets?.bet_type
@@ -124,10 +125,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   // ✅ Pour un pari MT, afficher le score de mi-temps (champs match_results)
   const isMTPari = isMT;
   const realHome = isMTPari
-    ? (match?.score_ht_domicile ?? match?.score_home)
+    ? (match?.score_ht_home ?? match?.score_ht_domicile ?? match?.score_home)
     : match?.score_home;
   const realAway = isMTPari
-    ? (match?.score_ht_exterieur ?? match?.score_away)
+    ? (match?.score_ht_away ?? match?.score_ht_exterieur ?? match?.score_away)
     : match?.score_away;
 
   // Calculer l'écart
@@ -461,14 +462,15 @@ export default function MaCagnotte() {
       });
 
       // ✅ Filtrer les transactions existantes ET enrichir les orphelines
-      const linkedBetIds = new Set(txs.filter(t => t.bet_id).map(t => t.bet_id));
+      const linkedBetIds = new Set(txs.filter(t => t.bet_id || t.reference_id).map(t => t.bet_id || t.reference_id));
 
       const transactionsFiltered = txs
         .filter(trans => trans.type !== 'bet_placed')
         .map(trans => {
           // Enrichir avec scores HT pour TOUTES les transactions qui ont un match lié
+          const txBetId = trans.bet_id || trans.reference_id;
           const matchId = trans.bets?.match_id || 
-            (trans.bet_id ? enrichedBets.find(b => b.id === trans.bet_id)?.match_id : null);
+            (txBetId ? enrichedBets.find(b => b.id === txBetId)?.match_id : null);
           const mr = matchId ? matchResultsMap[matchId] : null;
 
           if (mr) {
@@ -486,9 +488,9 @@ export default function MaCagnotte() {
                 }
               };
             }
-            // Transaction avec bet_id mais sans match dans bets → enrichir depuis enrichedBets
-            if (trans.bet_id) {
-              const bet = enrichedBets.find(b => b.id === trans.bet_id);
+            // Transaction avec bet_id/reference_id mais sans match dans bets → enrichir depuis enrichedBets
+            if (trans.bet_id || trans.reference_id) {
+              const bet = enrichedBets.find(b => b.id === (trans.bet_id || trans.reference_id));
               if (bet) {
                 return {
                   ...trans,
@@ -506,9 +508,9 @@ export default function MaCagnotte() {
             }
           }
 
-          // Transaction avec bet_id mais pas de match_results → enrichir depuis enrichedBets seulement
-          if (trans.bet_id) {
-            const bet = enrichedBets.find(b => b.id === trans.bet_id);
+          // Transaction avec bet_id/reference_id mais pas de match_results → enrichir depuis enrichedBets seulement
+          if (trans.bet_id || trans.reference_id) {
+            const bet = enrichedBets.find(b => b.id === (trans.bet_id || trans.reference_id));
             if (bet?.matches?.home_team) {
               return { ...trans, bets: bet };
             }
