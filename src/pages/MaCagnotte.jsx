@@ -292,10 +292,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
       {isPari && homeTeam && awayTeam && homeTeam !== 'Équipe domicile' && (
         <div className="space-y-2 mb-2">
           {/* Noms des équipes */}
-          <div className="flex items-center justify-between text-sm font-medium text-gray-700 bg-gray-50 rounded-lg p-2">
-            <span>{homeTeam}</span>
-            <span className="text-gray-400">vs</span>
-            <span>{awayTeam}</span>
+          <div className="flex items-center gap-1 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg p-2">
+            <span className="flex-1 truncate text-left" title={homeTeam}>{homeTeam}</span>
+            <span className="text-gray-400 text-xs flex-shrink-0 px-1">vs</span>
+            <span className="flex-1 truncate text-right" title={awayTeam}>{awayTeam}</span>
           </div>
 
           {/* Scores */}
