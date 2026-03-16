@@ -83,11 +83,8 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
 // ---------------------------------------------------------
 function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const isPositive = trans.amount > 0;
-  const isFT = trans.description?.includes('FT') || trans.bets?.bet_type === 'FT';
-  const isMT = trans.description?.includes('MT') || trans.bets?.bet_type === 'MT';
-  const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
-  
-  // ✅ Chercher le pari complet : plusieurs stratégies de matching
+
+  // ✅ Chercher le pari complet AVANT de calculer isFT/isMT
   const fullBetById = bets?.find(b => b.id === trans.bet_id);
   const fullBetByMatch = bets?.find(b => 
     b.match_id === trans.bets?.match_id && 
@@ -109,6 +106,12 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
     : null;
   const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
+  // ✅ Calculer isFT/isMT depuis toutes les sources disponibles
+  const betType = fullBet?.bet_type || trans.bets?.bet_type;
+  const isFT = betType === 'FT' || trans.description?.includes('FT');
+  const isMT = betType === 'MT' || trans.description?.includes('MT');
+  const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
+
   // ✅ Le match peut venir du pari trouvé OU directement de trans.bets
   const match = fullBet?.matches || trans.bets?.matches;
   const odds = fullBet?.odds || trans.bets?.odds || trans.metadata?.odds;
@@ -119,8 +122,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const pronoHome = fullBet?.score_domicile ?? trans.bets?.score_domicile;
   const pronoAway = fullBet?.score_exterieur ?? trans.bets?.score_exterieur;
   // ✅ Pour un pari MT, afficher le score de mi-temps (champs match_results)
-  const betType = fullBet?.bet_type || trans.bets?.bet_type || (isMT ? 'MT' : isFT ? 'FT' : null);
-  const isMTPari = betType === 'MT';
+  const isMTPari = isMT;
   const realHome = isMTPari
     ? (match?.score_ht_domicile ?? match?.score_home)
     : match?.score_home;
@@ -661,15 +663,38 @@ export default function MaCagnotte() {
       );
     });
 
+    // ✅ Dédoublonner : une seule transaction par (match_id + bet_type + user)
+    // Garder celle avec le balance_after le plus élevé (la plus récente en cas de doublon)
+    const seen = new Map();
+    const deduped = filtered.filter(tx => {
+      const matchId = tx.bets?.match_id || tx.bet_id;
+      const betType = tx.bets?.bet_type || (tx.description?.includes('MT') ? 'MT' : tx.description?.includes('FT') ? 'FT' : null);
+      // Pas un pari → toujours garder
+      if (!matchId || tx.type === 'monthly_distribution' || tx.type === 'initial_capital' || tx.type === 'system_adjustment') return true;
+      const key = `${matchId}_${betType}_${tx.type}`;
+      if (seen.has(key)) {
+        // Garder celui avec le balance_after le plus grand, ou le plus récent
+        const prev = seen.get(key);
+        const prevBalance = prev.balance_after || 0;
+        const currBalance = tx.balance_after || 0;
+        if (currBalance > prevBalance || new Date(tx.created_at) > new Date(prev.created_at)) {
+          seen.set(key, tx);
+        }
+        return false;
+      }
+      seen.set(key, tx);
+      return true;
+    });
+
     if (sortMode === "recent") {
-      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      deduped.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else {
-      filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
     // ✅ Recalculer les soldes de façon cohérente
     // Trier chronologiquement pour recalculer, puis remettre dans l'ordre voulu
-    const chronological = [...filtered].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const chronological = [...deduped].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     
     // Trouver le solde de départ (le plus ancien solde connu)
     let runningBalance = null;
@@ -688,13 +713,13 @@ export default function MaCagnotte() {
         balanceMap[tx.id] = runningBalance;
       }
       // Appliquer les soldes recalculés
-      return filtered.map(tx => ({
+      return deduped.map(tx => ({
         ...tx,
         balance_after: balanceMap[tx.id] ?? tx.balance_after
       }));
     }
 
-    return filtered;
+    return deduped;
   }, [transactions, teamFilter, sortMode]);
 
   const teams = [...new Set(
