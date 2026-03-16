@@ -292,7 +292,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
       {isPari && homeTeam && awayTeam && homeTeam !== 'Équipe domicile' && (
         <div className="space-y-2 mb-2">
           {/* Noms des équipes */}
-          <div className="flex items-center gap-1 text-base font-medium text-gray-700 bg-gray-50 rounded-lg p-2">
+          <div className="flex items-center gap-1 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg p-2">
             <span className="flex-1 truncate text-left" title={homeTeam}>{homeTeam}</span>
             <span className="text-gray-400 text-xs flex-shrink-0 px-1">vs</span>
             <span className="flex-1 truncate text-right" title={awayTeam}>{awayTeam}</span>
@@ -722,34 +722,29 @@ export default function MaCagnotte() {
       deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
-    // ✅ Recalculer les soldes de façon cohérente
-    // Trier chronologiquement pour recalculer, puis remettre dans l'ordre voulu
+    // ✅ Recalculer les soldes depuis le début (bonus de bienvenue = base)
     const chronological = [...deduped].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    
-    // Trouver le solde de départ (le plus ancien solde connu)
-    let runningBalance = null;
+
+    // Partir de 0 et reconstruire intégralement
+    // Le bonus de bienvenue est la première transaction (initial_capital)
+    let runningBalance = 0;
+    const balanceMap = {};
+
     for (const tx of chronological) {
-      if (tx.balance_after !== null && tx.balance_after !== undefined) {
-        runningBalance = tx.balance_after - tx.amount;
-        break;
-      }
+      runningBalance += tx.amount;
+      balanceMap[tx.id] = runningBalance;
     }
 
-    // Recalculer tous les balance_after en partant du début
-    if (runningBalance !== null) {
-      const balanceMap = {};
-      for (const tx of chronological) {
-        runningBalance += tx.amount;
-        balanceMap[tx.id] = runningBalance;
-      }
-      // Appliquer les soldes recalculés
-      return deduped.map(tx => ({
-        ...tx,
-        balance_after: balanceMap[tx.id] ?? tx.balance_after
-      }));
-    }
+    // Si on n'a pas trouvé de point de départ cohérent, fallback sur balance_after BDD
+    const firstBalance = balanceMap[chronological[0]?.id];
+    const useRecalc = firstBalance !== undefined && firstBalance > 0;
 
-    return deduped;
+    return deduped.map(tx => ({
+      ...tx,
+      balance_after: useRecalc
+        ? (balanceMap[tx.id] ?? tx.balance_after)
+        : tx.balance_after
+    }));
   }, [transactions, teamFilter, sortMode]);
 
   const teams = [...new Set(
