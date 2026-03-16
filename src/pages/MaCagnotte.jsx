@@ -466,10 +466,14 @@ export default function MaCagnotte() {
       const transactionsFiltered = txs
         .filter(trans => trans.type !== 'bet_placed')
         .map(trans => {
-          // Transaction avec match déjà chargé → enrichir avec scores MT depuis match_results
-          if (trans.bets?.matches?.home_team) {
-            const mr = matchResultsMap[trans.bets?.match_id];
-            if (mr) {
+          // Enrichir avec scores HT pour TOUTES les transactions qui ont un match lié
+          const matchId = trans.bets?.match_id || 
+            (trans.bet_id ? enrichedBets.find(b => b.id === trans.bet_id)?.match_id : null);
+          const mr = matchId ? matchResultsMap[matchId] : null;
+
+          if (mr) {
+            // Transaction avec match déjà chargé → ajouter les scores HT
+            if (trans.bets?.matches?.home_team) {
               return {
                 ...trans,
                 bets: {
@@ -482,10 +486,34 @@ export default function MaCagnotte() {
                 }
               };
             }
+            // Transaction avec bet_id mais sans match dans bets → enrichir depuis enrichedBets
+            if (trans.bet_id) {
+              const bet = enrichedBets.find(b => b.id === trans.bet_id);
+              if (bet) {
+                return {
+                  ...trans,
+                  bets: {
+                    ...bet,
+                    matches: {
+                      ...(bet.matches || {}),
+                      score_ht_domicile: mr.score_ht_domicile,
+                      score_ht_exterieur: mr.score_ht_exterieur,
+                    }
+                  }
+                };
+              }
+              return trans;
+            }
+          }
+
+          // Transaction avec bet_id mais pas de match_results → enrichir depuis enrichedBets seulement
+          if (trans.bet_id) {
+            const bet = enrichedBets.find(b => b.id === trans.bet_id);
+            if (bet?.matches?.home_team) {
+              return { ...trans, bets: bet };
+            }
             return trans;
           }
-          // Si elle a déjà un bet_id → sera résolu dans TransactionItem via enrichedBets
-          if (trans.bet_id) return trans;
           
           // Transaction orpheline (pas de bet_id) : chercher le pari correspondant
           if (trans.type === 'bet_won') {
