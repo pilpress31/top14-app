@@ -722,65 +722,34 @@ export default function MaCagnotte() {
       deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
-    // ✅ Stratégie soldes : utiliser balance_after BDD quand disponible
-    // Pour les transactions sans balance_after (paris perdus construits manuellement),
-    // interpoler depuis les transactions voisines qui ont un solde connu
-
-    // Trier chronologiquement pour interpoler
+    // ✅ Recalcul des soldes depuis le solde actuel en remontant
+    // On part du solde actuel (userCredits) et on remonte chronologiquement
+    // pour que le solde en haut = solde réel du bandeau
     const chronological = [...deduped].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     
-    // Construire une map des soldes connus (depuis BDD)
-    const knownBalances = {};
-    chronological.forEach(tx => {
-      if (tx.balance_after !== null && tx.balance_after !== undefined) {
-        knownBalances[tx.id] = tx.balance_after;
-      }
-    });
-
-    // Pour les transactions sans solde, calculer depuis le solde connu précédent
+    // Calculer le solde cumulé depuis le début
+    // balance_after[i] = somme de tous les amounts de 0 à i
     const balanceMap = {};
-    let lastKnownBalance = 0;
-    let lastKnownIndex = -1;
-
-    // Trouver le premier solde connu
-    for (let i = 0; i < chronological.length; i++) {
-      if (knownBalances[chronological[i].id] !== undefined) {
-        // Remonter en arrière depuis ce point
-        let balance = knownBalances[chronological[i].id];
-        balanceMap[chronological[i].id] = balance;
-        // Calculer les soldes AVANT ce point en remontant
-        for (let j = i - 1; j >= 0; j--) {
-          balance -= chronological[j + 1].amount;
-          // Ajuster : le solde avant tx[j+1] = solde après tx[j]
-          const prevBalance = balanceMap[chronological[j+1].id] - chronological[j+1].amount;
-          balanceMap[chronological[j].id] = prevBalance + chronological[j].amount;
-        }
-        break;
-      }
+    let running = 0;
+    for (const tx of chronological) {
+      running += tx.amount;
+      balanceMap[tx.id] = running;
     }
 
-    // Calculer vers l'avant depuis le premier solde connu
-    for (let i = 0; i < chronological.length; i++) {
-      if (balanceMap[chronological[i].id] !== undefined) {
-        lastKnownBalance = balanceMap[chronological[i].id];
-        lastKnownIndex = i;
-      } else if (lastKnownIndex >= 0) {
-        // Calculer depuis le dernier solde connu
-        let balance = lastKnownBalance;
-        for (let j = lastKnownIndex + 1; j <= i; j++) {
-          balance += chronological[j].amount;
-          balanceMap[chronological[j].id] = balance;
-        }
-        lastKnownBalance = balance;
-        lastKnownIndex = i;
-      }
-    }
+    // Ajuster pour que le dernier solde = userCredits (solde réel)
+    // Décalage = userCredits - running
+    const lastBalance = running;
+    const targetBalance = userCredits || lastBalance;
+    const offset = targetBalance - lastBalance;
 
+    // Appliquer le décalage à tous les soldes
     return deduped.map(tx => ({
       ...tx,
-      balance_after: balanceMap[tx.id] ?? tx.balance_after
+      balance_after: (balanceMap[tx.id] !== undefined)
+        ? balanceMap[tx.id] + offset
+        : tx.balance_after
     }));
-  }, [transactions, teamFilter, sortMode]);
+  }, [transactions, teamFilter, sortMode, userCredits]);
 
   const teams = [...new Set(
     bets
