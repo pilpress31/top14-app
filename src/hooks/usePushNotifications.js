@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext'; // ✅ AJOUTER
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 
 export function usePushNotifications() {
   const { user } = useAuth(); // ✅ AJOUTER
@@ -82,9 +83,9 @@ export function usePushNotifications() {
     return false;
   };
 
-  // Vérifier subscription au chargement
+  // ✅ Vérifier et renouveler la subscription au chargement
   useEffect(() => {
-    const checkSubscription = async () => {
+    const checkAndRenewSubscription = async () => {
       if (permission === 'granted' && 'serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
@@ -92,15 +93,46 @@ export function usePushNotifications() {
         if (sub) {
           setSubscription(sub);
           console.log('✅ Subscription existante trouvée');
+
+          // ✅ Vérifier l'âge de la subscription en BDD
+          try {
+            if (user?.id) {
+              const { data: subData } = await supabase
+                .from('push_subscriptions')
+                .select('updated_at')
+                .eq('user_id', user.id)
+                .eq('endpoint', sub.endpoint)
+                .single();
+
+              if (subData) {
+                const daysSinceUpdate = (new Date() - new Date(subData.updated_at)) / (1000 * 60 * 60 * 24);
+                
+                // ✅ Renouveler si plus de 30 jours sans mise à jour
+                if (daysSinceUpdate > 30) {
+                  console.log(`⚠️ Subscription âgée de ${Math.round(daysSinceUpdate)} jours → renouvellement...`);
+                  await subscribeUser();
+                } else {
+                  console.log(`✅ Subscription récente (${Math.round(daysSinceUpdate)} jours)`);
+                }
+              } else {
+                // Subscription locale mais pas en BDD → resauvegarder
+                console.log('⚠️ Subscription non trouvée en BDD → resauvegarde...');
+                await subscribeUser();
+              }
+            }
+          } catch (e) {
+            console.warn('⚠️ Impossible de vérifier l'âge de la subscription:', e.message);
+          }
+
         } else if (permission === 'granted') {
-          // Permission granted mais pas de subscription → Créer
+          // Permission granted mais pas de subscription locale → Créer
           console.log('⚠️ Permission granted mais pas de subscription, création...');
           await subscribeUser();
         }
       }
     };
     
-    checkSubscription();
+    checkAndRenewSubscription();
   }, [permission]);
 
   // Enregistrer Service Worker au chargement
