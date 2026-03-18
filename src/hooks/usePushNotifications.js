@@ -109,10 +109,10 @@ export function usePushNotifications() {
                 
                 // ✅ Renouveler si plus de 30 jours sans mise à jour
                 if (daysSinceUpdate > 30) {
-                  console.log(`⚠️ Subscription âgée de ${Math.round(daysSinceUpdate)} jours → renouvellement...`);
+                  console.log(`⚠️ Subscription agee de ${Math.round(daysSinceUpdate)} jours - renouvellement...`);
                   await subscribeUser();
                 } else {
-                  console.log(`✅ Subscription récente (${Math.round(daysSinceUpdate)} jours)`);
+                  console.log(`✅ Subscription recente (${Math.round(daysSinceUpdate)} jours)`);
                 }
               } else {
                 // Subscription locale mais pas en BDD → resauvegarder
@@ -121,7 +121,7 @@ export function usePushNotifications() {
               }
             }
           } catch (e) {
-            console.warn('⚠️ Impossible de vérifier l'âge de la subscription:', e.message);
+            console.warn('⚠️ Impossible de verifier age subscription:', e.message);
           }
 
         } else if (permission === 'granted') {
