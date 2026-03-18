@@ -241,7 +241,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
         trans.type === 'monthly_distribution' ? 'border-blue-500' :
         'border-purple-500'
       }`}
-      onClick={() => trans.type === 'bet_won' && trans.bet_id && navigateToBet(trans)}
+      onClick={() => (trans.type === 'bet_won' || trans.type === 'bet_lost') && trans.bet_id && navigateToBet(trans)}
     >
       {/* En-tête */}
       <div className="flex justify-between items-start mb-2">
@@ -675,8 +675,9 @@ export default function MaCagnotte() {
   const navigateToBet = (trans) => {
     const matchId = trans.bets?.matches?.id;
     if (!matchId) return;
+    const filterStatus = trans.type === 'bet_lost' ? 'lost' : 'won';
     navigate(`/pronos?scrollToMatchId=${matchId}`, {
-      state: { activeTab: "mes-paris" },
+      state: { activeTab: "mes-paris", filterStatus },
     });
   };
 
