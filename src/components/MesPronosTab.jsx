@@ -125,14 +125,14 @@ export default function MesPronosTab({ goToMesParis }) {
           headers: { 'x-user-id': user.id }
         });
         
-        // ✅ Charger les gains de paris uniquement
-        const { data: wonTxData } = await supabase
-          .from('credit_transactions')
-          .select('amount')
+        // ✅ Charger les gains depuis user_bets (source de vérité)
+        const { data: wonBetsData } = await supabase
+          .from('user_bets')
+          .select('payout')
           .eq('user_id', user.id)
-          .eq('type', 'bet_won');
+          .eq('status', 'won');
 
-        const totalWonFromBets = wonTxData?.reduce((sum, tx) => sum + (tx.amount || 0), 0) || 0;
+        const totalWonFromBets = wonBetsData?.reduce((sum, b) => sum + (b.payout || 0), 0) || 0;
 
         setUserCredits({
           ...creditsResponse.data,
