@@ -360,12 +360,18 @@ export default function MesParisTab() {
                             {bet.score_domicile} - {bet.score_exterieur}
                           </p>
                         </div>
-                        {/* Score réel */}
-                        {(() => {
+                        {/* Score réel - uniquement pour paris résolus */}
+                        {!isPending && (() => {
                           const result = matchResults[bet.match_id];
-                          if (!result) return null;
-                          const realHome = bet.bet_type === 'MT' ? result.score_ht_domicile : result.score_domicile;
-                          const realAway = bet.bet_type === 'MT' ? result.score_ht_exterieur : result.score_exterieur;
+                          // Fallback : utiliser les scores depuis bet.matches si matchResults vide
+                          const matchData = result || bet.matches;
+                          if (!matchData) return null;
+                          const realHome = bet.bet_type === 'MT' 
+                            ? (matchData.score_ht_domicile ?? matchData.score_ht_home) 
+                            : (matchData.score_domicile ?? matchData.score_home);
+                          const realAway = bet.bet_type === 'MT' 
+                            ? (matchData.score_ht_exterieur ?? matchData.score_ht_away) 
+                            : (matchData.score_exterieur ?? matchData.score_away);
                           if (realHome == null || realAway == null) return null;
                           return (
                             <div className={`rounded-lg py-2 px-3 border ${isWon ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
