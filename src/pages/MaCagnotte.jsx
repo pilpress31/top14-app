@@ -642,7 +642,10 @@ export default function MaCagnotte() {
       const distributions = transactionsFiltered.filter((t) => t.type === "monthly_distribution");
       const totalDistributions = distributions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
       const bonusInitial = transactionsFiltered.find((t) => t.type === "initial_capital")?.amount || 0;
-      const totalWonFromBets = wonTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+      // ✅ Utiliser bet.payout depuis enrichedBets (source de vérité = BDD)
+      const totalWonFromBets = enrichedBets
+        .filter(b => b.status === 'won')
+        .reduce((sum, b) => sum + (b.payout || 0), 0);
       const totalStaked = enrichedBets.reduce((sum, b) => sum + (b.stake || 0), 0);
 
       const wonBets = enrichedBets.filter(b => b.status === 'won').length;
