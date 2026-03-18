@@ -14,6 +14,7 @@ export default function MesParisTab() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
+  const [matchResults, setMatchResults] = useState({});
   
   const [targetMatchId, setTargetMatchId] = useState(null);
   const betRefs = useRef({});
@@ -125,6 +126,17 @@ export default function MesParisTab() {
 
       if (!pronosError) {
         setPronos(pronosData || []);
+      }
+
+      // ✅ Charger les scores réels depuis matchs_results
+      const { data: resultsData } = await supabase
+        .from('matchs_results')
+        .select('id, score_domicile, score_exterieur, score_ht_domicile, score_ht_exterieur');
+      
+      if (resultsData) {
+        const resultsMap = {};
+        resultsData.forEach(r => { resultsMap[r.id] = r; });
+        setMatchResults(resultsMap);
       }
 
     } catch (error) {
@@ -337,13 +349,35 @@ export default function MesParisTab() {
                         </div>
                       </div>
 
-                      {/* Score pronostiqué */}
-                      <div className="bg-gray-50 rounded-lg py-2 px-4 flex items-center justify-center gap-3">
-                        <Target className="w-4 h-4 text-rugby-gold" />
-                        <span className="text-sm text-gray-600">Pronostic :</span>
-                        <span className="text-2xl font-bold text-rugby-gold">
-                          {bet.score_domicile} - {bet.score_exterieur}
-                        </span>
+                      {/* Scores */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Pronostic */}
+                        <div className="bg-blue-50 rounded-lg py-2 px-3 border border-blue-200">
+                          <p className="text-[10px] text-blue-700 font-semibold mb-1 flex items-center gap-1">
+                            <Target className="w-3 h-3" /> Ton pronostic
+                          </p>
+                          <p className="text-xl font-bold text-blue-900 text-center">
+                            {bet.score_domicile} - {bet.score_exterieur}
+                          </p>
+                        </div>
+                        {/* Score réel */}
+                        {(() => {
+                          const result = matchResults[bet.match_id];
+                          if (!result) return null;
+                          const realHome = bet.bet_type === 'MT' ? result.score_ht_domicile : result.score_domicile;
+                          const realAway = bet.bet_type === 'MT' ? result.score_ht_exterieur : result.score_exterieur;
+                          if (realHome == null || realAway == null) return null;
+                          return (
+                            <div className={`rounded-lg py-2 px-3 border ${isWon ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                              <p className={`text-[10px] font-semibold mb-1 ${isWon ? 'text-green-700' : 'text-red-700'}`}>
+                                Score réel
+                              </p>
+                              <p className={`text-xl font-bold text-center ${isWon ? 'text-green-900' : 'text-red-900'}`}>
+                                {realHome} - {realAway}
+                              </p>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
