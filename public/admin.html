@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top14 — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Figtree:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C96A;
+  --gold-dim: rgba(201,168,76,0.15);
+  --dark: #090909;
+  --dark2: #111111;
+  --dark3: #191919;
+  --dark4: #222222;
+  --border: #2C2C2C;
+  --border2: #383838;
+  --text: #F0EDE8;
+  --muted: #666;
+  --muted2: #888;
+  --green: #4ADE80;
+  --green-dim: rgba(74,222,128,0.12);
+  --red: #F87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --blue: #60A5FA;
+  --blue-dim: rgba(96,165,250,0.12);
+  --orange: #FB923C;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--dark);
+  color: var(--text);
+  font-family: 'Figtree', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── LOGIN ── */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%);
+}
+
+.login-box {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 56px;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+
+.login-sub {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 6px;
+  margin-bottom: 40px;
+}
+
+.login-box input {
+  width: 100%;
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-box input:focus { border-color: var(--gold); }
+
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border: none;
+  border-radius: 10px;
+  color: var(--dark);
+  cursor: pointer;
+  font-family: 'Bebas Neue', cursive;
+  font-size: 18px;
+  letter-spacing: 2px;
+  padding: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.login-error {
+  color: var(--red);
+  font-size: 13px;
+  margin-top: 12px;
+  display: none;
+}
+
+/* ── APP SHELL ── */
+#appScreen { display: none; min-height: 100vh; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(9,9,9,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 60px;
+}
+
+.topbar-logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 26px;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted2);
+}
+
+.topbar-user span { color: var(--gold-light); font-weight: 600; }
+
+.btn-logout {
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Figtree', sans-serif;
+  font-size: 12px;
+  padding: 6px 12px;
+  transition: all 0.2s;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── NAV TABS ── */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 16px 32px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--dark2);
+  overflow-x: auto;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Figtree', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+/* ── CONTENT ── */
+.content { padding: 32px; max-width: 1000px; margin: 0 auto; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.card-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--gold-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── FORM ELEMENTS ── */
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+  margin-top: 18px;
+}
+
+label:first-of-type { margin-top: 0; }
+
+input, textarea, select {
+  width: 100%;
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Figtree', sans-serif;
+  font-size: 14px;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+input:focus, textarea:focus, select:focus { border-color: var(--gold); }
+textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+select option { background: var(--dark3); }
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  background: var(--dark3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: 'Figtree', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn:hover { border-color: var(--gold); color: var(--gold-light); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border: none;
+  color: var(--dark);
+  font-weight: 600;
+}
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,0.2); color: var(--dark); }
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+.btn-success { border-color: var(--green); color: var(--green); }
+.btn-success:hover { background: var(--green-dim); }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+/* ── PRESETS ── */
+.presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.preset-btn {
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted2);
+  cursor: pointer;
+  font-family: 'Figtree', sans-serif;
+  font-size: 12px;
+  padding: 5px 13px;
+  transition: all 0.2s;
+}
+.preset-btn:hover { border-color: var(--gold); color: var(--gold-light); }
+
+/* ── STATS GRID ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.stat-box {
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-val {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 36px;
+  color: var(--gold-light);
+  line-height: 1;
+}
+
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+
+.stat-lbl {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; margin-top: 12px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-gold { background: var(--gold-dim); color: var(--gold-light); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+/* ── RESULT ── */
+.result {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 16px;
+  display: none;
+  animation: fadeUp 0.25s ease;
+}
+
+.result.ok { background: var(--green-dim); border: 1px solid rgba(74,222,128,0.25); color: var(--green); display: block; }
+.result.err { background: var(--red-dim); border: 1px solid rgba(248,113,113,0.25); color: var(--red); display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SPINNER ── */
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: var(--dark);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: none;
+}
+.loading .spinner { display: inline-block; }
+.loading .btn-text { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tag-ft { background: rgba(96,165,250,0.15); color: var(--blue); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 700; }
+.tag-mt { background: rgba(251,146,60,0.15); color: var(--orange); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 700; }
+
+@media (max-width: 600px) {
+  .content { padding: 16px; }
+  .topbar { padding: 0 16px; }
+  .nav-tabs { padding: 12px 16px 0; }
+  .input-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Top14</div>
+    <div class="login-sub">Admin Panel</div>
+    <input type="email" id="loginEmail" placeholder="Email" value="">
+    <input type="password" id="loginPassword" placeholder="Mot de passe">
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+      <div class="spinner"></div>
+      <span class="btn-text">Connexion</span>
+    </button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="appScreen">
+  <div class="topbar">
+    <div class="topbar-logo">Top14 Admin</div>
+    <div class="topbar-user">
+      Connecté en tant que <span id="userPseudo">—</span>
+      <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('push')">📣 Notifications Push</button>
+    <button class="tab" onclick="showTab('classement')">🏆 Classement</button>
+    <button class="tab" onclick="showTab('jetons')">💰 Jetons</button>
+    <button class="tab" onclick="showTab('paris')">🎯 Paris</button>
+    <button class="tab" onclick="showTab('distribution')">📦 Distribution</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PUSH NOTIFICATIONS ══ -->
+    <div id="panel-push" class="panel active">
+      <div class="card">
+        <div class="card-title">📣 Envoyer une notification push</div>
+
+        <label>Destinataire</label>
+        <select id="pushTarget" onchange="toggleUserSelect()">
+          <option value="all">Tous les utilisateurs</option>
+          <option value="one">Un utilisateur spécifique</option>
+        </select>
+
+        <div id="pushUserRow" style="display:none; margin-top:12px">
+          <label>Choisir l'utilisateur</label>
+          <select id="pushUserId">
+            <option value="">Chargement...</option>
+          </select>
+        </div>
+
+        <label>Titre</label>
+        <input type="text" id="pushTitle" placeholder="Ex: 🏉 Nouvelle journée disponible !" maxlength="100">
+
+        <label>Message</label>
+        <textarea id="pushBody" placeholder="Ex: La journée 19 est disponible, faites vos pronostics !" maxlength="200"></textarea>
+
+        <label>URL de redirection</label>
+        <input type="text" id="pushUrl" placeholder="https://app.top14pronos.org/pronos">
+
+        <label>Messages prédéfinis</label>
+        <div class="presets">
+          <button class="preset-btn" onclick="setPreset('journee')">🏉 Nouvelle journée</button>
+          <button class="preset-btn" onclick="setPreset('resultats')">🎯 Résultats</button>
+          <button class="preset-btn" onclick="setPreset('distribution')">💰 Distribution</button>
+          <button class="preset-btn" onclick="setPreset('test')">🔔 Test</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-gold" id="pushBtn" onclick="sendPush()">
+            <div class="spinner"></div>
+            <span class="btn-text">📤 Envoyer</span>
+          </button>
+        </div>
+
+        <div class="result" id="pushResult"></div>
+      </div>
+
+      <div class="card" id="pushStatsCard" style="display:none">
+        <div class="card-title">📊 Résultat</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val green" id="psSent">—</div><div class="stat-lbl">Envoyées</div></div>
+          <div class="stat-box"><div class="stat-val red" id="psFailed">—</div><div class="stat-lbl">Echecs</div></div>
+          <div class="stat-box"><div class="stat-val" id="psTotal">—</div><div class="stat-lbl">Total</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CLASSEMENT ══ -->
+    <div id="panel-classement" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏆 Classement & Stats</div>
+          <button class="btn" onclick="loadClassement()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table id="classementTable">
+            <thead>
+              <tr>
+                <th>Rang</th>
+                <th>Pseudo</th>
+                <th>Points</th>
+                <th>Paris</th>
+                <th>Réussite</th>
+                <th>Jetons</th>
+              </tr>
+            </thead>
+            <tbody id="classementBody">
+              <tr><td colspan="6" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ JETONS ══ -->
+    <div id="panel-jetons" class="panel">
+      <div class="card">
+        <div class="card-title">💰 Créditer / Débiter des jetons</div>
+
+        <label>Utilisateur</label>
+        <select id="jetonsUserId">
+          <option value="">Chargement...</option>
+        </select>
+
+        <div class="input-row" style="margin-top:18px">
+          <div>
+            <label>Montant (positif = crédit, négatif = débit)</label>
+            <input type="number" id="jetonsAmount" placeholder="Ex: 100 ou -50">
+          </div>
+          <div>
+            <label>Description</label>
+            <input type="text" id="jetonsDesc" placeholder="Ex: Correction manuelle">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-gold" id="jetonsBtn" onclick="crediterJetons()">
+            <div class="spinner"></div>
+            <span class="btn-text">✅ Appliquer</span>
+          </button>
+        </div>
+
+        <div class="result" id="jetonsResult"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">💳 Soldes actuels</div>
+          <button class="btn" onclick="loadSoldes()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Pseudo</th><th>Solde</th><th>Total gagné</th><th>Total misé</th></tr>
+            </thead>
+            <tbody id="soldesBody">
+              <tr><td colspan="4" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PARIS ══ -->
+    <div id="panel-paris" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🎯 Paris en cours</div>
+          <button class="btn" onclick="loadParis()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>User</th><th>Match</th><th>Type</th><th>Pronostic</th><th>Mise</th><th>Cote</th><th>Statut</th></tr>
+            </thead>
+            <tbody id="parisBody">
+              <tr><td colspan="7" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DISTRIBUTION ══ -->
+    <div id="panel-distribution" class="panel">
+      <div class="card">
+        <div class="card-title">📦 Distribution mensuelle manuelle</div>
+        <p style="color:var(--muted2); font-size:13px; margin-bottom:20px; line-height:1.6">
+          Déclenche la distribution progressive des jetons pour un mois donné. La fonction SQL vérifie automatiquement qu'elle n'a pas déjà été effectuée.
+        </p>
+
+        <label>Mois (format YYYY-MM)</label>
+        <input type="text" id="distMonth" placeholder="Ex: 2026-03" maxlength="7">
+
+        <label>Clé admin</label>
+        <input type="password" id="distAdminKey" placeholder="ADMIN_SECRET_KEY">
+
+        <div class="btn-row">
+          <button class="btn btn-gold" id="distBtn" onclick="distribuer()">
+            <div class="spinner"></div>
+            <span class="btn-text">🚀 Lancer la distribution</span>
+          </button>
+        </div>
+
+        <div class="result" id="distResult"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Historique distributions</div>
+          <button class="btn" onclick="loadDistributions()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Mois</th><th>Total distribué</th><th>Users</th><th>Date</th></tr>
+            </thead>
+            <tbody id="distBody">
+              <tr><td colspan="4" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /appScreen -->
+
+<script>
+const SUPABASE_URL = 'https://nqmhqponvtlxfksmxpyk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnemF6emN5dnlxcWprZXRtc3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MjMxOTgsImV4cCI6MjA4MDk5OTE5OH0.Th_Q8zM-QXbkniXJsp-YWJzlRfoo2D0HdTbzsC3B_xQ';
+const API_URL = 'https://top14-api-production.up.railway.app';
+const ADMIN_USER_ID = 'fe5951b6-316c-4bc6-abef-df6c153fe723';
+
+let sb;
+
+document.addEventListener('DOMContentLoaded', () => {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  setPreset('test');
+  const now = new Date();
+  document.getElementById('distMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+});
+
+let users = []; // cache users {id, pseudo}
+
+// ══ AUTH ══
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+
+  if (!email || !pass) { showLoginErr('Remplissez tous les champs'); return; }
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  err.style.display = 'none';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+
+    if (data.user.id !== ADMIN_USER_ID) {
+      await sb.auth.signOut();
+      throw new Error('Acces non autorise');
+    }
+
+    // Charger pseudo
+    const { data: profile } = await sb.from('user_profiles').select('pseudo').eq('user_id', data.user.id).single();
+    document.getElementById('userPseudo').textContent = profile?.pseudo || 'Admin';
+
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+
+    await loadUsers();
+
+  } catch (e) {
+    showLoginErr(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }
+}
+
+function showLoginErr(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ══ TABS ══
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ══ LOAD USERS ══
+async function loadUsers() {
+  const { data } = await sb.from('user_profiles').select('user_id, pseudo').order('pseudo');
+  if (!data) return;
+
+  users = data.map(u => ({ id: u.user_id, pseudo: u.pseudo || u.user_id.substring(0,8) }))
+               .sort((a,b) => a.pseudo.localeCompare(b.pseudo));
+
+  // Remplir les selects
+  const selects = ['pushUserId', 'jetonsUserId'];
+  selects.forEach(sid => {
+    const sel = document.getElementById(sid);
+    sel.innerHTML = '<option value="">-- Choisir --</option>';
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = u.pseudo;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+// ══ PUSH ══
+const pushPresets = {
+  journee: { title: '🏉 Nouveaux matchs disponibles !', body: 'La prochaine journee est disponible. Faites vos pronostics avant le coup d\'envoi !', url: 'https://app.top14pronos.org/pronos' },
+  resultats: { title: '🎯 Resultats disponibles', body: 'Les resultats de la derniere journee sont tombes. Consultez votre cagnotte !', url: 'https://app.top14pronos.org/ma-cagnotte' },
+  distribution: { title: '💰 Distribution mensuelle !', body: 'Vos jetons gratuits sont arrives ! Consultez votre cagnotte pour voir votre bonus.', url: 'https://app.top14pronos.org/ma-cagnotte' },
+  test: { title: '🔔 Top14 Pronos - Test', body: 'Notification de test reussie ! Votre systeme push fonctionne.', url: 'https://app.top14pronos.org' }
+};
+
+function setPreset(key) {
+  const p = pushPresets[key];
+  document.getElementById('pushTitle').value = p.title;
+  document.getElementById('pushBody').value = p.body;
+  document.getElementById('pushUrl').value = p.url;
+}
+
+function toggleUserSelect() {
+  const val = document.getElementById('pushTarget').value;
+  document.getElementById('pushUserRow').style.display = val === 'one' ? 'block' : 'none';
+}
+
+async function sendPush() {
+  const target = document.getElementById('pushTarget').value;
+  const userId = document.getElementById('pushUserId').value;
+  const title = document.getElementById('pushTitle').value.trim();
+  const body = document.getElementById('pushBody').value.trim();
+  const url = document.getElementById('pushUrl').value.trim();
+
+  if (!title || !body) { showResult('pushResult', 'err', '❌ Titre et message requis'); return; }
+  if (target === 'one' && !userId) { showResult('pushResult', 'err', '❌ Selectionnez un utilisateur'); return; }
+
+  const btn = document.getElementById('pushBtn');
+  btn.disabled = true; btn.classList.add('loading');
+
+  try {
+    const endpoint = target === 'all'
+      ? `${API_URL}/api/notifications/send-to-all`
+      : `${API_URL}/api/notifications/send-to-user`;
+
+    const payload = target === 'all'
+      ? { title, body, url: url || undefined }
+      : { userId, title, body, url: url || undefined };
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showResult('pushResult', 'ok', `✅ ${data.message}`);
+      if (data.total !== undefined) {
+        document.getElementById('pushStatsCard').style.display = 'block';
+        document.getElementById('psSent').textContent = data.sent ?? '—';
+        document.getElementById('psFailed').textContent = data.failed ?? '—';
+        document.getElementById('psTotal').textContent = data.total ?? '—';
+      }
+    } else {
+      showResult('pushResult', 'err', '❌ ' + (data.error || data.message || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('pushResult', 'err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+
+// ══ CLASSEMENT ══
+async function loadClassement() {
+  const { data: stats } = await sb.from('user_stats').select('*').eq('saison','2025-2026').order('total_points', { ascending: false });
+  const { data: profiles } = await sb.from('user_profiles').select('user_id, pseudo');
+  const { data: credits } = await sb.from('user_credits').select('user_id, credits');
+
+  const pseudoMap = {}, creditsMap = {};
+  profiles?.forEach(p => pseudoMap[p.user_id] = p.pseudo);
+  credits?.forEach(c => creditsMap[c.user_id] = c.credits);
+
+  const tbody = document.getElementById('classementBody');
+  if (!stats?.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>'; return; }
+
+  tbody.innerHTML = stats.map((s, i) => `
+    <tr>
+      <td><span class="badge ${i===0?'badge-gold':i===1?'badge-blue':i===2?'badge-green':''}">${i+1}</span></td>
+      <td style="font-weight:600">${pseudoMap[s.user_id] || s.user_id.substring(0,8)}</td>
+      <td style="color:var(--gold-light);font-weight:700">${s.total_points ?? 0}</td>
+      <td>${s.total_pronos ?? 0}</td>
+      <td>${s.taux_reussite ? Math.round(s.taux_reussite) + '%' : '—'}</td>
+      <td style="color:var(--green)">${(creditsMap[s.user_id] ?? '—').toLocaleString()}</td>
+    </tr>
+  `).join('');
+}
+
+// ══ JETONS ══
+async function crediterJetons() {
+  const userId = document.getElementById('jetonsUserId').value;
+  const amount = parseInt(document.getElementById('jetonsAmount').value);
+  const desc = document.getElementById('jetonsDesc').value.trim() || 'Ajustement manuel admin';
+
+  if (!userId) { showResult('jetonsResult', 'err', '❌ Selectionnez un utilisateur'); return; }
+  if (!amount || isNaN(amount)) { showResult('jetonsResult', 'err', '❌ Montant invalide'); return; }
+
+  const btn = document.getElementById('jetonsBtn');
+  btn.disabled = true; btn.classList.add('loading');
+
+  try {
+    // Récupérer solde actuel
+    const { data: cred } = await sb.from('user_credits').select('credits').eq('user_id', userId).single();
+    const newBalance = (cred?.credits || 0) + amount;
+
+    // Mettre à jour solde
+    const { error: e1 } = await sb.from('user_credits').update({ credits: newBalance }).eq('user_id', userId);
+    if (e1) throw e1;
+
+    // Créer transaction
+    const { error: e2 } = await sb.from('credit_transactions').insert({
+      user_id: userId,
+      type: amount > 0 ? 'monthly_distribution' : 'bet_placed',
+      amount: amount,
+      balance_after: newBalance,
+      description: desc,
+      created_at: new Date().toISOString()
+    });
+    if (e2) throw e2;
+
+    const pseudo = users.find(u => u.id === userId)?.pseudo || userId.substring(0,8);
+    showResult('jetonsResult', 'ok', `✅ ${amount > 0 ? '+' : ''}${amount} jetons pour ${pseudo} (nouveau solde: ${newBalance})`);
+
+    // Vider les champs
+    document.getElementById('jetonsAmount').value = '';
+    document.getElementById('jetonsDesc').value = '';
+
+    loadSoldes();
+  } catch(e) {
+    showResult('jetonsResult', 'err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+
+async function loadSoldes() {
+  const { data: credits } = await sb.from('user_credits').select('*').order('credits', { ascending: false });
+  const { data: profiles } = await sb.from('user_profiles').select('user_id, pseudo');
+  const pseudoMap = {};
+  profiles?.forEach(p => pseudoMap[p.user_id] = p.pseudo);
+
+  const tbody = document.getElementById('soldesBody');
+  if (!credits?.length) { tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>'; return; }
+
+  tbody.innerHTML = credits.map(c => `
+    <tr>
+      <td style="font-weight:600">${pseudoMap[c.user_id] || c.user_id.substring(0,8)}</td>
+      <td style="color:var(--gold-light);font-weight:700">${(c.credits || 0).toLocaleString()} 🪙</td>
+      <td style="color:var(--green)">+${(c.total_earned || 0).toLocaleString()}</td>
+      <td style="color:var(--red)">-${(c.total_spent || 0).toLocaleString()}</td>
+    </tr>
+  `).join('');
+}
+
+// ══ PARIS ══
+async function loadParis() {
+  const { data: bets } = await sb.from('user_bets').select('*').eq('status','pending').order('placed_at', { ascending: false });
+  const { data: profiles } = await sb.from('user_profiles').select('user_id, pseudo');
+  const pseudoMap = {};
+  profiles?.forEach(p => pseudoMap[p.user_id] = p.pseudo);
+
+  const tbody = document.getElementById('parisBody');
+  if (!bets?.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Aucun pari en attente</td></tr>'; return; }
+
+  tbody.innerHTML = bets.map(b => {
+    const matchShort = b.match_id.split('_').slice(2).join(' ').replace(/_/g,' ');
+    return `
+      <tr>
+        <td>${pseudoMap[b.user_id] || b.user_id.substring(0,8)}</td>
+        <td style="font-size:12px;color:var(--muted2)">${matchShort}</td>
+        <td><span class="tag-${b.bet_type.toLowerCase()}">${b.bet_type}</span></td>
+        <td style="font-weight:600">${b.score_domicile}-${b.score_exterieur}</td>
+        <td>${b.stake} 🪙</td>
+        <td>×${b.odds}</td>
+        <td><span class="badge badge-blue">En attente</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ══ DISTRIBUTION ══
+async function distribuer() {
+  const month = document.getElementById('distMonth').value.trim();
+  const adminKey = document.getElementById('distAdminKey').value.trim();
+
+  if (!month || !/^\d{4}-\d{2}$/.test(month)) { showResult('distResult', 'err', '❌ Format mois invalide (YYYY-MM)'); return; }
+  if (!adminKey) { showResult('distResult', 'err', '❌ Cle admin requise'); return; }
+
+  const btn = document.getElementById('distBtn');
+  btn.disabled = true; btn.classList.add('loading');
+
+  try {
+    const res = await fetch(`${API_URL}/api/cron/monthly-distribution`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminKey}`
+      }
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      const msg = data.message || `Distribution ${month} effectuee`;
+      showResult('distResult', 'ok', `✅ ${msg}${data.notificationsSent ? ` — ${data.notificationsSent} push envoyes` : ''}`);
+      loadDistributions();
+    } else {
+      showResult('distResult', 'err', '❌ ' + (data.error || data.message || 'Erreur'));
+    }
+  } catch(e) {
+    showResult('distResult', 'err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+  }
+}
+
+async function loadDistributions() {
+  const { data } = await sb.from('monthly_distributions').select('*').order('month', { ascending: false }).limit(12);
+  const tbody = document.getElementById('distBody');
+  if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune distribution</td></tr>'; return; }
+
+  tbody.innerHTML = data.map(d => `
+    <tr>
+      <td style="font-weight:600;color:var(--gold-light)">${d.month}</td>
+      <td style="color:var(--green)">${(d.total_distributed || 0).toLocaleString()} 🪙</td>
+      <td>${d.users_count || '—'}</td>
+      <td style="color:var(--muted2);font-size:12px">${d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ══ UTILS ══
+function showResult(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'result ' + type;
+  el.textContent = msg;
+}
+
+
+</script>
+</body>
+</html>
