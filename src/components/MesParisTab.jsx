@@ -144,17 +144,17 @@ export default function MesParisTab() {
 
   const parisFiltered = paris.filter(bet => {
     if (filter === 'pending') return bet.status === 'pending';
-    if (filter === 'won') return bet.payout > 0;
+    if (filter === 'won') return bet.status === 'won';
     if (filter === 'lost') return bet.status === 'lost';
     return true;
   });
 
   const parisPending = paris.filter(b => b.status === 'pending').length;
-  const parisWon = paris.filter(b => b.payout > 0).length;
+  const parisWon = paris.filter(b => b.status === 'won').length;
   const parisLost = paris.filter(b => b.status === 'lost').length;
 
   const totalWonFromBets = paris
-    .filter(p => p.payout > 0)
+    .filter(p => p.status === 'won')
     .reduce((sum, p) => sum + p.payout, 0);
 
 
@@ -271,7 +271,7 @@ export default function MesParisTab() {
             }
 
             const potentialWin = Math.floor(bet.stake * (bet.odds || 1));
-            const isWon = bet.payout > 0;
+            const isWon = bet.status === 'won';
             const isPending = bet.status === 'pending';
             const isLost = bet.status === 'lost';
 
