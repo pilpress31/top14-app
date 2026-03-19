@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Top14 — Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Figtree:wght@300;400;500;600;700&display=swap');
 
@@ -15,7 +14,6 @@
   --dark: #090909;
   --dark2: #111111;
   --dark3: #191919;
-  --dark4: #222222;
   --border: #2C2C2C;
   --border2: #383838;
   --text: #F0EDE8;
@@ -37,10 +35,9 @@ body {
   color: var(--text);
   font-family: 'Figtree', sans-serif;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
-/* ── LOGIN ── */
+/* LOGIN */
 #loginScreen {
   min-height: 100vh;
   display: flex;
@@ -113,337 +110,142 @@ body {
 }
 
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,0.25); }
-.btn-primary:active { transform: translateY(0); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-.login-error {
-  color: var(--red);
-  font-size: 13px;
-  margin-top: 12px;
-  display: none;
-}
+.login-error { color: var(--red); font-size: 13px; margin-top: 12px; display: none; }
 
-/* ── APP SHELL ── */
+/* APP */
 #appScreen { display: none; min-height: 100vh; }
 
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
   background: rgba(9,9,9,0.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32px;
-  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 60px;
 }
 
 .topbar-logo {
   font-family: 'Bebas Neue', cursive;
-  font-size: 26px;
-  letter-spacing: 3px;
+  font-size: 26px; letter-spacing: 3px;
   background: linear-gradient(135deg, var(--gold), var(--gold-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-.topbar-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--muted2);
-}
-
-.topbar-user span { color: var(--gold-light); font-weight: 600; }
+.topbar-user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted2); }
+.topbar-user strong { color: var(--gold-light); }
 
 .btn-logout {
-  background: var(--dark3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: 'Figtree', sans-serif;
-  font-size: 12px;
-  padding: 6px 12px;
-  transition: all 0.2s;
+  background: var(--dark3); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); cursor: pointer; font-family: 'Figtree', sans-serif;
+  font-size: 12px; padding: 6px 12px; transition: all 0.2s;
 }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-/* ── NAV TABS ── */
 .nav-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 16px 32px 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--dark2);
-  overflow-x: auto;
+  display: flex; gap: 4px; padding: 16px 32px 0;
+  border-bottom: 1px solid var(--border); background: var(--dark2); overflow-x: auto;
 }
 
 .tab {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: 'Figtree', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 10px 18px;
-  margin-bottom: -1px;
-  transition: all 0.2s;
-  white-space: nowrap;
-  letter-spacing: 0.3px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--muted); cursor: pointer; font-family: 'Figtree', sans-serif;
+  font-size: 13px; font-weight: 500; padding: 10px 18px; margin-bottom: -1px;
+  transition: all 0.2s; white-space: nowrap;
 }
-
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
 
-/* ── CONTENT ── */
 .content { padding: 32px; max-width: 1000px; margin: 0 auto; }
 
 .panel { display: none; }
 .panel.active { display: block; }
 
-/* ── CARDS ── */
 .card {
-  background: var(--dark2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px;
-  margin-bottom: 20px;
-  position: relative;
-  overflow: hidden;
+  background: var(--dark2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; margin-bottom: 20px;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 22px;
-}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
 
 .card-title {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 20px;
-  letter-spacing: 2px;
-  color: var(--gold-light);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-family: 'Bebas Neue', cursive; font-size: 20px;
+  letter-spacing: 2px; color: var(--gold-light);
+  display: flex; align-items: center; gap: 8px;
 }
 
-/* ── FORM ELEMENTS ── */
 label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 7px;
-  margin-top: 18px;
+  display: block; font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 7px; margin-top: 18px;
 }
-
 label:first-of-type { margin-top: 0; }
 
 input, textarea, select {
-  width: 100%;
-  background: var(--dark3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'Figtree', sans-serif;
-  font-size: 14px;
-  padding: 11px 14px;
-  outline: none;
-  transition: border-color 0.2s;
+  width: 100%; background: var(--dark3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: 'Figtree', sans-serif;
+  font-size: 14px; padding: 11px 14px; outline: none; transition: border-color 0.2s;
   -webkit-appearance: none;
 }
-
 input:focus, textarea:focus, select:focus { border-color: var(--gold); }
 textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 
-select option { background: var(--dark3); }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-.input-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-/* ── BUTTONS ── */
 .btn {
-  background: var(--dark3);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  color: var(--text);
-  cursor: pointer;
-  font-family: 'Figtree', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 10px 18px;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  background: var(--dark3); border: 1px solid var(--border2); border-radius: 10px;
+  color: var(--text); cursor: pointer; font-family: 'Figtree', sans-serif;
+  font-size: 13px; font-weight: 500; padding: 10px 18px; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px;
 }
-
 .btn:hover { border-color: var(--gold); color: var(--gold-light); }
 .btn-gold {
   background: linear-gradient(135deg, var(--gold), var(--gold-light));
-  border: none;
-  color: var(--dark);
-  font-weight: 600;
+  border: none; color: var(--dark); font-weight: 600;
 }
 .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,0.2); color: var(--dark); }
-.btn-danger { border-color: var(--red); color: var(--red); }
-.btn-danger:hover { background: var(--red-dim); border-color: var(--red); color: var(--red); }
-.btn-success { border-color: var(--green); color: var(--green); }
-.btn-success:hover { background: var(--green-dim); }
+.btn-gold:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 
-/* ── PRESETS ── */
 .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .preset-btn {
-  background: var(--dark3);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  color: var(--muted2);
-  cursor: pointer;
-  font-family: 'Figtree', sans-serif;
-  font-size: 12px;
-  padding: 5px 13px;
-  transition: all 0.2s;
+  background: var(--dark3); border: 1px solid var(--border); border-radius: 20px;
+  color: var(--muted2); cursor: pointer; font-family: 'Figtree', sans-serif;
+  font-size: 12px; padding: 5px 13px; transition: all 0.2s;
 }
 .preset-btn:hover { border-color: var(--gold); color: var(--gold-light); }
 
-/* ── STATS GRID ── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.stat-box {
-  background: var(--dark3);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-}
-
-.stat-val {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 36px;
-  color: var(--gold-light);
-  line-height: 1;
-}
-
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 8px; }
+.stat-box { background: var(--dark3); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-val { font-family: 'Bebas Neue', cursive; font-size: 36px; color: var(--gold-light); line-height: 1; }
 .stat-val.green { color: var(--green); }
 .stat-val.red { color: var(--red); }
+.stat-lbl { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
 
-.stat-lbl {
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-/* ── TABLE ── */
 .table-wrap { overflow-x: auto; margin-top: 12px; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-th {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-align: left;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-td {
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  vertical-align: middle;
-}
-
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: rgba(255,255,255,0.02); }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.badge-green { background: var(--green-dim); color: var(--green); }
-.badge-red { background: var(--red-dim); color: var(--red); }
+.badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 .badge-gold { background: var(--gold-dim); color: var(--gold-light); }
 .badge-blue { background: var(--blue-dim); color: var(--blue); }
+.badge-green { background: var(--green-dim); color: var(--green); }
 
-/* ── RESULT ── */
-.result {
-  padding: 14px 18px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  margin-top: 16px;
-  display: none;
-  animation: fadeUp 0.25s ease;
-}
-
+.result { padding: 14px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; margin-top: 16px; display: none; animation: fadeUp 0.25s ease; }
 .result.ok { background: var(--green-dim); border: 1px solid rgba(74,222,128,0.25); color: var(--green); display: block; }
 .result.err { background: var(--red-dim); border: 1px solid rgba(248,113,113,0.25); color: var(--red); display: block; }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── SPINNER ── */
-.spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(0,0,0,0.2);
-  border-top-color: var(--dark);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  display: none;
-}
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: var(--dark); border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
 .loading .spinner { display: inline-block; }
 .loading .btn-text { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-.divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-
-.section-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
 
 .tag-ft { background: rgba(96,165,250,0.15); color: var(--blue); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 700; }
 .tag-mt { background: rgba(251,146,60,0.15); color: var(--orange); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 700; }
@@ -458,12 +260,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 </head>
 <body>
 
-<!-- ══ LOGIN ══ -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">Top14</div>
     <div class="login-sub">Admin Panel</div>
-    <input type="email" id="loginEmail" placeholder="Email" value="">
+    <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
     <input type="password" id="loginPassword" placeholder="Mot de passe">
     <button class="btn-primary" id="loginBtn" onclick="doLogin()">
       <div class="spinner"></div>
@@ -473,27 +275,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   </div>
 </div>
 
-<!-- ══ APP ══ -->
+<!-- APP -->
 <div id="appScreen">
   <div class="topbar">
     <div class="topbar-logo">Top14 Admin</div>
     <div class="topbar-user">
-      Connecté en tant que <span id="userPseudo">—</span>
+      <strong id="userPseudo">—</strong>
       <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
 
   <div class="nav-tabs">
-    <button class="tab active" onclick="showTab('push')">📣 Notifications Push</button>
-    <button class="tab" onclick="showTab('classement')">🏆 Classement</button>
-    <button class="tab" onclick="showTab('jetons')">💰 Jetons</button>
-    <button class="tab" onclick="showTab('paris')">🎯 Paris</button>
-    <button class="tab" onclick="showTab('distribution')">📦 Distribution</button>
+    <button class="tab active" onclick="showTab('push', this)">📣 Push</button>
+    <button class="tab" onclick="showTab('classement', this)">🏆 Classement</button>
+    <button class="tab" onclick="showTab('jetons', this)">💰 Jetons</button>
+    <button class="tab" onclick="showTab('paris', this)">🎯 Paris</button>
+    <button class="tab" onclick="showTab('distribution', this)">📦 Distribution</button>
   </div>
 
   <div class="content">
 
-    <!-- ══ PUSH NOTIFICATIONS ══ -->
+    <!-- PUSH -->
     <div id="panel-push" class="panel active">
       <div class="card">
         <div class="card-title">📣 Envoyer une notification push</div>
@@ -504,26 +306,24 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <option value="one">Un utilisateur spécifique</option>
         </select>
 
-        <div id="pushUserRow" style="display:none; margin-top:12px">
-          <label>Choisir l'utilisateur</label>
-          <select id="pushUserId">
-            <option value="">Chargement...</option>
-          </select>
+        <div id="pushUserRow" style="display:none; margin-top:14px">
+          <label>Utilisateur</label>
+          <select id="pushUserId"><option value="">Chargement...</option></select>
         </div>
 
         <label>Titre</label>
-        <input type="text" id="pushTitle" placeholder="Ex: 🏉 Nouvelle journée disponible !" maxlength="100">
+        <input type="text" id="pushTitle" maxlength="100" placeholder="Ex: Nouvelle journee disponible !">
 
         <label>Message</label>
-        <textarea id="pushBody" placeholder="Ex: La journée 19 est disponible, faites vos pronostics !" maxlength="200"></textarea>
+        <textarea id="pushBody" maxlength="200" placeholder="Ex: Faites vos pronostics avant le coup d'envoi !"></textarea>
 
         <label>URL de redirection</label>
         <input type="text" id="pushUrl" placeholder="https://app.top14pronos.org/pronos">
 
-        <label>Messages prédéfinis</label>
+        <label>Presets</label>
         <div class="presets">
-          <button class="preset-btn" onclick="setPreset('journee')">🏉 Nouvelle journée</button>
-          <button class="preset-btn" onclick="setPreset('resultats')">🎯 Résultats</button>
+          <button class="preset-btn" onclick="setPreset('journee')">🏉 Nouvelle journee</button>
+          <button class="preset-btn" onclick="setPreset('resultats')">🎯 Resultats</button>
           <button class="preset-btn" onclick="setPreset('distribution')">💰 Distribution</button>
           <button class="preset-btn" onclick="setPreset('test')">🔔 Test</button>
         </div>
@@ -534,21 +334,20 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <span class="btn-text">📤 Envoyer</span>
           </button>
         </div>
-
         <div class="result" id="pushResult"></div>
       </div>
 
       <div class="card" id="pushStatsCard" style="display:none">
         <div class="card-title">📊 Résultat</div>
         <div class="stats-grid">
-          <div class="stat-box"><div class="stat-val green" id="psSent">—</div><div class="stat-lbl">Envoyées</div></div>
+          <div class="stat-box"><div class="stat-val green" id="psSent">—</div><div class="stat-lbl">Envoyees</div></div>
           <div class="stat-box"><div class="stat-val red" id="psFailed">—</div><div class="stat-lbl">Echecs</div></div>
           <div class="stat-box"><div class="stat-val" id="psTotal">—</div><div class="stat-lbl">Total</div></div>
         </div>
       </div>
     </div>
 
-    <!-- ══ CLASSEMENT ══ -->
+    <!-- CLASSEMENT -->
     <div id="panel-classement" class="panel">
       <div class="card">
         <div class="card-header">
@@ -556,38 +355,23 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <button class="btn" onclick="loadClassement()">↻ Actualiser</button>
         </div>
         <div class="table-wrap">
-          <table id="classementTable">
-            <thead>
-              <tr>
-                <th>Rang</th>
-                <th>Pseudo</th>
-                <th>Points</th>
-                <th>Paris</th>
-                <th>Réussite</th>
-                <th>Jetons</th>
-              </tr>
-            </thead>
-            <tbody id="classementBody">
-              <tr><td colspan="6" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
-            </tbody>
+          <table>
+            <thead><tr><th>Rang</th><th>Pseudo</th><th>Points</th><th>Paris</th><th>Reussite</th><th>Jetons</th></tr></thead>
+            <tbody id="classementBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ JETONS ══ -->
+    <!-- JETONS -->
     <div id="panel-jetons" class="panel">
       <div class="card">
-        <div class="card-title">💰 Créditer / Débiter des jetons</div>
-
+        <div class="card-title">💰 Crediter / Debiter des jetons</div>
         <label>Utilisateur</label>
-        <select id="jetonsUserId">
-          <option value="">Chargement...</option>
-        </select>
-
+        <select id="jetonsUserId"><option value="">Chargement...</option></select>
         <div class="input-row" style="margin-top:18px">
           <div>
-            <label>Montant (positif = crédit, négatif = débit)</label>
+            <label>Montant (+ credit, - debit)</label>
             <input type="number" id="jetonsAmount" placeholder="Ex: 100 ou -50">
           </div>
           <div>
@@ -595,14 +379,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <input type="text" id="jetonsDesc" placeholder="Ex: Correction manuelle">
           </div>
         </div>
-
         <div class="btn-row">
           <button class="btn btn-gold" id="jetonsBtn" onclick="crediterJetons()">
             <div class="spinner"></div>
             <span class="btn-text">✅ Appliquer</span>
           </button>
         </div>
-
         <div class="result" id="jetonsResult"></div>
       </div>
 
@@ -613,135 +395,106 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Pseudo</th><th>Solde</th><th>Total gagné</th><th>Total misé</th></tr>
-            </thead>
-            <tbody id="soldesBody">
-              <tr><td colspan="4" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
-            </tbody>
+            <thead><tr><th>Pseudo</th><th>Solde</th><th>Total gagne</th><th>Total mise</th></tr></thead>
+            <tbody id="soldesBody"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ PARIS ══ -->
+    <!-- PARIS -->
     <div id="panel-paris" class="panel">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🎯 Paris en cours</div>
+          <div class="card-title">🎯 Paris en attente</div>
           <button class="btn" onclick="loadParis()">↻ Actualiser</button>
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>User</th><th>Match</th><th>Type</th><th>Pronostic</th><th>Mise</th><th>Cote</th><th>Statut</th></tr>
-            </thead>
-            <tbody id="parisBody">
-              <tr><td colspan="7" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
-            </tbody>
+            <thead><tr><th>User</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th></tr></thead>
+            <tbody id="parisBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ══ DISTRIBUTION ══ -->
+    <!-- DISTRIBUTION -->
     <div id="panel-distribution" class="panel">
       <div class="card">
         <div class="card-title">📦 Distribution mensuelle manuelle</div>
-        <p style="color:var(--muted2); font-size:13px; margin-bottom:20px; line-height:1.6">
-          Déclenche la distribution progressive des jetons pour un mois donné. La fonction SQL vérifie automatiquement qu'elle n'a pas déjà été effectuée.
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Declenche la distribution progressive des jetons pour un mois donne.
         </p>
-
-        <label>Mois (format YYYY-MM)</label>
+        <label>Mois (YYYY-MM)</label>
         <input type="text" id="distMonth" placeholder="Ex: 2026-03" maxlength="7">
-
-        <label>Clé admin</label>
-        <input type="password" id="distAdminKey" placeholder="ADMIN_SECRET_KEY">
-
+        <label>Cle admin (CRON_SECRET)</label>
+        <input type="password" id="distAdminKey" placeholder="Votre CRON_SECRET">
         <div class="btn-row">
           <button class="btn btn-gold" id="distBtn" onclick="distribuer()">
             <div class="spinner"></div>
-            <span class="btn-text">🚀 Lancer la distribution</span>
+            <span class="btn-text">🚀 Lancer</span>
           </button>
         </div>
-
         <div class="result" id="distResult"></div>
       </div>
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📋 Historique distributions</div>
+          <div class="card-title">📋 Historique</div>
           <button class="btn" onclick="loadDistributions()">↻ Actualiser</button>
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr><th>Mois</th><th>Total distribué</th><th>Users</th><th>Date</th></tr>
-            </thead>
-            <tbody id="distBody">
-              <tr><td colspan="4" style="color:var(--muted); text-align:center; padding:24px">Cliquez sur Actualiser</td></tr>
-            </tbody>
+            <thead><tr><th>Mois</th><th>Total distribue</th><th>Users</th><th>Date</th></tr></thead>
+            <tbody id="distBody"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /appScreen -->
+  </div>
+</div>
 
 <script>
-const SUPABASE_URL = 'https://nqmhqponvtlxfksmxpyk.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnemF6emN5dnlxcWprZXRtc3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0MjMxOTgsImV4cCI6MjA4MDk5OTE5OH0.Th_Q8zM-QXbkniXJsp-YWJzlRfoo2D0HdTbzsC3B_xQ';
-const API_URL = 'https://top14-api-production.up.railway.app';
-const ADMIN_USER_ID = 'fe5951b6-316c-4bc6-abef-df6c153fe723';
+const API = 'https://top14-api-production.up.railway.app';
+let adminToken = null;
+let users = [];
 
-let sb;
-
-document.addEventListener('DOMContentLoaded', () => {
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  setPreset('test');
-  const now = new Date();
-  document.getElementById('distMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-});
-
-let users = []; // cache users {id, pseudo}
-
-// ══ AUTH ══
+// ── AUTH ──
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
-  const err = document.getElementById('loginError');
 
   if (!email || !pass) { showLoginErr('Remplissez tous les champs'); return; }
 
-  btn.disabled = true;
-  btn.classList.add('loading');
-  err.style.display = 'none';
+  setLoading(btn, true);
+  document.getElementById('loginError').style.display = 'none';
 
   try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (error) throw error;
+    const res = await fetch(`${API}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
 
-    if (data.user.id !== ADMIN_USER_ID) {
-      await sb.auth.signOut();
-      throw new Error('Acces non autorise');
-    }
+    if (!res.ok) throw new Error(data.error || 'Erreur connexion');
 
-    // Charger pseudo
-    const { data: profile } = await sb.from('user_profiles').select('pseudo').eq('user_id', data.user.id).single();
-    document.getElementById('userPseudo').textContent = profile?.pseudo || 'Admin';
-
+    adminToken = data.token;
+    document.getElementById('userPseudo').textContent = data.pseudo;
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appScreen').style.display = 'block';
 
     await loadUsers();
+    setPreset('test');
+    const now = new Date();
+    document.getElementById('distMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  } catch (e) {
+  } catch(e) {
     showLoginErr(e.message);
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('loading');
+    setLoading(btn, false);
   }
 }
 
@@ -751,56 +504,70 @@ function showLoginErr(msg) {
   el.style.display = 'block';
 }
 
-async function doLogout() {
-  await sb.auth.signOut();
+function doLogout() {
+  adminToken = null;
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
 }
 
-document.getElementById('loginPassword').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') doLogin();
 });
 
-// ══ TABS ══
-function showTab(name) {
+// ── HELPERS ──
+function api(path, opts = {}) {
+  return fetch(`${API}${path}`, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken, ...(opts.headers || {}) }
+  }).then(r => r.json());
+}
+
+function setLoading(btn, on) {
+  btn.disabled = on;
+  on ? btn.classList.add('loading') : btn.classList.remove('loading');
+}
+
+function showResult(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = 'result ' + type;
+  el.textContent = msg;
+}
+
+function showTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
+  el.classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
 }
 
-// ══ LOAD USERS ══
+// ── USERS ──
 async function loadUsers() {
-  const { data } = await sb.from('user_profiles').select('user_id, pseudo').order('pseudo');
-  if (!data) return;
+  const data = await api('/api/admin/users');
+  users = (Array.isArray(data) ? data : []).sort((a,b) => (a.pseudo||'').localeCompare(b.pseudo||''));
 
-  users = data.map(u => ({ id: u.user_id, pseudo: u.pseudo || u.user_id.substring(0,8) }))
-               .sort((a,b) => a.pseudo.localeCompare(b.pseudo));
-
-  // Remplir les selects
-  const selects = ['pushUserId', 'jetonsUserId'];
-  selects.forEach(sid => {
-    const sel = document.getElementById(sid);
+  ['pushUserId', 'jetonsUserId'].forEach(id => {
+    const sel = document.getElementById(id);
     sel.innerHTML = '<option value="">-- Choisir --</option>';
     users.forEach(u => {
       const opt = document.createElement('option');
-      opt.value = u.id;
-      opt.textContent = u.pseudo;
+      opt.value = u.user_id;
+      opt.textContent = u.pseudo || u.user_id.substring(0,8);
       sel.appendChild(opt);
     });
   });
 }
 
-// ══ PUSH ══
-const pushPresets = {
+// ── PUSH ──
+const presets = {
   journee: { title: '🏉 Nouveaux matchs disponibles !', body: 'La prochaine journee est disponible. Faites vos pronostics avant le coup d\'envoi !', url: 'https://app.top14pronos.org/pronos' },
   resultats: { title: '🎯 Resultats disponibles', body: 'Les resultats de la derniere journee sont tombes. Consultez votre cagnotte !', url: 'https://app.top14pronos.org/ma-cagnotte' },
-  distribution: { title: '💰 Distribution mensuelle !', body: 'Vos jetons gratuits sont arrives ! Consultez votre cagnotte pour voir votre bonus.', url: 'https://app.top14pronos.org/ma-cagnotte' },
+  distribution: { title: '💰 Distribution mensuelle !', body: 'Vos jetons gratuits sont arrives ! Consultez votre cagnotte.', url: 'https://app.top14pronos.org/ma-cagnotte' },
   test: { title: '🔔 Top14 Pronos - Test', body: 'Notification de test reussie ! Votre systeme push fonctionne.', url: 'https://app.top14pronos.org' }
 };
 
 function setPreset(key) {
-  const p = pushPresets[key];
+  const p = presets[key];
   document.getElementById('pushTitle').value = p.title;
   document.getElementById('pushBody').value = p.body;
   document.getElementById('pushUrl').value = p.url;
@@ -822,18 +589,13 @@ async function sendPush() {
   if (target === 'one' && !userId) { showResult('pushResult', 'err', '❌ Selectionnez un utilisateur'); return; }
 
   const btn = document.getElementById('pushBtn');
-  btn.disabled = true; btn.classList.add('loading');
+  setLoading(btn, true);
 
   try {
-    const endpoint = target === 'all'
-      ? `${API_URL}/api/notifications/send-to-all`
-      : `${API_URL}/api/notifications/send-to-user`;
+    const endpoint = target === 'all' ? '/api/notifications/send-to-all' : '/api/notifications/send-to-user';
+    const payload = target === 'all' ? { title, body, url } : { userId, title, body, url };
 
-    const payload = target === 'all'
-      ? { title, body, url: url || undefined }
-      : { userId, title, body, url: url || undefined };
-
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${API}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -841,7 +603,7 @@ async function sendPush() {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      showResult('pushResult', 'ok', `✅ ${data.message}`);
+      showResult('pushResult', 'ok', '✅ ' + data.message);
       if (data.total !== undefined) {
         document.getElementById('pushStatsCard').style.display = 'block';
         document.getElementById('psSent').textContent = data.sent ?? '—';
@@ -849,190 +611,156 @@ async function sendPush() {
         document.getElementById('psTotal').textContent = data.total ?? '—';
       }
     } else {
-      showResult('pushResult', 'err', '❌ ' + (data.error || data.message || 'Erreur inconnue'));
+      showResult('pushResult', 'err', '❌ ' + (data.error || data.message));
     }
   } catch(e) {
     showResult('pushResult', 'err', '❌ ' + e.message);
   } finally {
-    btn.disabled = false; btn.classList.remove('loading');
+    setLoading(btn, false);
   }
 }
 
-// ══ CLASSEMENT ══
+// ── CLASSEMENT ──
 async function loadClassement() {
-  const { data: stats } = await sb.from('user_stats').select('*').eq('saison','2025-2026').order('total_points', { ascending: false });
-  const { data: profiles } = await sb.from('user_profiles').select('user_id, pseudo');
-  const { data: credits } = await sb.from('user_credits').select('user_id, credits');
-
-  const pseudoMap = {}, creditsMap = {};
-  profiles?.forEach(p => pseudoMap[p.user_id] = p.pseudo);
-  credits?.forEach(c => creditsMap[c.user_id] = c.credits);
-
+  const data = await api('/api/admin/classement');
   const tbody = document.getElementById('classementBody');
-  if (!stats?.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>'; return; }
-
-  tbody.innerHTML = stats.map((s, i) => `
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((s, i) => `
     <tr>
-      <td><span class="badge ${i===0?'badge-gold':i===1?'badge-blue':i===2?'badge-green':''}">${i+1}</span></td>
-      <td style="font-weight:600">${pseudoMap[s.user_id] || s.user_id.substring(0,8)}</td>
-      <td style="color:var(--gold-light);font-weight:700">${s.total_points ?? 0}</td>
-      <td>${s.total_pronos ?? 0}</td>
+      <td><span class="badge ${i===0?'badge-gold':i===1?'badge-blue':i===2?'badge-green':''}">${s.rang}</span></td>
+      <td style="font-weight:600">${s.pseudo}</td>
+      <td style="color:var(--gold-light);font-weight:700">${s.total_points}</td>
+      <td>${s.total_pronos}</td>
       <td>${s.taux_reussite ? Math.round(s.taux_reussite) + '%' : '—'}</td>
-      <td style="color:var(--green)">${(creditsMap[s.user_id] ?? '—').toLocaleString()}</td>
+      <td style="color:var(--green)">${s.credits.toLocaleString()} 🪙</td>
     </tr>
   `).join('');
 }
 
-// ══ JETONS ══
+// ── JETONS ──
 async function crediterJetons() {
   const userId = document.getElementById('jetonsUserId').value;
   const amount = parseInt(document.getElementById('jetonsAmount').value);
-  const desc = document.getElementById('jetonsDesc').value.trim() || 'Ajustement manuel admin';
+  const desc = document.getElementById('jetonsDesc').value.trim();
 
   if (!userId) { showResult('jetonsResult', 'err', '❌ Selectionnez un utilisateur'); return; }
   if (!amount || isNaN(amount)) { showResult('jetonsResult', 'err', '❌ Montant invalide'); return; }
 
   const btn = document.getElementById('jetonsBtn');
-  btn.disabled = true; btn.classList.add('loading');
+  setLoading(btn, true);
 
   try {
-    // Récupérer solde actuel
-    const { data: cred } = await sb.from('user_credits').select('credits').eq('user_id', userId).single();
-    const newBalance = (cred?.credits || 0) + amount;
-
-    // Mettre à jour solde
-    const { error: e1 } = await sb.from('user_credits').update({ credits: newBalance }).eq('user_id', userId);
-    if (e1) throw e1;
-
-    // Créer transaction
-    const { error: e2 } = await sb.from('credit_transactions').insert({
-      user_id: userId,
-      type: amount > 0 ? 'monthly_distribution' : 'bet_placed',
-      amount: amount,
-      balance_after: newBalance,
-      description: desc,
-      created_at: new Date().toISOString()
+    const data = await api('/api/admin/crediter', {
+      method: 'POST',
+      body: JSON.stringify({ userId, amount, description: desc || 'Ajustement manuel admin' })
     });
-    if (e2) throw e2;
 
-    const pseudo = users.find(u => u.id === userId)?.pseudo || userId.substring(0,8);
-    showResult('jetonsResult', 'ok', `✅ ${amount > 0 ? '+' : ''}${amount} jetons pour ${pseudo} (nouveau solde: ${newBalance})`);
-
-    // Vider les champs
-    document.getElementById('jetonsAmount').value = '';
-    document.getElementById('jetonsDesc').value = '';
-
-    loadSoldes();
+    if (data.success) {
+      const pseudo = users.find(u => u.user_id === userId)?.pseudo || userId.substring(0,8);
+      showResult('jetonsResult', 'ok', `✅ ${amount > 0 ? '+' : ''}${amount} jetons pour ${pseudo} — nouveau solde: ${data.new_balance}`);
+      document.getElementById('jetonsAmount').value = '';
+      document.getElementById('jetonsDesc').value = '';
+      loadSoldes();
+    } else {
+      showResult('jetonsResult', 'err', '❌ ' + (data.error || 'Erreur'));
+    }
   } catch(e) {
     showResult('jetonsResult', 'err', '❌ ' + e.message);
   } finally {
-    btn.disabled = false; btn.classList.remove('loading');
+    setLoading(btn, false);
   }
 }
 
 async function loadSoldes() {
-  const { data: credits } = await sb.from('user_credits').select('*').order('credits', { ascending: false });
-  const { data: profiles } = await sb.from('user_profiles').select('user_id, pseudo');
-  const pseudoMap = {};
-  profiles?.forEach(p => pseudoMap[p.user_id] = p.pseudo);
-
+  const data = await api('/api/admin/soldes');
   const tbody = document.getElementById('soldesBody');
-  if (!credits?.length) { tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>'; return; }
-
-  tbody.innerHTML = credits.map(c => `
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(c => `
     <tr>
-      <td style="font-weight:600">${pseudoMap[c.user_id] || c.user_id.substring(0,8)}</td>
-      <td style="color:var(--gold-light);font-weight:700">${(c.credits || 0).toLocaleString()} 🪙</td>
-      <td style="color:var(--green)">+${(c.total_earned || 0).toLocaleString()}</td>
-      <td style="color:var(--red)">-${(c.total_spent || 0).toLocaleString()}</td>
+      <td style="font-weight:600">${c.pseudo}</td>
+      <td style="color:var(--gold-light);font-weight:700">${(c.credits||0).toLocaleString()} 🪙</td>
+      <td style="color:var(--green)">+${(c.total_earned||0).toLocaleString()}</td>
+      <td style="color:var(--red)">-${(c.total_spent||0).toLocaleString()}</td>
     </tr>
   `).join('');
 }
 
-// ══ PARIS ══
+// ── PARIS ──
 async function loadParis() {
-  const { data: bets } = await sb.from('user_bets').select('*').eq('status','pending').order('placed_at', { ascending: false });
-  const { data: profiles } = await sb.from('user_profiles').select('user_id, pseudo');
-  const pseudoMap = {};
-  profiles?.forEach(p => pseudoMap[p.user_id] = p.pseudo);
-
+  const data = await api('/api/admin/paris-pending');
   const tbody = document.getElementById('parisBody');
-  if (!bets?.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Aucun pari en attente</td></tr>'; return; }
-
-  tbody.innerHTML = bets.map(b => {
-    const matchShort = b.match_id.split('_').slice(2).join(' ').replace(/_/g,' ');
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucun pari en attente</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(b => {
+    const matchShort = b.match_id.split('_').slice(2).join(' ');
     return `
       <tr>
-        <td>${pseudoMap[b.user_id] || b.user_id.substring(0,8)}</td>
-        <td style="font-size:12px;color:var(--muted2)">${matchShort}</td>
+        <td>${b.pseudo}</td>
+        <td style="font-size:12px;color:var(--muted2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${matchShort}</td>
         <td><span class="tag-${b.bet_type.toLowerCase()}">${b.bet_type}</span></td>
         <td style="font-weight:600">${b.score_domicile}-${b.score_exterieur}</td>
         <td>${b.stake} 🪙</td>
         <td>×${b.odds}</td>
-        <td><span class="badge badge-blue">En attente</span></td>
       </tr>
     `;
   }).join('');
 }
 
-// ══ DISTRIBUTION ══
+// ── DISTRIBUTION ──
 async function distribuer() {
   const month = document.getElementById('distMonth').value.trim();
   const adminKey = document.getElementById('distAdminKey').value.trim();
 
   if (!month || !/^\d{4}-\d{2}$/.test(month)) { showResult('distResult', 'err', '❌ Format mois invalide (YYYY-MM)'); return; }
-  if (!adminKey) { showResult('distResult', 'err', '❌ Cle admin requise'); return; }
+  if (!adminKey) { showResult('distResult', 'err', '❌ Cle CRON_SECRET requise'); return; }
 
   const btn = document.getElementById('distBtn');
-  btn.disabled = true; btn.classList.add('loading');
+  setLoading(btn, true);
 
   try {
-    const res = await fetch(`${API_URL}/api/cron/monthly-distribution`, {
+    const res = await fetch(`${API}/api/cron/monthly-distribution`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminKey}`
-      }
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminKey}` }
     });
     const data = await res.json();
 
     if (res.ok && data.success) {
-      const msg = data.message || `Distribution ${month} effectuee`;
-      showResult('distResult', 'ok', `✅ ${msg}${data.notificationsSent ? ` — ${data.notificationsSent} push envoyes` : ''}`);
+      showResult('distResult', 'ok', `✅ Distribution ${month} effectuee${data.notificationsSent ? ` — ${data.notificationsSent} push envoyes` : ''}`);
       loadDistributions();
     } else {
-      showResult('distResult', 'err', '❌ ' + (data.error || data.message || 'Erreur'));
+      showResult('distResult', 'err', '❌ ' + (data.error || data.message));
     }
   } catch(e) {
     showResult('distResult', 'err', '❌ ' + e.message);
   } finally {
-    btn.disabled = false; btn.classList.remove('loading');
+    setLoading(btn, false);
   }
 }
 
 async function loadDistributions() {
-  const { data } = await sb.from('monthly_distributions').select('*').order('month', { ascending: false }).limit(12);
+  const data = await api('/api/admin/distributions');
   const tbody = document.getElementById('distBody');
-  if (!data?.length) { tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune distribution</td></tr>'; return; }
-
+  if (!Array.isArray(data) || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune distribution</td></tr>';
+    return;
+  }
   tbody.innerHTML = data.map(d => `
     <tr>
       <td style="font-weight:600;color:var(--gold-light)">${d.month}</td>
-      <td style="color:var(--green)">${(d.total_distributed || 0).toLocaleString()} 🪙</td>
+      <td style="color:var(--green)">${(d.total_distributed||0).toLocaleString()} 🪙</td>
       <td>${d.users_count || '—'}</td>
       <td style="color:var(--muted2);font-size:12px">${d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—'}</td>
     </tr>
   `).join('');
 }
-
-// ══ UTILS ══
-function showResult(id, type, msg) {
-  const el = document.getElementById(id);
-  el.className = 'result ' + type;
-  el.textContent = msg;
-}
-
-
 </script>
 </body>
 </html>
