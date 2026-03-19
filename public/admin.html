@@ -772,21 +772,71 @@ async function loadDistributions() {
 }
 
 //ACTUS
-async function regenererActus() {
-  const statusDiv = document.getElementById('actu-status');
-  statusDiv.innerHTML = '<p>⏳ Génération en cours... (peut prendre 2-3 minutes)</p>';
-  
+async function genererToutesActus() {
+  console.log('📰 Début génération actualités...');
   try {
-    const response = await fetch('https://top14-api-production.up.railway.app/api/admin/actu/regenerer', {
-      method: 'POST',
-      headers: {
-        'x-admin-token': localStorage.getItem('adminToken')
+    const response = await axios.get('https://top14-api-production.up.railway.app/api/matchs/a-venir');
+    const matchsAVenir = response.data.matchs || [];
+
+    console.log(`📋 ${matchsAVenir.length} matchs trouvés`);
+
+    if (matchsAVenir.length === 0) {
+      console.log('⚠️ Aucun match à venir trouvé');
+      return;
+    }
+
+    for (const match of matchsAVenir) {
+      try {
+        console.log(`🔄 Traitement : ${match.equipe_domicile} vs ${match.equipe_exterieure} (id: ${match.id})`);
+
+        // Test météo
+        const meteo = await getMeteo(match.equipe_domicile, match.date);
+        console.log(`🌤️ Météo : ${meteo}`);
+
+        // Test Gemini
+        console.log(`🤖 Appel Gemini...`);
+        const actu = await genererActuMatch(match, meteo);
+        console.log(`🤖 Gemini OK : ${JSON.stringify(actu).substring(0, 100)}...`);
+
+        // Test upsert
+        console.log(`💾 Upsert Supabase...`);
+        const { data, error } = await supabase
+          .from('actu_matchs')
+          .upsert({
+            match_id: match.id,
+            journee: match.journee,
+            saison: CURRENT_SAISON,
+            equipe_domicile: match.equipe_domicile,
+            equipe_exterieure: match.equipe_exterieure,
+            date_match: match.date,
+            forme_domicile: actu.forme_domicile,
+            forme_exterieure: actu.forme_exterieure,
+            blesses_domicile: actu.blesses_domicile,
+            blesses_exterieure: actu.blesses_exterieure,
+            declarations: actu.declarations,
+            contexte_match: actu.contexte_match,
+            meteo: meteo,
+            resume_global: actu.resume_global,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'match_id' });
+
+        if (error) {
+          console.error(`❌ Erreur Supabase upsert :`, JSON.stringify(error));
+        } else {
+          console.log(`✅ Supabase OK pour ${match.equipe_domicile} vs ${match.equipe_exterieure}`);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+      } catch (matchError) {
+        console.error(`❌ Erreur match ${match.id} :`, matchError.message);
+        console.error(matchError.stack);
       }
-    });
-    const data = await response.json();
-    statusDiv.innerHTML = '<p style="color:green">✅ Génération lancée en arrière-plan !</p>';
+    }
+    console.log('✅ Génération actualités terminée');
   } catch (error) {
-    statusDiv.innerHTML = `<p style="color:red">❌ Erreur : ${error.message}</p>`;
+    console.error('❌ Erreur génération actus:', error.message);
+    console.error(error.stack);
   }
 }
 
