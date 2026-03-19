@@ -1,15 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { getConfig, getStats } from "../lib/api";
+import { getStats } from "../lib/api";
+import axios from 'axios';
 
 export default function MainHeaderFull({ total }) {
   const [stats, setStats] = useState({
     nombre_matchs_historique: 0,
     precision: { ft: { pourcentage: 0 } }
   });
+  const [userStats, setUserStats] = useState({
+    total_paris: 0,
+    paris_corrects: 0,
+    taux_reussite: 0
+  });
 
   const [isVisible, setIsVisible] = useState(true);
-
-  // 🔥 Correction : useRef au lieu de useState
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -18,29 +22,31 @@ export default function MainHeaderFull({ total }) {
         const data = await getStats();
         setStats(data);
       } catch (e) {
-        console.error("Erreur chargement stats:", e);
+        console.error("Erreur chargement stats algo:", e);
+      }
+
+      try {
+        const response = await axios.get('https://top14-api-production.up.railway.app/api/stats/users-bets');
+        setUserStats(response.data);
+      } catch (e) {
+        console.error("Erreur chargement stats users:", e);
       }
     }
     loadStats();
   }, []);
 
-  // 🔥 Scroll stable, sans clignotement
+  // Scroll stable, sans clignotement
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY;
       const previous = lastScrollY.current;
-      const threshold = 5; // évite les micro-oscillations
+      const threshold = 5;
 
-      // Toujours visible tout en haut
       if (current < 10) {
         setIsVisible(true);
-      }
-      // Scroll vers le haut → montrer
-      else if (previous - current > threshold) {
+      } else if (previous - current > threshold) {
         setIsVisible(true);
-      }
-      // Scroll vers le bas → cacher
-      else if (current - previous > threshold && current > 120) {
+      } else if (current - previous > threshold && current > 120) {
         setIsVisible(false);
       }
 
@@ -49,10 +55,7 @@ export default function MainHeaderFull({ total }) {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // 👈 IMPORTANT : tableau vide
-
-  const precision = stats.precision.ft.pourcentage;
-  const matchesAnalyses = stats.nombre_matchs_historique;
+  }, []);
 
   return (
     <header 
@@ -75,35 +78,32 @@ export default function MainHeaderFull({ total }) {
           <p className="text-xs italic text-gray-300 mt-1">Des cotes fiables, basées sur la réalité du terrain</p>
         </div>
 
-        {/* Blocs statistiques centrés */}
+        {/* Blocs statistiques */}
         <div className="flex justify-center gap-2">
-          
-          {/* Bloc précision */}
+
+          {/* Bloc taux de réussite users */}
           <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rugby-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 20h16M4 10h4v10H4zm6-6h4v16h-4zm6 8h4v8h-4z" />
             </svg>
             <div>
               <p className="text-sm font-bold text-rugby-gold">
-                {precision > 0 ? `${precision}%` : '...'}
+                {userStats.total_paris > 0 ? `${userStats.taux_reussite}%` : '...'}
               </p>
               <p className="text-[10px] text-gray-300">Précision moyenne</p>
             </div>
           </div>
 
-          {/* Bloc matchs analysés */}
+          {/* Bloc paris gagnants / total */}
           <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rugby-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <ellipse cx="12" cy="5" rx="8" ry="3" />
-              <path d="M4 5v4c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
-              <path d="M4 9v4c0 1.7 3.6 3 8 3s8-1.3 8-3V9" />
-              <path d="M4 13v4c0 1.7 3.6 3 8 3s8-1.3 8-3V13" />
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
             <div>
               <p className="text-sm font-bold text-rugby-gold">
-                {matchesAnalyses > 0 ? matchesAnalyses.toLocaleString("fr-FR") : '...'}
+                {userStats.total_paris > 0 ? `${userStats.paris_corrects}/${userStats.total_paris}` : '...'}
               </p>
-              <p className="text-[10px] text-gray-300">Matchs analysés</p>
+              <p className="text-[10px] text-gray-300">Paris gagnants</p>
             </div>
           </div>
 
