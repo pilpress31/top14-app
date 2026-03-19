@@ -152,8 +152,8 @@ export default function MesPronosTab({ goToMesParis }) {
 
   const ouvrirModal = (match) => {
     const dejaPronos = mesPronos.filter(p => p.match_id === match.match_id);
-    const hasFT = dejaPronos?.mise_ft > 0;
-    const hasMT = dejaPronos?.mise_mt > 0;
+    const hasFT = dejaPronos.some(p => p.bet_type === 'FT');  // ✅
+    const hasMT = dejaPronos.some(p => p.bet_type === 'MT');  // ✅
 
     if (hasFT && hasMT) {
       goToMesParis();

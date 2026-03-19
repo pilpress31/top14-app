@@ -136,6 +136,10 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         existingProno ? 'sm:flex-row sm:justify-between sm:items-center' : ''
       }`}>
 
+        {/* DEBUG temporaire */}
+        {console.log("🟩 pronoFT =", pronoFT)}
+        {console.log("🟩 pronoMT =", pronoMT)}
+
         {/* Bloc vert des pronos existants */}
         {(hasFT || hasMT) && (
           !bettingAllowed ? (
@@ -145,7 +149,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                 navigate('/pronos', { 
                   state: { 
                     activeTab: 'mes-paris',
-                    scrollToMatchId: match.id
+                    scrollToMatchId: match.match_id  // ✅ match.match_id au lieu de match.id
                   } 
                 });
               }}
@@ -155,12 +159,12 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
                 {pronoFT && (
                   <span>
-                    Prono FT : {pronoFT.score_dom_pronos} - {pronoFT.score_ext_pronos}
+                    Prono FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? '?'}
                   </span>
                 )}
                 {pronoMT && (
                   <span>
-                    Prono MT : {pronoMT.score_dom_mt} - {pronoMT.score_ext_mt}
+                    Prono MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
                   </span>
                 )}
               </div>
@@ -172,12 +176,12 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
                 {pronoFT && (
                   <span>
-                    Prono FT : {pronoFT.score_dom_pronos} - {pronoFT.score_ext_pronos}
+                    Prono FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? '?'}
                   </span>
                 )}
                 {pronoMT && (
                   <span>
-                    Prono MT : {pronoMT.score_dom_mt} - {pronoMT.score_ext_mt}
+                    Prono MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
                   </span>
                 )}
               </div>
