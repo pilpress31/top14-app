@@ -452,6 +452,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
+    <!-- Section Actualités -->
+    <div class="section">
+      <h2>📰 Actualités</h2>
+      <button onclick="regenererActus()" class="btn btn-gold">
+        🔄 Régénérer les actualités
+      </button>
+      <div id="actu-status"></div>
+    </div>
+
   </div>
 </div>
 
@@ -761,6 +770,27 @@ async function loadDistributions() {
     </tr>
   `).join('');
 }
+
+//ACTUS
+async function regenererActus() {
+  const statusDiv = document.getElementById('actu-status');
+  statusDiv.innerHTML = '<p>⏳ Génération en cours... (peut prendre 2-3 minutes)</p>';
+  
+  try {
+    const response = await fetch('https://top14-api-production.up.railway.app/api/admin/actu/regenerer', {
+      method: 'POST',
+      headers: {
+        'x-admin-token': localStorage.getItem('adminToken')
+      }
+    });
+    const data = await response.json();
+    statusDiv.innerHTML = '<p style="color:green">✅ Génération lancée en arrière-plan !</p>';
+  } catch (error) {
+    statusDiv.innerHTML = `<p style="color:red">❌ Erreur : ${error.message}</p>`;
+  }
+}
+
+
 </script>
 </body>
 </html>
