@@ -291,6 +291,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <button class="tab" onclick="showTab('jetons', this)">💰 Jetons</button>
     <button class="tab" onclick="showTab('paris', this)">🎯 Paris</button>
     <button class="tab" onclick="showTab('distribution', this)">📦 Distribution</button>
+    <button class="tab" onclick="showTab('actualites', this)">📰 Actualités</button>
   </div>
 
   <div class="content">
@@ -452,13 +453,24 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- Section Actualités -->
-    <div class="section">
-      <h2>📰 Actualités</h2>
-      <button onclick="regenererActus()" class="btn btn-gold">
-        🔄 Régénérer les actualités
-      </button>
-      <div id="actu-status"></div>
+    <!-- ACTUALITÉS -->
+    <div id="panel-actualites" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📰 Actualités IA</div>
+        </div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Génère automatiquement les synthèses d'actualité pour les matchs à venir via Gemini AI.<br>
+          Le cron tourne automatiquement le lundi et vendredi à 8h. Vous pouvez aussi lancer manuellement.
+        </p>
+        <div class="btn-row">
+          <button class="btn btn-gold" id="actuBtn" onclick="regenererActus()">
+            <div class="spinner"></div>
+            <span class="btn-text">🔄 Régénérer les actualités</span>
+          </button>
+        </div>
+        <div class="result" id="actuResult"></div>
+      </div>
     </div>
 
   </div>
@@ -771,75 +783,25 @@ async function loadDistributions() {
   `).join('');
 }
 
-//ACTUS
-async function genererToutesActus() {
-  console.log('📰 Début génération actualités...');
+// ── ACTUALITÉS ──
+async function regenererActus() {
+  const btn = document.getElementById('actuBtn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Génération en cours... (peut prendre 2-3 minutes)');
+
   try {
-    const response = await axios.get('https://top14-api-production.up.railway.app/api/matchs/a-venir');
-    const matchsAVenir = response.data.matchs || [];
-
-    console.log(`📋 ${matchsAVenir.length} matchs trouvés`);
-
-    if (matchsAVenir.length === 0) {
-      console.log('⚠️ Aucun match à venir trouvé');
-      return;
+    const data = await api('/api/admin/actu/regenerer', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Génération lancée en arrière-plan !');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
     }
-
-    for (const match of matchsAVenir) {
-      try {
-        console.log(`🔄 Traitement : ${match.equipe_domicile} vs ${match.equipe_exterieure} (id: ${match.id})`);
-
-        // Test météo
-        const meteo = await getMeteo(match.equipe_domicile, match.date);
-        console.log(`🌤️ Météo : ${meteo}`);
-
-        // Test Gemini
-        console.log(`🤖 Appel Gemini...`);
-        const actu = await genererActuMatch(match, meteo);
-        console.log(`🤖 Gemini OK : ${JSON.stringify(actu).substring(0, 100)}...`);
-
-        // Test upsert
-        console.log(`💾 Upsert Supabase...`);
-        const { data, error } = await supabase
-          .from('actu_matchs')
-          .upsert({
-            match_id: match.id,
-            journee: match.journee,
-            saison: CURRENT_SAISON,
-            equipe_domicile: match.equipe_domicile,
-            equipe_exterieure: match.equipe_exterieure,
-            date_match: match.date,
-            forme_domicile: actu.forme_domicile,
-            forme_exterieure: actu.forme_exterieure,
-            blesses_domicile: actu.blesses_domicile,
-            blesses_exterieure: actu.blesses_exterieure,
-            declarations: actu.declarations,
-            contexte_match: actu.contexte_match,
-            meteo: meteo,
-            resume_global: actu.resume_global,
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'match_id' });
-
-        if (error) {
-          console.error(`❌ Erreur Supabase upsert :`, JSON.stringify(error));
-        } else {
-          console.log(`✅ Supabase OK pour ${match.equipe_domicile} vs ${match.equipe_exterieure}`);
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-      } catch (matchError) {
-        console.error(`❌ Erreur match ${match.id} :`, matchError.message);
-        console.error(matchError.stack);
-      }
-    }
-    console.log('✅ Génération actualités terminée');
-  } catch (error) {
-    console.error('❌ Erreur génération actus:', error.message);
-    console.error(error.stack);
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
   }
 }
-
 
 </script>
 </body>
