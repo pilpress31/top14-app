@@ -107,8 +107,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
       {/* Cotes style bookmaker 1-N-2 */}
       {match.cotes && (
-        <div className="flex items-center justify-center gap-2 mb-3">
+        <div className="flex flex-col items-center gap-1.5 mb-3">
+          
+          {/* Ligne FT */}
           <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-gray-400 font-semibold text-right">Temps plein</span>
             <div className="bg-blue-50 border border-blue-200 rounded px-3 py-1.5">
               <div className="text-[10px] text-blue-600 font-semibold mb-0.5">1</div>
               <div className="text-sm font-bold text-blue-900">
@@ -128,6 +131,32 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               </div>
             </div>
           </div>
+
+          {/* Ligne MT — uniquement si cotes MT disponibles */}
+          {match.cotes.cote_mt_domicile && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-gray-400 font-semibold text-right">Mi-temps</span>
+              <div className="bg-blue-50 border border-blue-200 rounded px-3 py-1.5">
+                <div className="text-[10px] text-blue-600 font-semibold mb-0.5">1</div>
+                <div className="text-sm font-bold text-blue-900">
+                  {match.cotes.cote_mt_domicile?.toFixed(2)}
+                </div>
+              </div>
+              <div className="bg-gray-50 border border-gray-300 rounded px-3 py-1.5">
+                <div className="text-[10px] text-gray-600 font-semibold mb-0.5">N</div>
+                <div className="text-sm font-bold text-gray-900">
+                  {match.cotes.cote_mt_nul?.toFixed(2)}
+                </div>
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded px-3 py-1.5">
+                <div className="text-[10px] text-red-600 font-semibold mb-0.5">2</div>
+                <div className="text-sm font-bold text-red-900">
+                  {match.cotes.cote_mt_exterieur?.toFixed(2)}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       )}
 
@@ -136,9 +165,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         existingProno ? 'sm:flex-row sm:justify-between sm:items-center' : ''
       }`}>
 
-        {/* DEBUG temporaire */}
-        {console.log("🟩 pronoFT =", pronoFT)}
-        {console.log("🟩 pronoMT =", pronoMT)}
+        
 
         {/* Bloc vert des pronos existants */}
         {(hasFT || hasMT) && (
