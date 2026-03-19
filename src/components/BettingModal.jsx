@@ -202,22 +202,43 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       // L'API s'occupe de tout : déduction des jetons, création dans user_bets, transactions
       
       if (betOnFT && !hasFT) {
+        // ✅ Calculer la cote selon le score pronostiqué
+        const dom = toInt(scoreDomFT);
+        const ext = toInt(scoreExtFT);
+        let oddsFT = 1.00;
+        if (match.cotes) {
+          if (dom > ext) oddsFT = match.cotes.cote_domicile;
+          else if (ext > dom) oddsFT = match.cotes.cote_exterieur;
+          else oddsFT = match.cotes.cote_nul;
+        }
+
         await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
           match_id: match.match_id,
           bet_type: 'FT',
           score_domicile: dFT,
           score_exterieur: eFT,
-          stake: stakeFTNum
+          stake: stakeFTNum,
+          odds: oddsFT   // ✅ Ajout
         }, { headers: { 'x-user-id': user.id } });
       }
 
       if (betOnMT && !hasMT) {
+        const dom = toInt(scoreDomMT);
+        const ext = toInt(scoreExtMT);
+        let oddsMT = 1.00;
+        if (match.cotes) {
+          if (dom > ext) oddsMT = match.cotes.cote_mt_domicile;
+          else if (ext > dom) oddsMT = match.cotes.cote_mt_exterieur;
+          else oddsMT = match.cotes.cote_mt_nul;
+        }
+
         await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
           match_id: match.match_id,
           bet_type: 'MT',
           score_domicile: dMT,
           score_exterieur: eMT,
-          stake: stakeMTNum
+          stake: stakeMTNum,
+          odds: oddsMT   // ✅ Ajout
         }, { headers: { 'x-user-id': user.id } });
       }
 
