@@ -1,3 +1,7 @@
+// ============================================
+// CLASSEMENT COMMUNAUTÉ - FIX RACE CONDITION
+// ============================================
+
 import { useState, useEffect } from "react";
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
@@ -28,9 +32,9 @@ export default function ClassementCommunauteTab() {
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [showReglementPoints, setShowReglementPoints] = useState(false);
 
+  // ✅ Un seul useEffect — charge le user EN PREMIER puis le classement
   useEffect(() => {
-    loadCurrentUser();
-    loadClassement();
+    loadAll();
   }, [classementType]);
 
   useEffect(() => {
@@ -42,24 +46,25 @@ export default function ClassementCommunauteTab() {
     }
   }, [searchQuery, users]);
 
-  async function loadCurrentUser() {
+  // ✅ Charge user puis classement séquentiellement
+  async function loadAll() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-      }
+      const userId = user?.id || null;
+      setCurrentUserId(userId);
+      await loadClassement(userId);
     } catch (error) {
-      console.error('Erreur chargement user:', error);
+      console.error('Erreur chargement:', error);
     }
   }
 
-  async function loadClassement() {
+  async function loadClassement(userId: string | null) {
     setLoading(true);
     try {
       if (classementType === 'jetons') {
-        await loadClassementJetons();
+        await loadClassementJetons(userId);
       } else {
-        await loadClassementPoints();
+        await loadClassementPoints(userId);
       }
     } catch (error) {
       console.error('Erreur chargement classement:', error);
@@ -68,11 +73,11 @@ export default function ClassementCommunauteTab() {
     }
   }
 
-  async function loadClassementJetons() {
+  async function loadClassementJetons(userId: string | null) {
     try {
       const response = await axios.get('https://top14-api-production.up.railway.app/api/classement/jetons?limit=100');
       const data = response.data || [];
-      
+
       // Charger les avatars depuis user_profiles
       const userIds = data.map((u: any) => u.user_id);
       const { data: profiles, error } = await supabase
@@ -80,29 +85,20 @@ export default function ClassementCommunauteTab() {
         .select('user_id, avatar_url')
         .in('user_id', userIds);
 
-      if (!error && profiles) {
-        const avatarMap: Record<string, string> = {};
-        profiles.forEach((p: any) => {
-          if (p.avatar_url) avatarMap[p.user_id] = p.avatar_url;
-        });
+      const dataWithAvatars = (!error && profiles)
+        ? data.map((u: any) => ({
+            ...u,
+            avatar: profiles.find((p: any) => p.user_id === u.user_id)?.avatar_url || null
+          }))
+        : data;
 
-        // Ajouter avatars aux données
-        const dataWithAvatars = data.map((u: any) => ({
-          ...u,
-          avatar: avatarMap[u.user_id] || null
-        }));
+      setUsers(dataWithAvatars);
+      setFilteredUsers(dataWithAvatars);
 
-        setUsers(dataWithAvatars);
-        setFilteredUsers(dataWithAvatars);
-
-        // Trouver le rang du user actuel
-        if (currentUserId) {
-          const userRank = dataWithAvatars.find((u: UserRanking) => u.user_id === currentUserId);
-          setCurrentUserRank(userRank ? userRank.rang : null);
-        }
-      } else {
-        setUsers(data);
-        setFilteredUsers(data);
+      // ✅ userId passé en paramètre — pas de race condition
+      if (userId) {
+        const userRank = dataWithAvatars.find((u: UserRanking) => u.user_id === userId);
+        setCurrentUserRank(userRank ? userRank.rang : null);
       }
     } catch (error) {
       console.error('Erreur classement jetons:', error);
@@ -111,9 +107,8 @@ export default function ClassementCommunauteTab() {
     }
   }
 
-  async function loadClassementPoints() {
+  async function loadClassementPoints(userId: string | null) {
     try {
-      // Charger depuis user_stats
       const { data, error } = await supabase
         .from('user_stats')
         .select(`
@@ -143,9 +138,9 @@ export default function ClassementCommunauteTab() {
       setUsers(formattedData);
       setFilteredUsers(formattedData);
 
-      // Trouver le rang du user actuel
-      if (currentUserId) {
-        const userRank = formattedData.find(u => u.user_id === currentUserId);
+      // ✅ userId passé en paramètre — pas de race condition
+      if (userId) {
+        const userRank = formattedData.find(u => u.user_id === userId);
         setCurrentUserRank(userRank ? userRank.rang : null);
       }
     } catch (error) {
@@ -225,17 +220,12 @@ export default function ClassementCommunauteTab() {
     return <span className="text-sm font-bold text-rugby-bronze">{rang}</span>;
   };
 
-  // Fonction pour formater les grands nombres
   const formatNumber = (num: number): string => {
-    if (num >= 100000) {
-      return `${(num / 1000).toFixed(0)}k`; // 123456 → 123k
-    } else if (num >= 10000) {
-      return `${(num / 1000).toFixed(1)}k`; // 12345 → 12.3k
-    }
-    return num.toString(); // < 10000 → affichage normal
+    if (num >= 100000) return `${(num / 1000).toFixed(0)}k`;
+    if (num >= 10000) return `${(num / 1000).toFixed(1)}k`;
+    return num.toString();
   };
 
-  // Fonction pour tronquer les pseudos
   const truncatePseudo = (pseudo: string, maxLength: number = 9): string => {
     if (pseudo.length <= maxLength) return pseudo;
     return pseudo.substring(0, maxLength) + '...';
@@ -253,6 +243,7 @@ export default function ClassementCommunauteTab() {
 
   return (
     <div className="pb-24 space-y-4">
+
       {/* Toggle Jetons/Points */}
       <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm">
         <button
@@ -288,7 +279,7 @@ export default function ClassementCommunauteTab() {
         </button>
       </div>
 
-      {/* User position banner */}
+      {/* Bandeau Votre position */}
       {currentUserRank && (
         <div className="bg-gradient-to-r from-rugby-gold/20 to-rugby-bronze/20 border border-rugby-gold/30 rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -299,7 +290,7 @@ export default function ClassementCommunauteTab() {
               <div>
                 <p className="text-sm text-gray-600">Votre position</p>
                 <p className="font-bold text-rugby-gold">
-                  {currentUserRank === 1 ? '🏆 1er' : `${currentUserRank}${currentUserRank === 2 ? 'ème' : 'ème'}`}
+                  {currentUserRank === 1 ? '🏆 1er' : `${currentUserRank}ème`}
                 </p>
               </div>
             </div>
@@ -308,8 +299,8 @@ export default function ClassementCommunauteTab() {
                 {classementType === 'jetons' ? 'Jetons' : 'Points'}
               </p>
               <p className="text-2xl font-bold text-rugby-gold">
-                {classementType === 'jetons' 
-                  ? filteredUsers.find(u => u.user_id === currentUserId)?.jetons 
+                {classementType === 'jetons'
+                  ? filteredUsers.find(u => u.user_id === currentUserId)?.jetons
                   : filteredUsers.find(u => u.user_id === currentUserId)?.points}
               </p>
             </div>
@@ -329,11 +320,12 @@ export default function ClassementCommunauteTab() {
         />
       </div>
 
-      {/* Podium Top 3 - CORRIGÉ */}
+      {/* Podium Top 3 */}
       {top3.length >= 3 && (
         <div className="bg-gradient-to-b from-rugby-gold/10 to-transparent rounded-xl p-6 mb-6">
           <div className="flex gap-3 justify-center items-end max-w-md mx-auto">
-            {/* 2ème place - LARGEUR FIXE */}
+
+            {/* 2ème place */}
             {top3[1] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(2)}</div>
@@ -351,7 +343,7 @@ export default function ClassementCommunauteTab() {
               </div>
             )}
 
-            {/* 1ère place - LARGEUR FIXE */}
+            {/* 1ère place */}
             {top3[0] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(1)}</div>
@@ -369,7 +361,7 @@ export default function ClassementCommunauteTab() {
               </div>
             )}
 
-            {/* 3ème place - LARGEUR FIXE */}
+            {/* 3ème place */}
             {top3[2] && (
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
@@ -415,8 +407,8 @@ export default function ClassementCommunauteTab() {
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rugby-gold to-rugby-bronze flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
                   {user.avatar ? (
-                    <img 
-                      src={user.avatar} 
+                    <img
+                      src={user.avatar}
                       alt={user.pseudo}
                       className="w-full h-full object-cover"
                     />
@@ -445,7 +437,6 @@ export default function ClassementCommunauteTab() {
                       {user.benefice_net >= 0 ? '+' : ''}{user.benefice_net} net
                     </p>
                   )}
-                  
                 </div>
 
                 {/* Valeur principale */}
@@ -466,12 +457,12 @@ export default function ClassementCommunauteTab() {
       {/* Modal Règlement Points */}
       {showReglementPoints && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 z-50"
             onClick={() => setShowReglementPoints(false)}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-            <div 
+            <div
               className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
