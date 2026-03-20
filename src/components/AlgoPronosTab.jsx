@@ -167,8 +167,7 @@ function DistributionBar({ label, pct, nb, color }) {
 // ============================================
 // COMPOSANT : Bloc analyse historique
 // ============================================
-function AnalyseHistorique({ match }) {
-  const [open, setOpen] = useState(false);
+function AnalyseHistorique({ match, isOpen, onToggle }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -177,7 +176,7 @@ function AnalyseHistorique({ match }) {
   const ecartMT = (match.prono_ht?.domicile ?? 0) - (match.prono_ht?.exterieur ?? 0);
 
   const handleToggle = async () => {
-    if (!open && !data && !loading) {
+    if (!isOpen && !data && !loading) {
       setLoading(true);
       setError(null);
       try {
@@ -187,9 +186,7 @@ function AnalyseHistorique({ match }) {
           ecart_predit_ft: ecartFT,
           ecart_predit_mt: ecartMT,
         });
-        const res = await axios.get(
-          `${API_BASE}/api/stats/proximite-ecart?${params}`
-        );
+        const res = await axios.get(`${API_BASE}/api/stats/proximite-ecart?${params}`);
         setData(res.data);
       } catch (e) {
         setError('Impossible de charger les données historiques.');
@@ -197,32 +194,22 @@ function AnalyseHistorique({ match }) {
         setLoading(false);
       }
     }
-    setOpen(prev => !prev);
+    onToggle();
   };
 
-  // Couleurs pour les 4 tranches
   const COLORS = ['#22c55e', '#f59e0b', '#94a3b8', '#ef4444'];
-
-  const signe = ecartFT >= 0
-    ? `+${ecartFT}`
-    : `${ecartFT}`;
-
-  const signeMT = ecartMT >= 0
-    ? `+${ecartMT}`
-    : `${ecartMT}`;
+  const signe = ecartFT >= 0 ? `+${ecartFT}` : `${ecartFT}`;
+  const signeMT = ecartMT >= 0 ? `+${ecartMT}` : `${ecartMT}`;
 
   return (
     <div className="mt-5 border-t border-gray-100 pt-4">
-      {/* Bouton toggle */}
       <button
         onClick={handleToggle}
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
       >
         <div className="flex items-center gap-2">
           <BarChart2 className="w-4 h-4 text-rugby-gold" />
-          <span className="text-xs font-semibold text-gray-700">
-            Analyse historique
-          </span>
+          <span className="text-xs font-semibold text-gray-700">Analyse historique</span>
           {data && (
             <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
               {data.nb_matchs_filtres} matchs
@@ -231,15 +218,14 @@ function AnalyseHistorique({ match }) {
         </div>
         <div className="flex items-center gap-1.5">
           {loading && <Loader2 className="w-3 h-3 text-rugby-gold animate-spin" />}
-          {open
+          {isOpen
             ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-rugby-gold transition-colors" />
             : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-rugby-gold transition-colors" />
           }
         </div>
       </button>
 
-      {/* Contenu déplié */}
-      {open && (
+      {isOpen && (
         <div className="mt-3 space-y-4">
 
           {error && (
@@ -257,14 +243,14 @@ function AnalyseHistorique({ match }) {
               {/* Résumé proximité globale */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-rugby-gold/5 rounded-lg p-2.5 text-center border border-rugby-gold/20">
-                  <div className="text-[10px] text-gray-500 mb-0.5">Proximité moy. FT</div>
+                  <div className="text-[10px] text-gray-500 mb-0.5">Écart moyen score final</div>
                   <div className="text-lg font-bold text-rugby-gold">
                     {data.global?.moyenne_proximite_ft}%
                   </div>
                   <div className="text-[10px] text-gray-400">sur {data.nb_matchs_filtres} matchs</div>
                 </div>
                 <div className="bg-blue-50 rounded-lg p-2.5 text-center border border-blue-100">
-                  <div className="text-[10px] text-gray-500 mb-0.5">Proximité moy. MT</div>
+                  <div className="text-[10px] text-gray-500 mb-0.5">Écart moyen mi-temps</div>
                   <div className="text-lg font-bold text-blue-500">
                     {data.global?.moyenne_proximite_mt}%
                   </div>
@@ -278,7 +264,7 @@ function AnalyseHistorique({ match }) {
                   <div className="flex items-center gap-1.5 mb-3">
                     <TrendingUp className="w-3.5 h-3.5 text-rugby-gold" />
                     <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">
-                      Distribution écart FT
+                      Distribution écart score final
                     </span>
                     <span className="text-[10px] text-gray-400 ml-auto">
                       Écart prédit : <span className="font-semibold text-rugby-gold">{signe} pts</span>
@@ -307,7 +293,7 @@ function AnalyseHistorique({ match }) {
                   <div className="flex items-center gap-1.5 mb-3">
                     <Clock className="w-3.5 h-3.5 text-blue-400" />
                     <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">
-                      Distribution écart MT
+                      Distribution écart score mi-temps
                     </span>
                     <span className="text-[10px] text-gray-400 ml-auto">
                       Écart prédit : <span className="font-semibold text-blue-500">{signeMT} pts</span>
@@ -354,22 +340,20 @@ const ACTU_SECTIONS = [
   { key: 'blesses_domicile',label: 'Blessés / Absents', icon: Stethoscope, color: 'text-red-400',     bg: 'bg-red-50',     border: 'border-red-100',   combine: 'blesses_exterieure' },
 ];
 
-function ActuMatch({ match }) {
-  const [open, setOpen] = useState(false);
+function ActuMatch({ match, isOpen, onToggle }) {
   const [actu, setActu] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  // Sections individuellement dépliables
-  const [openSections, setOpenSections] = useState(new Set(['pronostic_ia', 'forme_domicile']));
+  // Accordéon : une seule section ouverte à la fois
+  const [openSection, setOpenSection] = useState('pronostic_ia');
 
   const handleToggle = async () => {
-    if (!open && !actu && !loading) {
+    if (!isOpen && !actu && !loading) {
       setLoading(true);
       setError(null);
       try {
         const res = await axios.get(`${API_BASE}/api/actu`);
         const actus = res.data || [];
-        // Trouver l'actu correspondant à ce match
         const found = actus.find(a =>
           a.equipe_domicile === match.equipe_domicile &&
           a.equipe_exterieure === match.equipe_exterieure
@@ -382,25 +366,20 @@ function ActuMatch({ match }) {
         setLoading(false);
       }
     }
-    setOpen(prev => !prev);
+    onToggle();
   };
 
+  // Accordéon sections : ouvre celle cliquée, ferme les autres
   const toggleSection = (key) => {
-    setOpenSections(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
+    setOpenSection(prev => prev === key ? null : key);
   };
 
-  // Formater la date de mise à jour
   const majFormatted = actu?.updated_at
     ? new Date(actu.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : null;
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      {/* Bouton toggle principal */}
       <button
         onClick={handleToggle}
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
@@ -416,30 +395,24 @@ function ActuMatch({ match }) {
         </div>
         <div className="flex items-center gap-1.5">
           {loading && <Loader2 className="w-3 h-3 text-purple-400 animate-spin" />}
-          {open
+          {isOpen
             ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
             : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
           }
         </div>
       </button>
 
-      {/* Contenu déplié */}
-      {open && (
+      {isOpen && (
         <div className="mt-2 space-y-2">
-
-          {error && (
-            <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>
-          )}
-
+          {error && <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>}
           {loading && (
             <div className="flex justify-center py-4">
               <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
             </div>
           )}
-
           {actu && !loading && ACTU_SECTIONS.map(section => {
             const Icon = section.icon;
-            const isOpen = openSections.has(section.key);
+            const isSectionOpen = openSection === section.key;
             const contenu = section.key === 'forme_domicile'
               ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
               : section.key === 'blesses_domicile'
@@ -450,7 +423,6 @@ function ActuMatch({ match }) {
 
             return (
               <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
-                {/* Header section */}
                 <button
                   onClick={() => toggleSection(section.key)}
                   className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
@@ -461,14 +433,12 @@ function ActuMatch({ match }) {
                       {section.label}
                     </span>
                   </div>
-                  {isOpen
+                  {isSectionOpen
                     ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
                     : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
                   }
                 </button>
-
-                {/* Contenu section */}
-                {isOpen && (
+                {isSectionOpen && (
                   <div className="px-3 py-2.5 bg-white">
                     {contenu.split('\n').map((line, i) => (
                       line.trim() === ''
@@ -492,6 +462,10 @@ function ActuMatch({ match }) {
 function PronoCard({ match }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
+
+  // Accordéon : 'analyse' | 'actu' | null
+  const [openPanel, setOpenPanel] = useState(null);
+  const togglePanel = (panel) => setOpenPanel(prev => prev === panel ? null : panel);
 
   const scoreDom = match.prono_ft?.domicile ?? 0;
   const scoreExt = match.prono_ft?.exterieur ?? 0;
@@ -631,8 +605,8 @@ function PronoCard({ match }) {
 
       {/* Analyse historique + Actu match */}
       <div className="px-4">
-        <AnalyseHistorique match={match} />
-        <ActuMatch match={match} />
+        <AnalyseHistorique match={match} isOpen={openPanel === 'analyse'} onToggle={() => togglePanel('analyse')} />
+        <ActuMatch match={match} isOpen={openPanel === 'actu'} onToggle={() => togglePanel('actu')} />
       </div>
 
     </div>
