@@ -197,6 +197,96 @@ function DistributionBar({ label, pct, nb, color }) {
 }
 
 // ============================================
+// COMPOSANT : Popup explicative ℹ️
+// Clic sur mobile, hover sur desktop
+// ============================================
+function InfoPopup() {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef(null);
+
+  // Fermer si clic en dehors
+  useEffect(() => {
+    if (!visible) return;
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setVisible(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [visible]);
+
+  return (
+    <div ref={ref} className="relative flex items-center">
+      {/* Icône ℹ️ */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        className="w-4 h-4 rounded-full bg-gray-300 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
+        aria-label="Explication des statistiques"
+      >
+        <span className="text-[9px] font-bold text-gray-600 leading-none">i</span>
+      </button>
+
+      {/* Popup */}
+      {visible && (
+        <div
+          className="absolute left-0 top-6 z-50 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
+          onMouseEnter={() => setVisible(true)}
+          onMouseLeave={() => setVisible(false)}
+        >
+          {/* Flèche */}
+          <div className="absolute -top-1.5 left-3 w-3 h-3 bg-white border-l border-t border-gray-200 rotate-45" />
+
+          <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
+            Comment lire ces chiffres ?
+          </p>
+
+          {/* Écart moyen */}
+          <div className="mb-3">
+            <p className="text-[11px] font-semibold text-rugby-gold mb-1">
+              Écart moyen score final / mi-temps
+            </p>
+            <p className="text-[11px] text-gray-600 leading-relaxed">
+              Sur tous les matchs historiques de ces deux équipes, à quel point l'algorithme a prédit le bon écart de points. Plus le % est élevé, plus les prédictions étaient proches du résultat réel.
+            </p>
+          </div>
+
+          {/* Distribution */}
+          <div>
+            <p className="text-[11px] font-semibold text-gray-700 mb-1">
+              Distribution écart score final / mi-temps
+            </p>
+            <p className="text-[11px] text-gray-600 leading-relaxed mb-2">
+              Sur les matchs passés où l'algo avait prédit un écart similaire (±5 pts), voici ce qui s'est réellement passé :
+            </p>
+            <div className="space-y-1">
+              <div className="flex items-start gap-1.5">
+                <span className="text-[11px]">🟢</span>
+                <p className="text-[11px] text-gray-600"><span className="font-semibold">Victoire large</span> : l'équipe favorite a gagné avec 10 pts ou plus d'écart</p>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="text-[11px]">🟡</span>
+                <p className="text-[11px] text-gray-600"><span className="font-semibold">Victoire serrée</span> : l'équipe favorite a gagné mais de peu (1 à 9 pts)</p>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="text-[11px]">⚪</span>
+                <p className="text-[11px] text-gray-600"><span className="font-semibold">Match nul</span> : aucune équipe ne s'est démarquée</p>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="text-[11px]">🔴</span>
+                <p className="text-[11px] text-gray-600"><span className="font-semibold">Surprise</span> : l'équipe donnée perdante a finalement gagné</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
 // COMPOSANT : Bloc analyse historique
 // ============================================
 function AnalyseHistorique({ match, isOpen, onToggle }) {
@@ -242,6 +332,7 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
         <div className="flex items-center gap-2">
           <BarChart2 className="w-4 h-4 text-rugby-gold" />
           <span className="text-xs font-semibold text-gray-700">Analyse historique</span>
+          <InfoPopup />
           {data && (
             <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
               {data.nb_matchs_filtres} matchs
@@ -304,6 +395,9 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
                   </div>
                   <div className="text-[10px] text-gray-400 mb-2.5">
                     {data.distribution_ft.nb_matchs_similaires} matchs similaires (fenêtre {data.distribution_ft.fenetre})
+                    {data.distribution_ft.fallback && (
+                      <span className="ml-1 text-orange-400 italic">— élargi à ±5 pts (peu de données)</span>
+                    )}
                   </div>
                   <div className="space-y-2.5">
                     {data.distribution_ft.tranches_ft.map((t, i) => (
@@ -333,6 +427,9 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
                   </div>
                   <div className="text-[10px] text-gray-400 mb-2.5">
                     {data.distribution_mt.nb_matchs_similaires} matchs similaires (fenêtre {data.distribution_mt.fenetre})
+                    {data.distribution_mt.fallback && (
+                      <span className="ml-1 text-orange-400 italic">— élargi à ±5 pts (peu de données)</span>
+                    )}
                   </div>
                   <div className="space-y-2.5">
                     {data.distribution_mt.tranches_mt.map((t, i) => (
