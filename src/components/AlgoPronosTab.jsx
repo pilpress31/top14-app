@@ -122,15 +122,47 @@ export default function AlgoPronosTab() {
 
             {isExpanded && (
               <div className="p-3 space-y-4">
-                {pronosJournee.map(prono => (
-                  <PronoCard key={prono.id} match={prono} />
-                ))}
+                {(() => {
+                  // State accordéon au niveau journée : { matchId, panel }
+                  // On utilise un composant intermédiaire pour gérer le state
+                  return <JourneeCards pronosJournee={pronosJournee} />;
+                })()}
               </div>
             )}
           </div>
         );
       })}
     </div>
+  );
+}
+
+// ============================================
+// COMPOSANT : JourneeCards — gère l'accordéon
+// inter-matchs au niveau de la journée
+// ============================================
+function JourneeCards({ pronosJournee }) {
+  // { matchId: string, panel: 'analyse' | 'actu' } | null
+  const [activePanel, setActivePanel] = useState(null);
+
+  const togglePanel = (matchId, panel) => {
+    setActivePanel(prev =>
+      prev?.matchId === matchId && prev?.panel === panel
+        ? null
+        : { matchId, panel }
+    );
+  };
+
+  return (
+    <>
+      {pronosJournee.map(prono => (
+        <PronoCard
+          key={prono.id}
+          match={prono}
+          openPanel={activePanel?.matchId === prono.id ? activePanel.panel : null}
+          onTogglePanel={(panel) => togglePanel(prono.id, panel)}
+        />
+      ))}
+    </>
   );
 }
 
@@ -457,15 +489,31 @@ function ActuMatch({ match, isOpen, onToggle }) {
 }
 
 // ============================================
-// COMPOSANT : PronoCard (inchangé + AnalyseHistorique ajouté)
+// COMPOSANT : PronoCard
 // ============================================
-function PronoCard({ match }) {
+function PronoCard({ match, openPanel, onTogglePanel }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
-  // Accordéon : 'analyse' | 'actu' | null
-  const [openPanel, setOpenPanel] = useState(null);
-  const togglePanel = (panel) => setOpenPanel(prev => prev === panel ? null : panel);
+  // Refs pour scroller vers le bon panel à l'ouverture
+  const analyseRef = useRef(null);
+  const actuRef = useRef(null);
+
+  const handleTogglePanel = (panel) => {
+    const isOpening = openPanel !== panel;
+    onTogglePanel(panel);
+    if (isOpening) {
+      // Scroller vers le panel après rendu
+      setTimeout(() => {
+        const ref = panel === 'analyse' ? analyseRef : actuRef;
+        if (ref.current) {
+          const headerOffset = 130;
+          const pos = ref.current.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: pos, behavior: 'smooth' });
+        }
+      }, 80);
+    }
+  };
 
   const scoreDom = match.prono_ft?.domicile ?? 0;
   const scoreExt = match.prono_ft?.exterieur ?? 0;
@@ -605,8 +653,20 @@ function PronoCard({ match }) {
 
       {/* Analyse historique + Actu match */}
       <div className="px-4">
-        <AnalyseHistorique match={match} isOpen={openPanel === 'analyse'} onToggle={() => togglePanel('analyse')} />
-        <ActuMatch match={match} isOpen={openPanel === 'actu'} onToggle={() => togglePanel('actu')} />
+        <div ref={analyseRef}>
+          <AnalyseHistorique
+            match={match}
+            isOpen={openPanel === 'analyse'}
+            onToggle={() => handleTogglePanel('analyse')}
+          />
+        </div>
+        <div ref={actuRef}>
+          <ActuMatch
+            match={match}
+            isOpen={openPanel === 'actu'}
+            onToggle={() => handleTogglePanel('actu')}
+          />
+        </div>
       </div>
 
     </div>
