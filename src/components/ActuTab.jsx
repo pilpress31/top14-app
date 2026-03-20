@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Calendar, CloudSun, Users, Mic, Swords, Trophy } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
@@ -8,6 +8,7 @@ export default function ActuTab() {
   const [loading, setLoading] = useState(true);
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [expandedSection, setExpandedSection] = useState({});
+  const cardRefs = useRef({});
 
   useEffect(() => {
     loadActus();
@@ -36,6 +37,15 @@ export default function ActuTab() {
         [`${matchId}-declarations`]: false,
         [`${matchId}-contexte`]: false,
       }));
+      // ✅ Scroll vers la card juste sous le bandeau
+      setTimeout(() => {
+        const el = cardRefs.current[matchId];
+        if (el) {
+          const headerOffset = 130;
+          const top = el.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }, 50);
     }
   };
 
@@ -100,8 +110,11 @@ export default function ActuTab() {
                 const hasContent = actu.forme_domicile && actu.forme_domicile !== 'Données en cours de chargement...';
 
                 return (
-                  <div key={actu.match_id} className="bg-white rounded-xl shadow-sm border border-rugby-gray overflow-hidden">
-
+                  <div
+                    key={actu.match_id}
+                    ref={el => cardRefs.current[actu.match_id] = el}
+                    className="bg-white rounded-xl shadow-sm border border-rugby-gray overflow-hidden"
+                  >
                     {/* Header match cliquable */}
                     <button
                       onClick={() => toggleMatch(actu.match_id)}
@@ -127,14 +140,14 @@ export default function ActuTab() {
                         </div>
                       </div>
 
-                      {/* Résumé global */}
+                      {/* Résumé global — tronqué si fermé, complet si ouvert */}
                       {actu.resume_global && actu.resume_global !== 'Synthèse en cours de génération...' && (
                         <p className={`text-xs text-gray-600 mt-2 italic leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
                           {actu.resume_global}
                         </p>
                       )}
 
-                      {/* Bouton voir analyse */}
+                      {/* Bouton analyse */}
                       {hasContent && (
                         <div className="flex items-center justify-end gap-1 mt-3 pt-2 border-t border-gray-100">
                           <span className="text-[11px] text-rugby-gold font-semibold">
@@ -217,17 +230,19 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        {/* 🎙️ Déclarations — fermé par défaut */}
-                        {actu.declarations && actu.declarations !== 'Information non disponible' && (
-                          <SectionBlock
-                            icon={<Mic className="w-4 h-4 text-purple-500" />}
-                            title="Déclarations"
-                            isOpen={isSectionOpen(actu.match_id, 'declarations', false)}
-                            onToggle={() => toggleSection(actu.match_id, 'declarations')}
-                          >
-                            <p className="text-xs text-gray-700 leading-relaxed">{actu.declarations}</p>
-                          </SectionBlock>
-                        )}
+                        {/* 🎙️ Déclarations — toujours affiché, fermé par défaut */}
+                        <SectionBlock
+                          icon={<Mic className="w-4 h-4 text-purple-500" />}
+                          title="Déclarations"
+                          isOpen={isSectionOpen(actu.match_id, 'declarations', false)}
+                          onToggle={() => toggleSection(actu.match_id, 'declarations')}
+                        >
+                          <p className="text-xs text-gray-700 leading-relaxed">
+                            {actu.declarations && actu.declarations !== 'Information non disponible'
+                              ? actu.declarations
+                              : 'Aucune déclaration disponible pour ce match.'}
+                          </p>
+                        </SectionBlock>
 
                       </div>
                     )}
