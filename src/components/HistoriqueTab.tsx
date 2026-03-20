@@ -97,12 +97,11 @@ interface MatchHistorique {
   score_ht_domicile?: number;
   score_ht_exterieur?: number;
   vainqueur?: string;
-  prono_ft?: {
-    domicile: number | null;
-    exterieur: number | null;
-  };
+  prono_ft?: { domicile: number | null; exterieur: number | null; };
+  prono_ht?: { domicile: number | null; exterieur: number | null; };  // ✅ ajout
   prono_text?: string;
   comp_ft?: string;
+  comp_ht?: string;  // ✅ ajout
 }
 
 interface HistoriqueTabProps {
@@ -452,69 +451,108 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
                 </div>
                 <div className="text-xs text-gray-700 font-semibold text-right">
                   {new Date(m.date).toLocaleDateString("fr-FR", {
-                    weekday: "short",
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
+                    weekday: "short", day: "numeric", month: "short", year: "numeric",
                   }).toUpperCase()}
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3 items-start">
+                {/* Équipe domicile */}
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
-                    <img
-                      src={teamDomData.logo}
-                      alt={teamDomData.name}
-                      className="w-10 h-10 object-contain"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
+                    <img src={teamDomData.logo} alt={teamDomData.name} className="w-10 h-10 object-contain"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2">
                     {m.equipe_domicile}
                   </div>
                 </div>
 
+                {/* Scores centre */}
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <div className="text-center">
-                    <div className="text-[10px] text-gray-500 uppercase mb-1">Score réel</div>
-                    <div className="text-2xl font-bold text-rugby-orange">
-                      {m.score_domicile} - {m.score_exterieur}
-                    </div>
-                  </div>
 
-                  {m.prono_ft && m.prono_ft.domicile !== null && m.prono_ft.exterieur !== null && (
-                    <>
+                  {/* ── TEMPS PLEIN ── */}
+                  <div className="w-full">
+                    <div className="text-[9px] text-gray-400 uppercase text-center mb-0.5 font-semibold tracking-wide">Temps plein</div>
+                    <div className="flex items-center justify-center gap-2">
                       <div className="text-center">
-                        <div className="text-[10px] text-gray-400 uppercase mb-1">Prédit</div>
-                        <div className="text-lg font-semibold text-gray-600">
-                          {m.prono_ft.domicile} - {m.prono_ft.exterieur}
-                        </div>
+                        <div className="text-[9px] text-gray-400 mb-0.5">Réel</div>
+                        <div className="text-xl font-bold text-rugby-orange">{m.score_domicile} - {m.score_exterieur}</div>
                       </div>
-
-                      {(ecartDom !== null || ecartExt !== null) && (
-                        <div className="text-[10px] text-gray-500 italic">
-                          Écart: {ecartDom !== null ? (ecartDom > 0 ? `+${ecartDom}` : ecartDom) : '?'} / {ecartExt !== null ? (ecartExt > 0 ? `+${ecartExt}` : ecartExt) : '?'}
+                      {m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined && (
+                        <div className="text-center">
+                          <div className="text-[9px] text-gray-400 mb-0.5">Prédit</div>
+                          <div className="text-lg font-semibold text-gray-500">{m.prono_ft.domicile} - {m.prono_ft.exterieur}</div>
                         </div>
                       )}
-
-                      <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
-                        pronoOK ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {pronoOK ? '✓ Prono correct' : '✗ Prono incorrect'}
+                    </div>
+                    {/* Écart FT */}
+                    {ecartDom !== null && ecartExt !== null && (
+                      <div className="text-[9px] text-gray-400 italic text-center mt-0.5">
+                        Écart: {ecartDom > 0 ? `+${ecartDom}` : ecartDom} / {ecartExt > 0 ? `+${ecartExt}` : ecartExt}
                       </div>
-                    </>
+                    )}
+                    {/* Badge FT */}
+                    {m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined && (
+                      <div className="flex justify-center mt-1">
+                        <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                          pronoOK ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                          {pronoOK ? '✓ FT correct' : '✗ FT incorrect'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Séparateur */}
+                  {m.score_ht_domicile !== undefined && m.score_ht_domicile !== null && (
+                    <div className="w-full border-t border-gray-100 my-1" />
                   )}
+
+                  {/* ── MI-TEMPS ── */}
+                  {m.score_ht_domicile !== undefined && m.score_ht_domicile !== null && (
+                    <div className="w-full">
+                      <div className="text-[9px] text-gray-400 uppercase text-center mb-0.5 font-semibold tracking-wide">Mi-temps</div>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="text-center">
+                          <div className="text-[9px] text-gray-400 mb-0.5">Réel</div>
+                          <div className="text-lg font-bold text-rugby-bronze">{m.score_ht_domicile} - {m.score_ht_exterieur}</div>
+                        </div>
+                        {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined && (
+                          <div className="text-center">
+                            <div className="text-[9px] text-gray-400 mb-0.5">Prédit</div>
+                            <div className="text-base font-semibold text-gray-500">{m.prono_ht.domicile} - {m.prono_ht.exterieur}</div>
+                          </div>
+                        )}
+                      </div>
+                      {/* Écart MT */}
+                      {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined && (
+                        <div className="text-[9px] text-gray-400 italic text-center mt-0.5">
+                          Écart: {m.score_ht_domicile - m.prono_ht.domicile > 0 ? `+${m.score_ht_domicile - m.prono_ht.domicile}` : m.score_ht_domicile - m.prono_ht.domicile} / {m.score_ht_exterieur! - m.prono_ht.exterieur! > 0 ? `+${m.score_ht_exterieur! - m.prono_ht.exterieur!}` : m.score_ht_exterieur! - m.prono_ht.exterieur!}
+                        </div>
+                      )}
+                      {/* Badge MT */}
+                      {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined && (
+                        <div className="flex justify-center mt-1">
+                          <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                            m.comp_ht && (m.comp_ht.includes('OK') || m.comp_ht === 'OK')
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            {m.comp_ht && (m.comp_ht.includes('OK') || m.comp_ht === 'OK') ? '✓ MT correct' : '✗ MT incorrect'}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                 </div>
 
+                {/* Équipe extérieure */}
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
-                    <img
-                      src={teamExtData.logo}
-                      alt={teamExtData.name}
-                      className="w-10 h-10 object-contain"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
+                    <img src={teamExtData.logo} alt={teamExtData.name} className="w-10 h-10 object-contain"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2">
                     {m.equipe_exterieure}
