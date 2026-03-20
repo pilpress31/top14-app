@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, Calendar, CloudSun, Users, Mic, Swords, Trophy } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, CloudSun, Users, Swords, Trophy } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 
@@ -34,7 +34,6 @@ export default function ActuTab() {
         [`${matchId}-forme`]: true,
         [`${matchId}-pronostic`]: true,
         [`${matchId}-blesses`]: false,
-        [`${matchId}-declarations`]: false,
         [`${matchId}-contexte`]: false,
       }));
       // ✅ Scroll vers la card juste sous le bandeau
@@ -230,19 +229,7 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        {/* 🎙️ Déclarations — toujours affiché, fermé par défaut */}
-                        <SectionBlock
-                          icon={<Mic className="w-4 h-4 text-purple-500" />}
-                          title="Déclarations"
-                          isOpen={isSectionOpen(actu.match_id, 'declarations', false)}
-                          onToggle={() => toggleSection(actu.match_id, 'declarations')}
-                        >
-                          <p className="text-xs text-gray-700 leading-relaxed">
-                            {actu.declarations && actu.declarations !== 'Information non disponible'
-                              ? actu.declarations
-                              : 'Aucune déclaration disponible pour ce match.'}
-                          </p>
-                        </SectionBlock>
+                        
 
                       </div>
                     )}
