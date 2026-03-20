@@ -129,25 +129,26 @@ export default function ActuTab() {
 
                       {/* Résumé global */}
                       {actu.resume_global && actu.resume_global !== 'Synthèse en cours de génération...' && (
-                        <p className="text-xs text-gray-600 mt-2 line-clamp-2 italic leading-relaxed">
+                        <p className={`text-xs text-gray-600 mt-2 italic leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
                           {actu.resume_global}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between mt-2">
-                        {hasContent ? (
-                          <span className="text-[10px] text-rugby-gold font-semibold">
-                            {isExpanded ? 'Réduire l\'analyse' : 'Voir l\'analyse complète'}
+                      {/* Bouton voir analyse */}
+                      {hasContent && (
+                        <div className="flex items-center justify-end gap-1 mt-3 pt-2 border-t border-gray-100">
+                          <span className="text-[11px] text-rugby-gold font-semibold">
+                            {isExpanded ? 'Réduire' : 'Analyse complète'}
                           </span>
-                        ) : (
-                          <span className="text-[10px] text-gray-400">Analyse en cours...</span>
-                        )}
-                        {hasContent && (
-                          isExpanded
-                            ? <ChevronUp className="w-4 h-4 text-rugby-gold" />
-                            : <ChevronDown className="w-4 h-4 text-rugby-gold" />
-                        )}
-                      </div>
+                          {isExpanded
+                            ? <ChevronUp className="w-3.5 h-3.5 text-rugby-gold" />
+                            : <ChevronDown className="w-3.5 h-3.5 text-rugby-gold" />
+                          }
+                        </div>
+                      )}
+                      {!hasContent && (
+                        <p className="text-[10px] text-gray-400 mt-2">Analyse en cours...</p>
+                      )}
                     </button>
 
                     {/* Contenu expandable */}
