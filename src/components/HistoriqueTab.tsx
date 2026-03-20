@@ -444,120 +444,108 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
             : null;
 
           return (
-            <div key={m.id} className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow py-4 px-3 border border-gray-200">
-              <div className="flex justify-between items-start mb-3">
-                <div className="text-xs text-rugby-orange font-bold uppercase tracking-wide">
-                  JOURNÉE {m.journee}
-                </div>
-                <div className="text-xs text-gray-700 font-semibold text-right">
+            <div key={m.id} className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-200">
+              
+              {/* Header */}
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-xs text-rugby-orange font-bold uppercase">J{m.journee}</div>
+                <div className="text-xs text-gray-500">
                   {new Date(m.date).toLocaleDateString("fr-FR", {
-                    weekday: "short", day: "numeric", month: "short", year: "numeric",
-                  }).toUpperCase()}
+                    day: "numeric", month: "short", year: "numeric"
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 items-start">
-                {/* Équipe domicile */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
-                    <img src={teamDomData.logo} alt={teamDomData.name} className="w-10 h-10 object-contain"
+              {/* Équipes */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <img src={teamDomData.logo} alt={teamDomData.name} className="w-7 h-7 object-contain"
                       onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
-                  <div className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2">
-                    {m.equipe_domicile}
+                  <span className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2">{m.equipe_domicile}</span>
+                </div>
+                <span className="text-[10px] font-bold text-gray-400 px-2 flex-shrink-0">VS</span>
+                <div className="flex items-center gap-2 flex-1 justify-end">
+                  <span className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 text-right">{m.equipe_exterieure}</span>
+                  <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <img src={teamExtData.logo} alt={teamExtData.name} className="w-7 h-7 object-contain"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                 </div>
+              </div>
 
-                {/* Scores centre */}
-                <div className="flex flex-col items-center justify-center gap-2">
+              {/* Grille scores */}
+              <div className="border border-gray-100 rounded-lg overflow-hidden">
+                
+                {/* Header grille */}
+                <div className="grid grid-cols-4 bg-gray-50 border-b border-gray-100">
+                  <div className="px-2 py-1 text-[10px] text-gray-400 font-semibold"></div>
+                  <div className="px-2 py-1 text-[10px] text-gray-400 font-semibold text-center">Réel</div>
+                  <div className="px-2 py-1 text-[10px] text-gray-400 font-semibold text-center">Prédit</div>
+                  <div className="px-2 py-1 text-[10px] text-gray-400 font-semibold text-center">Résultat</div>
+                </div>
 
-                  {/* ── TEMPS PLEIN ── */}
-                  <div className="w-full">
-                    <div className="text-[9px] text-gray-400 uppercase text-center mb-0.5 font-semibold tracking-wide">Temps plein</div>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="text-center">
-                        <div className="text-[9px] text-gray-400 mb-0.5">Réel</div>
-                        <div className="text-xl font-bold text-rugby-orange">{m.score_domicile} - {m.score_exterieur}</div>
-                      </div>
-                      {m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined && (
-                        <div className="text-center">
-                          <div className="text-[9px] text-gray-400 mb-0.5">Prédit</div>
-                          <div className="text-lg font-semibold text-gray-500">{m.prono_ft.domicile} - {m.prono_ft.exterieur}</div>
-                        </div>
-                      )}
-                    </div>
-                    {/* Écart FT */}
-                    {ecartDom !== null && ecartExt !== null && (
-                      <div className="text-[9px] text-gray-400 italic text-center mt-0.5">
-                        Écart: {ecartDom > 0 ? `+${ecartDom}` : ecartDom} / {ecartExt > 0 ? `+${ecartExt}` : ecartExt}
-                      </div>
-                    )}
-                    {/* Badge FT */}
-                    {m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined && (
-                      <div className="flex justify-center mt-1">
-                        <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                          pronoOK ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
-                          {pronoOK ? '✓ FT correct' : '✗ FT incorrect'}
-                        </div>
-                      </div>
-                    )}
+                {/* Ligne Temps plein */}
+                <div className="grid grid-cols-4 items-center border-b border-gray-100">
+                  <div className="px-2 py-2 text-[10px] text-gray-500 font-semibold">Temps plein</div>
+                  <div className="px-2 py-2 text-center font-bold text-rugby-orange text-sm">
+                    {m.score_domicile} - {m.score_exterieur}
                   </div>
-
-                  {/* Séparateur */}
-                  {m.score_ht_domicile !== undefined && m.score_ht_domicile !== null && (
-                    <div className="w-full border-t border-gray-100 my-1" />
-                  )}
-
-                  {/* ── MI-TEMPS ── */}
-                  {m.score_ht_domicile !== undefined && m.score_ht_domicile !== null && (
-                    <div className="w-full">
-                      <div className="text-[9px] text-gray-400 uppercase text-center mb-0.5 font-semibold tracking-wide">Mi-temps</div>
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="text-center">
-                          <div className="text-[9px] text-gray-400 mb-0.5">Réel</div>
-                          <div className="text-lg font-bold text-rugby-bronze">{m.score_ht_domicile} - {m.score_ht_exterieur}</div>
-                        </div>
-                        {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined && (
-                          <div className="text-center">
-                            <div className="text-[9px] text-gray-400 mb-0.5">Prédit</div>
-                            <div className="text-base font-semibold text-gray-500">{m.prono_ht.domicile} - {m.prono_ht.exterieur}</div>
-                          </div>
+                  <div className="px-2 py-2 text-center text-sm text-gray-500">
+                    {m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined
+                      ? `${m.prono_ft.domicile} - ${m.prono_ft.exterieur}`
+                      : '—'}
+                  </div>
+                  <div className="px-2 py-2 flex flex-col items-center gap-0.5">
+                    {m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined ? (
+                      <>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${pronoOK ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {pronoOK ? '✓ OK' : '✗ KO'}
+                        </span>
+                        {ecartDom !== null && (
+                          <span className="text-[9px] text-gray-400">
+                            {ecartDom > 0 ? `+${ecartDom}` : ecartDom}/{ecartExt! > 0 ? `+${ecartExt}` : ecartExt}
+                          </span>
                         )}
-                      </div>
-                      {/* Écart MT */}
-                      {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined && (
-                        <div className="text-[9px] text-gray-400 italic text-center mt-0.5">
-                          Écart: {m.score_ht_domicile - m.prono_ht.domicile > 0 ? `+${m.score_ht_domicile - m.prono_ht.domicile}` : m.score_ht_domicile - m.prono_ht.domicile} / {m.score_ht_exterieur! - m.prono_ht.exterieur! > 0 ? `+${m.score_ht_exterieur! - m.prono_ht.exterieur!}` : m.score_ht_exterieur! - m.prono_ht.exterieur!}
-                        </div>
-                      )}
-                      {/* Badge MT */}
-                      {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined && (
-                        <div className="flex justify-center mt-1">
-                          <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                            m.comp_ht && (m.comp_ht.includes('OK') || m.comp_ht === 'OK')
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}>
-                            {m.comp_ht && (m.comp_ht.includes('OK') || m.comp_ht === 'OK') ? '✓ MT correct' : '✗ MT incorrect'}
-                          </div>
-                        </div>
-                      )}
+                      </>
+                    ) : <span className="text-gray-300">—</span>}
+                  </div>
+                </div>
+
+                {/* Ligne Mi-temps */}
+                {m.score_ht_domicile !== undefined && m.score_ht_domicile !== null && (
+                  <div className="grid grid-cols-4 items-center">
+                    <div className="px-2 py-2 text-[10px] text-gray-500 font-semibold">Mi-temps</div>
+                    <div className="px-2 py-2 text-center font-bold text-rugby-bronze text-sm">
+                      {m.score_ht_domicile} - {m.score_ht_exterieur}
                     </div>
-                  )}
-
-                </div>
-
-                {/* Équipe extérieure */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1">
-                    <img src={teamExtData.logo} alt={teamExtData.name} className="w-10 h-10 object-contain"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <div className="px-2 py-2 text-center text-sm text-gray-500">
+                      {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined
+                        ? `${m.prono_ht.domicile} - ${m.prono_ht.exterieur}`
+                        : '—'}
+                    </div>
+                    <div className="px-2 py-2 flex flex-col items-center gap-0.5">
+                      {m.prono_ht?.domicile !== null && m.prono_ht?.domicile !== undefined ? (
+                        <>
+                          <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                            m.comp_ht && (m.comp_ht.includes('OK') || m.comp_ht === 'OK')
+                              ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {m.comp_ht && (m.comp_ht.includes('OK') || m.comp_ht === 'OK') ? '✓ OK' : '✗ KO'}
+                          </span>
+                          <span className="text-[9px] text-gray-400">
+                            {m.score_ht_domicile - m.prono_ht.domicile! > 0
+                              ? `+${m.score_ht_domicile - m.prono_ht.domicile!}`
+                              : m.score_ht_domicile - m.prono_ht.domicile!}/{m.score_ht_exterieur! - m.prono_ht.exterieur! > 0
+                              ? `+${m.score_ht_exterieur! - m.prono_ht.exterieur!}`
+                              : m.score_ht_exterieur! - m.prono_ht.exterieur!}
+                          </span>
+                        </>
+                      ) : <span className="text-gray-300">—</span>}
+                    </div>
                   </div>
-                  <div className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2">
-                    {m.equipe_exterieure}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           );
