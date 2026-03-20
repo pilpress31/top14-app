@@ -30,6 +30,7 @@ function EclairIcon({ className }) {
   const items = [
   { key: "IA", label: "Pronos", icon: EclairIcon, to: "/ia", badge: false },
   { key: "Pronos", label: "Paris", icon: TargetIcon, to: "/pronos", badge: false },
+  { key: "Actu", label: "Actu", icon: NewspaperIcon, to: "/actu", badge: false },
   { key: "Classement", label: "Classement", icon: TrophyIcon, to: "/classement", badge: false },
   { key: "Chat", label: "Chat", icon: ChatIcon, to: "/chat", badge: hasUnreadMessages },
   { key: "Plus", label: "Plus", icon: GridIcon, to: "/plus", badge: false },
@@ -103,6 +104,15 @@ function TargetIcon({ className }) {
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function NewspaperIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+      <path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z" />
     </svg>
   );
 }

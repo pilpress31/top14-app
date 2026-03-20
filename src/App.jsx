@@ -12,6 +12,7 @@ import { useState } from "react";
 // Pages
 import IAPage from '@/pages/IAPage';
 import PronosPage from './pages/PronosPage';
+import ActuPage from './pages/ActuPage';
 import ChatPage from './pages/ChatPage';
 import LivePage from './pages/LivePage';
 import ClassementPageWithTabs from './pages/ClassementPageWithTabs';
@@ -38,6 +39,7 @@ function useActiveLabel() {
   const path = location.pathname;
   if (path === "/" || path === "/ia") return "IA";
   if (path === "/pronos") return "Pronos";
+  if (path === "/actu") return "Actu";
   if (path.startsWith("/classement")) return "Classement";
   if (path === "/live") return "Live";
   if (path === "/chat") return "Chat";
@@ -107,7 +109,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-
+            
             {/* ✅ Route Classement */}
             <Route 
               path="/classement" 
@@ -116,6 +118,16 @@ function App() {
                   <ClassementPageWithTabs />
                 </ProtectedRoute>
               }    
+            />
+
+            {/* ✅ Route Actu */}
+            <Route
+              path="/actu"
+              element={
+                <ProtectedRoute>
+                  <ActuPage />
+                </ProtectedRoute>
+              }
             />
 
             {/* ✅ Route Live (ex-Résultats) */}
