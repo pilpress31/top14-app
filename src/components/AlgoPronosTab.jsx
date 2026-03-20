@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 
@@ -345,6 +345,148 @@ function AnalyseHistorique({ match }) {
 }
 
 // ============================================
+// COMPOSANT : Bloc actu match expandable
+// ============================================
+const ACTU_SECTIONS = [
+  { key: 'pronostic_ia',    label: 'Pronostic IA',      icon: Bot,         color: 'text-purple-500',  bg: 'bg-purple-50',  border: 'border-purple-100' },
+  { key: 'forme_domicile',  label: 'Forme récente',     icon: Trophy,      color: 'text-rugby-gold',  bg: 'bg-yellow-50',  border: 'border-yellow-100', combine: 'forme_exterieure' },
+  { key: 'contexte_match',  label: 'Contexte & Enjeux', icon: Swords,      color: 'text-orange-500',  bg: 'bg-orange-50',  border: 'border-orange-100' },
+  { key: 'blesses_domicile',label: 'Blessés / Absents', icon: Stethoscope, color: 'text-red-400',     bg: 'bg-red-50',     border: 'border-red-100',   combine: 'blesses_exterieure' },
+];
+
+function ActuMatch({ match }) {
+  const [open, setOpen] = useState(false);
+  const [actu, setActu] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  // Sections individuellement dépliables
+  const [openSections, setOpenSections] = useState(new Set(['pronostic_ia', 'forme_domicile']));
+
+  const handleToggle = async () => {
+    if (!open && !actu && !loading) {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`${API_BASE}/api/actu`);
+        const actus = res.data || [];
+        // Trouver l'actu correspondant à ce match
+        const found = actus.find(a =>
+          a.equipe_domicile === match.equipe_domicile &&
+          a.equipe_exterieure === match.equipe_exterieure
+        );
+        setActu(found || null);
+        if (!found) setError('Aucune actualité disponible pour ce match.');
+      } catch (e) {
+        setError('Impossible de charger l\'actualité du match.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    setOpen(prev => !prev);
+  };
+
+  const toggleSection = (key) => {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
+
+  // Formater la date de mise à jour
+  const majFormatted = actu?.updated_at
+    ? new Date(actu.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : null;
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      {/* Bouton toggle principal */}
+      <button
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
+      >
+        <div className="flex items-center gap-2">
+          <Newspaper className="w-4 h-4 text-purple-400" />
+          <span className="text-xs font-semibold text-gray-700">Actu du match</span>
+          {actu && majFormatted && (
+            <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
+              màj {majFormatted}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {loading && <Loader2 className="w-3 h-3 text-purple-400 animate-spin" />}
+          {open
+            ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
+            : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
+          }
+        </div>
+      </button>
+
+      {/* Contenu déplié */}
+      {open && (
+        <div className="mt-2 space-y-2">
+
+          {error && (
+            <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>
+          )}
+
+          {loading && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+            </div>
+          )}
+
+          {actu && !loading && ACTU_SECTIONS.map(section => {
+            const Icon = section.icon;
+            const isOpen = openSections.has(section.key);
+            const contenu = section.key === 'forme_domicile'
+              ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
+              : section.key === 'blesses_domicile'
+              ? `🏠 ${match.equipe_domicile}\n${actu.blesses_domicile || 'Aucune absence majeure signalée'}\n\n🚌 ${match.equipe_exterieure}\n${actu.blesses_exterieure || 'Aucune absence majeure signalée'}`
+              : actu[section.key];
+
+            if (!contenu) return null;
+
+            return (
+              <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
+                {/* Header section */}
+                <button
+                  onClick={() => toggleSection(section.key)}
+                  className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className={`w-3.5 h-3.5 ${section.color}`} />
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${section.color}`}>
+                      {section.label}
+                    </span>
+                  </div>
+                  {isOpen
+                    ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                    : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                  }
+                </button>
+
+                {/* Contenu section */}
+                {isOpen && (
+                  <div className="px-3 py-2.5 bg-white">
+                    {contenu.split('\n').map((line, i) => (
+                      line.trim() === ''
+                        ? <div key={i} className="h-2" />
+                        : <p key={i} className="text-[12px] text-gray-700 leading-relaxed">{line}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
 // COMPOSANT : PronoCard (inchangé + AnalyseHistorique ajouté)
 // ============================================
 function PronoCard({ match }) {
@@ -487,9 +629,10 @@ function PronoCard({ match }) {
         </div>
       </div>
 
-      {/* ✅ NOUVEAU : Analyse historique expandable */}
+      {/* Analyse historique + Actu match */}
       <div className="px-4">
         <AnalyseHistorique match={match} />
+        <ActuMatch match={match} />
       </div>
 
     </div>
