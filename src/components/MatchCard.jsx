@@ -108,10 +108,9 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
       {/* Cotes style bookmaker 1-N-2 */}
       {match.cotes && (
         <div className="flex flex-col items-center gap-1.5 mb-3">
-
           {/* Header colonnes */}
           <div className="flex items-center gap-1.5">
-            <div className="w-16" /> {/* spacer label */}
+            <div className="w-16" />
             <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">1</div>
             <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">N</div>
             <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">2</div>
@@ -120,13 +119,22 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           {/* Ligne Temps plein */}
           <div className="flex items-center gap-1.5">
             <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
-            <div className="bg-blue-50 border border-blue-200 rounded w-14 py-1.5 text-center text-sm font-bold text-blue-900">
+            <div
+              onClick={() => bettingAllowed && onBetClick(match)}
+              className={`bg-blue-50 border border-blue-200 rounded w-14 py-1.5 text-center text-sm font-bold text-blue-900 ${bettingAllowed ? 'cursor-pointer hover:bg-blue-100 hover:border-blue-400 transition-colors' : ''}`}
+            >
               {match.cotes.cote_domicile?.toFixed(2)}
             </div>
-            <div className="bg-gray-50 border border-gray-300 rounded w-14 py-1.5 text-center text-sm font-bold text-gray-900">
+            <div
+              onClick={() => bettingAllowed && onBetClick(match)}
+              className={`bg-gray-50 border border-gray-300 rounded w-14 py-1.5 text-center text-sm font-bold text-gray-900 ${bettingAllowed ? 'cursor-pointer hover:bg-gray-100 hover:border-gray-400 transition-colors' : ''}`}
+            >
               {match.cotes.cote_nul?.toFixed(2)}
             </div>
-            <div className="bg-red-50 border border-red-200 rounded w-14 py-1.5 text-center text-sm font-bold text-red-900">
+            <div
+              onClick={() => bettingAllowed && onBetClick(match)}
+              className={`bg-red-50 border border-red-200 rounded w-14 py-1.5 text-center text-sm font-bold text-red-900 ${bettingAllowed ? 'cursor-pointer hover:bg-red-100 hover:border-red-400 transition-colors' : ''}`}
+            >
               {match.cotes.cote_exterieur?.toFixed(2)}
             </div>
           </div>
@@ -135,18 +143,26 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           {match.cotes.cote_mt_domicile && (
             <div className="flex items-center gap-1.5">
               <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
-              <div className="bg-blue-50 border border-blue-200 rounded w-14 py-1.5 text-center text-sm font-bold text-blue-900">
+              <div
+                onClick={() => bettingAllowed && onBetClick(match)}
+                className={`bg-blue-50 border border-blue-200 rounded w-14 py-1.5 text-center text-sm font-bold text-blue-900 ${bettingAllowed ? 'cursor-pointer hover:bg-blue-100 hover:border-blue-400 transition-colors' : ''}`}
+              >
                 {match.cotes.cote_mt_domicile?.toFixed(2)}
               </div>
-              <div className="bg-gray-50 border border-gray-300 rounded w-14 py-1.5 text-center text-sm font-bold text-gray-900">
+              <div
+                onClick={() => bettingAllowed && onBetClick(match)}
+                className={`bg-gray-50 border border-gray-300 rounded w-14 py-1.5 text-center text-sm font-bold text-gray-900 ${bettingAllowed ? 'cursor-pointer hover:bg-gray-100 hover:border-gray-400 transition-colors' : ''}`}
+              >
                 {match.cotes.cote_mt_nul?.toFixed(2)}
               </div>
-              <div className="bg-red-50 border border-red-200 rounded w-14 py-1.5 text-center text-sm font-bold text-red-900">
+              <div
+                onClick={() => bettingAllowed && onBetClick(match)}
+                className={`bg-red-50 border border-red-200 rounded w-14 py-1.5 text-center text-sm font-bold text-red-900 ${bettingAllowed ? 'cursor-pointer hover:bg-red-100 hover:border-red-400 transition-colors' : ''}`}
+              >
                 {match.cotes.cote_mt_exterieur?.toFixed(2)}
               </div>
             </div>
           )}
-
         </div>
       )}
 
