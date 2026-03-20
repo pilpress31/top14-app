@@ -25,8 +25,18 @@ export default function ActuTab() {
   };
 
   const toggleMatch = (matchId) => {
-    setExpandedMatch(prev => prev === matchId ? null : matchId);
-    setExpandedSection({});
+    const isOpening = expandedMatch !== matchId;
+    setExpandedMatch(isOpening ? matchId : null);
+    if (isOpening) {
+      setExpandedSection(prev => ({
+        ...prev,
+        [`${matchId}-forme`]: true,
+        [`${matchId}-pronostic`]: true,
+        [`${matchId}-blesses`]: false,
+        [`${matchId}-declarations`]: false,
+        [`${matchId}-contexte`]: false,
+      }));
+    }
   };
 
   const toggleSection = (matchId, section) => {
@@ -36,17 +46,17 @@ export default function ActuTab() {
     }));
   };
 
+  const isSectionOpen = (matchId, section, defaultOpen = false) => {
+    const key = `${matchId}-${section}`;
+    return expandedSection[key] !== undefined ? expandedSection[key] : defaultOpen;
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('fr-FR', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    }) + ' • ' + date.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+      weekday: 'short', day: 'numeric', month: 'short',
+    }) + ' • ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
   if (loading) {
@@ -66,13 +76,10 @@ export default function ActuTab() {
     );
   }
 
-  // Grouper par journée
   const journees = [...new Set(actus.map(a => a.journee))].sort((a, b) => a - b);
 
   return (
     <div className="space-y-4 mt-2">
-
-      {/* Header journée */}
       {journees.map(journee => {
         const matchsJournee = actus.filter(a => a.journee === journee);
         return (
@@ -93,32 +100,24 @@ export default function ActuTab() {
                 const hasContent = actu.forme_domicile && actu.forme_domicile !== 'Données en cours de chargement...';
 
                 return (
-                  <div
-                    key={actu.match_id}
-                    className="bg-white rounded-xl shadow-sm border border-rugby-gray overflow-hidden"
-                  >
-                    {/* Header match — cliquable */}
+                  <div key={actu.match_id} className="bg-white rounded-xl shadow-sm border border-rugby-gray overflow-hidden">
+
+                    {/* Header match cliquable */}
                     <button
                       onClick={() => toggleMatch(actu.match_id)}
-                      className="w-full px-4 py-3 hover:bg-rugby-gold/5 transition-colors"
+                      className="w-full px-4 py-3 hover:bg-rugby-gold/5 transition-colors text-left"
                     >
-                      {/* Date */}
-                      <p className="text-[10px] text-gray-400 mb-2 text-left">
-                        {formatDate(actu.date_match)}
-                      </p>
+                      <p className="text-[10px] text-gray-400 mb-2">{formatDate(actu.date_match)}</p>
 
-                      {/* Équipes */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1">
                           <div className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center flex-shrink-0">
                             <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                           </div>
-                          <span className="text-sm font-bold text-gray-900 truncate text-left">{teamDom.name}</span>
+                          <span className="text-sm font-bold text-gray-900 truncate">{teamDom.name}</span>
                         </div>
-
-                        <span className="text-xs font-bold text-rugby-gold px-2">VS</span>
-
+                        <span className="text-xs font-bold text-rugby-gold px-2 flex-shrink-0">VS</span>
                         <div className="flex items-center gap-2 flex-1 justify-end">
                           <span className="text-sm font-bold text-gray-900 truncate text-right">{teamExt.name}</span>
                           <div className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center flex-shrink-0">
@@ -130,16 +129,15 @@ export default function ActuTab() {
 
                       {/* Résumé global */}
                       {actu.resume_global && actu.resume_global !== 'Synthèse en cours de génération...' && (
-                        <p className="text-xs text-gray-600 mt-2 text-left line-clamp-2 italic">
+                        <p className="text-xs text-gray-600 mt-2 line-clamp-2 italic leading-relaxed">
                           {actu.resume_global}
                         </p>
                       )}
 
-                      {/* Chevron */}
                       <div className="flex items-center justify-between mt-2">
                         {hasContent ? (
                           <span className="text-[10px] text-rugby-gold font-semibold">
-                            {isExpanded ? 'Réduire' : 'Voir l\'analyse complète'}
+                            {isExpanded ? 'Réduire l\'analyse' : 'Voir l\'analyse complète'}
                           </span>
                         ) : (
                           <span className="text-[10px] text-gray-400">Analyse en cours...</span>
@@ -157,8 +155,8 @@ export default function ActuTab() {
                       <div className="border-t border-rugby-gray divide-y divide-rugby-gray">
 
                         {/* Météo */}
-                        {actu.meteo && actu.meteo !== 'Météo non disponible' && (
-                          <div className="px-4 py-3 bg-blue-50/50">
+                        {actu.meteo && !['Météo non disponible', 'Météo temporairement indisponible'].includes(actu.meteo) && (
+                          <div className="px-4 py-2.5 bg-blue-50/50">
                             <div className="flex items-center gap-2">
                               <CloudSun className="w-4 h-4 text-blue-500 flex-shrink-0" />
                               <p className="text-xs text-blue-700">{actu.meteo}</p>
@@ -166,14 +164,26 @@ export default function ActuTab() {
                           </div>
                         )}
 
-                        {/* Forme des équipes */}
+                        {/* 🤖 Pronostic IA — ouvert par défaut */}
+                        {actu.pronostic_ia && actu.pronostic_ia !== 'Information non disponible' && (
+                          <SectionBlock
+                            icon={<span className="text-base leading-none">🤖</span>}
+                            title="Pronostic IA"
+                            isOpen={isSectionOpen(actu.match_id, 'pronostic', true)}
+                            onToggle={() => toggleSection(actu.match_id, 'pronostic')}
+                          >
+                            <div className="bg-rugby-gold/5 rounded-lg p-3 border border-rugby-gold/20">
+                              <p className="text-xs text-gray-700 leading-relaxed">{actu.pronostic_ia}</p>
+                            </div>
+                          </SectionBlock>
+                        )}
+
+                        {/* 🏆 Forme récente — ouvert par défaut */}
                         <SectionBlock
                           icon={<Trophy className="w-4 h-4 text-rugby-gold" />}
                           title="Forme récente"
-                          matchId={actu.match_id}
-                          section="forme"
-                          expandedSection={expandedSection}
-                          toggleSection={toggleSection}
+                          isOpen={isSectionOpen(actu.match_id, 'forme', true)}
+                          onToggle={() => toggleSection(actu.match_id, 'forme')}
                         >
                           <div className="space-y-3">
                             <TeamSection name={teamDom.name} logo={teamDom.logo} content={actu.forme_domicile} />
@@ -181,14 +191,24 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        {/* Blessés */}
+                        {/* ⚔️ Contexte & Enjeux — fermé par défaut */}
+                        {actu.contexte_match && actu.contexte_match !== 'Information non disponible' && (
+                          <SectionBlock
+                            icon={<Swords className="w-4 h-4 text-orange-500" />}
+                            title="Contexte & Enjeux"
+                            isOpen={isSectionOpen(actu.match_id, 'contexte', false)}
+                            onToggle={() => toggleSection(actu.match_id, 'contexte')}
+                          >
+                            <p className="text-xs text-gray-700 leading-relaxed">{actu.contexte_match}</p>
+                          </SectionBlock>
+                        )}
+
+                        {/* 🏥 Blessés — fermé par défaut */}
                         <SectionBlock
                           icon={<Users className="w-4 h-4 text-red-500" />}
                           title="Blessés / Absents"
-                          matchId={actu.match_id}
-                          section="blesses"
-                          expandedSection={expandedSection}
-                          toggleSection={toggleSection}
+                          isOpen={isSectionOpen(actu.match_id, 'blesses', false)}
+                          onToggle={() => toggleSection(actu.match_id, 'blesses')}
                         >
                           <div className="space-y-3">
                             <TeamSection name={teamDom.name} logo={teamDom.logo} content={actu.blesses_domicile} />
@@ -196,31 +216,15 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        {/* Déclarations */}
+                        {/* 🎙️ Déclarations — fermé par défaut */}
                         {actu.declarations && actu.declarations !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<Mic className="w-4 h-4 text-purple-500" />}
                             title="Déclarations"
-                            matchId={actu.match_id}
-                            section="declarations"
-                            expandedSection={expandedSection}
-                            toggleSection={toggleSection}
+                            isOpen={isSectionOpen(actu.match_id, 'declarations', false)}
+                            onToggle={() => toggleSection(actu.match_id, 'declarations')}
                           >
                             <p className="text-xs text-gray-700 leading-relaxed">{actu.declarations}</p>
-                          </SectionBlock>
-                        )}
-
-                        {/* Contexte */}
-                        {actu.contexte_match && actu.contexte_match !== 'Information non disponible' && (
-                          <SectionBlock
-                            icon={<Swords className="w-4 h-4 text-orange-500" />}
-                            title="Contexte & Enjeux"
-                            matchId={actu.match_id}
-                            section="contexte"
-                            expandedSection={expandedSection}
-                            toggleSection={toggleSection}
-                          >
-                            <p className="text-xs text-gray-700 leading-relaxed">{actu.contexte_match}</p>
                           </SectionBlock>
                         )}
 
@@ -246,14 +250,12 @@ export default function ActuTab() {
   );
 }
 
-// ─── Composant section expandable ───
-function SectionBlock({ icon, title, matchId, section, expandedSection, toggleSection, children }) {
-  const isOpen = expandedSection[`${matchId}-${section}`] !== false;
-
+// ─── Section expandable ───
+function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   return (
     <div>
       <button
-        onClick={() => toggleSection(matchId, section)}
+        onClick={onToggle}
         className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-2">
@@ -274,30 +276,21 @@ function SectionBlock({ icon, title, matchId, section, expandedSection, toggleSe
   );
 }
 
-// ─── Composant équipe avec logo ───
+// ─── Équipe avec logo ───
 function TeamSection({ name, logo, content }) {
-  if (!content || content === 'Information non disponible' || content === 'Aucune absence majeure signalée') {
-    return (
-      <div className="flex items-start gap-2">
-        <img src={logo} alt={name} className="w-5 h-5 object-contain flex-shrink-0 mt-0.5"
-          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-        <div>
-          <p className="text-[10px] font-semibold text-gray-500 mb-0.5">{name}</p>
-          <p className="text-xs text-gray-400 italic">
-            {content === 'Aucune absence majeure signalée' ? content : 'Information non disponible'}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const isUnavailable = !content ||
+    content === 'Information non disponible' ||
+    content === 'Données en cours de chargement...';
 
   return (
     <div className="flex items-start gap-2">
       <img src={logo} alt={name} className="w-5 h-5 object-contain flex-shrink-0 mt-0.5"
         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-      <div>
-        <p className="text-[10px] font-semibold text-gray-500 mb-0.5">{name}</p>
-        <p className="text-xs text-gray-700 leading-relaxed">{content}</p>
+      <div className="flex-1">
+        <p className="text-[10px] font-semibold text-gray-500 mb-0.5 uppercase tracking-wide">{name}</p>
+        <p className={`text-xs leading-relaxed ${isUnavailable ? 'text-gray-400 italic' : 'text-gray-700'}`}>
+          {isUnavailable ? 'Information non disponible' : content}
+        </p>
       </div>
     </div>
   );
