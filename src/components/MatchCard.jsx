@@ -235,14 +235,9 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           // Paris ouverts → boutons normaux
           <>
             {aucunPari && (
-              <button
-                onClick={() => onBetClick(match)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                          bg-rugby-gold text-white hover:bg-rugby-gold/80 transition-colors shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Parier</span>
-              </button>
+              <p className="text-[11px] text-gray-400 italic text-center w-full mt-1">
+                👆 Cliquez sur une cote pour parier
+              </p>
             )}
 
             {pariPartiel && (
