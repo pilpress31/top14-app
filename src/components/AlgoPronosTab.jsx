@@ -218,26 +218,25 @@ function InfoPopup() {
 
   return (
     <div ref={ref} className="relative flex items-center">
-      {/* Icône ℹ️ */}
+      {/* Icône ℹ️ — plus grande pour le touch */}
       <button
         onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
-        className="w-4 h-4 rounded-full bg-gray-300 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
+        className="w-6 h-6 rounded-full bg-gray-200 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
         aria-label="Explication des statistiques"
       >
-        <span className="text-[9px] font-bold text-gray-600 leading-none">i</span>
+        <span className="text-[11px] font-bold text-gray-600 leading-none">i</span>
       </button>
 
-      {/* Popup */}
+      {/* Popup — centrée sous le bouton, fixée à gauche de l'écran */}
       {visible && (
         <div
-          className="absolute left-0 top-6 z-50 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
+          className="fixed left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
+          style={{ top: ref.current ? ref.current.getBoundingClientRect().bottom + 8 : 80 }}
           onMouseEnter={() => setVisible(true)}
           onMouseLeave={() => setVisible(false)}
         >
-          {/* Flèche */}
-          <div className="absolute -top-1.5 left-3 w-3 h-3 bg-white border-l border-t border-gray-200 rotate-45" />
 
           <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
             Comment lire ces chiffres ?
