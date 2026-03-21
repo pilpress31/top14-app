@@ -473,8 +473,8 @@ function ActuMatch({ match, isOpen, onToggle }) {
   const [actu, setActu] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  // Accordéon : une seule section ouverte à la fois
-  const [openSection, setOpenSection] = useState('pronostic_ia');
+  // Accordéon : une seule section ouverte à la fois, toutes fermées par défaut
+  const [openSection, setOpenSection] = useState(null);
 
   const handleToggle = async () => {
     if (!isOpen && !actu && !loading) {
@@ -539,7 +539,18 @@ function ActuMatch({ match, isOpen, onToggle }) {
               <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
             </div>
           )}
-          {actu && !loading && ACTU_SECTIONS.map(section => {
+          {actu && !loading && (
+            <>
+              {/* Bandeau météo */}
+              {actu.meteo && (
+                <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                  <span className="text-base">🌤️</span>
+                  <span className="text-[11px] text-blue-700 font-medium">{actu.meteo}</span>
+                </div>
+              )}
+
+              {/* 4 sections accordéon */}
+              {ACTU_SECTIONS.map(section => {
             const Icon = section.icon;
             const isSectionOpen = openSection === section.key;
             const contenu = section.key === 'forme_domicile'
@@ -579,6 +590,8 @@ function ActuMatch({ match, isOpen, onToggle }) {
               </div>
             );
           })}
+            </>
+          )}
         </div>
       )}
     </div>
