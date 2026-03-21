@@ -716,7 +716,25 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
   const actuRef = useRef(null);
 
   const handleTogglePanel = (panel) => {
+    const isOpening = openPanel !== panel;
+    const wasOpen = openPanel; // panel précédemment ouvert
     onTogglePanel(panel);
+
+    // Si on ouvre un nouveau panel (en fermant l'autre),
+    // on scrolle vers lui après que l'ancien se soit replié
+    if (isOpening) {
+      const delay = wasOpen ? 320 : 80; // attendre l'animation de fermeture si nécessaire
+      setTimeout(() => {
+        const ref = panel === 'analyse' ? analyseRef : actuRef;
+        if (!ref.current) return;
+        const rect = ref.current.getBoundingClientRect();
+        // Vérifier si l'élément est hors de la zone visible (trop haut)
+        if (rect.top < 80) {
+          const elTop = rect.top + window.pageYOffset - 90;
+          window.scrollTo({ top: elTop, behavior: 'smooth' });
+        }
+      }, delay);
+    }
   };
 
   const scoreDom = match.prono_ft?.domicile ?? 0;
