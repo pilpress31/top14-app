@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Brain, Clock } from 'lucide-react';
 import AlgoPronosTab from '../components/AlgoPronosTab';
 import HistoriqueTab from '../components/HistoriqueTab';
@@ -7,6 +7,8 @@ import MainHeader from '../components/MainHeader';
 import MainHeaderFull from '../components/MainHeaderFull';
 import { useResetOnActive } from "../hooks/useResetOnActive";
 import { useNavigate } from "react-router-dom";
+
+const HEADER_HEIGHT = 120;
 
 export default function IAPage() {
   const navigate = useNavigate();
@@ -21,9 +23,10 @@ export default function IAPage() {
     precision: { ft: { pourcentage: 0 } }
   });
   const [headerVisible, setHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
-  // ⭐ Fonction appelée quand on clique un match dans AlgoPronosTab
+  // ✅ useRef au lieu de useState pour lastScrollY (évite les re-renders)
+  const lastScrollY = useRef(0);
+
   const handleMatchClick = (matchInfo) => {
     navigate("/pronos", {
       state: {
@@ -45,40 +48,46 @@ export default function IAPage() {
     loadStats();
   }, []);
 
-  // Détection du scroll pour synchroniser avec le header
+  // ✅ Scroll stable avec useRef
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY < 10) {
+      const current = window.scrollY;
+      const previous = lastScrollY.current;
+      const threshold = 5;
+
+      if (current < 10) {
         setHeaderVisible(true);
-      } else if (currentScrollY < lastScrollY) {
+      } else if (previous - current > threshold) {
         setHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 120) {
+      } else if (current - previous > threshold && current > HEADER_HEIGHT) {
         setHeaderVisible(false);
       }
-      
-      setLastScrollY(currentScrollY);
+
+      lastScrollY.current = current;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []); // ✅ tableau vide — stable
+
+  // Hauteur du bandeau onglets (~72px) + header quand visible
+  const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
+  // Padding top du contenu = header + onglets
+  const contentPadding = HEADER_HEIGHT + 72;
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      {/* Header variable selon l'onglet */}
+      {/* Header */}
       {activeTab === 'algorithme' ? (
         <MainHeader />
       ) : (
         <MainHeaderFull total={stats.nombre_matchs_historique} />
       )}
 
-      {/* Onglets - STICKY avec position dynamique */}
-      <div 
-        className={`sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300 ${
-          headerVisible ? 'top-[120px]' : 'top-0'
-        }`}
+      {/* Onglets - STICKY avec position dynamique calculée */}
+      <div
+        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
           <div className="flex">
@@ -121,8 +130,11 @@ export default function IAPage() {
         </div>
       </div>
 
-      {/* Contenu - avec padding-top pour le header */}
-      <div className="container mx-auto px-4 py-6 pt-6 mt-[120px]">
+      {/* Contenu - padding-top dynamique = header + onglets */}
+      <div
+        className="container mx-auto px-4 py-6"
+        style={{ paddingTop: `${contentPadding}px` }}
+      >
         {activeTab === 'algorithme' ? (
           <AlgoPronosTab onMatchClick={handleMatchClick} />
         ) : (
