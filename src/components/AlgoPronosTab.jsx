@@ -526,6 +526,11 @@ function ActuMatch({ match, isOpen, onToggle }) {
     onToggle();
   };
 
+  // Reset des sections à la fermeture
+  useEffect(() => {
+    if (!isOpen) setOpenSection(null);
+  }, [isOpen]);
+
   // Accordéon sections : ouvre celle cliquée, ferme les autres
   const toggleSection = (key) => {
     setOpenSection(prev => prev === key ? null : key);
