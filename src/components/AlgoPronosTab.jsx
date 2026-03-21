@@ -197,6 +197,43 @@ function DistributionBar({ label, pct, nb, color }) {
 }
 
 // ============================================
+// COMPOSANT : Bouton i animé (clignote entre i et 💡)
+// ============================================
+function PulsingInfoButton({ onClick, label }) {
+  const [showBulb, setShowBulb] = useState(false);
+
+  useEffect(() => {
+    // Alterne entre i et 💡 toutes les 2 secondes
+    const interval = setInterval(() => {
+      setShowBulb(prev => !prev);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      className="relative w-6 h-6 rounded-full flex items-center justify-center transition-all duration-700 focus:outline-none"
+      style={{
+        backgroundColor: showBulb ? '#fde68a' : '#e5e7eb',
+        boxShadow: showBulb ? '0 0 8px 2px rgba(251,191,36,0.5)' : 'none',
+      }}
+    >
+      <span
+        className="leading-none transition-all duration-700"
+        style={{
+          fontSize: showBulb ? '14px' : '11px',
+          transform: showBulb ? 'scale(1.1)' : 'scale(1)',
+        }}
+      >
+        {showBulb ? '💡' : <span className="font-bold text-gray-600 text-[11px]">i</span>}
+      </span>
+    </button>
+  );
+}
+
+// ============================================
 // COMPOSANT : Popup explicative ℹ️
 // Clic sur mobile, hover sur desktop
 // ============================================
@@ -219,13 +256,10 @@ function InfoPopup() {
   return (
     <div ref={ref} className="relative flex items-center">
       {/* Icône ℹ️ — plus grande pour le touch */}
-      <button
+      <PulsingInfoButton
         onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
-        className="w-6 h-6 rounded-full bg-gray-200 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
-        aria-label="Explication des statistiques"
-      >
-        <span className="text-[11px] font-bold text-gray-600 leading-none">i</span>
-      </button>
+        label="Explication des statistiques"
+      />
 
       {visible && (
         <div
@@ -253,7 +287,7 @@ function InfoPopup() {
               Distribution écart score final / mi-temps
             </p>
             <p className="text-[11px] text-gray-600 leading-relaxed mb-2">
-              Sur les matchs passés où l'algo avait prédit un écart similaire (±5 pts), voici ce qui s'est réellement passé :
+              Sur les matchs passés où l'algo avait prédit un écart similaire (±3 pts), voici ce qui s'est réellement passé :
             </p>
             <div className="space-y-1">
               <div className="flex items-start gap-1.5">
@@ -610,13 +644,10 @@ function InfoConfiance() {
 
   return (
     <div ref={ref} className="relative flex items-center">
-      <button
+      <PulsingInfoButton
         onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
-        className="w-6 h-6 rounded-full bg-gray-200 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
-        aria-label="Explication de l'indice favori"
-      >
-        <span className="text-[11px] font-bold text-gray-600 leading-none">i</span>
-      </button>
+        label="Explication de l'indice favori"
+      />
 
       {visible && (
         <div
