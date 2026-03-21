@@ -598,6 +598,75 @@ function ActuMatch({ match, isOpen, onToggle }) {
 }
 
 // ============================================
+// COMPOSANT : Tooltip barre de confiance
+// ============================================
+function InfoConfiance() {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!visible) return;
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setVisible(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [visible]);
+
+  return (
+    <div ref={ref} className="relative flex items-center">
+      <button
+        onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        className="w-6 h-6 rounded-full bg-gray-200 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
+        aria-label="Explication de l'indice favori"
+      >
+        <span className="text-[11px] font-bold text-gray-600 leading-none">i</span>
+      </button>
+
+      {visible && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
+          style={{ top: ref.current ? ref.current.getBoundingClientRect().bottom + 8 : 80 }}
+          onMouseEnter={() => setVisible(true)}
+          onMouseLeave={() => setVisible(false)}
+        >
+          <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
+            Indice favori — Comment le lire ?
+          </p>
+
+          <p className="text-[11px] text-gray-600 leading-relaxed mb-3">
+            Ce pourcentage mesure à quel point l'algorithme considère qu'une équipe domine l'autre, basé sur l'<span className="font-semibold">écart de score prédit</span>. Plus l'écart est grand, plus l'indice est élevé.
+          </p>
+
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-red-400 to-red-500 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-red-500">{'< 50%'}</span> — match très serré, les deux équipes sont proches</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-orange-400 to-yellow-400 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-yellow-500">50–70%</span> — une équipe est légèrement favorite</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-yellow-400 to-green-500 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-green-500">{'> 70%'}</span> — une équipe est nettement favorite</p>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <p className="text-[11px] text-amber-700 leading-relaxed">
+              ⚠️ Ce n'est <span className="font-semibold">pas</span> la probabilité que le score prédit soit exact — c'est uniquement une mesure de la domination attendue entre les deux équipes.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
 // COMPOSANT : PronoCard
 // ============================================
 function PronoCard({ match, openPanel, onTogglePanel }) {
@@ -728,7 +797,10 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
       {/* Barre FT */}
       <div className="mt-4 px-4">
         <div className="flex justify-between text-xs text-rugby-bronze mb-2">
-          <span className="font-medium">Confiance score final</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium">Indice favori</span>
+            <InfoConfiance />
+          </div>
           <span className="font-bold text-rugby-gold">{confidencePct}%</span>
         </div>
         <div className="relative w-full bg-gray-200 rounded-full h-[7px]">
