@@ -613,12 +613,28 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
     const isOpening = openPanel !== panel;
     onTogglePanel(panel);
     if (isOpening) {
-      // Scroller vers le panel après rendu
       setTimeout(() => {
         const ref = panel === 'analyse' ? analyseRef : actuRef;
         if (ref.current) {
-          const headerOffset = 130;
-          const pos = ref.current.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          // Mesure dynamique de tous les éléments sticky visibles
+          const stickyEls = document.querySelectorAll(
+            '[class*="sticky"], [class*="fixed"], header, nav'
+          );
+          let stickyHeight = 0;
+          stickyEls.forEach(el => {
+            const style = window.getComputedStyle(el);
+            const pos = style.position;
+            if ((pos === 'sticky' || pos === 'fixed') && el.offsetHeight > 0) {
+              // Ne compter que les éléments en haut de page (top < 10px)
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= 10) {
+                stickyHeight = Math.max(stickyHeight, rect.bottom);
+              }
+            }
+          });
+          // Marge de confort de 12px
+          const offset = stickyHeight + 12;
+          const pos = ref.current.getBoundingClientRect().top + window.pageYOffset - offset;
           window.scrollTo({ top: pos, behavior: 'smooth' });
         }
       }, 80);
