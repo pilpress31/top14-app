@@ -526,9 +526,13 @@ function ActuMatch({ match, isOpen, onToggle }) {
     onToggle();
   };
 
-  // Reset des sections à la fermeture
+  // Reset des sections uniquement à la fermeture
+  const wasOpenRef = useRef(false);
   useEffect(() => {
-    if (!isOpen) setOpenSection(null);
+    if (wasOpenRef.current && !isOpen) {
+      setOpenSection(null);
+    }
+    wasOpenRef.current = isOpen;
   }, [isOpen]);
 
   // Accordéon sections : ouvre celle cliquée, ferme les autres
@@ -571,6 +575,9 @@ function ActuMatch({ match, isOpen, onToggle }) {
             <div className="flex justify-center py-4">
               <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
             </div>
+          )}
+          {!loading && !actu && !error && (
+            <p className="text-xs text-gray-400 text-center py-2 italic">Chargement…</p>
           )}
           {actu && !loading && (
             <>
