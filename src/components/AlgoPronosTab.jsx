@@ -612,31 +612,31 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
     const isOpening = openPanel !== panel;
     onTogglePanel(panel);
     if (isOpening) {
-      setTimeout(() => {
-        const ref = panel === 'analyse' ? analyseRef : actuRef;
-        if (ref.current) {
-          // Mesure dynamique de tous les éléments sticky visibles
-          const stickyEls = document.querySelectorAll(
-            '[class*="sticky"], [class*="fixed"], header, nav'
-          );
+      // Double rAF pour s'assurer que le DOM est entièrement rendu
+      // avant de mesurer et scroller
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const ref = panel === 'analyse' ? analyseRef : actuRef;
+          if (!ref.current) return;
+
+          // Mesure dynamique des éléments sticky/fixed EN HAUT de l'écran
           let stickyHeight = 0;
-          stickyEls.forEach(el => {
+          document.querySelectorAll('*').forEach(el => {
             const style = window.getComputedStyle(el);
-            const pos = style.position;
-            if ((pos === 'sticky' || pos === 'fixed') && el.offsetHeight > 0) {
-              // Ne compter que les éléments en haut de page (top < 10px)
+            if (style.position === 'sticky' || style.position === 'fixed') {
               const rect = el.getBoundingClientRect();
-              if (rect.top <= 10) {
+              // Élément ancré en haut et visible
+              if (rect.top >= 0 && rect.top <= 5 && rect.height > 0) {
                 stickyHeight = Math.max(stickyHeight, rect.bottom);
               }
             }
           });
-          // Marge de confort de 12px
-          const offset = stickyHeight + 12;
-          const pos = ref.current.getBoundingClientRect().top + window.pageYOffset - offset;
-          window.scrollTo({ top: pos, behavior: 'smooth' });
-        }
-      }, 80);
+
+          const offset = stickyHeight + 16; // 16px de marge confort
+          const elTop = ref.current.getBoundingClientRect().top + window.pageYOffset;
+          window.scrollTo({ top: elTop - offset, behavior: 'smooth' });
+        });
+      });
     }
   };
 
