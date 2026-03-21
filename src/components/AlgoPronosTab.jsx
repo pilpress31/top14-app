@@ -221,21 +221,16 @@ function InfoPopup() {
       {/* Icône ℹ️ — plus grande pour le touch */}
       <button
         onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
         className="w-6 h-6 rounded-full bg-gray-200 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
         aria-label="Explication des statistiques"
       >
         <span className="text-[11px] font-bold text-gray-600 leading-none">i</span>
       </button>
 
-      {/* Popup — centrée sous le bouton, fixée à gauche de l'écran */}
       {visible && (
         <div
           className="fixed left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
           style={{ top: ref.current ? ref.current.getBoundingClientRect().bottom + 8 : 80 }}
-          onMouseEnter={() => setVisible(true)}
-          onMouseLeave={() => setVisible(false)}
         >
 
           <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
@@ -617,8 +612,6 @@ function InfoConfiance() {
     <div ref={ref} className="relative flex items-center">
       <button
         onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
         className="w-6 h-6 rounded-full bg-gray-200 hover:bg-rugby-gold/60 flex items-center justify-center transition-colors focus:outline-none"
         aria-label="Explication de l'indice favori"
       >
@@ -629,8 +622,6 @@ function InfoConfiance() {
         <div
           className="fixed left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
           style={{ top: ref.current ? ref.current.getBoundingClientRect().bottom + 8 : 80 }}
-          onMouseEnter={() => setVisible(true)}
-          onMouseLeave={() => setVisible(false)}
         >
           <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
             Indice favori — Comment le lire ?
