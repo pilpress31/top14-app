@@ -326,6 +326,9 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
   const ecartMT = (match.prono_ht?.domicile ?? 0) - (match.prono_ht?.exterieur ?? 0);
 
   const handleToggle = async () => {
+    // Ouvrir/fermer immédiatement AVANT le fetch
+    onToggle();
+    // Charger les données seulement si on ouvre ET qu'on n'a pas encore les données
     if (!isOpen && !data && !loading) {
       setLoading(true);
       setError(null);
@@ -344,7 +347,6 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
         setLoading(false);
       }
     }
-    onToggle();
   };
 
   const COLORS = ['#22c55e', '#f59e0b', '#94a3b8', '#ef4444'];
@@ -505,6 +507,9 @@ function ActuMatch({ match, isOpen, onToggle }) {
   const [openSection, setOpenSection] = useState(null);
 
   const handleToggle = async () => {
+    // Ouvrir/fermer immédiatement AVANT le fetch
+    onToggle();
+    // Charger les données seulement si on ouvre ET qu'on n'a pas encore les données
     if (!isOpen && !actu && !loading) {
       setLoading(true);
       setError(null);
@@ -523,7 +528,6 @@ function ActuMatch({ match, isOpen, onToggle }) {
         setLoading(false);
       }
     }
-    onToggle();
   };
 
   // Reset des sections uniquement à la fermeture
