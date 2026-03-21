@@ -608,35 +608,36 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
   const analyseRef = useRef(null);
   const actuRef = useRef(null);
 
+  // Mesure l'offset sticky une seule fois au montage
+  const stickyOffsetRef = useRef(130);
+  useEffect(() => {
+    const measure = () => {
+      let maxBottom = 0;
+      document.querySelectorAll('*').forEach(el => {
+        const style = window.getComputedStyle(el);
+        if (style.position === 'sticky' || style.position === 'fixed') {
+          const rect = el.getBoundingClientRect();
+          if (rect.top >= 0 && rect.height > 0 && rect.height < 200) {
+            maxBottom = Math.max(maxBottom, rect.bottom);
+          }
+        }
+      });
+      if (maxBottom > 0) stickyOffsetRef.current = maxBottom + 16;
+    };
+    // Mesurer après le premier rendu complet
+    setTimeout(measure, 500);
+  }, []);
+
   const handleTogglePanel = (panel) => {
     const isOpening = openPanel !== panel;
     onTogglePanel(panel);
     if (isOpening) {
-      // Double rAF pour s'assurer que le DOM est entièrement rendu
-      // avant de mesurer et scroller
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const ref = panel === 'analyse' ? analyseRef : actuRef;
-          if (!ref.current) return;
-
-          // Mesure dynamique des éléments sticky/fixed EN HAUT de l'écran
-          let stickyHeight = 0;
-          document.querySelectorAll('*').forEach(el => {
-            const style = window.getComputedStyle(el);
-            if (style.position === 'sticky' || style.position === 'fixed') {
-              const rect = el.getBoundingClientRect();
-              // Élément ancré en haut et visible
-              if (rect.top >= 0 && rect.top <= 5 && rect.height > 0) {
-                stickyHeight = Math.max(stickyHeight, rect.bottom);
-              }
-            }
-          });
-
-          const offset = stickyHeight + 16; // 16px de marge confort
-          const elTop = ref.current.getBoundingClientRect().top + window.pageYOffset;
-          window.scrollTo({ top: elTop - offset, behavior: 'smooth' });
-        });
-      });
+      setTimeout(() => {
+        const ref = panel === 'analyse' ? analyseRef : actuRef;
+        if (!ref.current) return;
+        const elTop = ref.current.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({ top: elTop - stickyOffsetRef.current, behavior: 'smooth' });
+      }, 100);
     }
   };
 
