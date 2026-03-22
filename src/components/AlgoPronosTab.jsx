@@ -152,7 +152,6 @@ function JourneeCards({ pronosJournee }) {
         : { matchId, panel }
     );
   };
-
   return (
     <>
       {pronosJournee.map(prono => (
@@ -644,6 +643,161 @@ function ActuMatch({ match, isOpen, onToggle }) {
 }
 
 // ============================================
+// COMPOSANT : Historique des confrontations
+// ============================================
+function HistoriqueConfrontations({ match, isOpen, onToggle }) {
+  const [confrontations, setConfrontations] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleToggle = async () => {
+    onToggle();
+    if (!isOpen && !confrontations && !loading) {
+      setLoading(true);
+      setError(null);
+      try {
+        // Paginer l'historique pour trouver les confrontations entre ces deux équipes
+        const equipeA = match.equipe_domicile?.toUpperCase();
+        const equipeB = match.equipe_exterieure?.toUpperCase();
+        let allMatches = [];
+        let offset = 0;
+        const limit = 100;
+        let found = [];
+
+        // On pagine jusqu'à avoir 10 confrontations ou épuisé l'historique
+        while (found.length < 10) {
+          const res = await axios.get(
+            `${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`
+          );
+          const data = res.data;
+          const matchs = data.matchs || [];
+          if (matchs.length === 0) break;
+
+          // Filtrer les confrontations entre les deux équipes
+          const confronts = matchs.filter(m => {
+            const dom = m.equipe_domicile?.toUpperCase();
+            const ext = m.equipe_exterieure?.toUpperCase();
+            return (dom === equipeA && ext === equipeB) ||
+                   (dom === equipeB && ext === equipeA);
+          });
+          found = [...found, ...confronts];
+          offset += limit;
+
+          // Stopper si on a parcouru assez de matchs
+          if (offset >= Math.min(data.total || 9999, 3700)) break;
+        }
+
+        setConfrontations(found.slice(0, 10));
+      } catch (e) {
+        setError('Impossible de charger l\'historique.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Couleur résultat selon vainqueur
+  const getResultColor = (m, isHome) => {
+    const domGagne = m.score_domicile > m.score_exterieur;
+    const nul = m.score_domicile === m.score_exterieur;
+    if (nul) return 'text-gray-500';
+    if (isHome && domGagne) return 'text-green-600';
+    if (!isHome && !domGagne) return 'text-green-600';
+    return 'text-red-500';
+  };
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm">⚔️</span>
+          <span className="text-xs font-semibold text-gray-700">Historique des confrontations</span>
+          {confrontations && (
+            <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
+              {confrontations.length} matchs
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {loading && <Loader2 className="w-3 h-3 text-teal-500 animate-spin" />}
+          {isOpen
+            ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
+            : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
+          }
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="mt-2">
+          {error && <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>}
+          {loading && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+            </div>
+          )}
+
+          {confrontations && !loading && confrontations.length === 0 && (
+            <p className="text-xs text-gray-400 text-center py-3 italic">
+              Aucune confrontation trouvée dans l'historique
+            </p>
+          )}
+
+          {confrontations && !loading && confrontations.length > 0 && (
+            <div className="bg-teal-50 rounded-lg border border-teal-100 overflow-hidden">
+              {/* Header tableau */}
+              <div className="grid grid-cols-12 gap-1 px-3 py-1.5 bg-teal-100/60 text-[10px] font-bold text-teal-700 uppercase tracking-wide">
+                <div className="col-span-2">Saison</div>
+                <div className="col-span-1 text-center">J.</div>
+                <div className="col-span-4 text-center">Domicile</div>
+                <div className="col-span-2 text-center">FT</div>
+                <div className="col-span-2 text-center">MT</div>
+                <div className="col-span-1 text-center">Ext.</div>
+              </div>
+
+              {confrontations.map((m, i) => {
+                const saison = m.saison?.replace('20', '').replace('-20', '-') || '';
+                const journee = `J${m.journee}`;
+                const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
+                const mtScore = (m.score_ht_domicile != null && m.score_ht_exterieur != null)
+                  ? `${m.score_ht_domicile}-${m.score_ht_exterieur}`
+                  : '-';
+                const domGagne = m.score_domicile > m.score_exterieur;
+                const nul = m.score_domicile === m.score_exterieur;
+                const bgRow = i % 2 === 0 ? 'bg-white' : 'bg-teal-50/40';
+
+                return (
+                  <div key={m.id || i} className={`grid grid-cols-12 gap-1 px-3 py-2 items-center text-[11px] border-b border-teal-100/50 last:border-0 ${bgRow}`}>
+                    {/* Saison */}
+                    <div className="col-span-2 text-gray-500 font-medium">{saison}</div>
+                    {/* Journée */}
+                    <div className="col-span-1 text-center text-gray-400">{journee}</div>
+                    {/* Équipe dom (abrégée) */}
+                    <div className={`col-span-4 text-center font-semibold truncate ${domGagne ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
+                      {m.equipe_domicile?.split(' ')[0]}
+                    </div>
+                    {/* Score FT */}
+                    <div className="col-span-2 text-center font-bold text-rugby-gold">{ftScore}</div>
+                    {/* Score MT */}
+                    <div className="col-span-2 text-center text-gray-500">{mtScore}</div>
+                    {/* Équipe ext (abrégée) */}
+                    <div className={`col-span-1 text-center font-semibold truncate ${!domGagne && !nul ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
+                      {m.equipe_exterieure?.split(' ')[0]}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
 // COMPOSANT : Tooltip barre de confiance
 // ============================================
 function InfoConfiance() {
@@ -888,7 +1042,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
         </div>
       </div>
 
-      {/* Analyse historique + Actu match */}
+      {/* Analyse historique + Actu match + Confrontations */}
       <div className="px-4">
         <div ref={analyseRef}>
           <AnalyseHistorique
@@ -904,6 +1058,11 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
             onToggle={() => handleTogglePanel('actu')}
           />
         </div>
+        <HistoriqueConfrontations
+          match={match}
+          isOpen={openPanel === 'confrontations'}
+          onToggle={() => handleTogglePanel('confrontations')}
+        />
       </div>
 
       {/* Popup fiche équipe */}
