@@ -1,0 +1,50 @@
+git commit -m "Affichage dans AlgoPronosTab 08"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 09"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 10"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 11"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 12"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 12"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 13"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 13"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 14"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 14"
+git push
+git add .
+git commit -m "Scrolling dans IAPage 01"
+git push
+git add .
+git commit -m "Scrolling dans IAPage 02"
+git push
+git add .
+git commit -m "Scrolling dans IAPage 02"
+git push
+git add .
+git commit -m "Affichage dans AlgoPronosTab 15"
+git push
+python C:\Python313\Top14\Projets\export_excel_unifie_v7_2.py
+cd..
+python C:\Python313\Top14\Projets\export_excel_unifie_v7_2.py
+cd top14.app
+cd top14-app
+git add .
+git commit -m "Scrolling dans IAPage 03"
+git push
+doskey /history >> log.txt
