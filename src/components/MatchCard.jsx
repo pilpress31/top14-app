@@ -53,53 +53,52 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
 
-  // ── Bloc Prono IA (affiché selon contexte) ──────────────────────
-  // Cas 1 : aucun pari → FT + MT toujours
-  // Cas 2 : pari(s) existant(s) → uniquement les lignes correspondantes
-  const BlocPronoIA = ({ onlyFT, onlyMT, compact = false }) => {
-    const showFT = !onlyMT && hasIAFT;
-    const showMT = !onlyFT && hasIAMT;
+  // ── Bloc Prono IA ───────────────────────────────────────────────
+  const BlocPronoIA = ({ showFT, showMT }) => {
     if (!showFT && !showMT) return null;
-
     return (
-      <div className={`flex flex-col gap-0.5 ${compact ? 'px-2 py-1 bg-indigo-50 rounded border border-indigo-200' : 'mt-2 px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-200'}`}>
-        <div className="flex items-center gap-1 mb-0.5">
+      <div className="flex flex-col items-center px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-200 min-w-[110px]">
+        <div className="flex items-center gap-1 mb-1">
           <Brain className="w-3 h-3 text-indigo-500" />
           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wide">Prono IA</span>
         </div>
-        {showFT && (
-          <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">
-            FT : {iaFTDom} - {iaFTExt}
-          </span>
+        {showFT && hasIAFT && (
+          <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">FT : {iaFTDom} - {iaFTExt}</span>
         )}
-        {showMT && (
-          <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">
-            MT : {iaMTDom} - {iaMTExt}
-          </span>
+        {showMT && hasIAMT && (
+          <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">MT : {iaMTDom} - {iaMTExt}</span>
         )}
       </div>
     );
   };
 
-  // ── Zone verte Mon pari ─────────────────────────────────────────
-  const ZoneMonPari = ({ clickable }) => (
-    <div
-      onClick={clickable ? () => navigate('/pronos', {
-        state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id }
-      }) : undefined}
-      className={`flex items-center gap-2 px-2 py-1 bg-green-50 rounded border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
-    >
-      <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
-      <div className="flex flex-col text-xs font-bold text-green-700 whitespace-nowrap">
+  // ── Zone Mon pari / Mes paris ────────────────────────────────────
+  const ZoneMonPari = ({ clickable }) => {
+    const label = pariComplet ? 'Mes paris' : 'Mon pari';
+    return (
+      <div
+        onClick={clickable ? () => navigate('/pronos', {
+          state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id }
+        }) : undefined}
+        className={`flex flex-col items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200 min-w-[110px] ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
+      >
+        <div className="flex items-center gap-1 mb-1">
+          <CheckCircle className="w-3 h-3 text-green-600" />
+          <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
+        </div>
         {pronoFT && (
-          <span>Mon pari FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? '?'}</span>
+          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
+            FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? '?'}
+          </span>
         )}
         {pronoMT && (
-          <span>Mon pari MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}</span>
+          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
+            MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
+          </span>
         )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="px-3 py-3 hover:bg-rugby-gold/5 transition-colors">
@@ -170,15 +169,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {/* Paris fermés */}
         {!bettingAllowed && (
           <>
-            {/* Zone verte + Prono IA côte à côte si pari(s) existant(s) */}
+        {/* Cas : pari(s) existant(s) → zone verte + Prono IA côte à côte centrés */}
             {(hasFT || hasMT) && (
-              <div className="flex items-start gap-2">
+              <div className="flex justify-center gap-3">
                 <ZoneMonPari clickable={true} />
-                <BlocPronoIA
-                  compact={true}
-                  onlyFT={hasFT && !hasMT}
-                  onlyMT={hasMT && !hasFT}
-                />
+                <BlocPronoIA showFT={hasFT} showMT={hasMT} />
               </div>
             )}
             <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300">
@@ -191,25 +186,21 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {/* Paris ouverts */}
         {bettingAllowed && (
           <>
-            {/* Cas : pari(s) existant(s) → zone verte + Prono IA côte à côte */}
+            {/* Cas : pari(s) existant(s) → zone verte + Prono IA côte à côte centrés */}
             {(hasFT || hasMT) && (
-              <div className="flex items-start gap-2">
+              <div className="flex justify-center gap-3">
                 <ZoneMonPari clickable={false} />
-                <BlocPronoIA
-                  compact={true}
-                  onlyFT={hasFT && !hasMT}
-                  onlyMT={hasMT && !hasFT}
-                />
+                <BlocPronoIA showFT={hasFT} showMT={hasMT} />
               </div>
             )}
 
-            {/* Cas : aucun pari → message + Prono IA dessous */}
+            {/* Cas : aucun pari → message + Prono IA dessous centré */}
             {aucunPari && (
               <div className="flex flex-col items-center gap-1.5 w-full mt-1">
                 <p className="text-[11px] text-gray-400 italic text-center">
                   👆 Cliquez sur une cote pour parier
                 </p>
-                <BlocPronoIA onlyFT={false} onlyMT={false} />
+                <BlocPronoIA showFT={true} showMT={true} />
               </div>
             )}
 
