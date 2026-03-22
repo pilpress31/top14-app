@@ -15,24 +15,43 @@ interface TeamPopupProps {
   onClose: () => void;
 }
 
-export default function TeamPopup({ equipeNom, equipeStats, onClose }: TeamPopupProps) {
+export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onClose }: TeamPopupProps) {
   const [statsDetaillees, setStatsDetaillees] = useState<any>(null);
+  const [equipeStats, setEquipeStats] = useState<any>(equipeStatsProp || null);
   const [loading, setLoading] = useState(true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const teamData = getTeamData(equipeNom);
 
-  // Charger les stats détaillées
+  // Charger les stats détaillées + classement si pas fourni
   useEffect(() => {
     async function loadStats() {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/stats/detaillees?equipe=${encodeURIComponent(equipeNom)}`);
-        const data = await response.json();
-        setStatsDetaillees(data);
+
+        // Charger stats détaillées (historique + régularité)
+        const [detailRes, classementRes] = await Promise.all([
+          fetch(`${API_URL}/stats/detaillees?equipe=${encodeURIComponent(equipeNom)}`),
+          !equipeStatsProp
+            ? fetch(`${API_URL}/classement`)
+            : Promise.resolve(null)
+        ]);
+
+        const detailData = await detailRes.json();
+        setStatsDetaillees(detailData);
+
+        // Si equipeStats pas fourni, on le récupère depuis le classement
+        if (!equipeStatsProp && classementRes) {
+          const classementData = await classementRes.json();
+          const equipes = classementData.classement || [];
+          const found = equipes.find((e: any) =>
+            e.equipe?.toUpperCase() === equipeNom.toUpperCase()
+          );
+          if (found) setEquipeStats(found);
+        }
+
       } catch (e) {
-        console.error('Erreur stats détaillées:', e);
-        setStatsDetaillees(null);
+        console.error('Erreur chargement fiche équipe:', e);
       } finally {
         setLoading(false);
       }
