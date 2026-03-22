@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { ChevronRight, Star, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X, AlertCircle, CheckCircle, Loader } from "lucide-react";
+import { ChevronRight, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X, AlertCircle, CheckCircle, Loader, Shield } from "lucide-react";
 import AvisModal from "../components/AvisModal";
 import { usePushNotifications } from "../hooks/usePushNotifications";
+
+const ADMIN_USER_ID = 'fe5951b6-316c-4bc6-abef-df6c153fe723';
 
 export default function ParametresPage() {
   const [showMesDonnees, setShowMesDonnees] = useState(false);
@@ -13,20 +15,18 @@ export default function ParametresPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  /// Forcer le scroll immédiatement ET au changement de location
+  const isAdmin = user?.id === ADMIN_USER_ID;
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [location]);
 
-  // AUSSI ajouter un scroll direct dans le render
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   });
 
-  // ✅ Push notifications
   const { permission, isSupported } = usePushNotifications();
 
-  // ✅ États diagnostic
   const [diagnosticResults, setDiagnosticResults] = useState({
     permission: { status: 'idle', message: '' },
     silenceMode: { status: 'idle', message: '' },
@@ -36,7 +36,6 @@ export default function ParametresPage() {
   const [diagnosticRunning, setDiagnosticRunning] = useState(false);
   const [diagnosticCompleted, setDiagnosticCompleted] = useState(false);
 
-  // ✅ Ouvrir diagnostic si demandé via navigation
   useEffect(() => {
     if (location.state?.openDiagnostic) {
       setShowDiagnostic(true);
@@ -57,16 +56,12 @@ Informations système (à compléter si nécessaire) :
 
 Merci.
     `.trim()
-
     window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
-  // ✅ Lancer le diagnostic
   const runDiagnostic = async () => {
     setDiagnosticRunning(true);
     setDiagnosticCompleted(false);
-
-    // Reset
     setDiagnosticResults({
       permission: { status: 'loading', message: 'Vérification...' },
       silenceMode: { status: 'loading', message: 'Vérification...' },
@@ -74,88 +69,52 @@ Merci.
       pushTest: { status: 'loading', message: 'Vérification...' }
     });
 
-    // Test 1: Permission
     await new Promise(resolve => setTimeout(resolve, 500));
     if (Notification.permission === 'granted') {
-      setDiagnosticResults(prev => ({
-        ...prev,
-        permission: { status: 'success', message: 'Autorisées' }
-      }));
+      setDiagnosticResults(prev => ({ ...prev, permission: { status: 'success', message: 'Autorisées' } }));
     } else {
-      setDiagnosticResults(prev => ({
-        ...prev,
-        permission: { status: 'error', message: 'Non autorisées' }
-      }));
+      setDiagnosticResults(prev => ({ ...prev, permission: { status: 'error', message: 'Non autorisées' } }));
     }
 
-    // Test 2: Mode silence
     await new Promise(resolve => setTimeout(resolve, 500));
     const modeSilence = localStorage.getItem('mode-silence') === 'true';
     setDiagnosticResults(prev => ({
       ...prev,
-      silenceMode: { 
-        status: modeSilence ? 'warning' : 'success', 
-        message: modeSilence ? 'Activé' : 'Désactivé' 
-      }
+      silenceMode: { status: modeSilence ? 'warning' : 'success', message: modeSilence ? 'Activé' : 'Désactivé' }
     }));
 
-    // Test 3: Service Worker
     await new Promise(resolve => setTimeout(resolve, 500));
     if ('serviceWorker' in navigator) {
       try {
-        const registration = await navigator.serviceWorker.ready;
-        setDiagnosticResults(prev => ({
-          ...prev,
-          serviceWorker: { status: 'success', message: 'Actif' }
-        }));
+        await navigator.serviceWorker.ready;
+        setDiagnosticResults(prev => ({ ...prev, serviceWorker: { status: 'success', message: 'Actif' } }));
       } catch {
-        setDiagnosticResults(prev => ({
-          ...prev,
-          serviceWorker: { status: 'error', message: 'Non disponible' }
-        }));
+        setDiagnosticResults(prev => ({ ...prev, serviceWorker: { status: 'error', message: 'Non disponible' } }));
       }
     } else {
-      setDiagnosticResults(prev => ({
-        ...prev,
-        serviceWorker: { status: 'error', message: 'Non supporté' }
-      }));
+      setDiagnosticResults(prev => ({ ...prev, serviceWorker: { status: 'error', message: 'Non supporté' } }));
     }
 
-    // Test 4: Push réel
     await new Promise(resolve => setTimeout(resolve, 500));
     try {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
-      
       if (subscription) {
         const response = await fetch('https://top14-api-production.up.railway.app/api/notifications/send-push-test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ subscription })
         });
-
         if (response.ok) {
-          setDiagnosticResults(prev => ({
-            ...prev,
-            pushTest: { status: 'success', message: 'Notification envoyée' }
-          }));
+          setDiagnosticResults(prev => ({ ...prev, pushTest: { status: 'success', message: 'Notification envoyée' } }));
         } else {
-          setDiagnosticResults(prev => ({
-            ...prev,
-            pushTest: { status: 'error', message: 'Erreur serveur' }
-          }));
+          setDiagnosticResults(prev => ({ ...prev, pushTest: { status: 'error', message: 'Erreur serveur' } }));
         }
       } else {
-        setDiagnosticResults(prev => ({
-          ...prev,
-          pushTest: { status: 'error', message: 'Pas de subscription' }
-        }));
+        setDiagnosticResults(prev => ({ ...prev, pushTest: { status: 'error', message: 'Pas de subscription' } }));
       }
-    } catch (error) {
-      setDiagnosticResults(prev => ({
-        ...prev,
-        pushTest: { status: 'error', message: 'Erreur test' }
-      }));
+    } catch {
+      setDiagnosticResults(prev => ({ ...prev, pushTest: { status: 'error', message: 'Erreur test' } }));
     }
 
     setDiagnosticRunning(false);
@@ -178,26 +137,13 @@ Résultats du diagnostic :
 - Service Worker: ${diagnosticResults.serviceWorker.message}
 - Test push: ${diagnosticResults.pushTest.message}
     `.trim();
-
     const subject = 'Problème notifications push - Top 14 Pronos';
-    const body = `
-Bonjour,
-
-Je rencontre un problème avec les notifications push.
-
-${resultsText}
-
-[Décrivez votre problème ici]
-
-Merci.
-    `.trim();
-
+    const body = `Bonjour,\n\nJe rencontre un problème avec les notifications push.\n\n${resultsText}\n\n[Décrivez votre problème ici]\n\nMerci.`.trim();
     window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
     <div className="p-6 pb-24 max-w-2xl mx-auto">
-      {/* Titre principal */}
       <h1 className="text-3xl font-bold text-rugby-gold mb-6">Paramètres</h1>
 
       {/* Infos utilisateur */}
@@ -215,8 +161,6 @@ Merci.
         </div>
       )}
 
-
-
       {/* Section Compte */}
       <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
@@ -226,34 +170,29 @@ Merci.
           </h2>
         </div>
 
-		{/* Lien vers Mon Compte */}
-        <button 
+        <button
           onClick={() => navigate('/profil')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
         >
           <User className="h-5 w-5 text-rugby-gold" />
           <span className="flex-1 text-left text-gray-800 font-medium">Mon profil</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
-        </button>  
-        
+        </button>
+
         {/* Ma cagnotte */}
-        <button 
+        <button
           onClick={() => navigate('/ma-cagnotte')}
-          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
         >
           <Coins className="h-5 w-5 text-rugby-gold" />
           <span className="flex-1 text-left text-gray-800 font-medium">Ma Cagnotte</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
 
-        <button className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors">
-          <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-          <span className="flex-1 text-left text-gray-800 font-medium">Gérer mes favoris</span>
-          <ChevronRight className="h-5 w-5 text-gray-400" />
-        </button>
+        {/* ✅ "Gérer mes favoris" supprimé */}
       </div>
 
-      {/* ✅ NOTIFICATIONS PUSH - CLIQUABLE */}
+      {/* Notifications */}
       <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h2 className="text-sm font-bold text-gray-700 uppercase flex items-center gap-2">
@@ -261,8 +200,7 @@ Merci.
             Notifications
           </h2>
         </div>
-
-        <button 
+        <button
           onClick={() => navigate('/notifications-push')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
         >
@@ -289,7 +227,7 @@ Merci.
         </button>
       </div>
 
-      {/* ✅ SECTION DIAGNOSTIC (SI OUVERTE) */}
+      {/* Diagnostic */}
       {showDiagnostic && (
         <div className="bg-white rounded-lg shadow-lg mb-4 overflow-hidden border-2 border-blue-500">
           <div className="px-4 py-3 bg-blue-500">
@@ -298,54 +236,29 @@ Merci.
               Diagnostic Notifications
             </h2>
           </div>
-
           <div className="p-4 space-y-3">
-            {/* Test 1 */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-              <span className="text-sm font-medium">Permissions téléphone</span>
-              <div className="flex items-center gap-2">
-                {getStatusIcon(diagnosticResults.permission.status)}
-                <span className="text-xs">{diagnosticResults.permission.message}</span>
+            {[
+              { label: 'Permissions téléphone', key: 'permission' },
+              { label: 'Mode silence app', key: 'silenceMode' },
+              { label: 'Service Worker', key: 'serviceWorker' },
+              { label: 'Test notification push', key: 'pushTest' },
+            ].map(({ label, key }) => (
+              <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <span className="text-sm font-medium">{label}</span>
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(diagnosticResults[key].status)}
+                  <span className="text-xs">{diagnosticResults[key].message}</span>
+                </div>
               </div>
-            </div>
-
-            {/* Test 2 */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-              <span className="text-sm font-medium">Mode silence app</span>
-              <div className="flex items-center gap-2">
-                {getStatusIcon(diagnosticResults.silenceMode.status)}
-                <span className="text-xs">{diagnosticResults.silenceMode.message}</span>
-              </div>
-            </div>
-
-            {/* Test 3 */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-              <span className="text-sm font-medium">Service Worker</span>
-              <div className="flex items-center gap-2">
-                {getStatusIcon(diagnosticResults.serviceWorker.status)}
-                <span className="text-xs">{diagnosticResults.serviceWorker.message}</span>
-              </div>
-            </div>
-
-            {/* Test 4 */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-              <span className="text-sm font-medium">Test notification push</span>
-              <div className="flex items-center gap-2">
-                {getStatusIcon(diagnosticResults.pushTest.status)}
-                <span className="text-xs">{diagnosticResults.pushTest.message}</span>
-              </div>
-            </div>
-
-            {/* Boutons */}
+            ))}
             <div className="flex gap-2 mt-4">
               <button
                 onClick={runDiagnostic}
                 disabled={diagnosticRunning}
                 className="flex-1 bg-blue-500 text-white py-2 rounded font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {diagnosticRunning ? 'Test en cours...' : (diagnosticCompleted ? 'Relancer le diagnostic' : 'Lancer le diagnostic')}
+                {diagnosticRunning ? 'Test en cours...' : diagnosticCompleted ? 'Relancer le diagnostic' : 'Lancer le diagnostic'}
               </button>
-              
               <button
                 onClick={() => setShowDiagnostic(false)}
                 className="px-4 bg-gray-200 text-gray-700 py-2 rounded font-medium hover:bg-gray-300"
@@ -353,8 +266,6 @@ Merci.
                 Fermer
               </button>
             </div>
-
-            {/* Signaler un problème */}
             {diagnosticCompleted && (
               <button
                 onClick={handleSignalerProbleme}
@@ -375,8 +286,7 @@ Merci.
             Informations
           </h2>
         </div>
-
-        <button 
+        <button
           onClick={() => navigate('/reglement')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
         >
@@ -387,12 +297,11 @@ Merci.
       </div>
 
       {/* Section Autres */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h2 className="text-sm font-bold text-gray-700 uppercase">Autres</h2>
         </div>
-
-        <button 
+        <button
           onClick={handleNousContacter}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
         >
@@ -400,8 +309,7 @@ Merci.
           <span className="flex-1 text-left text-gray-800">Nous contacter</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
-
-        <button 
+        <button
           onClick={() => setShowAvisModal(true)}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
         >
@@ -409,8 +317,7 @@ Merci.
           <span className="flex-1 text-left text-gray-800">Laisser un avis</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
-
-        <button 
+        <button
           onClick={() => navigate('/signaler-bug')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
         >
@@ -418,8 +325,7 @@ Merci.
           <span className="flex-1 text-left text-gray-800">Signaler un bug</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
-
-        <button 
+        <button
           onClick={() => navigate('/cgu')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
         >
@@ -429,6 +335,29 @@ Merci.
         </button>
       </div>
 
+      {/* ✅ SECTION ADMIN — visible uniquement pour Yoan */}
+      {isAdmin && (
+        <div className="bg-white rounded-lg shadow-sm mb-4 overflow-hidden border-2 border-rugby-gold/40">
+          <div className="px-4 py-3 bg-rugby-gold/10 border-b border-rugby-gold/20">
+            <h2 className="text-sm font-bold text-rugby-gold uppercase flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Administration
+            </h2>
+          </div>
+          <button
+            onClick={() => window.open('https://app.top14pronos.org/admin.html', '_blank')}
+            className="w-full px-6 py-3 flex items-center gap-3 hover:bg-rugby-gold/5 transition-colors"
+          >
+            <Shield className="h-5 w-5 text-rugby-gold" />
+            <div className="flex-1 text-left">
+              <p className="text-gray-800 font-medium">Panel Admin</p>
+              <p className="text-xs text-gray-400">Push, classement, jetons, paris, distributions, actus</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-gray-400" />
+          </button>
+        </div>
+      )}
+
       <div className="mt-8 text-center">
         <p className="text-xs text-gray-400">Version 1.0.0</p>
       </div>
@@ -437,4 +366,3 @@ Merci.
     </div>
   );
 }
-
