@@ -643,6 +643,74 @@ function ActuMatch({ match, isOpen, onToggle }) {
 }
 
 // ============================================
+// ABRÉVIATIONS ÉQUIPES (Top 14 + Pro D2)
+// ============================================
+const ABBREV = {
+  // Top 14
+  'STADE TOULOUSAIN': 'TLS',
+  'STADE ROCHELAIS': 'LRO',
+  'BORDEAUX BÈGLES': 'UBB',
+  'ASM CLERMONT': 'CLR',
+  'RACING 92': 'R92',
+  'RC TOULON': 'TLN',
+  'STADE FRANÇAIS PARIS': 'SFP',
+  'MONTPELLIER HÉRAULT RUGBY': 'MHR',
+  'CASTRES OLYMPIQUE': 'CAS',
+  'AVIRON BAYONNAIS': 'BAY',
+  'SECTION PALOISE': 'PAU',
+  'USA PERPIGNAN': 'PER',
+  'LYON OU': 'LYO',
+  'US MONTAUBAN': 'MTB',
+  // Pro D2 (historique)
+  'COLOMIERS RUGBY': 'COL',
+  'AGEN': 'AGN',
+  'SU AGEN': 'AGN',
+  'AURILLAC': 'AUR',
+  'RUGBY AURILLAC': 'AUR',
+  'BIARRITZ OLYMPIQUE': 'BIA',
+  'BRIVE': 'BRV',
+  'CA BRIVE': 'BRV',
+  'CORRÈZE BRIVE': 'BRV',
+  'GRENOBLE': 'GRE',
+  'FC GRENOBLE': 'GRE',
+  'OYONNAX': 'OYO',
+  'RUGBY OYONNAX': 'OYO',
+  'ROUEN NORMANDIE': 'ROU',
+  'NEVERS': 'NEV',
+  'RUGBY CLUB MASSY': 'MAS',
+  'MASSY': 'MAS',
+  'MONT-DE-MARSAN': 'MDM',
+  'STADE MONTOIS': 'MDM',
+  'BOURGOIN': 'BRG',
+  'CSBJ': 'BRG',
+  'DÔME RUGBY': 'DOM',
+  'NARBONNE': 'NAR',
+  'RC NARBONNE': 'NAR',
+  'ANGOULÊME': 'ANG',
+  'SOYAUX ANGOULÊME': 'ANG',
+  'VANNES': 'VAN',
+  'RC VANNES': 'VAN',
+  'VALENCE ROMANS': 'VRD',
+  'VALENCE ROMANS DRÔME': 'VRD',
+  'ALBI': 'ALB',
+  'SC ALBI': 'ALB',
+  'TARBES': 'TAR',
+  'STADO TARBES': 'TAR',
+  'NICE': 'NIC',
+  'ATHLETIC CLUB BOBIGNY': 'ACB',
+  'PROVENCE RUGBY': 'PRV',
+  'TOULON METROPOLE': 'TLM',
+  'CHAMBÉRY': 'CHB',
+};
+
+const getAbbrev = (nomEquipe) => {
+  const upper = (nomEquipe || '').toUpperCase().trim();
+  if (ABBREV[upper]) return ABBREV[upper];
+  // Fallback : 3 premières lettres du premier mot
+  return upper.replace(/[^A-Z]/g, '').substring(0, 3) || '???';
+};
+
+// ============================================
 // COMPOSANT : Historique des confrontations
 // ============================================
 function HistoriqueConfrontations({ match, isOpen, onToggle }) {
@@ -656,24 +724,18 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
       setLoading(true);
       setError(null);
       try {
-        // Paginer l'historique pour trouver les confrontations entre ces deux équipes
         const equipeA = match.equipe_domicile?.toUpperCase();
         const equipeB = match.equipe_exterieure?.toUpperCase();
-        let allMatches = [];
+        let found = [];
         let offset = 0;
         const limit = 100;
-        let found = [];
 
-        // On pagine jusqu'à avoir 10 confrontations ou épuisé l'historique
         while (found.length < 10) {
-          const res = await axios.get(
-            `${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`
-          );
+          const res = await axios.get(`${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`);
           const data = res.data;
           const matchs = data.matchs || [];
           if (matchs.length === 0) break;
 
-          // Filtrer les confrontations entre les deux équipes
           const confronts = matchs.filter(m => {
             const dom = m.equipe_domicile?.toUpperCase();
             const ext = m.equipe_exterieure?.toUpperCase();
@@ -682,11 +744,8 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
           });
           found = [...found, ...confronts];
           offset += limit;
-
-          // Stopper si on a parcouru assez de matchs
           if (offset >= Math.min(data.total || 9999, 3700)) break;
         }
-
         setConfrontations(found.slice(0, 10));
       } catch (e) {
         setError('Impossible de charger l\'historique.');
@@ -694,16 +753,6 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
         setLoading(false);
       }
     }
-  };
-
-  // Couleur résultat selon vainqueur
-  const getResultColor = (m, isHome) => {
-    const domGagne = m.score_domicile > m.score_exterieur;
-    const nul = m.score_domicile === m.score_exterieur;
-    if (nul) return 'text-gray-500';
-    if (isHome && domGagne) return 'text-green-600';
-    if (!isHome && !domGagne) return 'text-green-600';
-    return 'text-red-500';
   };
 
   return (
@@ -738,53 +787,59 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
               <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
             </div>
           )}
-
           {confrontations && !loading && confrontations.length === 0 && (
             <p className="text-xs text-gray-400 text-center py-3 italic">
               Aucune confrontation trouvée dans l'historique
             </p>
           )}
-
           {confrontations && !loading && confrontations.length > 0 && (
             <div className="bg-teal-50 rounded-lg border border-teal-100 overflow-hidden">
-              {/* Header tableau */}
-              <div className="grid grid-cols-12 gap-1 px-3 py-1.5 bg-teal-100/60 text-[10px] font-bold text-teal-700 uppercase tracking-wide">
-                <div className="col-span-2">Saison</div>
-                <div className="col-span-1 text-center">J.</div>
-                <div className="col-span-4 text-center">Domicile</div>
-                <div className="col-span-2 text-center">FT</div>
-                <div className="col-span-2 text-center">MT</div>
-                <div className="col-span-1 text-center">Ext.</div>
+              {/* Header */}
+              <div className="grid grid-cols-5 px-2 py-1.5 bg-teal-100/70 text-[10px] font-bold text-teal-700 uppercase tracking-wide text-center">
+                <div className="text-left">Sais./J.</div>
+                <div>DOM</div>
+                <div>FT</div>
+                <div>MT</div>
+                <div>EXT</div>
               </div>
 
               {confrontations.map((m, i) => {
-                const saison = m.saison?.replace('20', '').replace('-20', '-') || '';
+                const saisonCourt = (m.saison || '').replace('20', '').replace('-20', '-');
                 const journee = `J${m.journee}`;
                 const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
                 const mtScore = (m.score_ht_domicile != null && m.score_ht_exterieur != null)
-                  ? `${m.score_ht_domicile}-${m.score_ht_exterieur}`
-                  : '-';
+                  ? `${m.score_ht_domicile}-${m.score_ht_exterieur}` : '-';
                 const domGagne = m.score_domicile > m.score_exterieur;
                 const nul = m.score_domicile === m.score_exterieur;
                 const bgRow = i % 2 === 0 ? 'bg-white' : 'bg-teal-50/40';
+                const abbrevDom = getAbbrev(m.equipe_domicile);
+                const abbrevExt = getAbbrev(m.equipe_exterieure);
 
                 return (
-                  <div key={m.id || i} className={`grid grid-cols-12 gap-1 px-3 py-2 items-center text-[11px] border-b border-teal-100/50 last:border-0 ${bgRow}`}>
-                    {/* Saison */}
-                    <div className="col-span-2 text-gray-500 font-medium">{saison}</div>
-                    {/* Journée */}
-                    <div className="col-span-1 text-center text-gray-400">{journee}</div>
-                    {/* Équipe dom (abrégée) */}
-                    <div className={`col-span-4 text-center font-semibold truncate ${domGagne ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
-                      {m.equipe_domicile?.split(' ')[0]}
+                  <div
+                    key={m.id || i}
+                    className={`grid grid-cols-5 px-2 py-2 items-center text-center border-b border-teal-100/50 last:border-0 ${bgRow}`}
+                  >
+                    {/* Saison + Journée empilées */}
+                    <div className="text-left">
+                      <div className="text-[11px] font-semibold text-gray-600">{saisonCourt}</div>
+                      <div className="text-[10px] text-gray-400">{journee}</div>
                     </div>
+
+                    {/* DOM abrégé */}
+                    <div className={`text-[12px] font-bold ${domGagne ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
+                      {abbrevDom}
+                    </div>
+
                     {/* Score FT */}
-                    <div className="col-span-2 text-center font-bold text-rugby-gold">{ftScore}</div>
+                    <div className="text-[12px] font-bold text-rugby-gold">{ftScore}</div>
+
                     {/* Score MT */}
-                    <div className="col-span-2 text-center text-gray-500">{mtScore}</div>
-                    {/* Équipe ext (abrégée) */}
-                    <div className={`col-span-1 text-center font-semibold truncate ${!domGagne && !nul ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
-                      {m.equipe_exterieure?.split(' ')[0]}
+                    <div className="text-[11px] text-gray-500">{mtScore}</div>
+
+                    {/* EXT abrégé */}
+                    <div className={`text-[12px] font-bold ${!domGagne && !nul ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
+                      {abbrevExt}
                     </div>
                   </div>
                 );

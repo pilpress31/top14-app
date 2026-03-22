@@ -73,7 +73,7 @@ export default function IAPage() {
   // Position sticky des onglets selon visibilité du header
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
   // Padding top du contenu = onglets seuls (le header fixed est hors flux)
-  const contentPadding = 120;
+  const contentPadding = 125;
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
