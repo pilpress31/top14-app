@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
+import TeamPopup from './TeamPopup';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
@@ -762,6 +763,9 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
     return () => clearTimeout(timer);
   }, [confidenceMTPct]);
 
+  // Popup fiche équipe
+  const [teamPopup, setTeamPopup] = useState(null);
+
   let dateFormatted = 'À VENIR';
   let heureFormatted = '';
   if (match.date) {
@@ -796,7 +800,11 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-4 mb-2">
-        <div className="flex flex-col items-center text-center">
+        {/* Équipe domicile — cliquable */}
+        <button
+          onClick={() => setTeamPopup(equipeDom)}
+          className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
+        >
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
               src={teamDomData.logo}
@@ -805,10 +813,10 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2">
+          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2">
             {equipeDom}
           </div>
-        </div>
+        </button>
 
         <div className="flex flex-col items-center justify-center gap-1">
           <div className="text-xs text-rugby-bronze font-medium mb-1">Score final</div>
@@ -835,7 +843,11 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
           )}
         </div>
 
-        <div className="flex flex-col items-center text-center">
+        {/* Équipe extérieure — cliquable */}
+        <button
+          onClick={() => setTeamPopup(equipeExt)}
+          className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
+        >
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
               src={teamExtData.logo}
@@ -844,10 +856,10 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2">
+          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2">
             {equipeExt}
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Barre FT */}
@@ -893,6 +905,14 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
           />
         </div>
       </div>
+
+      {/* Popup fiche équipe */}
+      {teamPopup && (
+        <TeamPopup
+          equipeNom={teamPopup}
+          onClose={() => setTeamPopup(null)}
+        />
+      )}
 
     </div>
   );

@@ -2,9 +2,11 @@
 // CARTE DE MATCH - VERSION OPTIMISÉE
 // ============================================
 
+import { useState } from 'react';
 import { CheckCircle, Edit, Lock, Brain } from 'lucide-react';
 import { getTeamData } from '../utils/teams';
 import { useNavigate } from 'react-router-dom';
+import TeamPopup from './TeamPopup';
 
 const isBettingAllowed = (match) => {
   const matchDate = new Date(match.date_match || match.date);
@@ -33,6 +35,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
   const navigate = useNavigate();
+  const [teamPopup, setTeamPopup] = useState(null);
 
   const pronoFT = existingProno?.find(p => p.bet_type === 'FT');
   const pronoMT = existingProno?.find(p => p.bet_type === 'MT');
@@ -109,22 +112,28 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {showTime && ` • ${matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
       </p>
 
-      {/* Équipes + Logos */}
+      {/* Équipes + Logos — cliquables */}
       <div className="flex items-center justify-between gap-3 mb-2">
-        <div className="flex items-center gap-2 flex-1">
+        <button
+          onClick={() => setTeamPopup(match.equipe_domicile)}
+          className="flex items-center gap-2 flex-1 hover:opacity-75 transition-opacity"
+        >
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
             <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-base font-bold text-gray-900 truncate">{teamDom.name}</span>
-        </div>
-        <div className="flex items-center gap-2 flex-1 justify-end">
-          <span className="text-base font-bold text-gray-900 truncate">{teamExt.name}</span>
+          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2">{teamDom.name}</span>
+        </button>
+        <button
+          onClick={() => setTeamPopup(match.equipe_exterieure)}
+          className="flex items-center gap-2 flex-1 justify-end hover:opacity-75 transition-opacity"
+        >
+          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2">{teamExt.name}</span>
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
             <img src={teamExt.logo} alt={teamExt.name} className="w-7 h-7 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Cotes style bookmaker 1-N-2 */}
@@ -229,6 +238,14 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           </>
         )}
       </div>
+
+      {/* Popup fiche équipe */}
+      {teamPopup && (
+        <TeamPopup
+          equipeNom={teamPopup}
+          onClose={() => setTeamPopup(null)}
+        />
+      )}
     </div>
   );
 }
