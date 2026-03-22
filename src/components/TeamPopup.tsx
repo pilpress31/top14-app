@@ -62,12 +62,12 @@ export default function TeamPopup({ equipeNom, equipeStats, onClose }: TeamPopup
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
     >
-      <div className="bg-white w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl">
+      <div className="bg-white w-full max-w-lg h-[90vh] flex flex-col rounded-t-2xl shadow-2xl">
 
-        {/* Header */}
-        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        {/* Header sticky */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
               <img
@@ -94,8 +94,8 @@ export default function TeamPopup({ equipeNom, equipeStats, onClose }: TeamPopup
           </button>
         </div>
 
-        {/* Contenu */}
-        <div className="p-4">
+        {/* Contenu scrollable */}
+        <div className="flex-1 overflow-y-auto p-4">
 
           {loading && (
             <div className="flex justify-center py-8">
