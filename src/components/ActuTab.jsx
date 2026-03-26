@@ -5,6 +5,9 @@ import { getTeamData } from '../utils/teams';
 
 export default function ActuTab() {
   const [actus, setActus] = useState([]);
+  const [journee, setJournee] = useState(null);
+  const [disponible, setDisponible] = useState(true);
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [expandedSection, setExpandedSection] = useState({});
@@ -17,9 +20,23 @@ export default function ActuTab() {
   const loadActus = async () => {
     try {
       const response = await axios.get('https://top14-api-production.up.railway.app/api/actu');
-      setActus(response.data || []);
+      const data = response.data;
+
+      // Nouveau format : { actus: [], journee, disponible, message }
+      // Ancien format (tableau direct) : géré en fallback
+      if (Array.isArray(data)) {
+        // Ancien format — compatibilité ascendante
+        setActus(data);
+        setDisponible(data.length > 0);
+      } else {
+        setActus(data.actus || []);
+        setJournee(data.journee || null);
+        setDisponible(data.disponible !== false);
+        setMessage(data.message || '');
+      }
     } catch (error) {
       console.error('Erreur chargement actus:', error);
+      setDisponible(false);
     } finally {
       setLoading(false);
     }
@@ -36,7 +53,6 @@ export default function ActuTab() {
         [`${matchId}-blesses`]: false,
         [`${matchId}-contexte`]: false,
       }));
-      // ✅ Scroll vers la card juste sous le bandeau
       setTimeout(() => {
         const el = cardRefs.current[matchId];
         if (el) {
@@ -76,11 +92,20 @@ export default function ActuTab() {
     );
   }
 
-  if (actus.length === 0) {
+  // Pas encore disponible pour la prochaine journée
+  if (!disponible || actus.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center border border-rugby-gray mt-4">
-        <p className="text-gray-500 text-sm">Aucune actualité disponible pour le moment.</p>
-        <p className="text-gray-400 text-xs mt-2">Les actus sont générées le lundi et vendredi.</p>
+        <div className="text-3xl mb-3">📰</div>
+        <p className="text-gray-700 font-semibold text-sm">
+          {journee ? `Analyses J${journee} à venir` : 'Analyses à venir'}
+        </p>
+        <p className="text-gray-400 text-xs mt-2">
+          {message || 'Les analyses IA seront disponibles prochainement.'}
+        </p>
+        <p className="text-gray-400 text-xs mt-1">
+          Générées le jeudi à 9h et le vendredi à 18h.
+        </p>
       </div>
     );
   }
@@ -139,14 +164,12 @@ export default function ActuTab() {
                         </div>
                       </div>
 
-                      {/* Résumé global — tronqué si fermé, complet si ouvert */}
                       {actu.resume_global && actu.resume_global !== 'Synthèse en cours de génération...' && (
                         <p className={`text-xs text-gray-600 mt-2 italic leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
                           {actu.resume_global}
                         </p>
                       )}
 
-                      {/* Bouton analyse */}
                       {hasContent && (
                         <div className="flex items-center justify-end gap-1 mt-3 pt-2 border-t border-gray-100">
                           <span className="text-[11px] text-rugby-gold font-semibold">
@@ -167,7 +190,6 @@ export default function ActuTab() {
                     {isExpanded && hasContent && (
                       <div className="border-t border-rugby-gray divide-y divide-rugby-gray">
 
-                        {/* Météo */}
                         {actu.meteo && !['Météo non disponible', 'Météo temporairement indisponible'].includes(actu.meteo) && (
                           <div className="px-4 py-2.5 bg-blue-50/50">
                             <div className="flex items-center gap-2">
@@ -177,7 +199,6 @@ export default function ActuTab() {
                           </div>
                         )}
 
-                        {/* 🤖 Pronostic IA — ouvert par défaut */}
                         {actu.pronostic_ia && actu.pronostic_ia !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<span className="text-base leading-none">🤖</span>}
@@ -191,7 +212,6 @@ export default function ActuTab() {
                           </SectionBlock>
                         )}
 
-                        {/* 🏆 Forme récente — ouvert par défaut */}
                         <SectionBlock
                           icon={<Trophy className="w-4 h-4 text-rugby-gold" />}
                           title="Forme récente"
@@ -204,7 +224,6 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        {/* ⚔️ Contexte & Enjeux — fermé par défaut */}
                         {actu.contexte_match && actu.contexte_match !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<Swords className="w-4 h-4 text-orange-500" />}
@@ -216,7 +235,6 @@ export default function ActuTab() {
                           </SectionBlock>
                         )}
 
-                        {/* 🏥 Blessés — fermé par défaut */}
                         <SectionBlock
                           icon={<Users className="w-4 h-4 text-red-500" />}
                           title="Blessés / Absents"
@@ -229,8 +247,6 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        
-
                       </div>
                     )}
                   </div>
@@ -241,7 +257,6 @@ export default function ActuTab() {
         );
       })}
 
-      {/* Date de génération */}
       {actus.length > 0 && actus[0].updated_at && (
         <p className="text-center text-[10px] text-gray-400 pb-2">
           Dernière mise à jour : {new Date(actus[0].updated_at).toLocaleDateString('fr-FR', {
@@ -253,7 +268,6 @@ export default function ActuTab() {
   );
 }
 
-// ─── Section expandable ───
 function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   return (
     <div>
@@ -279,7 +293,6 @@ function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   );
 }
 
-// ─── Équipe avec logo ───
 function TeamSection({ name, logo, content }) {
   const isUnavailable = !content ||
     content === 'Information non disponible' ||
