@@ -461,7 +461,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
         <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
           Génère automatiquement les synthèses d'actualité pour les matchs à venir via Gemini AI.<br>
-          Le cron tourne automatiquement le lundi et vendredi à 8h. Vous pouvez aussi lancer manuellement.
+          Le cron tourne automatiquement le jeudi à 9h et vendredi à 18h. Vous pouvez aussi lancer manuellement.
         </p>
         <div class="btn-row">
           <button class="btn btn-gold" id="actuBtn" onclick="regenererActus()">
@@ -470,6 +470,34 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </button>
         </div>
         <div class="result" id="actuResult"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 Effectifs clubs</div>
+        </div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Scrape les effectifs de tous les clubs Top14 depuis AllRugby pour fiabiliser les compositions probables générées par l'IA.<br>
+          À lancer <strong style="color:var(--gold-light)">une fois en début de saison</strong> et après chaque mercato (janvier).
+        </p>
+        <div class="btn-row">
+          <button class="btn" id="effectifsBtn" onclick="refreshEffectifs()">
+            <div class="spinner"></div>
+            <span class="btn-text">🔄 Rafraîchir les effectifs</span>
+          </button>
+          <button class="btn" onclick="voirEffectifs()">
+            👁 Voir effectifs chargés
+          </button>
+        </div>
+        <div class="result" id="effectifsResult"></div>
+        <div id="effectifsSummary" style="display:none;margin-top:16px">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Club</th><th>Joueurs</th></tr></thead>
+              <tbody id="effectifsBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -800,6 +828,55 @@ async function regenererActus() {
     showResult('actuResult', 'err', '❌ ' + e.message);
   } finally {
     setLoading(btn, false);
+  }
+}
+
+// ── EFFECTIFS ──
+async function refreshEffectifs() {
+  const btn = document.getElementById('effectifsBtn');
+  setLoading(btn, true);
+  showResult('effectifsResult', 'ok', '⏳ Scraping en cours... (peut prendre 2-3 minutes, 14 clubs × 2s de pause)');
+
+  try {
+    const data = await api('/api/admin/effectifs/refresh', { method: 'POST' });
+    if (data.success) {
+      showResult('effectifsResult', 'ok', '✅ Rafraîchissement lancé en arrière-plan ! Revenez dans 3 minutes et cliquez sur "Voir effectifs chargés".');
+    } else {
+      showResult('effectifsResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('effectifsResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+async function voirEffectifs() {
+  try {
+    const data = await api('/api/admin/effectifs');
+    const summary = document.getElementById('effectifsSummary');
+    const tbody = document.getElementById('effectifsBody');
+
+    if (!data.effectifs || !Object.keys(data.effectifs).length) {
+      showResult('effectifsResult', 'err', '❌ Aucun effectif chargé — lancez d\'abord le rafraîchissement');
+      return;
+    }
+
+    tbody.innerHTML = Object.entries(data.effectifs)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([club, nb]) => `
+        <tr>
+          <td style="font-weight:600">${club}</td>
+          <td style="color:${nb > 0 ? 'var(--green)' : 'var(--red)'}">
+            ${nb > 0 ? nb + ' joueurs' : '⚠️ 0 joueur (scraping échoué)'}
+          </td>
+        </tr>
+      `).join('');
+
+    summary.style.display = 'block';
+    showResult('effectifsResult', 'ok', `✅ ${data.total_clubs} clubs chargés`);
+  } catch(e) {
+    showResult('effectifsResult', 'err', '❌ ' + e.message);
   }
 }
 
