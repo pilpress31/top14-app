@@ -227,8 +227,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             {pariPartiel && (
               <button
                 onClick={() => onBetClick(match)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                           bg-rugby-bronze text-white hover:bg-rugby-bronze/80 transition-colors shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                          bg-rugby-bronze text-white hover:bg-rugby-bronze/80 transition-colors shadow-sm w-fit mx-auto"
               >
                 <Edit className="w-4 h-4" />
                 <span>Compléter mon pari</span>
