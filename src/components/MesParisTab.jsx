@@ -90,7 +90,7 @@ export default function MesParisTab() {
           
           setTargetMatchId(null);
         }
-      }, 300);
+      }, 600);
     }
   }, [filter, targetMatchId]);
 
@@ -290,7 +290,11 @@ export default function MesParisTab() {
             return (
               <div 
                 key={bet.id}
-                ref={el => betRefs.current[bet.match_id] = el}
+                ref={el => {
+                  if (el && !betRefs.current[bet.match_id]) {
+                    betRefs.current[bet.match_id] = el;
+                  }
+                }}
                 className={`bg-white rounded-xl shadow-md border-2 hover:shadow-lg transition-all duration-300 overflow-hidden ${
                   isPending ? 'border-orange-400' : 
                   isWon ? 'border-green-500' : 'border-red-500'
