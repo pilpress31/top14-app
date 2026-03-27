@@ -272,6 +272,8 @@ export default function MesPronosTab({ goToMesParis }) {
                 {isExpanded && (
                   <div className="divide-y divide-rugby-gray">
                     {matchsJournee.map(match => {
+                      console.log('match.match_id:', match.match_id);
+                      console.log('mesPronos match_ids:', mesPronos.map(p => p.match_id));
                       const existingProno = mesPronos.filter(p => 
                         p.match_id === match.match_id && p.status !== 'cancelled'
                       );
