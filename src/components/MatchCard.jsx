@@ -41,6 +41,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const pronoMT = existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
   const hasFT = !!pronoFT;
   const hasMT = !!pronoMT;
+  console.log('existingProno pour', match.equipe_domicile, ':', existingProno);
+  console.log('hasFT:', hasFT, 'hasMT:', hasMT);
   const pariComplet = hasFT && hasMT;
   const pariPartiel = (hasFT && !hasMT) || (!hasFT && hasMT);
   const aucunPari = !hasFT && !hasMT;
@@ -145,28 +147,38 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">N</div>
             <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">2</div>
           </div>
+
+          {/* Ligne Temps plein — cliquable seulement si pas de pari FT */}
           <div className="flex items-center gap-1.5">
             <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
-            {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => (
-              <div key={i}
-                onClick={() => bettingAllowed && onBetClick(match)}
-                className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${bettingAllowed ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
-              >
-                {cote?.toFixed(2)}
-              </div>
-            ))}
-          </div>
-          {match.cotes.cote_mt_domicile && (
-            <div className="flex items-center gap-1.5">
-              <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
-              {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => (
+            {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
+              const ftClickable = bettingAllowed && !hasFT;
+              return (
                 <div key={i}
-                  onClick={() => bettingAllowed && onBetClick(match)}
-                  className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${bettingAllowed ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                  onClick={() => ftClickable && onBetClick(match)}
+                  className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${ftClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
                 >
                   {cote?.toFixed(2)}
                 </div>
-              ))}
+              );
+            })}
+          </div>
+
+          {/* Ligne Mi-temps — cliquable seulement si pas de pari MT */}
+          {match.cotes.cote_mt_domicile && (
+            <div className="flex items-center gap-1.5">
+              <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
+              {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => {
+                const mtClickable = bettingAllowed && !hasMT;
+                return (
+                  <div key={i}
+                    onClick={() => mtClickable && onBetClick(match)}
+                    className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${mtClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
+                  >
+                    {cote?.toFixed(2)}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
