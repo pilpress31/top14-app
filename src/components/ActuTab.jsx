@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, Calendar, CloudSun, Users, Swords, Trophy } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, CloudSun, Users, Swords, Trophy, ClipboardList } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 
@@ -22,10 +22,7 @@ export default function ActuTab() {
       const response = await axios.get('https://top14-api-production.up.railway.app/api/actu');
       const data = response.data;
 
-      // Nouveau format : { actus: [], journee, disponible, message }
-      // Ancien format (tableau direct) : géré en fallback
       if (Array.isArray(data)) {
-        // Ancien format — compatibilité ascendante
         setActus(data);
         setDisponible(data.length > 0);
       } else {
@@ -52,6 +49,7 @@ export default function ActuTab() {
         [`${matchId}-pronostic`]: true,
         [`${matchId}-blesses`]: false,
         [`${matchId}-contexte`]: false,
+        [`${matchId}-compo`]: false,
       }));
       setTimeout(() => {
         const el = cardRefs.current[matchId];
@@ -92,7 +90,6 @@ export default function ActuTab() {
     );
   }
 
-  // Pas encore disponible pour la prochaine journée
   if (!disponible || actus.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center border border-rugby-gray mt-4">
@@ -132,6 +129,7 @@ export default function ActuTab() {
                 const teamExt = getTeamData(actu.equipe_exterieure);
                 const isExpanded = expandedMatch === actu.match_id;
                 const hasContent = actu.forme_domicile && actu.forme_domicile !== 'Données en cours de chargement...';
+                const hasCompo = actu.compo_domicile && actu.compo_domicile !== 'Information non disponible';
 
                 return (
                   <div
@@ -190,6 +188,7 @@ export default function ActuTab() {
                     {isExpanded && hasContent && (
                       <div className="border-t border-rugby-gray divide-y divide-rugby-gray">
 
+                        {/* Météo */}
                         {actu.meteo && !['Météo non disponible', 'Météo temporairement indisponible'].includes(actu.meteo) && (
                           <div className="px-4 py-2.5 bg-blue-50/50">
                             <div className="flex items-center gap-2">
@@ -199,6 +198,7 @@ export default function ActuTab() {
                           </div>
                         )}
 
+                        {/* Pronostic IA — ouvert par défaut */}
                         {actu.pronostic_ia && actu.pronostic_ia !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<span className="text-base leading-none">🤖</span>}
@@ -212,6 +212,7 @@ export default function ActuTab() {
                           </SectionBlock>
                         )}
 
+                        {/* Forme récente — ouvert par défaut */}
                         <SectionBlock
                           icon={<Trophy className="w-4 h-4 text-rugby-gold" />}
                           title="Forme récente"
@@ -224,6 +225,7 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
+                        {/* Contexte & Enjeux — fermé par défaut */}
                         {actu.contexte_match && actu.contexte_match !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<Swords className="w-4 h-4 text-orange-500" />}
@@ -235,6 +237,30 @@ export default function ActuTab() {
                           </SectionBlock>
                         )}
 
+                        {/* ✅ COMPO PROBABLE — fermé par défaut, placé avant Blessés */}
+                        {hasCompo && (
+                          <SectionBlock
+                            icon={<ClipboardList className="w-4 h-4 text-teal-500" />}
+                            title="Compo probable"
+                            isOpen={isSectionOpen(actu.match_id, 'compo', false)}
+                            onToggle={() => toggleSection(actu.match_id, 'compo')}
+                          >
+                            <div className="space-y-4">
+                              <CompoSection
+                                name={teamDom.name}
+                                logo={teamDom.logo}
+                                content={actu.compo_domicile}
+                              />
+                              <CompoSection
+                                name={teamExt.name}
+                                logo={teamExt.logo}
+                                content={actu.compo_exterieure}
+                              />
+                            </div>
+                          </SectionBlock>
+                        )}
+
+                        {/* Blessés / Absents — fermé par défaut */}
                         <SectionBlock
                           icon={<Users className="w-4 h-4 text-red-500" />}
                           title="Blessés / Absents"
@@ -268,6 +294,7 @@ export default function ActuTab() {
   );
 }
 
+// ─── Section expandable ───
 function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   return (
     <div>
@@ -293,6 +320,7 @@ function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   );
 }
 
+// ─── Équipe avec logo (texte libre) ───
 function TeamSection({ name, logo, content }) {
   const isUnavailable = !content ||
     content === 'Information non disponible' ||
@@ -308,6 +336,77 @@ function TeamSection({ name, logo, content }) {
           {isUnavailable ? 'Information non disponible' : content}
         </p>
       </div>
+    </div>
+  );
+}
+
+// ─── Compo avec logo — affichage ligne par ligne ───
+function CompoSection({ name, logo, content }) {
+  const isUnavailable = !content ||
+    content === 'Information non disponible' ||
+    content === 'Données en cours de chargement...';
+
+  // Détecter si c'est compo officielle, probable ou estimée
+  const getTypeBadge = (text) => {
+    if (!text) return null;
+    if (text.toLowerCase().includes('officielle')) return { label: 'Officielle', color: 'bg-green-100 text-green-700' };
+    if (text.toLowerCase().includes('probable')) return { label: 'Probable', color: 'bg-blue-100 text-blue-700' };
+    if (text.toLowerCase().includes('estimée')) return { label: 'Estimée', color: 'bg-gray-100 text-gray-600' };
+    return { label: 'Probable', color: 'bg-blue-100 text-blue-700' };
+  };
+
+  const badge = !isUnavailable ? getTypeBadge(content) : null;
+
+  // Séparer titulaires et remplaçants
+  const lines = !isUnavailable ? content.split('\n').filter(l => l.trim()) : [];
+  const remplacantsIdx = lines.findIndex(l => l.toLowerCase().includes('remplaçant'));
+  const titulaires = remplacantsIdx >= 0 ? lines.slice(0, remplacantsIdx) : lines;
+  const remplacants = remplacantsIdx >= 0 ? lines.slice(remplacantsIdx + 1) : [];
+
+  return (
+    <div className="bg-teal-50/50 rounded-lg border border-teal-100 overflow-hidden">
+      {/* Header équipe */}
+      <div className="flex items-center justify-between px-3 py-2 bg-teal-100/50">
+        <div className="flex items-center gap-2">
+          <img src={logo} alt={name} className="w-5 h-5 object-contain"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <p className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">{name}</p>
+        </div>
+        {badge && (
+          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${badge.color}`}>
+            {badge.label}
+          </span>
+        )}
+      </div>
+
+      {isUnavailable ? (
+        <p className="text-xs text-gray-400 italic px-3 py-2">Composition non disponible</p>
+      ) : (
+        <div className="px-3 py-2">
+          {/* Titulaires */}
+          {titulaires.length > 0 && (
+            <div className="mb-2">
+              <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
+              <div className="space-y-0.5">
+                {titulaires.map((line, i) => (
+                  <p key={i} className="text-xs text-gray-700 leading-relaxed">{line.trim()}</p>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Remplaçants */}
+          {remplacants.length > 0 && (
+            <div>
+              <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+              <div className="space-y-0.5">
+                {remplacants.map((line, i) => (
+                  <p key={i} className="text-xs text-gray-500 leading-relaxed">{line.trim()}</p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
