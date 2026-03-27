@@ -515,7 +515,7 @@ function ActuMatch({ match, isOpen, onToggle }) {
       setError(null);
       try {
         const res = await axios.get(`${API_BASE}/api/actu`);
-        const actus = res.data || [];
+        const actus = Array.isArray(res.data) ? res.data : (res.data?.actus || []);
         const found = actus.find(a =>
           a.equipe_domicile === match.equipe_domicile &&
           a.equipe_exterieure === match.equipe_exterieure
