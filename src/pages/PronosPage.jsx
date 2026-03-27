@@ -1,15 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MainHeader from '../components/MainHeaderFull';
 
+const HEADER_HEIGHT = 120;
+
 export default function PronosPage() {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('a-parier');
   const [headerVisible, setHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // ✅ useRef au lieu de useState pour lastScrollY (évite les re-renders — comme IAPage)
+  const lastScrollY = useRef(0);
 
   const goToMesParis = () => { setActiveTab("mes-paris"); };
 
@@ -32,36 +36,42 @@ export default function PronosPage() {
     }
   }, [location]);
 
-  // Détection du scroll pour synchroniser avec le header
+  // ✅ Scroll stable avec useRef — même pattern que IAPage
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY < 10) {
+      const current = window.scrollY;
+      const previous = lastScrollY.current;
+      const threshold = 5;
+
+      if (current < 10) {
         setHeaderVisible(true);
-      } else if (currentScrollY < lastScrollY) {
+      } else if (previous - current > threshold) {
         setHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 120) {
+      } else if (current - previous > threshold && current > HEADER_HEIGHT) {
         setHeaderVisible(false);
       }
-      
-      setLastScrollY(currentScrollY);
+
+      lastScrollY.current = current;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []); // ✅ tableau vide — stable
+
+  // Position sticky des onglets selon visibilité du header
+  const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
+  // Padding top du contenu = header + onglets (~65px)
+  const contentPadding = 125;
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
       {/* Header */}
       <MainHeader />
 
-      {/* Onglets - STICKY avec position dynamique */}
-      <div 
-        className={`sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300 ${
-          headerVisible ? 'top-[120px]' : 'top-0'
-        }`}
+      {/* Onglets - STICKY avec position dynamique calculée — comme IAPage */}
+      <div
+        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
           <div className="flex">
@@ -104,8 +114,11 @@ export default function PronosPage() {
         </div>
       </div>
 
-      {/* Contenu - avec padding-top pour le header */}
-      <div className="container mx-auto px-4 py-6 pt-6 mt-[120px]">
+      {/* Contenu - padding-top dynamique = header + onglets — comme IAPage */}
+      <div
+        className="container mx-auto px-4 py-6"
+        style={{ paddingTop: `${contentPadding}px` }}
+      >
         {activeTab === 'a-parier' && (
           <MesPronosTab goToMesParis={goToMesParis} />
         )}
