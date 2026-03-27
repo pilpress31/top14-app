@@ -120,7 +120,7 @@ export default function MesPronosTab({ goToMesParis }) {
       if (error) throw error;
       setMesPronos(pronos || []);
 
-      console.log("🟩 mesPronos chargés :", pronos);
+      
 
       try {
         const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
@@ -272,9 +272,7 @@ export default function MesPronosTab({ goToMesParis }) {
                 {isExpanded && (
                   <div className="divide-y divide-rugby-gray">
                     {matchsJournee.map(match => {
-                      console.log('match.match_id:', match.match_id);
-                      console.log('mesPronos match_ids:', mesPronos.map(p => p.match_id));
-                      const existingProno = mesPronos.filter(p => 
+                        const existingProno = mesPronos.filter(p => 
                         p.match_id === match.match_id && p.status !== 'cancelled'
                       );
                       

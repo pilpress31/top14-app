@@ -41,8 +41,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const pronoMT = existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
   const hasFT = !!pronoFT;
   const hasMT = !!pronoMT;
-  console.log('existingProno pour', match.equipe_domicile, ':', existingProno);
-  console.log('hasFT:', hasFT, 'hasMT:', hasMT);
   const pariComplet = hasFT && hasMT;
   const pariPartiel = (hasFT && !hasMT) || (!hasFT && hasMT);
   const aucunPari = !hasFT && !hasMT;
