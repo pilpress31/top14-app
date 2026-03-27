@@ -228,9 +228,9 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             {/* Bouton voir mes paris si pari complet */}
             {pariComplet && (
               <button
-                onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.id } })}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                           bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm"
+                onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } })}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
+                          bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm w-fit mx-auto"
               >
                 Voir mes paris en cours
               </button>
