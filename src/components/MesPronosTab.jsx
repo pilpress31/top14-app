@@ -109,10 +109,12 @@ export default function MesPronosTab({ goToMesParis }) {
         }
       }
 
+      // APRÈS
       const { data: pronos, error } = await supabase
         .from('user_pronos_view')
         .select('*')
         .eq('user_id', user.id)
+        .neq('status', 'cancelled')   // ← exclure les annulés
         .order('journee', { ascending: true });
 
       if (error) throw error;
@@ -151,7 +153,9 @@ export default function MesPronosTab({ goToMesParis }) {
   };
 
   const ouvrirModal = (match) => {
-    const dejaPronos = mesPronos.filter(p => p.match_id === match.match_id);
+    const dejaPronos = mesPronos.filter(p => 
+      p.match_id === match.match_id && p.status !== 'cancelled'
+    );
     const hasFT = dejaPronos.some(p => p.bet_type === 'FT');  // ✅
     const hasMT = dejaPronos.some(p => p.bet_type === 'MT');  // ✅
 
@@ -268,7 +272,9 @@ export default function MesPronosTab({ goToMesParis }) {
                 {isExpanded && (
                   <div className="divide-y divide-rugby-gray">
                     {matchsJournee.map(match => {
-                      const existingProno = mesPronos.filter(p => p.match_id === match.match_id);
+                      const existingProno = mesPronos.filter(p => 
+                        p.match_id === match.match_id && p.status !== 'cancelled'
+                      );
                       
                       return (
                         <MatchCard

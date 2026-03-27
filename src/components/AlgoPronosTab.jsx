@@ -515,6 +515,7 @@ function ActuMatch({ match, isOpen, onToggle }) {
       setError(null);
       try {
         const res = await axios.get(`${API_BASE}/api/actu`);
+        // Gère les deux formats : tableau direct (ancien) ou objet {actus, journee, disponible} (nouveau)
         const actus = Array.isArray(res.data) ? res.data : (res.data?.actus || []);
         const found = actus.find(a =>
           a.equipe_domicile === match.equipe_domicile &&

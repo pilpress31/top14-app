@@ -37,8 +37,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const navigate = useNavigate();
   const [teamPopup, setTeamPopup] = useState(null);
 
-  const pronoFT = existingProno?.find(p => p.bet_type === 'FT');
-  const pronoMT = existingProno?.find(p => p.bet_type === 'MT');
+  const pronoFT = existingProno?.find(p => p.bet_type === 'FT' && p.status !== 'cancelled');
+  const pronoMT = existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
   const hasFT = !!pronoFT;
   const hasMT = !!pronoMT;
   const pariComplet = hasFT && hasMT;
