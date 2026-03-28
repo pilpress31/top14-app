@@ -486,7 +486,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <span class="btn-text">🔄 Rafraîchir les effectifs</span>
           </button>
           <button class="btn" onclick="voirEffectifs()">
-            👁 Voir effectifs chargés
+            👁 Résumé
+          </button>
+          <button class="btn" onclick="voirEffectifsDetail()">
+            📋 Détail complet
           </button>
         </div>
         <div class="result" id="effectifsResult"></div>
@@ -848,6 +851,17 @@ async function refreshEffectifs() {
     showResult('effectifsResult', 'err', '❌ ' + e.message);
   } finally {
     setLoading(btn, false);
+  }
+}
+
+async function voirEffectifsDetail() {
+  try {
+    const data = await api('/api/admin/effectifs/detail');
+    const win = window.open('', '_blank');
+    win.document.write('<pre style="font-size:12px;padding:16px;background:#111;color:#eee;font-family:monospace">' +
+      JSON.stringify(data, null, 2) + '</pre>');
+  } catch(e) {
+    showResult('effectifsResult', 'err', '❌ ' + e.message);
   }
 }
 
