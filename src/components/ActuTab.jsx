@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, Calendar, CloudSun, Users, Swords, Trophy, ClipboardList } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, CloudSun, Swords, Trophy, ClipboardList } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 
@@ -22,7 +22,10 @@ export default function ActuTab() {
       const response = await axios.get('https://top14-api-production.up.railway.app/api/actu');
       const data = response.data;
 
+      // Nouveau format : { actus: [], journee, disponible, message }
+      // Ancien format (tableau direct) : géré en fallback
       if (Array.isArray(data)) {
+        // Ancien format — compatibilité ascendante
         setActus(data);
         setDisponible(data.length > 0);
       } else {
@@ -47,9 +50,8 @@ export default function ActuTab() {
         ...prev,
         [`${matchId}-forme`]: true,
         [`${matchId}-pronostic`]: true,
-        [`${matchId}-blesses`]: false,
-        [`${matchId}-contexte`]: false,
         [`${matchId}-compo`]: false,
+        [`${matchId}-contexte`]: false,
       }));
       setTimeout(() => {
         const el = cardRefs.current[matchId];
@@ -90,6 +92,7 @@ export default function ActuTab() {
     );
   }
 
+  // Pas encore disponible pour la prochaine journée
   if (!disponible || actus.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center border border-rugby-gray mt-4">
@@ -129,7 +132,6 @@ export default function ActuTab() {
                 const teamExt = getTeamData(actu.equipe_exterieure);
                 const isExpanded = expandedMatch === actu.match_id;
                 const hasContent = actu.forme_domicile && actu.forme_domicile !== 'Données en cours de chargement...';
-                const hasCompo = actu.compo_domicile && actu.compo_domicile !== 'Information non disponible';
 
                 return (
                   <div
@@ -188,7 +190,6 @@ export default function ActuTab() {
                     {isExpanded && hasContent && (
                       <div className="border-t border-rugby-gray divide-y divide-rugby-gray">
 
-                        {/* Météo */}
                         {actu.meteo && !['Météo non disponible', 'Météo temporairement indisponible'].includes(actu.meteo) && (
                           <div className="px-4 py-2.5 bg-blue-50/50">
                             <div className="flex items-center gap-2">
@@ -198,7 +199,6 @@ export default function ActuTab() {
                           </div>
                         )}
 
-                        {/* Pronostic IA — ouvert par défaut */}
                         {actu.pronostic_ia && actu.pronostic_ia !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<span className="text-base leading-none">🤖</span>}
@@ -212,7 +212,6 @@ export default function ActuTab() {
                           </SectionBlock>
                         )}
 
-                        {/* Forme récente — ouvert par défaut */}
                         <SectionBlock
                           icon={<Trophy className="w-4 h-4 text-rugby-gold" />}
                           title="Forme récente"
@@ -225,7 +224,6 @@ export default function ActuTab() {
                           </div>
                         </SectionBlock>
 
-                        {/* Contexte & Enjeux — fermé par défaut */}
                         {actu.contexte_match && actu.contexte_match !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<Swords className="w-4 h-4 text-orange-500" />}
@@ -237,39 +235,26 @@ export default function ActuTab() {
                           </SectionBlock>
                         )}
 
-                        {/* ✅ COMPO PROBABLE — fermé par défaut, placé avant Blessés */}
-                        {hasCompo && (
-                          <SectionBlock
-                            icon={<ClipboardList className="w-4 h-4 text-teal-500" />}
-                            title="Compo probable"
-                            isOpen={isSectionOpen(actu.match_id, 'compo', false)}
-                            onToggle={() => toggleSection(actu.match_id, 'compo')}
-                          >
-                            <div className="space-y-4">
-                              <CompoSection
-                                name={teamDom.name}
-                                logo={teamDom.logo}
-                                content={actu.compo_domicile}
-                              />
-                              <CompoSection
-                                name={teamExt.name}
-                                logo={teamExt.logo}
-                                content={actu.compo_exterieure}
-                              />
-                            </div>
-                          </SectionBlock>
-                        )}
-
-                        {/* Blessés / Absents — fermé par défaut */}
+                        {/* Section fusionnée Compo + Blessés par équipe */}
                         <SectionBlock
-                          icon={<Users className="w-4 h-4 text-red-500" />}
-                          title="Blessés / Absents"
-                          isOpen={isSectionOpen(actu.match_id, 'blesses', false)}
-                          onToggle={() => toggleSection(actu.match_id, 'blesses')}
+                          icon={<ClipboardList className="w-4 h-4 text-teal-500" />}
+                          title="Compo probable & Absents"
+                          isOpen={isSectionOpen(actu.match_id, 'compo', false)}
+                          onToggle={() => toggleSection(actu.match_id, 'compo')}
                         >
-                          <div className="space-y-3">
-                            <TeamSection name={teamDom.name} logo={teamDom.logo} content={actu.blesses_domicile} />
-                            <TeamSection name={teamExt.name} logo={teamExt.logo} content={actu.blesses_exterieure} />
+                          <div className="space-y-4">
+                            <CompoEtBlessesSection
+                              name={teamDom.name}
+                              logo={teamDom.logo}
+                              compo={actu.compo_domicile}
+                              blesses={actu.blesses_domicile}
+                            />
+                            <CompoEtBlessesSection
+                              name={teamExt.name}
+                              logo={teamExt.logo}
+                              compo={actu.compo_exterieure}
+                              blesses={actu.blesses_exterieure}
+                            />
                           </div>
                         </SectionBlock>
 
@@ -294,7 +279,6 @@ export default function ActuTab() {
   );
 }
 
-// ─── Section expandable ───
 function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   return (
     <div>
@@ -320,7 +304,6 @@ function SectionBlock({ icon, title, isOpen, onToggle, children }) {
   );
 }
 
-// ─── Équipe avec logo (texte libre) ───
 function TeamSection({ name, logo, content }) {
   const isUnavailable = !content ||
     content === 'Information non disponible' ||
@@ -340,33 +323,33 @@ function TeamSection({ name, logo, content }) {
   );
 }
 
-// ─── Compo avec logo — affichage ligne par ligne ───
-function CompoSection({ name, logo, content }) {
-  const isUnavailable = !content ||
-    content === 'Information non disponible' ||
-    content === 'Données en cours de chargement...';
+// ─── Section fusionnée : Compo + Blessés par équipe ───
+function CompoEtBlessesSection({ name, logo, compo, blesses }) {
+  const compoIndispo = !compo || compo === 'Information non disponible';
+  const blessesIndispo = !blesses ||
+    blesses === 'Information non disponible' ||
+    blesses === 'Aucune absence majeure signalée' ||
+    blesses === 'Aucune absence signalée';
 
-  // Détecter si c'est compo officielle, probable ou estimée
+  // Détecter type de compo
   const getTypeBadge = (text) => {
     if (!text) return null;
     if (text.toLowerCase().includes('officielle')) return { label: 'Officielle', color: 'bg-green-100 text-green-700' };
     if (text.toLowerCase().includes('probable')) return { label: 'Probable', color: 'bg-blue-100 text-blue-700' };
-    if (text.toLowerCase().includes('estimée')) return { label: 'Estimée', color: 'bg-gray-100 text-gray-600' };
-    return { label: 'Probable', color: 'bg-blue-100 text-blue-700' };
+    return { label: 'Estimée', color: 'bg-gray-100 text-gray-600' };
   };
+  const badge = !compoIndispo ? getTypeBadge(compo) : null;
 
-  const badge = !isUnavailable ? getTypeBadge(content) : null;
-
-  // Séparer titulaires et remplaçants
-  const lines = !isUnavailable ? content.split('\n').filter(l => l.trim()) : [];
+  // Parser compo en titulaires + remplaçants
+  const lines = !compoIndispo ? compo.split('\n').filter(l => l.trim()) : [];
   const remplacantsIdx = lines.findIndex(l => l.toLowerCase().includes('remplaçant'));
   const titulaires = remplacantsIdx >= 0 ? lines.slice(0, remplacantsIdx) : lines;
   const remplacants = remplacantsIdx >= 0 ? lines.slice(remplacantsIdx + 1) : [];
 
   return (
-    <div className="bg-teal-50/50 rounded-lg border border-teal-100 overflow-hidden">
+    <div className="bg-teal-50/40 rounded-lg border border-teal-100 overflow-hidden">
       {/* Header équipe */}
-      <div className="flex items-center justify-between px-3 py-2 bg-teal-100/50">
+      <div className="flex items-center justify-between px-3 py-2 bg-teal-100/60">
         <div className="flex items-center gap-2">
           <img src={logo} alt={name} className="w-5 h-5 object-contain"
             onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -379,34 +362,43 @@ function CompoSection({ name, logo, content }) {
         )}
       </div>
 
-      {isUnavailable ? (
-        <p className="text-xs text-gray-400 italic px-3 py-2">Composition non disponible</p>
-      ) : (
-        <div className="px-3 py-2">
-          {/* Titulaires */}
-          {titulaires.length > 0 && (
-            <div className="mb-2">
-              <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
-              <div className="space-y-0.5">
-                {titulaires.map((line, i) => (
-                  <p key={i} className="text-xs text-gray-700 leading-relaxed">{line.trim()}</p>
-                ))}
-              </div>
+      <div className="px-3 py-2 space-y-2">
+        {/* Titulaires */}
+        {titulaires.length > 0 && (
+          <div>
+            <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
+            <div className="space-y-0.5">
+              {titulaires.map((line, i) => (
+                <p key={i} className="text-xs text-gray-700 leading-relaxed">{line.trim()}</p>
+              ))}
             </div>
-          )}
-          {/* Remplaçants */}
-          {remplacants.length > 0 && (
-            <div>
-              <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
-              <div className="space-y-0.5">
-                {remplacants.map((line, i) => (
-                  <p key={i} className="text-xs text-gray-500 leading-relaxed">{line.trim()}</p>
-                ))}
-              </div>
+          </div>
+        )}
+
+        {/* Remplaçants */}
+        {remplacants.length > 0 && (
+          <div>
+            <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+            <div className="space-y-0.5">
+              {remplacants.map((line, i) => (
+                <p key={i} className="text-xs text-gray-500 leading-relaxed">{line.trim()}</p>
+              ))}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+
+        {compoIndispo && (
+          <p className="text-xs text-gray-400 italic">Composition non disponible</p>
+        )}
+
+        {/* Blessés — séparateur + liste sans label */}
+        {!blessesIndispo && (
+          <div className="pt-2 mt-1 border-t border-teal-100">
+            <p className="text-[9px] font-bold text-red-500 uppercase tracking-wide mb-1">Absents</p>
+            <p className="text-xs text-red-600 leading-relaxed">{blesses}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
