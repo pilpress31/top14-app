@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
@@ -496,7 +496,7 @@ const ACTU_SECTIONS = [
   { key: 'pronostic_ia',    label: 'Pronostic IA',      icon: Bot,         color: 'text-purple-500',  bg: 'bg-purple-50',  border: 'border-purple-100' },
   { key: 'forme_domicile',  label: 'Forme récente',     icon: Trophy,      color: 'text-rugby-gold',  bg: 'bg-yellow-50',  border: 'border-yellow-100', combine: 'forme_exterieure' },
   { key: 'contexte_match',  label: 'Contexte & Enjeux', icon: Swords,      color: 'text-orange-500',  bg: 'bg-orange-50',  border: 'border-orange-100' },
-  { key: 'blesses_domicile',label: 'Blessés / Absents', icon: Stethoscope, color: 'text-red-400',     bg: 'bg-red-50',     border: 'border-red-100',   combine: 'blesses_exterieure' },
+  { key: 'compo_domicile',  label: 'Compo probable & Absents', icon: ClipboardList, color: 'text-teal-500', bg: 'bg-teal-50', border: 'border-teal-100', combine: 'compo_exterieure', isCombo: true },
 ];
 
 function ActuMatch({ match, isOpen, onToggle }) {
@@ -596,45 +596,128 @@ function ActuMatch({ match, isOpen, onToggle }) {
 
               {/* 4 sections accordéon */}
               {ACTU_SECTIONS.map(section => {
-            const Icon = section.icon;
-            const isSectionOpen = openSection === section.key;
-            const contenu = section.key === 'forme_domicile'
-              ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
-              : section.key === 'blesses_domicile'
-              ? `🏠 ${match.equipe_domicile}\n${actu.blesses_domicile || 'Aucune absence majeure signalée'}\n\n🚌 ${match.equipe_exterieure}\n${actu.blesses_exterieure || 'Aucune absence majeure signalée'}`
-              : actu[section.key];
+                const Icon = section.icon;
+                const isSectionOpen = openSection === section.key;
 
-            if (!contenu) return null;
+                // Cas spécial : section compo fusionnée avec blessés
+                if (section.isCombo) {
+                  const hasCompo = actu.compo_domicile && actu.compo_domicile !== 'Information non disponible';
+                  const hasBlesses = (actu.blesses_domicile && actu.blesses_domicile !== 'Aucune absence majeure signalée' && actu.blesses_domicile !== 'Information non disponible')
+                                  || (actu.blesses_exterieure && actu.blesses_exterieure !== 'Aucune absence majeure signalée' && actu.blesses_exterieure !== 'Information non disponible');
+                  if (!hasCompo && !hasBlesses) return null;
+                  return (
+                    <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
+                      <button
+                        onClick={() => toggleSection(section.key)}
+                        className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon className={`w-3.5 h-3.5 ${section.color}`} />
+                          <span className={`text-[11px] font-bold uppercase tracking-wide ${section.color}`}>
+                            {section.label}
+                          </span>
+                        </div>
+                        {isSectionOpen
+                          ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                          : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                        }
+                      </button>
+                      {isSectionOpen && (
+                        <div className="px-3 py-2.5 bg-white space-y-3">
+                          {[
+                            { name: match.equipe_domicile, compo: actu.compo_domicile, blesses: actu.blesses_domicile },
+                            { name: match.equipe_exterieure, compo: actu.compo_exterieure, blesses: actu.blesses_exterieure }
+                          ].map(({ name, compo, blesses }) => {
+                            const compoIndispo = !compo || compo === 'Information non disponible';
+                            const blessesIndispo = !blesses || blesses === 'Aucune absence majeure signalée' || blesses === 'Information non disponible' || blesses === 'Aucune absence signalée';
+                            const getTypeBadge = (text) => {
+                              if (!text) return 'Estimée';
+                              if (text.toLowerCase().includes('officielle')) return 'Officielle';
+                              if (text.toLowerCase().includes('probable')) return 'Probable';
+                              return 'Estimée';
+                            };
+                            const lines = !compoIndispo ? compo.split('\n').filter(l => l.trim()) : [];
+                            const remplacantsIdx = lines.findIndex(l => l.toLowerCase().includes('remplaçant'));
+                            const titulaires = remplacantsIdx >= 0 ? lines.slice(0, remplacantsIdx) : lines;
+                            const remplacants = remplacantsIdx >= 0 ? lines.slice(remplacantsIdx + 1) : [];
+                            return (
+                              <div key={name} className="bg-teal-50/40 rounded-lg border border-teal-100 overflow-hidden">
+                                <div className="flex items-center justify-between px-3 py-1.5 bg-teal-100/60">
+                                  <p className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">{name}</p>
+                                  {!compoIndispo && (
+                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                      {getTypeBadge(compo)}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="px-3 py-2 space-y-2">
+                                  {titulaires.length > 0 && (
+                                    <div>
+                                      <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
+                                      {titulaires.map((line, i) => (
+                                        <p key={i} className="text-[11px] text-gray-700 leading-relaxed">{line.trim()}</p>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {remplacants.length > 0 && (
+                                    <div>
+                                      <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+                                      {remplacants.map((line, i) => (
+                                        <p key={i} className="text-[11px] text-gray-500 leading-relaxed">{line.trim()}</p>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {compoIndispo && <p className="text-[11px] text-gray-400 italic">Composition non disponible</p>}
+                                  {!blessesIndispo && (
+                                    <div className="pt-2 border-t border-teal-100">
+                                      <p className="text-[9px] font-bold text-red-500 uppercase tracking-wide mb-1">Absents</p>
+                                      <p className="text-[11px] text-red-600 leading-relaxed">{blesses}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
 
-            return (
-              <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
-                <button
-                  onClick={() => toggleSection(section.key)}
-                  className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className={`w-3.5 h-3.5 ${section.color}`} />
-                    <span className={`text-[11px] font-bold uppercase tracking-wide ${section.color}`}>
-                      {section.label}
-                    </span>
+                // Cas normal
+                const contenu = section.key === 'forme_domicile'
+                  ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
+                  : actu[section.key];
+                if (!contenu) return null;
+                return (
+                  <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
+                    <button
+                      onClick={() => toggleSection(section.key)}
+                      className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-3.5 h-3.5 ${section.color}`} />
+                        <span className={`text-[11px] font-bold uppercase tracking-wide ${section.color}`}>
+                          {section.label}
+                        </span>
+                      </div>
+                      {isSectionOpen
+                        ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                        : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                      }
+                    </button>
+                    {isSectionOpen && (
+                      <div className="px-3 py-2.5 bg-white">
+                        {contenu.split('\n').map((line, i) => (
+                          line.trim() === ''
+                            ? <div key={i} className="h-2" />
+                            : <p key={i} className="text-[12px] text-gray-700 leading-relaxed">{line}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {isSectionOpen
-                    ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
-                    : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-                  }
-                </button>
-                {isSectionOpen && (
-                  <div className="px-3 py-2.5 bg-white">
-                    {contenu.split('\n').map((line, i) => (
-                      line.trim() === ''
-                        ? <div key={i} className="h-2" />
-                        : <p key={i} className="text-[12px] text-gray-700 leading-relaxed">{line}</p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
             </>
           )}
         </div>
