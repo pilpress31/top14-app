@@ -9,6 +9,7 @@ import axios from 'axios';
 import BettingModal from './BettingModal';
 import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 export default function MesPronosTab({ goToMesParis }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
@@ -20,8 +21,14 @@ export default function MesPronosTab({ goToMesParis }) {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   const [headerVisible, setHeaderVisible] = useState(true);
-
   const lastScrollY = useRef(0);
+
+  // ✅ Realtime
+  useRealtimeSync([
+    { table: 'user_bets', onUpdate: () => loadData() },
+    { table: 'user_credits', onUpdate: () => loadData() },
+    { table: 'match_cotes', onUpdate: () => loadData() },
+  ]);
 
   useEffect(() => {
     loadData();

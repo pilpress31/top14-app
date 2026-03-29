@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { ChevronDown, Check } from "lucide-react";
 import { getTeamData } from '../utils/teams';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 // ---------------------------------------------------------
 // Dropdown Premium
@@ -363,7 +364,6 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
 // ---------------------------------------------------------
 export default function MaCagnotte() {
   const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [userCredits, setUserCredits] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
@@ -374,7 +374,6 @@ export default function MaCagnotte() {
   
   const [sortMode, setSortMode] = useState("recent");
   const [teamFilter, setTeamFilter] = useState("");
-
   const [stats, setStats] = useState({
     totalBets: 0,
     pendingBets: 0,
@@ -385,6 +384,13 @@ export default function MaCagnotte() {
     netProfit: 0,
     nbDistributions: 0
   });
+
+  // ✅ Realtime
+  useRealtimeSync([
+    { table: 'user_credits', onUpdate: () => { if (user?.id) loadData(user.id); } },
+    { table: 'user_bets', onUpdate: () => { if (user?.id) loadData(user.id); } },
+    { table: 'credit_transactions', onUpdate: () => { if (user?.id) loadData(user.id); } },
+  ]);
 
   useEffect(() => {
     const fetchUser = async () => {

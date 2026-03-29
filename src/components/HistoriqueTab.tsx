@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 // Mapping des équipes vers leurs logos
 const TEAMS_DATA = {
@@ -121,21 +122,25 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const matchesPerPage = 21;
 
+  const loadHistorique = async () => {
+    try {
+      const response = await fetch("https://top14-api-production.up.railway.app/api/matchs/historique/all");
+      const data = await response.json();
+      setMatches(data.matchs || []);
+    } catch (e) {
+      console.error("Erreur chargement historique:", e);
+      setMatches([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Realtime
+  useRealtimeSync([
+    { table: 'matchs_results', onUpdate: () => loadHistorique() },
+  ]);
+
   useEffect(() => {
-    const loadHistorique = async () => {
-      try {
-        const response = await fetch("https://top14-api-production.up.railway.app/api/matchs/historique/all");
-        const data = await response.json();
-        
-        console.log("Historique chargé:", data);
-        setMatches(data.matchs || []);
-      } catch (e) {
-        console.error("Erreur chargement historique:", e);
-        setMatches([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadHistorique();
   }, []);
 

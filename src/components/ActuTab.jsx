@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronUp, Calendar, CloudSun, Swords, Trophy, ClipboardList } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 export default function ActuTab() {
   const [actus, setActus] = useState([]);
@@ -13,9 +14,14 @@ export default function ActuTab() {
   const [expandedSection, setExpandedSection] = useState({});
   const cardRefs = useRef({});
 
-  useEffect(() => {
-    loadActus();
-  }, []);
+  // ✅ Realtime
+    useRealtimeSync([
+      { table: 'actu_matchs', onUpdate: () => loadActus() },
+    ]);
+
+    useEffect(() => {
+      loadActus();
+    }, []);
 
   const loadActus = async () => {
     try {

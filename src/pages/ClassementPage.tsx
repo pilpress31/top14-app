@@ -3,6 +3,7 @@ import { getConfig, getStats, getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
 import { useResetOnActive } from "../hooks/useResetOnActive";
+import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -14,18 +15,23 @@ function ClassementPage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const detailsHeaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    async function loadClassement() {
-      try {
-        const data = await getClassement();
-        console.log("Classement chargé:", data);
-        setClassement(data.classement || []);
-      } catch (e) {
-        console.error("Erreur chargement classement:", e);
-      } finally {
-        setLoading(false);
-      }
+  const loadClassement = async () => {
+    try {
+      const data = await getClassement();
+      setClassement(data.classement || []);
+    } catch (e) {
+      console.error("Erreur chargement classement:", e);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // ✅ Realtime
+  useRealtimeSync([
+    { table: 'matchs_results', onUpdate: () => loadClassement() },
+  ]);
+
+  useEffect(() => {
     loadClassement();
   }, []);
 
@@ -35,7 +41,6 @@ function ClassementPage() {
         try {
           const response = await fetch(`https://top14-api-production.up.railway.app/api/stats/detaillees?equipe=${encodeURIComponent(selectedEquipe.equipe)}`);
           const data = await response.json();
-          console.log("Stats détaillées chargées pour", selectedEquipe.equipe, ":", data);
           setStatsDetaillees(data);
         } catch (e) {
           console.error("Erreur chargement stats détaillées:", e);
@@ -54,7 +59,6 @@ function ClassementPage() {
         const headerOffset = 100;
         const elementPosition = detailsHeaderRef.current!.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
         window.scrollTo({
           top: offsetPosition,
           behavior: "smooth"

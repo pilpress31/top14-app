@@ -3,6 +3,7 @@ import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
@@ -11,6 +12,11 @@ export default function AlgoPronosTab() {
   const [loading, setLoading] = useState(true);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   const journeeRefs = useRef({});
+
+  // ✅ Realtime — rafraîchit quand les cotes changent
+  useRealtimeSync([
+    { table: 'match_cotes', onUpdate: () => loadPronos() },
+  ]);
 
   useEffect(() => {
     loadPronos();

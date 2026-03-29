@@ -5,6 +5,7 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import ReglementModal from './ReglementModal';
 import { useLocation } from 'react-router-dom';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 export default function MesParisTab() {
   const location = useLocation();
@@ -19,7 +20,7 @@ export default function MesParisTab() {
   const [targetMatchId, setTargetMatchId] = useState(null);
   const betRefs = useRef({});
 
-  const extractTeamsFromMatchId = (matchId) => {
+    const extractTeamsFromMatchId = (matchId) => {
     if (!matchId) return { home: null, away: null };
     
     const parts = matchId.split('_');
@@ -43,6 +44,13 @@ export default function MesParisTab() {
     
     return { home: null, away: null };
   };
+
+  // ✅ Realtime
+  useRealtimeSync([
+    { table: 'user_bets', onUpdate: () => loadData() },
+    { table: 'user_credits', onUpdate: () => loadData() },
+    { table: 'matchs_results', onUpdate: () => loadData() },
+  ]);
 
   useEffect(() => {
     loadData();

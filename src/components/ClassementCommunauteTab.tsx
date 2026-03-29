@@ -7,6 +7,7 @@ import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X } from 'lucide-
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { getCurrentSeason } from '../utils/season';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 interface UserRanking {
   rang: number;
@@ -31,6 +32,12 @@ export default function ClassementCommunauteTab() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [showReglementPoints, setShowReglementPoints] = useState(false);
+
+  // ✅ Realtime
+  useRealtimeSync([
+    { table: 'user_credits', onUpdate: () => loadAll() },
+    { table: 'user_stats', onUpdate: () => loadAll() },
+  ]);
 
   // ✅ Un seul useEffect — charge le user EN PREMIER puis le classement
   useEffect(() => {
