@@ -21,6 +21,8 @@ export default function MesPronosTab({ goToMesParis }) {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   const [headerVisible, setHeaderVisible] = useState(true);
+  const [parisOuverts, setParisOuverts] = useState(true);        // ← AJOUT
+  const [journeeIncomplete, setJourneeIncomplete] = useState(null); // ← AJOUT
   const lastScrollY = useRef(0);
 
   // ✅ Realtime
@@ -28,6 +30,7 @@ export default function MesPronosTab({ goToMesParis }) {
     { table: 'user_bets', onUpdate: () => loadData() },
     { table: 'user_credits', onUpdate: () => loadData() },
     { table: 'match_cotes', onUpdate: () => loadData() },
+    { table: 'matchs_results', onUpdate: () => loadData() },    // ← AJOUT
   ]);
 
   useEffect(() => {
@@ -160,17 +163,18 @@ export default function MesPronosTab({ goToMesParis }) {
   };
 
   const ouvrirModal = (match) => {
+    // ✅ Bloquer si journée en cours non terminée
+    if (!parisOuverts) return;
+
     const dejaPronos = mesPronos.filter(p => 
       p.match_id === match.match_id && p.status !== 'cancelled'
     );
-    const hasFT = dejaPronos.some(p => p.bet_type === 'FT');  // ✅
-    const hasMT = dejaPronos.some(p => p.bet_type === 'MT');  // ✅
-
+    const hasFT = dejaPronos.some(p => p.bet_type === 'FT');
+    const hasMT = dejaPronos.some(p => p.bet_type === 'MT');
     if (hasFT && hasMT) {
       goToMesParis();
       return;
     }
-
     setSelectedMatch(match);
     setShowModal(true);
   };
@@ -243,6 +247,17 @@ export default function MesPronosTab({ goToMesParis }) {
           </button>
         </div>
       </div>    
+
+      {/* Message blocage paris */}
+      {!parisOuverts && journeeIncomplete && (
+        <div className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-50 rounded-lg border border-orange-200 w-fit mx-auto mb-3">
+          <span className="text-lg">🔒</span>
+          <span className="text-xs font-semibold text-orange-700 text-center">
+            Paris ouverts après la fin de la J{journeeIncomplete}
+          </span>
+        </div>
+      )}
+
 
       {/* Liste des journées */}
       {journees.length === 0 ? (
