@@ -195,7 +195,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                 <BlocPronoIA showFT={hasFT} showMT={hasMT} />
               </div>
             )}
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300">
+            <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 w-fit mx-auto">
               <Lock className="w-4 h-4 text-gray-500" />
               <span className="text-xs font-semibold text-gray-600">{getBlockingMessage(match)}</span>
             </div>
