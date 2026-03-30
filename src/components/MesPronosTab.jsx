@@ -155,6 +155,15 @@ export default function MesPronosTab({ goToMesParis }) {
         console.log('Crédits non disponibles:', creditsError.message);
         setUserCredits({ credits: 1000, total_earned: 0, totalWonFromBets: 0 });
       }
+    // ✅ Vérifier si les paris sont ouverts
+      try {
+        const statutRes = await axios.get('https://top14-api-production.up.railway.app/api/paris/statut');
+        setParisOuverts(statutRes.data.ouverts);
+        setJourneeIncomplete(statutRes.data.journee_incomplete);
+      } catch (e) {
+        setParisOuverts(true); // par défaut ouverts si erreur
+      }
+
     } catch (error) {
       console.error('Erreur chargement data:', error);
     } finally {
