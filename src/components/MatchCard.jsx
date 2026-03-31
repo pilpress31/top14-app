@@ -190,7 +190,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 w-fit mx-auto">
             <Lock className="w-4 h-4 text-gray-400" />
             <span className="text-xs font-semibold text-gray-400 text-center">
-              Paris disponibles après J{match.journee - 1}
+              Paris disponibles après J{parseInt(String(match.journee).replace('J', '')) - 1}
             </span>
           </div>
         )}
