@@ -175,6 +175,12 @@ export default function MesPronosTab({ goToMesParis }) {
     // ✅ Bloquer si journée en cours non terminée
     if (!parisOuverts) return;
 
+    // ✅ Bloquer si pas la prochaine journée
+    const journeesSorted = [...new Set(matchsDisponibles.map(m => m.journee))]
+      .sort((a, b) => parseInt(a) - parseInt(b));
+    const prochaineJournee = journeesSorted[0];
+    if (match.journee !== prochaineJournee) return;
+
     const dejaPronos = mesPronos.filter(p => 
       p.match_id === match.match_id && p.status !== 'cancelled'
     );
@@ -224,6 +230,10 @@ export default function MesPronosTab({ goToMesParis }) {
     const numB = parseInt(b.replace('J', ''));
     return numA - numB;
   });
+
+  const journeesSorted = [...new Set(matchsDisponibles.map(m => m.journee))]
+    .sort((a, b) => parseInt(a) - parseInt(b));
+  const prochaineJournee = journeesSorted[0];
 
   return (
     <div className="space-y-3">
@@ -314,6 +324,8 @@ export default function MesPronosTab({ goToMesParis }) {
                           existingProno={existingProno}
                           onBetClick={ouvrirModal}
                           goToMesParis={goToMesParis}
+                          jouable={match.journee === prochaineJournee}
+                          prochaineJournee={prochaineJournee}
                         />
                       );
                     })}

@@ -30,7 +30,7 @@ const getBlockingMessage = (match) => {
     : "Paris fermés (jour du match)";
 };
 
-export default function MatchCard({ match, existingProno, onBetClick, goToMesParis }) {
+export default function MatchCard({ match, existingProno, onBetClick, goToMesParis, jouable = true, prochaineJournee }) {
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
@@ -150,7 +150,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <div className="flex items-center gap-1.5">
             <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
-              const ftClickable = bettingAllowed && !hasFT;
+              const ftClickable = bettingAllowed && !hasFT && jouable;
               return (
                 <div key={i}
                   onClick={() => ftClickable && onBetClick(match)}
@@ -167,7 +167,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <div className="flex items-center gap-1.5">
               <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
               {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => {
-                const mtClickable = bettingAllowed && !hasMT;
+                const mtClickable = bettingAllowed && !hasMT && jouable;
                 return (
                   <div key={i}
                     onClick={() => mtClickable && onBetClick(match)}
@@ -184,6 +184,16 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
       {/* ── ZONE ACTIONS ─────────────────────────────────────────── */}
       <div className="flex flex-col gap-2">
+
+        {/* Journée non jouable (J22+) */}
+        {!jouable && (
+          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 w-fit mx-auto">
+            <Lock className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-semibold text-gray-400 text-center">
+              Paris disponibles après J{prochaineJournee}
+            </span>
+          </div>
+        )}
 
         {/* Paris fermés */}
         {!bettingAllowed && (
