@@ -948,7 +948,6 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
 function InfoConfiance() {
   const [visible, setVisible] = useState(false);
   const ref = useRef(null);
-
   useEffect(() => {
     if (!visible) return;
     const handler = (e) => {
@@ -957,14 +956,12 @@ function InfoConfiance() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [visible]);
-
   return (
     <div ref={ref} className="relative flex items-center">
       <PulsingInfoButton
         onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
         label="Explication de l'indice favori"
       />
-
       {visible && (
         <div
           className="fixed left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
@@ -973,29 +970,30 @@ function InfoConfiance() {
           <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
             Indice favori — Comment le lire ?
           </p>
-
           <p className="text-[11px] text-gray-600 leading-relaxed mb-3">
-            Ce pourcentage mesure à quel point l'algorithme considère qu'une équipe domine l'autre, basé sur l'<span className="font-semibold">écart de score prédit</span>. Plus l'écart est grand, plus l'indice est élevé.
+            Ce pourcentage mesure la <span className="font-semibold">domination attendue du favori</span> sur cet adversaire, calculée à partir de l'historique Elo, des statistiques des équipes et des scores prédits.
           </p>
-
           <div className="space-y-2 mb-3">
             <div className="flex items-center gap-2">
               <div className="w-16 h-2 rounded-full bg-gradient-to-r from-red-400 to-red-500 flex-shrink-0" />
-              <p className="text-[11px] text-gray-600"><span className="font-semibold text-red-500">{'< 50%'}</span> — match très serré, les deux équipes sont proches</p>
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-red-500">50–60%</span> — match très serré, les deux équipes sont proches</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-16 h-2 rounded-full bg-gradient-to-r from-orange-400 to-yellow-400 flex-shrink-0" />
-              <p className="text-[11px] text-gray-600"><span className="font-semibold text-yellow-500">50–70%</span> — une équipe est légèrement favorite</p>
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-yellow-500">60–70%</span> — une équipe est clairement favorite</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-16 h-2 rounded-full bg-gradient-to-r from-yellow-400 to-green-500 flex-shrink-0" />
-              <p className="text-[11px] text-gray-600"><span className="font-semibold text-green-500">{'> 70%'}</span> — une équipe est nettement favorite</p>
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-green-500">70–80%</span> — une équipe est nettement favorite</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-green-700">80%</span> — favori écrasant</p>
             </div>
           </div>
-
           <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             <p className="text-[11px] text-amber-700 leading-relaxed">
-              ⚠️ Ce n'est <span className="font-semibold">pas</span> la probabilité que le score prédit soit exact — c'est uniquement une mesure de la domination attendue entre les deux équipes.
+              ⚠️ Ce n'est <span className="font-semibold">pas</span> la probabilité que le score prédit soit exact — c'est uniquement une mesure de la domination attendue du favori sur cet adversaire.
             </p>
           </div>
         </div>
