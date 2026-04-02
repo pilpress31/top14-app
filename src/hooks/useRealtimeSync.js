@@ -4,11 +4,11 @@ import { supabase } from '../lib/supabaseClient';
 /**
  * Hook Supabase Realtime — rafraîchit automatiquement quand les données changent
  * ET quand l'app revient au premier plan (depuis arrière-plan / verrouillage)
+ * ET quand le Service Worker signale une donnée fraîche disponible
  *
  * @param {Array} subscriptions - Liste des abonnements { table, event, filter?, onUpdate }
  */
 export function useRealtimeSync(subscriptions) {
-  // Ref pour accéder aux subscriptions dans les listeners sans re-render
   const subscriptionsRef = useRef(subscriptions);
   subscriptionsRef.current = subscriptions;
 
@@ -30,21 +30,17 @@ export function useRealtimeSync(subscriptions) {
 
     // -------------------------------------------------------
     // 2. Rechargement au retour au premier plan
-    //    Couvre : retour depuis arrière-plan, déverrouillage,
-    //    changement d'onglet, réouverture de l'app PWA
+    //    Couvre : arrière-plan, déverrouillage, changement d'onglet
     // -------------------------------------------------------
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Déclencher onUpdate pour chaque abonnement
         subscriptionsRef.current.forEach(({ onUpdate }) => {
           try { onUpdate(null); } catch (e) { /* silencieux */ }
         });
-
-        // Réabonner les channels Supabase si la connexion s'est coupée
+        // Réabonner les channels si connexion coupée
         channels.forEach(channel => {
           try {
-            const state = channel.state;
-            if (state === 'closed' || state === 'errored') {
+            if (channel.state === 'closed' || channel.state === 'errored') {
               channel.subscribe();
             }
           } catch (e) { /* silencieux */ }
@@ -55,10 +51,26 @@ export function useRealtimeSync(subscriptions) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // -------------------------------------------------------
+    // 3. Message du Service Worker → donnée fraîche disponible
+    //    Le SW envoie SW_DATA_UPDATED après une revalidation réseau
+    //    → on recharge pour afficher les données à jour immédiatement
+    // -------------------------------------------------------
+    const handleSWMessage = (event) => {
+      if (event.data?.type === 'SW_DATA_UPDATED') {
+        subscriptionsRef.current.forEach(({ onUpdate }) => {
+          try { onUpdate(null); } catch (e) { /* silencieux */ }
+        });
+      }
+    };
+
+    navigator.serviceWorker?.addEventListener('message', handleSWMessage);
+
+    // -------------------------------------------------------
     // Cleanup à la destruction du composant
     // -------------------------------------------------------
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      navigator.serviceWorker?.removeEventListener('message', handleSWMessage);
       channels.forEach(channel => supabase.removeChannel(channel));
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

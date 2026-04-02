@@ -3,7 +3,7 @@
 // Cache agressif multi-stratégie
 // ============================================
 
-const APP_VERSION = 'v2';
+const APP_VERSION = 'v3';
 const CACHE_STATIC = `top14-static-${APP_VERSION}`;
 const CACHE_API    = `top14-api-${APP_VERSION}`;
 const CACHE_IMAGES = `top14-images-${APP_VERSION}`;
@@ -112,7 +112,15 @@ async function staleWhileRevalidate(request, cacheName) {
   const cached = await cache.match(request);
   const fetchPromise = fetch(request)
     .then(response => {
-      if (response.ok) cache.put(request, response.clone());
+      if (response.ok) {
+        cache.put(request, response.clone());
+        // Notifier les clients qu'une donnée fraîche est disponible
+        // → useRealtimeSync écoute ce message et recharge les données
+        self.clients.matchAll({ includeUncontrolled: true, type: 'window' })
+          .then(clients => clients.forEach(client =>
+            client.postMessage({ type: 'SW_DATA_UPDATED', url: request.url })
+          ));
+      }
       return response;
     })
     .catch(() => null);
