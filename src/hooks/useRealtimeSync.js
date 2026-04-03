@@ -52,12 +52,16 @@ export function useRealtimeSync(subscriptions) {
 
     // -------------------------------------------------------
     // 3. Message du Service Worker → donnée fraîche disponible
-    //    Debounce 300ms pour éviter les rechargements en cascade
-    //    (plusieurs appels API simultanés → un seul reload)
+    //    Debounce 300ms + cooldown 5s après chargement initial
+    //    pour éviter la boucle infinie : reload → API → SW → reload
     // -------------------------------------------------------
+    const mountTime = Date.now();
     let swDebounceTimer = null;
     const handleSWMessage = (event) => {
       if (event.data?.type === 'SW_DATA_UPDATED') {
+        // Ignorer les messages SW pendant les 5 premières secondes
+        // (les appels API du chargement initial ne doivent pas reboucler)
+        if (Date.now() - mountTime < 5000) return;
         clearTimeout(swDebounceTimer);
         swDebounceTimer = setTimeout(() => {
           subscriptionsRef.current.forEach(({ onUpdate }) => {
