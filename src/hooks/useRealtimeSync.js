@@ -52,14 +52,18 @@ export function useRealtimeSync(subscriptions) {
 
     // -------------------------------------------------------
     // 3. Message du Service Worker → donnée fraîche disponible
-    //    Le SW envoie SW_DATA_UPDATED après une revalidation réseau
-    //    → on recharge pour afficher les données à jour immédiatement
+    //    Debounce 300ms pour éviter les rechargements en cascade
+    //    (plusieurs appels API simultanés → un seul reload)
     // -------------------------------------------------------
+    let swDebounceTimer = null;
     const handleSWMessage = (event) => {
       if (event.data?.type === 'SW_DATA_UPDATED') {
-        subscriptionsRef.current.forEach(({ onUpdate }) => {
-          try { onUpdate(null); } catch (e) { /* silencieux */ }
-        });
+        clearTimeout(swDebounceTimer);
+        swDebounceTimer = setTimeout(() => {
+          subscriptionsRef.current.forEach(({ onUpdate }) => {
+            try { onUpdate(null); } catch (e) { /* silencieux */ }
+          });
+        }, 300);
       }
     };
 
@@ -71,6 +75,7 @@ export function useRealtimeSync(subscriptions) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       navigator.serviceWorker?.removeEventListener('message', handleSWMessage);
+      clearTimeout(swDebounceTimer);
       channels.forEach(channel => supabase.removeChannel(channel));
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
