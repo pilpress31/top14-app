@@ -60,6 +60,12 @@ function AppContent() {
   const location = useLocation();
   const { user } = useAuth();
 
+  // Bypass cache SW après paiement réussi
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('payment') === 'success') {
+    window.history.replaceState({}, '', '/')
+  }
+
   // ── Contrôle d'accès ──
   const {
     loading:        accessLoading,

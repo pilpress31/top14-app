@@ -106,13 +106,13 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
       const data = await res.json()
 
       if (data.success) {
-        sessionStorage.removeItem('paypal_order_id')
-        sessionStorage.removeItem('paypal_saison')
-        // Nettoyer l'URL
         window.history.replaceState({}, '', window.location.pathname)
         setStep('success')
-        // Notifier le parent pour rechargement de l'app
-        setTimeout(() => onPaymentSuccess?.(), 2000)
+        // Attendre 2s que l'utilisateur voie le message de succès
+        // puis recharger avec un paramètre pour forcer le bypass du SW
+        setTimeout(() => {
+          window.location.href = '/?payment=success&t=' + Date.now()
+        }, 2000)
       } else {
         throw new Error(data.error || 'Paiement non confirmé')
       }
