@@ -292,6 +292,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <button class="tab" onclick="showTab('paris', this)">🎯 Paris</button>
     <button class="tab" onclick="showTab('distribution', this)">📦 Distribution</button>
     <button class="tab" onclick="showTab('actualites', this)">📰 Actualités</button>
+    <button class="tab" onclick="showTab('invitations', this)">🎟️ Invitations</button>
   </div>
 
   <div class="content">
@@ -502,6 +503,70 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- INVITATIONS -->
+    <div id="panel-invitations" class="panel">
+
+      <!-- Générer des codes -->
+      <div class="card">
+        <div class="card-title">🎟️ Générer des codes d'invitation</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Chaque code permet à une personne de s'inscrire et d'obtenir un accès bêta-testeur (gratuit à vie).
+        </p>
+        <div class="input-row">
+          <div>
+            <label>Nombre de codes</label>
+            <input type="number" id="invCount" value="1" min="1" max="50" placeholder="1">
+          </div>
+          <div>
+            <label>Expiration (jours, vide = illimité)</label>
+            <input type="number" id="invExpires" placeholder="Ex: 30">
+          </div>
+        </div>
+        <label>Note (optionnel)</label>
+        <input type="text" id="invNote" placeholder="Ex: Groupe rugby Toulouse">
+        <div class="btn-row">
+          <button class="btn btn-gold" id="invGenBtn" onclick="genererCodes()">
+            <div class="spinner"></div>
+            <span class="btn-text">✨ Générer</span>
+          </button>
+        </div>
+        <div class="result" id="invGenResult"></div>
+        <div id="invCodesGeneres" style="display:none;margin-top:16px">
+          <p style="color:var(--muted2);font-size:12px;margin-bottom:8px">Codes générés — copiez et envoyez-les :</p>
+          <div id="invCodesListe" style="background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:15px;letter-spacing:2px;line-height:2"></div>
+        </div>
+      </div>
+
+      <!-- Statut accès utilisateurs -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 Statut d'accès des utilisateurs</div>
+          <button class="btn" onclick="loadUsersAccess()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pseudo</th><th>Email</th><th>Statut</th><th>Code utilisé</th><th>Inscription</th></tr></thead>
+            <tbody id="usersAccessBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Liste des codes -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Tous les codes</div>
+          <button class="btn" onclick="loadInvitations()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Code</th><th>Statut</th><th>Note</th><th>Créé le</th><th>Utilisé le</th></tr></thead>
+            <tbody id="invitationsBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -892,6 +957,105 @@ async function voirEffectifs() {
   } catch(e) {
     showResult('effectifsResult', 'err', '❌ ' + e.message);
   }
+}
+// ── INVITATIONS ──
+async function genererCodes() {
+  const count = parseInt(document.getElementById('invCount').value) || 1;
+  const expires = document.getElementById('invExpires').value.trim();
+  const note = document.getElementById('invNote').value.trim();
+  const btn = document.getElementById('invGenBtn');
+
+  if (count < 1 || count > 50) { showResult('invGenResult', 'err', '❌ Entre 1 et 50 codes'); return; }
+
+  setLoading(btn, true);
+  document.getElementById('invCodesGeneres').style.display = 'none';
+
+  try {
+    const data = await api('/api/admin/invitations/generate', {
+      method: 'POST',
+      body: JSON.stringify({
+        count,
+        expires_in_days: expires ? parseInt(expires) : null,
+        note: note || null
+      })
+    });
+
+    if (data.success) {
+      showResult('invGenResult', 'ok', `✅ ${data.count} code(s) généré(s)`);
+      // Afficher les codes
+      const liste = document.getElementById('invCodesListe');
+      liste.innerHTML = data.codes.map(c =>
+        `<div style="color:var(--gold-light);cursor:pointer" onclick="copyCode('${c.code}')" title="Cliquer pour copier">
+          ${c.code}${c.expires_at ? ` <span style="color:var(--muted2);font-size:11px;font-family:Figtree">exp. ${new Date(c.expires_at).toLocaleDateString('fr-FR')}</span>` : ''}
+        </div>`
+      ).join('');
+      document.getElementById('invCodesGeneres').style.display = 'block';
+      loadInvitations();
+    } else {
+      showResult('invGenResult', 'err', '❌ ' + (data.error || 'Erreur'));
+    }
+  } catch(e) {
+    showResult('invGenResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    showResult('invGenResult', 'ok', `✅ Code ${code} copié dans le presse-papier`);
+  });
+}
+
+async function loadInvitations() {
+  const data = await api('/api/admin/invitations');
+  const tbody = document.getElementById('invitationsBody');
+  if (!data.success || !data.codes?.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Aucun code</td></tr>';
+    return;
+  }
+  const statutColor = { disponible: 'var(--green)', utilisé: 'var(--muted2)', expiré: 'var(--red)' };
+  tbody.innerHTML = data.codes.map(c => `
+    <tr>
+      <td style="font-family:monospace;letter-spacing:1px;color:var(--gold-light);cursor:pointer" onclick="copyCode('${c.code}')" title="Cliquer pour copier">${c.code}</td>
+      <td style="color:${statutColor[c.statut]||'var(--text)'}">● ${c.statut}</td>
+      <td style="color:var(--muted2);font-size:12px">${c.note || '—'}</td>
+      <td style="color:var(--muted2);font-size:12px">${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—'}</td>
+      <td style="color:var(--muted2);font-size:12px">${c.used_at ? new Date(c.used_at).toLocaleDateString('fr-FR') : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+async function loadUsersAccess() {
+  const data = await api('/api/admin/users-access');
+  const tbody = document.getElementById('usersAccessBody');
+  if (!data.success || !data.users?.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Aucune donnée</td></tr>';
+    return;
+  }
+  const statutStyle = {
+    beta_gratuit_vie: 'color:var(--gold-light)',
+    trial_non_demarre: 'color:var(--muted2)',
+    acces_expire: 'color:var(--red)'
+  };
+  tbody.innerHTML = data.users.map(u => {
+    const isTrialActif = u.statut_acces?.startsWith('trial_actif_');
+    const style = isTrialActif ? 'color:var(--green)' : (statutStyle[u.statut_acces] || 'color:var(--text)');
+    const label = u.statut_acces === 'beta_gratuit_vie' ? '🎟️ Bêta — Gratuit à vie'
+      : isTrialActif ? `⏳ Essai — ${u.jours_trial_restants}j restants`
+      : u.statut_acces === 'acces_expire' ? '🔒 Accès expiré'
+      : u.statut_acces === 'trial_non_demarre' ? '⏸ Trial non démarré'
+      : u.statut_acces;
+    return `
+      <tr>
+        <td style="font-weight:600">${u.pseudo || '—'}</td>
+        <td style="color:var(--muted2);font-size:12px">${u.email || '—'}</td>
+        <td style="${style}">${label}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--muted2)">${u.invitation_code || '—'}</td>
+        <td style="color:var(--muted2);font-size:12px">${u.inscription_at ? new Date(u.inscription_at).toLocaleDateString('fr-FR') : '—'}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 </script>
