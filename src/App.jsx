@@ -3,11 +3,14 @@
 // ========================================= //
 
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
 import { useState } from "react";
+import { useAccessControl } from "./hooks/useAccessControl";
+import PaywallPage from "./pages/PaywallPage";
+import AccessBanner from "./components/AccessBanner";
 
 // Pages
 import IAPage from '@/pages/IAPage';
@@ -51,9 +54,34 @@ function App() {
   const active = useActiveLabel();
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
-  
-  // ❌ POPUP SUPPRIMÉ : Trop intrusif, casse la navigation normale
-  // L'utilisateur peut quitter naturellement avec le bouton système
+  const { user } = useAuth();
+
+  // ── Contrôle d'accès ──
+  const {
+    loading:        accessLoading,
+    isActive,
+    isExpired,
+    isExpiringSoon,
+    isBeta,
+    joursRestants,
+    tarif,
+    refresh:        refreshAccess
+  } = useAccessControl();
+
+  // ── Paywall : bloquer les utilisateurs expirés (sauf bêta) ──
+  // Ne pas bloquer sur les pages publiques (login, register...)
+  const isPublicPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
+  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage) {
+    return (
+      <PaywallPage
+        tarif={tarif}
+        onPaymentSuccess={() => {
+          refreshAccess();
+          window.location.reload();
+        }}
+      />
+    );
+  }
   
   // Ne pas afficher la BottomNav sur les pages d'authentification
   const hideBottomNav = [
@@ -69,7 +97,9 @@ function App() {
     '/notifications-diagnostic',
     '/reglement',
     '/a-propos',
-    '/cgu'
+    '/cgu',
+    '/payment/success',
+    '/payment/cancel'
   ].includes(location.pathname);
 
 // ========================================= //
@@ -80,12 +110,26 @@ function App() {
     <AuthProvider>
       <ChatNotificationProvider>
         <div className="min-h-screen bg-rugby-white">
+
+          {/* Bannière expiration imminente (< 30 jours, non-bêta) */}
+          {user && isExpiringSoon && !isBeta && (
+            <AccessBanner joursRestants={joursRestants} tarif={tarif} />
+          )}
+
           <Routes>
             {/* Routes publiques */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+            {/* Routes paiement PayPal (retour depuis PayPal) */}
+            <Route path="/payment/success" element={
+              <PaywallPage tarif={tarif} onPaymentSuccess={() => { refreshAccess(); window.location.reload(); }} />
+            } />
+            <Route path="/payment/cancel" element={
+              <PaywallPage tarif={tarif} onPaymentSuccess={() => { refreshAccess(); window.location.reload(); }} />
+            } />
 
             {/* ✅ Route racine : Redirection vers /ia */}
             <Route path="/" element={<Navigate to="/ia" replace />} />
