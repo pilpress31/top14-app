@@ -15,7 +15,9 @@ export function useAccessControl() {
   const [loading, setLoading] = useState(true)
 
   const checkAccess = useCallback(async () => {
+    console.log('🔍 checkAccess appelé — user:', user?.id)
     if (!user) {
+      console.log('❌ Pas de user — arrêt')
       setAccessStatus(null)
       setLoading(false)
       return

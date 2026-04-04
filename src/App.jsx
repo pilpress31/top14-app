@@ -77,6 +77,8 @@ function AppContent() {
     refresh:        refreshAccess
   } = useAccessControl();
 
+  console.log('🔒 Access state:', { user: !!user, accessLoading, isExpired, isBeta })
+
   // ── Paywall : bloquer les utilisateurs expirés (sauf bêta) ──
   const isPublicPage = [
     '/login',
