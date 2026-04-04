@@ -68,9 +68,7 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
         throw new Error(order.error || 'Erreur création paiement')
       }
 
-      // 2. Stocker l'order_id et la saison pour le capture
-      sessionStorage.setItem('paypal_order_id', order.order_id)
-      sessionStorage.setItem('paypal_saison',   order.saison)
+      
 
       // 3. Rediriger vers PayPal
       window.location.href = order.approval_url
@@ -84,12 +82,11 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
   // ── Gérer le retour depuis PayPal (success) ──
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const token  = params.get('token')  // PayPal renvoie ?token=ORDER_ID
-    const orderId = sessionStorage.getItem('paypal_order_id')
-    const saison  = sessionStorage.getItem('paypal_saison')
+    const token  = params.get('token')
+    const saison = params.get('saison')
 
-    if (token && orderId && saison) {
-      capturePayment(orderId, saison)
+    if (token && saison) {
+      capturePayment(token, saison)
     }
   }, [])
 
