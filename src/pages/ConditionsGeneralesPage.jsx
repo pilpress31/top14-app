@@ -39,7 +39,7 @@ function ConditionsGeneralesPage() {
           Dernière mise à jour : 1er avril 2026
         </p>
         <p className="text-sm text-gray-500 mb-8">
-          Responsable de l'application : Bernard PILLORE —{' '}
+          Responsable de l'application : Pilpress 31 —{' '}
           <a href="mailto:pilpress31@gmail.com" className="text-rugby-gold underline">
             pilpress31@gmail.com
           </a>
