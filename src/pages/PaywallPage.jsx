@@ -173,10 +173,10 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-rugby-gold to-rugby-orange p-6 text-center">
+          <div className="bg-rugby-gold p-6 text-center">
             <Lock className="h-10 w-10 text-white mx-auto mb-3" />
             <h2 className="text-xl font-bold text-white mb-1">Accès expiré</h2>
-            <p className="text-white/80 text-sm">
+            <p className="text-white text-sm">
               Continuez à profiter de tous les pronostics rugby
             </p>
           </div>
