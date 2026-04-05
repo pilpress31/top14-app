@@ -53,16 +53,15 @@ export default function CGUPage() {
         {/* Encart bêta-testeurs */}
         <section className="bg-green-50 rounded-xl p-6 border-2 border-green-400">
           <h2 className="text-xl font-bold text-green-800 mb-3 flex items-center gap-2">
-            🎉 Phase Bêta — Accès gratuit à vie
+            🎉 Bêta-testeurs — Accès gratuit à vie
           </h2>
           <p className="text-gray-800 leading-relaxed mb-2">
-            Tous les utilisateurs ayant rejoint l'application avant le{' '}
-            <strong>1er septembre 2026</strong> sont considérés comme <strong>bêta-testeurs</strong> et
+            Les premiers utilisateurs ayant rejoint l'application lors de la phase bêta
             bénéficient d'un <strong>accès complet et gratuit à vie</strong> à toutes les fonctionnalités,
             y compris les futures évolutions. Cet avantage est personnel et non transmissible.
           </p>
           <p className="text-gray-700 text-sm">
-            Durant cette phase, l'accès est réservé aux utilisateurs disposant d'un{' '}
+            L'accès est réservé aux utilisateurs disposant d'un{' '}
             <strong>code d'invitation</strong> délivré par l'éditeur.
           </p>
         </section>
@@ -130,36 +129,93 @@ export default function CGUPage() {
             <h2 className="text-lg font-bold text-rugby-gold mb-3">
               ARTICLE 3 - Accès au service et conditions tarifaires
             </h2>
-            <div className="text-gray-700 space-y-3">
+            <div className="text-gray-700 space-y-4">
 
+              <p>L'accès à l'application est organisé en trois cercles :</p>
+
+              {/* Cercle 1 — Bêta */}
               <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                <p className="font-semibold text-green-900 mb-1">Bêta-testeurs (avant le 1er septembre 2026)</p>
-                <p>Accès complet et gratuit à vie. Personnel et non transmissible. Perdu en cas de
-                suppression volontaire du compte.</p>
+                <p className="font-semibold text-green-900 mb-1">🟢 1er cercle — Bêta-testeurs</p>
+                <p className="text-sm">
+                  Utilisateurs invités lors de la phase bêta initiale. Accès <strong>complet et gratuit à vie</strong>,
+                  y compris pour les futures saisons. Personnel et non transmissible.
+                  Perdu uniquement en cas de suppression volontaire du compte.
+                </p>
               </div>
 
+              {/* Cercle 2 — Early */}
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                <p className="font-semibold text-blue-900 mb-1">Nouveaux utilisateurs — Saison 2026-2027</p>
-                <ul className="list-disc list-inside ml-4 space-y-1">
+                <p className="font-semibold text-blue-900 mb-2">🔵 2ème cercle — Offre de lancement (sur invitation)</p>
+                <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
                   <li>
-                    <strong>1 mois d'essai gratuit et complet</strong> à partir de la date d'inscription,
-                    sans engagement ni carte bancaire
+                    Accès <strong>gratuit</strong> jusqu'à la fin de la saison 2025-2026
+                    et jusqu'à la 5ème journée de la saison 2026-2027 (soit jusqu'au <strong>30 septembre 2026</strong>)
                   </li>
                   <li>
-                    À l'issue de cette période : <strong>abonnement saisonnier de 4,99 €</strong> pour
-                    continuer à accéder à l'application
+                    À l'issue de cette période : <strong>offre de lancement à 2,99 €</strong> pour
+                    la saison 2026-2027 complète (au lieu de 4,99 €)
                   </li>
                   <li>
-                    L'abonnement couvre une saison complète de Top 14 et n'est <strong>pas reconduit
-                    automatiquement</strong>
+                    À partir de la saison 2027-2028 : tarif standard de <strong>4,99 €/saison</strong>
+                  </li>
+                  <li>
+                    Accessible uniquement via un <strong>code d'invitation</strong> délivré par l'éditeur
                   </li>
                 </ul>
               </div>
 
-              <p className="text-sm text-gray-500">
-                Ces tarifs sont susceptibles d'évoluer. Les utilisateurs seront informés de tout
-                changement au moins <strong>30 jours avant</strong> son entrée en vigueur.
-              </p>
+              {/* Cercle 3 — Public */}
+              <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
+                <p className="font-semibold text-orange-900 mb-2">🟡 3ème cercle — Accès public</p>
+                <p className="text-sm mb-2">
+                  Tarif calculé au prorata selon la période d'inscription dans la saison :
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="text-sm w-full border-collapse">
+                    <thead>
+                      <tr className="bg-orange-100">
+                        <th className="text-left p-2 border border-orange-200">Période d'inscription</th>
+                        <th className="text-right p-2 border border-orange-200">Tarif</th>
+                        <th className="text-right p-2 border border-orange-200">Réduction</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="p-2 border border-orange-200">Août — Septembre</td>
+                        <td className="text-right p-2 border border-orange-200 font-semibold">4,99 €</td>
+                        <td className="text-right p-2 border border-orange-200 text-gray-500">—</td>
+                      </tr>
+                      <tr className="bg-orange-50">
+                        <td className="p-2 border border-orange-200">Octobre — Décembre</td>
+                        <td className="text-right p-2 border border-orange-200 font-semibold">3,49 €</td>
+                        <td className="text-right p-2 border border-orange-200 text-green-700">-30%</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 border border-orange-200">Janvier — Mars</td>
+                        <td className="text-right p-2 border border-orange-200 font-semibold">2,49 €</td>
+                        <td className="text-right p-2 border border-orange-200 text-green-700">-50%</td>
+                      </tr>
+                      <tr className="bg-orange-50">
+                        <td className="p-2 border border-orange-200">Avril — Juin</td>
+                        <td className="text-right p-2 border border-orange-200 font-semibold">1,24 €</td>
+                        <td className="text-right p-2 border border-orange-200 text-green-700">-75%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  L'accès couvre la saison en cours jusqu'au 30 juin. Aucun renouvellement automatique.
+                </p>
+              </div>
+
+              {/* Notes communes */}
+              <div className="bg-gray-50 border border-gray-200 rounded p-4 text-sm text-gray-600 space-y-1">
+                <p>• Tous les paiements sont effectués via <strong>PayPal</strong>, de manière sécurisée.</p>
+                <p>• Aucun abonnement automatique — chaque saison fait l'objet d'un paiement volontaire.</p>
+                <p>• Ces tarifs sont susceptibles d'évoluer. Les utilisateurs seront informés au moins{' '}
+                  <strong>30 jours avant</strong> toute modification.</p>
+              </div>
+
             </div>
           </article>
 
