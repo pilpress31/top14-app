@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccessControl } from "./hooks/useAccessControl";
 import PaywallPage from "./pages/PaywallPage";
 import AccessBanner from "./components/AccessBanner";
@@ -103,14 +103,20 @@ function AppContent() {
   }
 
   // Vérifier si on vient de payer
-  const justPaid = localStorage.getItem('payment_just_completed') === 'true'
-  if (justPaid) {
-    localStorage.removeItem('payment_just_completed')
-    // Forcer un refresh immédiat de l'accès
-    setTimeout(() => refreshAccess(), 500)
-  }
+  const [accessChecked, setAccessChecked] = useState(false)
 
-  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage && !justPaid) {
+  useEffect(() => {
+    if (!user) return
+    const justPaid = localStorage.getItem('payment_just_completed') === 'true'
+    if (justPaid) {
+      localStorage.removeItem('payment_just_completed')
+      refreshAccess().then(() => setAccessChecked(true))
+    } else {
+      setAccessChecked(true)
+    }
+  }, [user])
+
+  if (user && accessChecked && !accessLoading && isExpired && !isBeta && !isPublicPage) {
     return (
       <PaywallPage
         tarif={tarif}
