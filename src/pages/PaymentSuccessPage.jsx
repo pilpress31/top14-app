@@ -48,9 +48,13 @@ export default function PaymentSuccessPage() {
 
       if (data.success) {
         setStatus('success')
-        // Attendre 2s puis rediriger proprement
-        setTimeout(() => {
-          // Forcer un rechargement complet sans aucun paramètre
+        setTimeout(async () => {
+          // Vérifier que l'accès est bien actif avant de rediriger
+          const check = await fetch(`${API_URL}/api/user/access-status`, {
+            headers: { 'x-user-id': user.id }
+          })
+          const checkData = await check.json()
+          console.log('✅ Statut après paiement:', checkData.status)
           window.location.replace('https://app.top14pronos.org/')
         }, 2000)
       } else {
