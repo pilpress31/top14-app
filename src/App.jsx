@@ -52,7 +52,6 @@ function useActiveLabel() {
 
 // ============================================
 // AppContent — doit être DANS AuthProvider
-// pour pouvoir appeler useAuth() et useAccessControl()
 // ============================================
 function AppContent() {
   const active = useActiveLabel();
@@ -60,13 +59,9 @@ function AppContent() {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Bypass cache SW après paiement réussi
-  const params = new URLSearchParams(window.location.search)
-  if (params.get('payment') === 'success') {
-    window.history.replaceState({}, '', '/')
-  }
+  // ── TOUS LES HOOKS EN HAUT, AVANT TOUT RETURN ──
 
-  // ── Contrôle d'accès ──
+  // Contrôle d'accès
   const {
     loading:        accessLoading,
     isExpired,
@@ -77,9 +72,25 @@ function AppContent() {
     refresh:        refreshAccess
   } = useAccessControl();
 
-  console.log('🔒 Access state:', { user: !!user, accessLoading, isExpired, isBeta })
+  // Gérer le retour post-paiement
+  const [accessChecked, setAccessChecked] = useState(false);
 
-  // ── Paywall : bloquer les utilisateurs expirés (sauf bêta) ──
+  useEffect(() => {
+    if (!user) {
+      setAccessChecked(true);
+      return;
+    }
+    const justPaid = localStorage.getItem('payment_just_completed') === 'true';
+    if (justPaid) {
+      localStorage.removeItem('payment_just_completed');
+      refreshAccess().then(() => setAccessChecked(true));
+    } else {
+      setAccessChecked(true);
+    }
+  }, [user]);
+
+  // ── LOGIQUE D'AFFICHAGE APRÈS TOUS LES HOOKS ──
+
   const isPublicPage = [
     '/login',
     '/register',
@@ -87,48 +98,6 @@ function AppContent() {
     '/reset-password'
   ].includes(location.pathname);
 
-  // Écran de chargement pendant la vérification d'accès
-  if (user && accessLoading && !isPublicPage) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex flex-col items-center justify-center gap-4">
-        <div className="text-5xl animate-bounce">🏉</div>
-        <p className="text-rugby-gold font-semibold text-lg tracking-wide">Top 14 Pronos</p>
-        <div className="flex gap-1.5 mt-2">
-          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'0ms'}}></div>
-          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'150ms'}}></div>
-          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'300ms'}}></div>
-        </div>
-      </div>
-    );
-  }
-
-  // Vérifier si on vient de payer
-  const [accessChecked, setAccessChecked] = useState(false)
-
-  useEffect(() => {
-    if (!user) return
-    const justPaid = localStorage.getItem('payment_just_completed') === 'true'
-    if (justPaid) {
-      localStorage.removeItem('payment_just_completed')
-      refreshAccess().then(() => setAccessChecked(true))
-    } else {
-      setAccessChecked(true)
-    }
-  }, [user])
-
-  if (user && accessChecked && !accessLoading && isExpired && !isBeta && !isPublicPage) {
-    return (
-      <PaywallPage
-        tarif={tarif}
-        onPaymentSuccess={() => {
-          refreshAccess();
-          window.location.reload();
-        }}
-      />
-    );
-  }
-
-  // Ne pas afficher la BottomNav sur ces pages
   const hideBottomNav = [
     '/login',
     '/register',
@@ -147,6 +116,34 @@ function AppContent() {
     '/payment/cancel'
   ].includes(location.pathname);
 
+  // Écran de chargement pendant la vérification d'accès
+  if (user && (accessLoading || !accessChecked) && !isPublicPage) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex flex-col items-center justify-center gap-4">
+        <div className="text-5xl animate-bounce">🏉</div>
+        <p className="text-rugby-gold font-semibold text-lg tracking-wide">Top 14 Pronos</p>
+        <div className="flex gap-1.5 mt-2">
+          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'0ms'}}></div>
+          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'150ms'}}></div>
+          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'300ms'}}></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Paywall si accès expiré
+  if (user && accessChecked && !accessLoading && isExpired && !isBeta && !isPublicPage) {
+    return (
+      <PaywallPage
+        tarif={tarif}
+        onPaymentSuccess={() => {
+          refreshAccess();
+          window.location.reload();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-rugby-white">
 
@@ -162,7 +159,7 @@ function AppContent() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Routes paiement PayPal (retour depuis PayPal) */}
+        {/* Routes paiement PayPal */}
         <Route path="/payment/success" element={
           <PaywallPage
             tarif={tarif}
@@ -176,158 +173,25 @@ function AppContent() {
           />
         } />
 
-        {/* ✅ Route racine : Redirection vers /ia */}
+        {/* Route racine */}
         <Route path="/" element={<Navigate to="/ia" replace />} />
 
-        {/* ✅ Route IA (page d'accueil) */}
-        <Route
-          path="/ia"
-          element={
-            <ProtectedRoute>
-              <IAPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Pronos (paris) */}
-        <Route
-          path="/pronos"
-          element={
-            <ProtectedRoute>
-              <PronosPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Classement */}
-        <Route
-          path="/classement"
-          element={
-            <ProtectedRoute>
-              <ClassementPageWithTabs />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Actu */}
-        <Route
-          path="/actu"
-          element={
-            <ProtectedRoute>
-              <ActuPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Live */}
-        <Route
-          path="/live"
-          element={
-            <ProtectedRoute>
-              <LivePage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Chat */}
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <ChatPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Statistiques */}
-        <Route
-          path="/statistiques"
-          element={
-            <ProtectedRoute>
-              <StatistiquesPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Plus (Paramètres) */}
-        <Route
-          path="/plus"
-          element={
-            <ProtectedRoute>
-              <ParametresPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Profil */}
-        <Route
-          path="/profil"
-          element={
-            <ProtectedRoute>
-              <ProfilPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ Route Ma Cagnotte */}
-        <Route
-          path="/ma-cagnotte"
-          element={
-            <ProtectedRoute>
-              <MaCagnotte />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Routes informations */}
-        <Route
-          path="/a-propos"
-          element={
-            <ProtectedRoute>
-              <AProposPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/reglement"
-          element={
-            <ProtectedRoute>
-              <ReglementPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/cgu"
-          element={
-            <ProtectedRoute>
-              <CGUPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/signaler-bug"
-          element={
-            <ProtectedRoute>
-              <SignalerBugPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notifications-push"
-          element={
-            <ProtectedRoute>
-              <NotificationsPushPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notifications-diagnostic"
-          element={
-            <ProtectedRoute>
-              <NotificationsDiagnosticPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/ia" element={<ProtectedRoute><IAPage /></ProtectedRoute>} />
+        <Route path="/pronos" element={<ProtectedRoute><PronosPage /></ProtectedRoute>} />
+        <Route path="/classement" element={<ProtectedRoute><ClassementPageWithTabs /></ProtectedRoute>} />
+        <Route path="/actu" element={<ProtectedRoute><ActuPage /></ProtectedRoute>} />
+        <Route path="/live" element={<ProtectedRoute><LivePage /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+        <Route path="/statistiques" element={<ProtectedRoute><StatistiquesPage /></ProtectedRoute>} />
+        <Route path="/plus" element={<ProtectedRoute><ParametresPage /></ProtectedRoute>} />
+        <Route path="/profil" element={<ProtectedRoute><ProfilPage /></ProtectedRoute>} />
+        <Route path="/ma-cagnotte" element={<ProtectedRoute><MaCagnotte /></ProtectedRoute>} />
+        <Route path="/a-propos" element={<ProtectedRoute><AProposPage /></ProtectedRoute>} />
+        <Route path="/reglement" element={<ProtectedRoute><ReglementPage /></ProtectedRoute>} />
+        <Route path="/cgu" element={<ProtectedRoute><CGUPage /></ProtectedRoute>} />
+        <Route path="/signaler-bug" element={<ProtectedRoute><SignalerBugPage /></ProtectedRoute>} />
+        <Route path="/notifications-push" element={<ProtectedRoute><NotificationsPushPage /></ProtectedRoute>} />
+        <Route path="/notifications-diagnostic" element={<ProtectedRoute><NotificationsDiagnosticPage /></ProtectedRoute>} />
       </Routes>
 
       {!hideBottomNav && (
@@ -340,10 +204,6 @@ function AppContent() {
   );
 }
 
-// ============================================
-// App — AuthProvider et ChatNotificationProvider wrappent AppContent
-// AppContent est à l'intérieur → useAuth() fonctionne correctement
-// ============================================
 function App() {
   return (
     <AuthProvider>
