@@ -102,7 +102,11 @@ function AppContent() {
     );
   }
 
-  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage) {
+  // Vérifier si on vient de payer
+  const justPaid = localStorage.getItem('payment_just_completed') === 'true'
+  if (justPaid) localStorage.removeItem('payment_just_completed')
+
+  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage && !justPaid) {
     return (
       <PaywallPage
         tarif={tarif}

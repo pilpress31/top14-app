@@ -106,14 +106,11 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
       const data = await res.json()
 
       if (data.success) {
+        // Stocker dans localStorage pour survivre au rechargement
+        localStorage.setItem('payment_just_completed', 'true')
         window.history.replaceState({}, '', window.location.pathname)
         setStep('success')
-        // Attendre 2s puis recharger proprement
         setTimeout(() => {
-          // Vider tout le cache du SW puis recharger
-          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' })
-          }
           window.location.replace('/')
         }, 2000)
       } else {
