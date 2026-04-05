@@ -1,7 +1,6 @@
 // ============================================
 // src/hooks/useAccessControl.js
 // Hook de contrôle d'accès
-// À importer dans App.jsx ou AuthContext
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react'
@@ -11,17 +10,17 @@ const API_URL = 'https://top14-api-production.up.railway.app'
 
 export function useAccessControl() {
   const { user } = useAuth()
-  const [accessStatus, setAccessStatus] = useState(null)  // null = chargement
+  const [accessStatus, setAccessStatus] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const checkAccess = useCallback(async () => {
-    console.log('🔍 checkAccess appelé — user:', user?.id)
     if (!user) {
-      console.log('❌ Pas de user — arrêt')
       setAccessStatus(null)
       setLoading(false)
       return
     }
+
+    setLoading(true) // ← forcer loading=true au début de chaque appel
 
     try {
       const response = await fetch(`${API_URL}/api/user/access-status`, {
@@ -31,7 +30,6 @@ export function useAccessControl() {
       setAccessStatus(data)
     } catch (error) {
       console.error('Erreur vérification accès:', error)
-      // En cas d'erreur réseau → ne pas bloquer l'accès
       setAccessStatus({ status: 'active', tier: 'unknown' })
     } finally {
       setLoading(false)

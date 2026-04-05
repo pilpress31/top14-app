@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAccessControl } from "./hooks/useAccessControl";
 import PaywallPage from "./pages/PaywallPage";
 import AccessBanner from "./components/AccessBanner";
@@ -59,9 +59,7 @@ function AppContent() {
   const location = useLocation();
   const { user } = useAuth();
 
-  // ── TOUS LES HOOKS EN HAUT, AVANT TOUT RETURN ──
-
-  // Contrôle d'accès
+  // ── TOUS LES HOOKS EN HAUT ──
   const {
     loading:        accessLoading,
     isExpired,
@@ -72,18 +70,7 @@ function AppContent() {
     refresh:        refreshAccess
   } = useAccessControl();
 
-  // Gérer le retour post-paiement
-  const [accessChecked, setAccessChecked] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      setAccessChecked(true);
-      return;
-    }
-    refreshAccess().then(() => setAccessChecked(true));
-  }, [user]);
-
-  // ── LOGIQUE D'AFFICHAGE APRÈS TOUS LES HOOKS ──
+  // ── LOGIQUE D'AFFICHAGE ──
 
   const isPublicPage = [
     '/login',
@@ -109,7 +96,7 @@ function AppContent() {
   ].includes(location.pathname);
 
   // Écran de chargement pendant la vérification d'accès
-  if (user && (accessLoading || !accessChecked) && !isPublicPage) {
+  if (user && accessLoading && !isPublicPage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex flex-col items-center justify-center gap-4">
         <div className="text-5xl animate-bounce">🏉</div>
@@ -124,7 +111,7 @@ function AppContent() {
   }
 
   // Paywall si accès expiré
-  if (user && accessChecked && !accessLoading && isExpired && !isBeta && !isPublicPage) {
+  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage) {
     return (
       <PaywallPage
         tarif={tarif}
@@ -139,7 +126,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-rugby-white">
 
-      {/* Bannière expiration imminente (< 30 jours, non-bêta) */}
+      {/* Bannière expiration imminente */}
       {user && isExpiringSoon && !isBeta && (
         <AccessBanner joursRestants={joursRestants} tarif={tarif} />
       )}
@@ -150,8 +137,6 @@ function AppContent() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-        
 
         {/* Route racine */}
         <Route path="/" element={<Navigate to="/ia" replace />} />
@@ -184,6 +169,9 @@ function AppContent() {
   );
 }
 
+// ============================================
+// App — AuthProvider wrappant AppContent
+// ============================================
 function App() {
   return (
     <AuthProvider>
