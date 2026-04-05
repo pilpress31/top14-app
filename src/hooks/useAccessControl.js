@@ -48,7 +48,20 @@ export function useAccessControl() {
       if (document.visibilityState === 'visible') checkAccess()
     }
     document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
+
+    // Détecter le retour post-paiement via localStorage
+    const handleStorage = () => {
+      if (localStorage.getItem('payment_just_completed') === 'true') {
+        localStorage.removeItem('payment_just_completed')
+        checkAccess()
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('storage', handleStorage)
+    }
   }, [checkAccess])
 
   const isActive       = accessStatus?.status === 'active' || accessStatus?.status === 'expiring_soon'

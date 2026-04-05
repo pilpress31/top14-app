@@ -80,13 +80,7 @@ function AppContent() {
       setAccessChecked(true);
       return;
     }
-    const justPaid = localStorage.getItem('payment_just_completed') === 'true';
-    if (justPaid) {
-      localStorage.removeItem('payment_just_completed');
-      refreshAccess().then(() => setAccessChecked(true));
-    } else {
-      setAccessChecked(true);
-    }
+    refreshAccess().then(() => setAccessChecked(true));
   }, [user]);
 
   // ── LOGIQUE D'AFFICHAGE APRÈS TOUS LES HOOKS ──
