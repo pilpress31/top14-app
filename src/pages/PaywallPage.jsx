@@ -108,10 +108,13 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
       if (data.success) {
         window.history.replaceState({}, '', window.location.pathname)
         setStep('success')
-        // Attendre 2s que l'utilisateur voie le message de succès
-        // puis recharger avec un paramètre pour forcer le bypass du SW
+        // Attendre 2s puis recharger proprement
         setTimeout(() => {
-          window.location.href = '/?payment=success&t=' + Date.now()
+          // Vider tout le cache du SW puis recharger
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' })
+          }
+          window.location.replace('/')
         }, 2000)
       } else {
         throw new Error(data.error || 'Paiement non confirmé')
