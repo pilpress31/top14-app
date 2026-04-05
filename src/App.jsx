@@ -87,6 +87,21 @@ function AppContent() {
     '/reset-password'
   ].includes(location.pathname);
 
+  // Écran de chargement pendant la vérification d'accès
+  if (user && accessLoading && !isPublicPage) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex flex-col items-center justify-center gap-4">
+        <div className="text-5xl animate-bounce">🏉</div>
+        <p className="text-rugby-gold font-semibold text-lg tracking-wide">Top 14 Pronos</p>
+        <div className="flex gap-1.5 mt-2">
+          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'0ms'}}></div>
+          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'150ms'}}></div>
+          <div className="w-2 h-2 rounded-full bg-rugby-gold animate-bounce" style={{animationDelay:'300ms'}}></div>
+        </div>
+      </div>
+    );
+  }
+
   if (user && !accessLoading && isExpired && !isBeta && !isPublicPage) {
     return (
       <PaywallPage
