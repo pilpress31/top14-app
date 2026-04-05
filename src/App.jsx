@@ -10,6 +10,7 @@ import BottomNav from "@/components/BottomNav";
 import { useState } from "react";
 import { useAccessControl } from "./hooks/useAccessControl";
 import PaywallPage from "./pages/PaywallPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import AccessBanner from "./components/AccessBanner";
 
 // Pages
@@ -70,13 +71,14 @@ function AppContent() {
     refresh:        refreshAccess
   } = useAccessControl();
 
-  // ── LOGIQUE D'AFFICHAGE ──
-
+  // ── Pages qui ne doivent jamais être bloquées ──
   const isPublicPage = [
     '/login',
     '/register',
     '/forgot-password',
-    '/reset-password'
+    '/reset-password',
+    '/payment/success',  // ← IMPORTANT : ne jamais bloquer le retour PayPal
+    '/payment/cancel'
   ].includes(location.pathname);
 
   const hideBottomNav = [
@@ -92,10 +94,13 @@ function AppContent() {
     '/notifications-diagnostic',
     '/reglement',
     '/a-propos',
-    '/cgu'
+    '/cgu',
+    '/payment/success',
+    '/payment/cancel'
   ].includes(location.pathname);
 
   // Écran de chargement pendant la vérification d'accès
+  // Ne pas afficher sur les pages publiques
   if (user && accessLoading && !isPublicPage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex flex-col items-center justify-center gap-4">
@@ -110,15 +115,12 @@ function AppContent() {
     );
   }
 
-  // Paywall si accès expiré
+  // Paywall si accès expiré — jamais sur les pages publiques
   if (user && !accessLoading && isExpired && !isBeta && !isPublicPage) {
     return (
       <PaywallPage
         tarif={tarif}
-        onPaymentSuccess={() => {
-          refreshAccess();
-          window.location.reload();
-        }}
+        onPaymentSuccess={() => refreshAccess()}
       />
     );
   }
@@ -137,6 +139,10 @@ function AppContent() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* ✅ Route dédiée retour PayPal — séparée du PaywallPage */}
+        <Route path="/payment/success" element={<PaymentSuccessPage />} />
+        <Route path="/payment/cancel" element={<Navigate to="/" replace />} />
 
         {/* Route racine */}
         <Route path="/" element={<Navigate to="/ia" replace />} />
@@ -169,9 +175,6 @@ function AppContent() {
   );
 }
 
-// ============================================
-// App — AuthProvider wrappant AppContent
-// ============================================
 function App() {
   return (
     <AuthProvider>

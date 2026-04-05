@@ -11,11 +11,9 @@ const API_URL = 'https://top14-api-production.up.railway.app'
 
 export default function PaywallPage({ tarif, onPaymentSuccess }) {
   const { user, signOut } = useAuth()
-  const [step, setStep]         = useState('info')   // 'info' | 'paying' | 'success'
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [error, setError]             = useState('')
   const [paypalReady, setPaypalReady] = useState(false)
-  const [config, setConfig]     = useState(null)
 
   // ── Charger la config PayPal ──
   useEffect(() => {
@@ -26,7 +24,6 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
         })
         const data = await res.json()
         if (data.client_id) {
-          setConfig(data)
           loadPaypalSDK(data.client_id)
         }
       } catch (e) {
@@ -42,8 +39,8 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
       return
     }
     const script = document.createElement('script')
-    script.id  = 'paypal-sdk'
-    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&locale=fr_FR`
+    script.id    = 'paypal-sdk'
+    script.src   = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=EUR&locale=fr_FR`
     script.onload = () => setPaypalReady(true)
     document.body.appendChild(script)
   }
@@ -54,9 +51,8 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
     setError('')
 
     try {
-      // 1. Créer l'ordre PayPal côté serveur
       const res = await fetch(`${API_URL}/api/payments/paypal/create-order`, {
-        method:  'POST',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-user-id':    user.id
@@ -68,9 +64,8 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
         throw new Error(order.error || 'Erreur création paiement')
       }
 
-      
-
-      // 3. Rediriger vers PayPal
+      // Rediriger vers PayPal
+      // Le retour sera géré par PaymentSuccessPage sur /payment/success
       window.location.href = order.approval_url
 
     } catch (e) {
@@ -79,81 +74,11 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
     }
   }
 
-  // ── Gérer le retour depuis PayPal (success) ──
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const token  = params.get('token')
-    const saison = params.get('saison')
-
-    if (token && saison) {
-      capturePayment(token, saison)
-    }
-  }, [])
-
-  const capturePayment = async (orderId, saison) => {
-    setStep('paying')
-    setLoading(true)
-
-    try {
-      const res = await fetch(`${API_URL}/api/payments/paypal/capture`, {
-        method:  'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id':    user.id
-        },
-        body: JSON.stringify({ order_id: orderId, saison })
-      })
-      const data = await res.json()
-
-      if (data.success) {
-        localStorage.setItem('payment_just_completed', 'true')
-        setStep('success')
-        setTimeout(() => {
-          window.location.href = 'https://app.top14pronos.org/'
-        }, 2000)
-      } else {
-        throw new Error(data.error || 'Paiement non confirmé')
-      }
-    } catch (e) {
-      setError(e.message)
-      setStep('info')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ── Rendu : succès ──
-  if (step === 'success') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-6">
-        <div className="w-full max-w-md text-center">
-          <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-3">Paiement confirmé ! 🎉</h1>
-          <p className="text-gray-600 mb-2">Votre accès Top 14 Pronos est activé.</p>
-          <p className="text-sm text-gray-500">Redirection en cours...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // ── Rendu : capture en cours ──
-  if (step === 'paying') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex items-center justify-center p-6">
-        <div className="w-full max-w-md text-center">
-          <Loader2 className="h-12 w-12 text-rugby-gold mx-auto mb-4 animate-spin" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Confirmation du paiement...</h2>
-          <p className="text-gray-500 text-sm">Ne fermez pas cette page</p>
-        </div>
-      </div>
-    )
-  }
-
   // ── Rendu principal ──
-  const montant   = tarif?.prix ?? '—'
+  const montant    = tarif?.prix ?? '—'
   const labelTarif = tarif?.label ?? ''
-  const reduction = tarif?.reduction ?? 0
-  const prixBase  = tarif?.prix_base ?? 4.99
+  const reduction  = tarif?.reduction ?? 0
+  const prixBase   = tarif?.prix_base ?? 4.99
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex items-center justify-center p-6">
