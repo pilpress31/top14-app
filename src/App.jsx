@@ -103,12 +103,17 @@ function AppContent() {
   }
 
   // Vérifier si on vient de payer
-  const justPaid = localStorage.getItem('payment_just_completed') === 'true'
-  if (justPaid) {
-    localStorage.removeItem('payment_just_completed')
-    // Forcer un refresh immédiat de l'accès
-    setTimeout(() => refreshAccess(), 500)
-  }
+  const [justPaid, setJustPaid] = useState(() => {
+    const val = localStorage.getItem('payment_just_completed') === 'true'
+    if (val) localStorage.removeItem('payment_just_completed')
+    return val
+  })
+
+  useEffect(() => {
+    if (justPaid && user) {
+      refreshAccess().then(() => setJustPaid(false))
+    }
+  }, [justPaid, user])
 
   if (user && !accessLoading && isExpired && !isBeta && !isPublicPage && !justPaid) {
     return (
