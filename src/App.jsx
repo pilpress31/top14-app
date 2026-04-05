@@ -87,8 +87,11 @@ function AppContent() {
     '/reset-password'
   ].includes(location.pathname);
 
+  // Ignorer le paywall si on revient d'un paiement réussi
+  const justPaid = new URLSearchParams(window.location.search).get('payment') === 'success'
+
   // Écran de chargement pendant la vérification d'accès
-  if (user && accessLoading && !isPublicPage) {
+  if (user && accessLoading && !isPublicPage && !justPaid) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rugby-gold/10 to-rugby-orange/10 flex flex-col items-center justify-center gap-4">
         <div className="text-5xl animate-bounce">🏉</div>
@@ -102,7 +105,7 @@ function AppContent() {
     );
   }
 
-  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage) {
+  if (user && !accessLoading && isExpired && !isBeta && !isPublicPage && !justPaid) {
     return (
       <PaywallPage
         tarif={tarif}
