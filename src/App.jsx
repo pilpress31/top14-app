@@ -111,9 +111,7 @@ function AppContent() {
     '/notifications-diagnostic',
     '/reglement',
     '/a-propos',
-    '/cgu',
-    '/payment/success',
-    '/payment/cancel'
+    '/cgu'
   ].includes(location.pathname);
 
   // Écran de chargement pendant la vérification d'accès
@@ -159,19 +157,7 @@ function AppContent() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Routes paiement PayPal */}
-        <Route path="/payment/success" element={
-          <PaywallPage
-            tarif={tarif}
-            onPaymentSuccess={() => { refreshAccess(); window.location.reload(); }}
-          />
-        } />
-        <Route path="/payment/cancel" element={
-          <PaywallPage
-            tarif={tarif}
-            onPaymentSuccess={() => { refreshAccess(); window.location.reload(); }}
-          />
-        } />
+        
 
         {/* Route racine */}
         <Route path="/" element={<Navigate to="/ia" replace />} />
