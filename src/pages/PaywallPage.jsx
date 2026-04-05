@@ -106,10 +106,12 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
       const data = await res.json()
 
       if (data.success) {
+        // Stocker dans localStorage pour survivre au rechargement
         localStorage.setItem('payment_just_completed', 'true')
+        window.history.replaceState({}, '', window.location.pathname)
         setStep('success')
         setTimeout(() => {
-          window.location.href = 'https://app.top14pronos.org/'
+          window.location.replace('/')
         }, 2000)
       } else {
         throw new Error(data.error || 'Paiement non confirmé')
