@@ -54,7 +54,7 @@ export default function PaymentSuccessPage() {
             headers: { 'x-user-id': user.id }
           })
           const checkData = await check.json()
-          console.log('✅ Statut après paiement:', checkData.status)
+          
           window.location.replace('https://app.top14pronos.org/')
         }, 2000)
       } else {
