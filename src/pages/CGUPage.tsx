@@ -50,19 +50,20 @@ export default function CGUPage() {
           </p>
         </section>
 
-        {/* Encart bêta-testeurs */}
-        <section className="bg-green-50 rounded-xl p-6 border-2 border-green-400">
-          <h2 className="text-xl font-bold text-green-800 mb-3 flex items-center gap-2">
-            🎉 Bêta-testeurs — Accès gratuit à vie
+        {/* Encart accès sur invitation */}
+        <section className="bg-blue-50 rounded-xl p-6 border-2 border-blue-300">
+          <h2 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
+            🎟️ Accès sur invitation
           </h2>
           <p className="text-gray-800 leading-relaxed mb-2">
-            Les premiers utilisateurs ayant rejoint l'application lors de la phase bêta
-            bénéficient d'un <strong>accès complet et gratuit à vie</strong> à toutes les fonctionnalités,
-            y compris les futures évolutions. Cet avantage est personnel et non transmissible.
+            L'accès à Top 14 Pronos est actuellement réservé aux utilisateurs disposant d'un{' '}
+            <strong>code d'invitation</strong> délivré par l'éditeur.
           </p>
           <p className="text-gray-700 text-sm">
-            L'accès est réservé aux utilisateurs disposant d'un{' '}
-            <strong>code d'invitation</strong> délivré par l'éditeur.
+            Pour obtenir un code, contactez :{' '}
+            <a href="mailto:pilpress31@gmail.com" className="text-blue-600 underline">
+              pilpress31@gmail.com
+            </a>
           </p>
         </section>
 
@@ -131,21 +132,11 @@ export default function CGUPage() {
             </h2>
             <div className="text-gray-700 space-y-4">
 
-              <p>L'accès à l'application est organisé en trois cercles :</p>
+              <p>L'accès à l'application est organisé selon trois formules :</p>
 
-              {/* Cercle 1 — Bêta */}
-              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                <p className="font-semibold text-green-900 mb-1">🟢 1er cercle — Bêta-testeurs</p>
-                <p className="text-sm">
-                  Utilisateurs invités lors de la phase bêta initiale. Accès <strong>complet et gratuit à vie</strong>,
-                  y compris pour les futures saisons. Personnel et non transmissible.
-                  Perdu uniquement en cas de suppression volontaire du compte.
-                </p>
-              </div>
-
-              {/* Cercle 2 — Early */}
+              {/* Membres fondateurs */}
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                <p className="font-semibold text-blue-900 mb-2">🔵 2ème cercle — Offre de lancement (sur invitation)</p>
+                <p className="font-semibold text-blue-900 mb-2">🔵 Membres fondateurs (sur invitation)</p>
                 <ul className="list-disc list-inside ml-2 space-y-1 text-sm">
                   <li>
                     Accès <strong>gratuit</strong> jusqu'à la fin de la saison 2025-2026
@@ -164,9 +155,9 @@ export default function CGUPage() {
                 </ul>
               </div>
 
-              {/* Cercle 3 — Public */}
+              {/* Accès standard */}
               <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
-                <p className="font-semibold text-orange-900 mb-2">🟡 3ème cercle — Accès public</p>
+                <p className="font-semibold text-orange-900 mb-2">🟡 Accès standard</p>
                 <p className="text-sm mb-2">
                   Tarif calculé au prorata selon la période d'inscription dans la saison :
                 </p>
