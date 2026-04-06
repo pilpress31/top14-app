@@ -1091,6 +1091,7 @@ async function envoyerCodeEmail() {
 }
 
 
+async function loadUsersAccess() {
   const data = await api('/api/admin/users-access');
   const tbody = document.getElementById('usersAccessBody');
   if (!data.success || !data.users?.length) {
