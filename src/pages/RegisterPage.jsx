@@ -218,10 +218,10 @@ function RegisterPage() {
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-green-800 font-semibold mb-1">
-                  🎟️ Accès bêta-testeur activé !
+                  🎟️ Accès activé !
                 </p>
                 <p className="text-sm text-green-700">
-                  Vous bénéficiez d'un accès complet et gratuit à vie. Bienvenue dans l'équipe !
+                  Vous bénéficiez d'un accès gratuit jusqu'au 30 septembre 2026, puis d'une offre de lancement préférentielle. Bienvenue dans l'équipe !
                 </p>
               </div>
 

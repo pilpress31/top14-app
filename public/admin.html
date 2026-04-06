@@ -512,7 +512,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="card">
         <div class="card-title">🎟️ Générer des codes d'invitation</div>
         <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
-          Chaque code permet à une personne de s'inscrire et d'obtenir un accès bêta-testeur (gratuit à vie).
+          Chaque code permet à une personne de s'inscrire avec un accès gratuit jusqu'au 30 septembre 2026, puis à l'offre de lancement préférentielle.
         </p>
         <div class="input-row">
           <div>
@@ -537,6 +537,25 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <p style="color:var(--muted2);font-size:12px;margin-bottom:8px">Codes générés — copiez et envoyez-les :</p>
           <div id="invCodesListe" style="background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:15px;letter-spacing:2px;line-height:2"></div>
         </div>
+      </div>
+
+      <!-- Envoyer un code par email -->
+      <div class="card">
+        <div class="card-title">📧 Envoyer un code par email</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Génère un code et l'envoie directement par email à la personne invitée.
+        </p>
+        <label>Email du destinataire</label>
+        <input type="email" id="invEmailTo" placeholder="ami@example.com">
+        <label>Note personnalisée (optionnel)</label>
+        <input type="text" id="invEmailNote" placeholder="Ex: Invitation pour rejoindre notre groupe">
+        <div class="btn-row">
+          <button class="btn btn-gold" id="invEmailBtn" onclick="envoyerCodeEmail()">
+            <div class="spinner"></div>
+            <span class="btn-text">📤 Générer et envoyer</span>
+          </button>
+        </div>
+        <div class="result" id="invEmailResult"></div>
       </div>
 
       <!-- Statut accès utilisateurs -->
@@ -1026,7 +1045,52 @@ async function loadInvitations() {
   `).join('');
 }
 
-async function loadUsersAccess() {
+async function envoyerCodeEmail() {
+  const email = document.getElementById('invEmailTo').value.trim();
+  const note  = document.getElementById('invEmailNote').value.trim();
+  const btn   = document.getElementById('invEmailBtn');
+
+  if (!email) { showResult('invEmailResult', 'err', '❌ Email requis'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showResult('invEmailResult', 'err', '❌ Email invalide'); return; }
+
+  setLoading(btn, true);
+  showResult('invEmailResult', 'ok', '⏳ Génération et envoi en cours...');
+
+  try {
+    // 1. Générer un code
+    const genData = await api('/api/admin/invitations/generate', {
+      method: 'POST',
+      body: JSON.stringify({ count: 1, note: note || `Invitation pour ${email}` })
+    });
+
+    if (!genData.success || !genData.codes?.length) {
+      throw new Error(genData.error || 'Erreur génération code');
+    }
+
+    const code = genData.codes[0].code;
+
+    // 2. Envoyer l'email
+    const sendData = await api('/api/admin/invitations/send-email', {
+      method: 'POST',
+      body: JSON.stringify({ email, code, note: note || null })
+    });
+
+    if (sendData.success) {
+      showResult('invEmailResult', 'ok', `✅ Code ${code} envoyé à ${email}`);
+      document.getElementById('invEmailTo').value = '';
+      document.getElementById('invEmailNote').value = '';
+      loadInvitations();
+    } else {
+      throw new Error(sendData.error || 'Erreur envoi email');
+    }
+  } catch(e) {
+    showResult('invEmailResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
   const data = await api('/api/admin/users-access');
   const tbody = document.getElementById('usersAccessBody');
   if (!data.success || !data.users?.length) {
