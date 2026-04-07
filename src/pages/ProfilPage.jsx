@@ -55,7 +55,7 @@ function ProfilPage() {
       console.log('🌐 API URL:', import.meta.env.VITE_API_URL)
       if (!session?.access_token) return
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/profil/abonnement`,
+        `${import.meta.env.VITE_API_URL}/profil/abonnement`,
         { headers: { Authorization: `Bearer ${session.access_token}` } }
       )
       console.log('📦 Abonnement:', response.data)
