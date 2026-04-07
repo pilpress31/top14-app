@@ -51,14 +51,11 @@ function ProfilPage() {
   const loadAbonnement = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('🔑 Session token:', session?.access_token ? 'OK' : 'ABSENT')
-      console.log('🌐 API URL:', import.meta.env.VITE_API_URL)
       if (!session?.access_token) return
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/profil/abonnement`,
         { headers: { Authorization: `Bearer ${session.access_token}` } }
       )
-      console.log('📦 Abonnement:', response.data)
       if (response.data.success) setAbonnement(response.data)
     } catch (e) {
       console.log('Abonnement non chargé:', e.message)
