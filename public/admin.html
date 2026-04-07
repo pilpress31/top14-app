@@ -469,6 +469,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="spinner"></div>
             <span class="btn-text">🔄 Régénérer les actualités</span>
           </button>
+          <button class="btn" id="composBtn" onclick="regenererCompos()" style="margin-left:8px;" title="Met à jour uniquement les compos probables sans toucher au reste des actus">
+            <div class="spinner"></div>
+            <span class="btn-text">🏉 Régénérer compos uniquement</span>
+          </button>
         </div>
         <div class="result" id="actuResult"></div>
       </div>
@@ -908,6 +912,25 @@ async function regenererActus() {
     const data = await api('/api/admin/actu/regenerer', { method: 'POST' });
     if (data.success) {
       showResult('actuResult', 'ok', '✅ Génération lancée en arrière-plan !');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── COMPOS UNIQUEMENT ──
+async function regenererCompos() {
+  const btn = document.getElementById('composBtn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Régénération des compos en cours... (environ 30s par match, les actus existantes sont conservées)');
+  try {
+    const data = await api('/api/admin/actu/regenerer-compos', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Régénération compos lancée en arrière-plan ! Les compos seront mises à jour match par match.');
     } else {
       showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
     }

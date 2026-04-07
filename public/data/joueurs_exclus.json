@@ -1,0 +1,58 @@
+[
+  {
+    "nom": "Uini ATONIO",
+    "club": "STADE ROCHELAIS",
+    "raison": "Retraite médicale (accident cardiaque)",
+    "date": "2026-01",
+    "source": "manuel"
+  },
+  {
+    "nom": "Paul WILLEMSE",
+    "club": "MONTPELLIER HÉRAULT RUGBY",
+    "raison": "Retraite médicale (commotions cérébrales répétées)",
+    "date": "2025-06",
+    "source": "manuel"
+  },
+  {
+    "nom": "Henry CHAVANCY",
+    "club": "RACING 92",
+    "raison": "Retraite",
+    "date": "2025-06",
+    "source": "manuel"
+  },
+  {
+    "nom": "Brice DULIN",
+    "club": "STADE ROCHELAIS",
+    "raison": "Retraite",
+    "date": "2025-06",
+    "source": "manuel"
+  },
+  {
+    "nom": "Nans DUCUING",
+    "club": "BORDEAUX BÈGLES",
+    "raison": "Retraite",
+    "date": "2025-06",
+    "source": "manuel"
+  },
+  {
+    "nom": "Julien DUMORA",
+    "club": "CASTRES OLYMPIQUE",
+    "raison": "Retraite",
+    "date": "2025-06",
+    "source": "manuel"
+  },
+  {
+    "nom": "Camille LOPEZ",
+    "club": "AVIRON BAYONNAIS",
+    "raison": "Retraite",
+    "date": "2025-06",
+    "source": "manuel"
+  },
+  {
+    "nom": "Dan BIGGAR",
+    "club": "RC TOULON",
+    "raison": "Retraite",
+    "date": "2025-06",
+    "source": "manuel"
+  }
+]
