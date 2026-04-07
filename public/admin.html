@@ -674,12 +674,16 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 Tous les codes</div>
-          <button class="btn" onclick="loadInvitations()">↻ Actualiser</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="loadInvitations()">↻ Actualiser</button>
+            <button class="btn" id="purgeBtn" onclick="purgerCodes()" style="background:var(--red);color:#fff" title="Supprimer tous les codes non utilisés">🗑 Purger non utilisés</button>
+          </div>
         </div>
+        <div id="purgeResult" style="margin:0 0 8px 0"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Code</th><th>Statut</th><th>Note</th><th>Créé le</th><th>Utilisé le</th></tr></thead>
-            <tbody id="invitationsBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
+            <thead><tr><th>Code</th><th>Statut</th><th>Note</th><th>Créé le</th><th>Utilisé le</th><th></th></tr></thead>
+            <tbody id="invitationsBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1243,7 +1247,7 @@ async function loadInvitations() {
   const data = await api('/api/admin/invitations');
   const tbody = document.getElementById('invitationsBody');
   if (!data.success || !data.codes?.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Aucun code</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucun code</td></tr>';
     return;
   }
   const statutColor = { disponible: 'var(--green)', utilisé: 'var(--muted2)', expiré: 'var(--red)' };
@@ -1254,8 +1258,35 @@ async function loadInvitations() {
       <td style="color:var(--muted2);font-size:12px">${c.note || '—'}</td>
       <td style="color:var(--muted2);font-size:12px">${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—'}</td>
       <td style="color:var(--muted2);font-size:12px">${c.used_at ? new Date(c.used_at).toLocaleDateString('fr-FR') : '—'}</td>
+      <td>${c.statut !== 'utilisé' ? `<button onclick="supprimerCode('${c.code}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px" title="Supprimer">🗑</button>` : ''}</td>
     </tr>
   `).join('');
+}
+
+async function supprimerCode(code) {
+  if (!confirm(`Supprimer le code ${code} ?`)) return;
+  try {
+    const data = await api('/api/admin/invitations/supprimer', { method: 'DELETE', body: JSON.stringify({ code }) });
+    showResult('purgeResult', data.success ? 'ok' : 'err', (data.success ? '✅ ' : '❌ ') + data.message);
+    if (data.success) loadInvitations();
+  } catch(e) {
+    showResult('purgeResult', 'err', '❌ ' + e.message);
+  }
+}
+
+async function purgerCodes() {
+  if (!confirm('Supprimer TOUS les codes non utilisés ? Cette action est irréversible.')) return;
+  const btn = document.getElementById('purgeBtn');
+  btn.disabled = true;
+  try {
+    const data = await api('/api/admin/invitations/purger', { method: 'DELETE' });
+    showResult('purgeResult', data.success ? 'ok' : 'err', data.success ? `✅ ${data.message}` : '❌ ' + (data.error || 'Erreur'));
+    if (data.success) loadInvitations();
+  } catch(e) {
+    showResult('purgeResult', 'err', '❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function envoyerCodeEmail() {

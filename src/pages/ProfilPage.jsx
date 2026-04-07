@@ -24,10 +24,12 @@ function ProfilPage() {
   const [checkingPseudo, setCheckingPseudo] = useState(false)
   const [pseudoAvailable, setPseudoAvailable] = useState(null)
   const [pseudoError, setPseudoError] = useState('')
+  const [abonnement, setAbonnement] = useState(null)
 
   // Charger avatar depuis Supabase
   useEffect(() => {
     loadAvatar()
+    loadAbonnement()
   }, [user])
 
   const loadAvatar = async () => {
@@ -43,6 +45,20 @@ function ProfilPage() {
       }
     } catch (error) {
       console.log('Pas d\'avatar trouvé')
+    }
+  }
+
+  const loadAbonnement = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/profil/abonnement`,
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
+      )
+      if (response.data.success) setAbonnement(response.data)
+    } catch (e) {
+      console.log('Abonnement non chargé:', e.message)
     }
   }
 
@@ -555,6 +571,56 @@ function ProfilPage() {
           </div>
         )}
       </div>
+
+      {/* Abonnement */}
+      {abonnement && (
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Mon abonnement</h2>
+          <div className={`rounded-lg p-4 mb-4 ${
+            abonnement.tier === 'beta'   ? 'bg-green-50 border border-green-200' :
+            abonnement.tier === 'early'  ? 'bg-blue-50 border border-blue-200' :
+                                           'bg-orange-50 border border-orange-200'
+          }`}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">{abonnement.tierInfo?.emoji}</span>
+              <span className={`font-bold text-lg ${
+                abonnement.tier === 'beta'  ? 'text-green-800' :
+                abonnement.tier === 'early' ? 'text-blue-800' : 'text-orange-800'
+              }`}>{abonnement.tierInfo?.label}</span>
+            </div>
+            <p className={`text-sm font-medium ${
+              abonnement.statutAcces === 'expiré'        ? 'text-red-600' :
+              abonnement.statutAcces === 'bientot_expire'? 'text-orange-600' : 'text-gray-700'
+            }`}>{abonnement.messageAcces}</p>
+          </div>
+
+          <div className="space-y-2 text-sm text-gray-600">
+            {abonnement.membre_depuis && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Membre depuis</span>
+                <span className="font-medium">{new Date(abonnement.membre_depuis).toLocaleDateString('fr-FR')}</span>
+              </div>
+            )}
+            {abonnement.invitation_code && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Code d'invitation</span>
+                <span className="font-mono text-xs text-rugby-gold">{abonnement.invitation_code}</span>
+              </div>
+            )}
+            {abonnement.tier !== 'beta' && abonnement.access_expires_at && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Accès gratuit jusqu'au</span>
+                <span className="font-medium">{new Date(abonnement.access_expires_at).toLocaleDateString('fr-FR')}</span>
+              </div>
+            )}
+            {abonnement.tier === 'early' && (
+              <div className="mt-3 pt-3 border-t border-blue-100 text-xs text-blue-700">
+                💡 Après la période gratuite : offre de lancement à <strong>2,99 €</strong> pour la saison 2026-2027, puis 4,99 €/saison.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Actions du compte */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
