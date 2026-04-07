@@ -506,6 +506,100 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             </table>
           </div>
         </div>
+
+        <!-- Consultation effectif par équipe -->
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📋 Consulter l'effectif d'une équipe</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="clubSelect" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+              <option value="">-- Choisir un club --</option>
+              <option>ASM CLERMONT</option>
+              <option>AVIRON BAYONNAIS</option>
+              <option>BORDEAUX BÈGLES</option>
+              <option>CASTRES OLYMPIQUE</option>
+              <option>LYON OU</option>
+              <option>MONTPELLIER HÉRAULT RUGBY</option>
+              <option>RACING 92</option>
+              <option>RC TOULON</option>
+              <option>SECTION PALOISE</option>
+              <option>STADE FRANÇAIS PARIS</option>
+              <option>STADE ROCHELAIS</option>
+              <option>STADE TOULOUSAIN</option>
+              <option>US MONTAUBAN</option>
+              <option>USA PERPIGNAN</option>
+            </select>
+            <button class="btn" onclick="voirEffectifClub()">👁 Voir l'effectif</button>
+          </div>
+          <div id="effectifClubResult" style="margin-top:8px"></div>
+          <div id="effectifClubTable" style="display:none;margin-top:8px">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Nom</th><th>Poste</th></tr></thead>
+                <tbody id="effectifClubBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOUEURS EXCLUS DES COMPOS -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">🚫 Joueurs exclus des compos</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">
+          Joueurs retraités, en retraite médicale ou passés dans le staff — exclus automatiquement des compos probables générées par Gemini.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+          <button class="btn" onclick="voirJoueursExclus()">👁 Voir la liste</button>
+          <button class="btn" id="genererExclusBtn" onclick="genererJoueursExclus()">🤖 Générer via Gemini</button>
+        </div>
+
+        <!-- Ajout manuel -->
+        <details style="margin-bottom:12px;">
+          <summary style="cursor:pointer;color:var(--accent);font-size:13px;">➕ Ajouter manuellement un joueur</summary>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:flex-end;">
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Nom</label>
+              <input id="exclusNom" type="text" placeholder="ex: ATONIO Uini" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;width:180px;" />
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Club</label>
+              <select id="exclusClub" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+                <option value="">-- Choisir --</option>
+                <option>ASM CLERMONT</option>
+                <option>AVIRON BAYONNAIS</option>
+                <option>BORDEAUX BÈGLES</option>
+                <option>CASTRES OLYMPIQUE</option>
+                <option>LYON OU</option>
+                <option>MONTPELLIER HÉRAULT RUGBY</option>
+                <option>RACING 92</option>
+                <option>RC TOULON</option>
+                <option>SECTION PALOISE</option>
+                <option>STADE FRANÇAIS PARIS</option>
+                <option>STADE ROCHELAIS</option>
+                <option>STADE TOULOUSAIN</option>
+                <option>US MONTAUBAN</option>
+                <option>USA PERPIGNAN</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Raison</label>
+              <input id="exclusRaison" type="text" placeholder="ex: Retraite médicale" style="padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;width:180px;" />
+            </div>
+            <button class="btn" onclick="ajouterJoueurExclu()">Ajouter</button>
+          </div>
+        </details>
+
+        <div class="result" id="exclusResult"></div>
+        <div id="exclusTable" style="display:none;margin-top:12px;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Joueur</th><th>Club</th><th>Raison</th><th>Date</th><th>Source</th><th></th></tr>
+              </thead>
+              <tbody id="exclusTbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1000,6 +1094,102 @@ async function voirEffectifs() {
     showResult('effectifsResult', 'err', '❌ ' + e.message);
   }
 }
+
+// ── EFFECTIF PAR CLUB ──
+async function voirEffectifClub() {
+  const club = document.getElementById('clubSelect').value;
+  if (!club) { showResult('effectifClubResult', 'err', '❌ Choisissez un club'); return; }
+  try {
+    const data = await api('/api/admin/effectifs/detail');
+    const joueurs = data[club];
+    if (!joueurs || joueurs.length === 0) {
+      showResult('effectifClubResult', 'err', `❌ Aucun joueur chargé pour ${club} — lancez d'abord le rafraîchissement`);
+      document.getElementById('effectifClubTable').style.display = 'none';
+      return;
+    }
+    const tbody = document.getElementById('effectifClubBody');
+    tbody.innerHTML = joueurs.map((j, i) => `
+      <tr>
+        <td style="color:var(--muted);width:30px">${i + 1}</td>
+        <td style="font-weight:600">${j.nom}</td>
+        <td style="color:var(--muted)">${j.poste || '—'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('effectifClubTable').style.display = 'block';
+    showResult('effectifClubResult', 'ok', `✅ ${joueurs.length} joueurs — ${club}`);
+  } catch(e) {
+    showResult('effectifClubResult', 'err', '❌ ' + e.message);
+  }
+}
+
+// ── JOUEURS EXCLUS ──
+async function voirJoueursExclus() {
+  try {
+    const data = await api('/api/admin/joueurs-exclus');
+    const tbody = document.getElementById('exclusTbody');
+    const table = document.getElementById('exclusTable');
+    if (!data.joueurs.length) {
+      showResult('exclusResult', 'warn', '⚠️ Liste vide — utilisez "Générer via Gemini" ou ajoutez manuellement');
+      table.style.display = 'none';
+      return;
+    }
+    tbody.innerHTML = data.joueurs.map(j => `
+      <tr>
+        <td><strong>${j.nom}</strong></td>
+        <td style="color:var(--muted)">${j.club}</td>
+        <td>${j.raison}</td>
+        <td style="color:var(--muted)">${j.date || '—'}</td>
+        <td><span style="font-size:11px;padding:2px 6px;border-radius:4px;background:${j.source === 'gemini' ? 'var(--accent)' : 'var(--surface2)'};color:${j.source === 'gemini' ? '#fff' : 'var(--muted)'}">${j.source === 'gemini' ? '🤖 Gemini' : '✍️ Manuel'}</span></td>
+        <td><button onclick="supprimerJoueurExclu('${j.nom.replace(/'/g, "\\'")}','${j.club.replace(/'/g, "\\'")}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px" title="Supprimer">🗑</button></td>
+      </tr>
+    `).join('');
+    table.style.display = 'block';
+    showResult('exclusResult', 'ok', `✅ ${data.total} joueur(s) exclus`);
+  } catch(e) {
+    showResult('exclusResult', 'err', '❌ ' + e.message);
+  }
+}
+
+async function genererJoueursExclus() {
+  const btn = document.getElementById('genererExclusBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ En cours...';
+  showResult('exclusResult', 'ok', '⏳ Gemini recherche les retraites et fins de carrière... (30-60 secondes)');
+  try {
+    await api('/api/admin/joueurs-exclus/generer', { method: 'POST' });
+    showResult('exclusResult', 'ok', '✅ Génération lancée ! Patientez 30-60s puis cliquez "Voir la liste".');
+  } catch(e) {
+    showResult('exclusResult', 'err', '❌ ' + e.message);
+  } finally {
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🤖 Générer via Gemini'; }, 60000);
+  }
+}
+
+async function ajouterJoueurExclu() {
+  const nom = document.getElementById('exclusNom').value.trim();
+  const club = document.getElementById('exclusClub').value;
+  const raison = document.getElementById('exclusRaison').value.trim();
+  if (!nom || !club) { showResult('exclusResult', 'err', '❌ Nom et club obligatoires'); return; }
+  try {
+    const data = await api('/api/admin/joueurs-exclus/ajouter', { method: 'POST', body: JSON.stringify({ nom, club, raison }) });
+    showResult('exclusResult', data.success ? 'ok' : 'warn', (data.success ? '✅ ' : '⚠️ ') + data.message);
+    if (data.success) {
+      document.getElementById('exclusNom').value = '';
+      document.getElementById('exclusRaison').value = '';
+      voirJoueursExclus();
+    }
+  } catch(e) { showResult('exclusResult', 'err', '❌ ' + e.message); }
+}
+
+async function supprimerJoueurExclu(nom, club) {
+  if (!confirm(`Supprimer ${nom} de la liste ?`)) return;
+  try {
+    const data = await api('/api/admin/joueurs-exclus/supprimer', { method: 'DELETE', body: JSON.stringify({ nom, club }) });
+    showResult('exclusResult', data.success ? 'ok' : 'err', (data.success ? '✅ ' : '❌ ') + data.message);
+    if (data.success) voirJoueursExclus();
+  } catch(e) { showResult('exclusResult', 'err', '❌ ' + e.message); }
+}
+
 // ── INVITATIONS ──
 async function genererCodes() {
   const count = parseInt(document.getElementById('invCount').value) || 1;
