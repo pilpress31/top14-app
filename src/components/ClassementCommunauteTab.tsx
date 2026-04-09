@@ -27,6 +27,7 @@ export default function ClassementCommunauteTab() {
   const [users, setUsers] = useState<UserRanking[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserRanking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [classementType, setClassementType] = useState<'jetons' | 'points'>('jetons');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
