@@ -320,7 +320,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <textarea id="pushBody" maxlength="200" placeholder="Ex: Faites vos pronostics avant le coup d'envoi !"></textarea>
 
         <label>URL de redirection</label>
-        <input type="text" id="pushUrl" placeholder="https://app.top14pronos.org/pronos">
+        <input type="text" id="pushUrl" placeholder="https://app.top14pronos.fr/pronos">
 
         <label>Presets</label>
         <div class="presets">
@@ -798,10 +798,10 @@ async function loadUsers() {
 
 // ── PUSH ──
 const presets = {
-  journee: { title: '🏉 Nouveaux matchs disponibles !', body: 'La prochaine journee est disponible. Faites vos pronostics avant le coup d\'envoi !', url: 'https://app.top14pronos.org/pronos' },
-  resultats: { title: '🎯 Resultats disponibles', body: 'Les resultats de la derniere journee sont tombes. Consultez votre cagnotte !', url: 'https://app.top14pronos.org/ma-cagnotte' },
-  distribution: { title: '💰 Distribution mensuelle !', body: 'Vos jetons gratuits sont arrives ! Consultez votre cagnotte.', url: 'https://app.top14pronos.org/ma-cagnotte' },
-  test: { title: '🔔 Top14 Pronos - Test', body: 'Notification de test reussie ! Votre systeme push fonctionne.', url: 'https://app.top14pronos.org' }
+  journee: { title: '🏉 Nouveaux matchs disponibles !', body: 'La prochaine journee est disponible. Faites vos pronostics avant le coup d\'envoi !', url: 'https://app.top14pronos.fr/pronos' },
+  resultats: { title: '🎯 Resultats disponibles', body: 'Les resultats de la derniere journee sont tombes. Consultez votre cagnotte !', url: 'https://app.top14pronos.fr/ma-cagnotte' },
+  distribution: { title: '💰 Distribution mensuelle !', body: 'Vos jetons gratuits sont arrives ! Consultez votre cagnotte.', url: 'https://app.top14pronos.fr/ma-cagnotte' },
+  test: { title: '🔔 Top14 Pronos - Test', body: 'Notification de test reussie ! Votre systeme push fonctionne.', url: 'https://app.top14pronos.fr' }
 };
 
 function setPreset(key) {

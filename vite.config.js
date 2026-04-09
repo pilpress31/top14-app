@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     host: true,                      // Écoute sur 0.0.0.0 (accès externe)
     port: 5173,                      // Port du dev server
-    allowedHosts: ['app.top14pronos.org'], // Autorise ton domaine Cloudflare Tunnel
+    allowedHosts: ['app.top14pronos.fr', 'app.top14pronos.fr'], // Autorise ton domaine Cloudflare Tunnel
 
     proxy: {
       '/api': {

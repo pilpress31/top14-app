@@ -45,7 +45,7 @@ export default function CGUPage() {
           <p className="text-gray-800 leading-relaxed">
             Les présentes Conditions Générales d'Utilisation (ci-après "CGU") régissent l'utilisation
             de l'application web progressive <strong>TOP 14 PRONOS</strong> (ci-après "l'Application"),
-            accessible à l'adresse <strong>app.top14pronos.org</strong>.
+            accessible à l'adresse <strong>app.top14pronos.fr</strong>.
             En utilisant l'Application, vous acceptez sans réserve les présentes CGU.
           </p>
         </section>

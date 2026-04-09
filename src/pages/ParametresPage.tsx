@@ -345,7 +345,7 @@ Résultats du diagnostic :
             </h2>
           </div>
           <button
-            onClick={() => window.open('https://app.top14pronos.org/admin.html', '_blank')}
+            onClick={() => window.open('https://app.top14pronos.fr/admin.html', '_blank')}
             className="w-full px-6 py-3 flex items-center gap-3 hover:bg-rugby-gold/5 transition-colors"
           >
             <Shield className="h-5 w-5 text-rugby-gold" />

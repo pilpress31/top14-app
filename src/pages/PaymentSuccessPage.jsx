@@ -55,7 +55,7 @@ export default function PaymentSuccessPage() {
           })
           const checkData = await check.json()
           
-          window.location.replace('https://app.top14pronos.org/')
+          window.location.replace('https://app.top14pronos.fr/')
         }, 2000)
       } else {
         throw new Error(data.error || 'Paiement non confirmé')

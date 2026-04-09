@@ -218,6 +218,6 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || 'https://app.top14pronos.org';
+  const url = event.notification.data?.url || 'https://app.top14pronos.fr';
   event.waitUntil(clients.openWindow(url));
 });
