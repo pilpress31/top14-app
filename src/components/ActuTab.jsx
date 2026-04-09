@@ -10,6 +10,7 @@ export default function ActuTab() {
   const [disponible, setDisponible] = useState(true);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [expandedMatch, setExpandedMatch] = useState(null);
   const [expandedSection, setExpandedSection] = useState({});
   const cardRefs = useRef({});

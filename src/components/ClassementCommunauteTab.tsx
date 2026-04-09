@@ -66,7 +66,13 @@ export default function ClassementCommunauteTab() {
   }
 
   async function loadClassement(userId: string | null) {
-    setLoading(true);
+    // AVANT : setLoading(true) — vide l'écran à chaque fois
+    // APRÈS : loading seulement au premier chargement
+    if (users.length === 0) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);  // rechargement silencieux
+    }
     try {
       if (classementType === 'jetons') {
         await loadClassementJetons(userId);
@@ -77,6 +83,7 @@ export default function ClassementCommunauteTab() {
       console.error('Erreur chargement classement:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
@@ -250,6 +257,9 @@ export default function ClassementCommunauteTab() {
 
   return (
     <div className="pb-24 space-y-4">
+      {refreshing && (
+        <div className="text-center text-xs text-gray-400 py-1">Mise à jour...</div>
+      )}
 
       {/* Toggle Jetons/Points */}
       <div className="flex gap-2 bg-white rounded-lg p-1 shadow-sm">
