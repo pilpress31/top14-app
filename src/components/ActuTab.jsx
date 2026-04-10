@@ -9,6 +9,7 @@ export default function ActuTab() {
   const [journee, setJournee] = useState(null);
   const [disponible, setDisponible] = useState(true);
   const [message, setMessage] = useState('');
+  const [derniereMaj, setDerniereMaj] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedMatch, setExpandedMatch] = useState(null);
@@ -40,6 +41,7 @@ export default function ActuTab() {
         setJournee(data.journee || null);
         setDisponible(data.disponible !== false);
         setMessage(data.message || '');
+        setDerniereMaj(data.derniere_maj || null);
       }
     } catch (error) {
       console.error('Erreur chargement actus:', error);
@@ -121,6 +123,15 @@ export default function ActuTab() {
 
   return (
     <div className="space-y-4 mt-2">
+      {derniereMaj && (
+        <p className="text-center text-[10px] text-gray-400">
+          Analyses générées le {new Date(derniereMaj).toLocaleDateString('fr-FR', {
+            day: 'numeric', month: 'long'
+          })} à {new Date(derniereMaj).toLocaleTimeString('fr-FR', {
+            hour: '2-digit', minute: '2-digit'
+          })}
+        </p>
+      )}
       {journees.map(journee => {
         const matchsJournee = actus.filter(a => a.journee === journee);
         return (
@@ -152,6 +163,15 @@ export default function ActuTab() {
                       className="w-full px-4 py-3 hover:bg-rugby-gold/5 transition-colors text-left"
                     >
                       <p className="text-[10px] text-gray-400 mb-2">{formatDate(actu.date_match)}</p>
+                      {(actu.generated_at || actu.updated_at) && (
+                        <p className="text-[9px] text-gray-300 mb-1">
+                          Analyse du {new Date(actu.generated_at || actu.updated_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric', month: 'short'
+                          })} à {new Date(actu.generated_at || actu.updated_at).toLocaleTimeString('fr-FR', {
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </p>
+                      )}
 
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1">
