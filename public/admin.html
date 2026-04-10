@@ -1364,19 +1364,17 @@ async function loadUsersAccess() {
     tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px">Aucune donnée</td></tr>';
     return;
   }
-  const statutStyle = {
-    beta_gratuit_vie: 'color:var(--gold-light)',
-    trial_non_demarre: 'color:var(--muted2)',
-    acces_expire: 'color:var(--red)'
-  };
   tbody.innerHTML = data.users.map(u => {
-    const isTrialActif = u.statut_acces?.startsWith('trial_actif_');
-    const style = isTrialActif ? 'color:var(--green)' : (statutStyle[u.statut_acces] || 'color:var(--text)');
-    const label = u.statut_acces === 'beta_gratuit_vie' ? '🎟️ Bêta — Gratuit à vie'
-      : isTrialActif ? `⏳ Essai — ${u.jours_trial_restants}j restants`
-      : u.statut_acces === 'acces_expire' ? '🔒 Accès expiré'
-      : u.statut_acces === 'trial_non_demarre' ? '⏸ Trial non démarré'
-      : u.statut_acces;
+    const statut = u.statut_acces || '';
+    const jours = u.jours_restants;
+    const style = statut === 'beta_gratuit_vie' ? 'color:var(--gold-light)'
+      : statut.startsWith('actif_') ? 'color:var(--green)'
+      : statut === 'acces_expire' ? 'color:var(--red)'
+      : 'color:var(--muted2)';
+    const label = statut === 'beta_gratuit_vie' ? '🟢 Bêta — Gratuit à vie'
+      : statut.startsWith('actif_') ? `🔵 Membre fondateur — ${jours}j restants`
+      : statut === 'acces_expire' ? '🔒 Accès expiré'
+      : '⏸ Non démarré';
     return `
       <tr>
         <td style="font-weight:600">${u.pseudo || '—'}</td>
@@ -1388,6 +1386,7 @@ async function loadUsersAccess() {
     `;
   }).join('');
 }
+
 
 </script>
 </body>
