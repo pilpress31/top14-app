@@ -821,40 +821,52 @@ function afficherListeUsers(liste) {
   const container = document.getElementById('pushUserList');
   if (!container) return;
   if (!liste.length) {
-    container.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:13px;text-align:center">Aucun utilisateur trouvé</div>';
+    container.innerHTML = '<div style="padding:12px;color:var(--color-text-secondary);font-size:13px;text-align:center">Aucun utilisateur trouvé</div>';
     return;
   }
-  container.innerHTML = liste.map(u => `
-    <div onclick="selectionnerUser('${u.user_id}','${(u.pseudo||'').replace(/'/g,"\\'")}','${(u.email||'').replace(/'/g,"\\'")}','${(u.nom||'').replace(/'/g,"\\'")}','${(u.prenom||'').replace(/'/g,"\\'")}') "
-      style="padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--border);display:flex;flex-direction:column;gap:2px;"
-      onmouseover="this.style.background='var(--color-background-secondary)'"
-      onmouseout="this.style.background=''"
-    >
-      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">
-        ${u.pseudo || '—'}
-        ${u.nom || u.prenom ? `<span style="font-weight:400;color:var(--color-text-secondary)"> — ${[u.prenom,u.nom].filter(Boolean).join(' ')}</span>` : ''}
-      </div>
-      <div style="font-size:11px;color:var(--color-text-tertiary)">${u.email || '—'}</div>
-    </div>
-  `).join('');
+  container.innerHTML = '';
+  liste.forEach(function(u) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary);';
+    div.onmouseover = function() { this.style.background = 'var(--color-background-tertiary)'; };
+    div.onmouseout = function() { this.style.background = ''; };
+
+    const nomComplet = [u.prenom, u.nom].filter(Boolean).join(' ');
+    const ligne1 = document.createElement('div');
+    ligne1.style.cssText = 'font-size:13px;font-weight:500;color:var(--color-text-primary);';
+    ligne1.textContent = (u.pseudo || '—') + (nomComplet ? ' — ' + nomComplet : '');
+
+    const ligne2 = document.createElement('div');
+    ligne2.style.cssText = 'font-size:11px;color:var(--color-text-secondary);margin-top:2px;';
+    ligne2.textContent = u.email || '—';
+
+    div.appendChild(ligne1);
+    div.appendChild(ligne2);
+
+    div.onclick = function() {
+      selectionnerUser(u.user_id, u.pseudo || '', u.email || '', u.nom || '', u.prenom || '');
+    };
+
+    container.appendChild(div);
+  });
 }
 
 function filtrerListeUsers() {
   const q = (document.getElementById('pushUserSearch').value || '').toLowerCase();
-  const filtre = users.filter(u =>
-    (u.pseudo||'').toLowerCase().includes(q) ||
-    (u.email||'').toLowerCase().includes(q) ||
-    (u.nom||'').toLowerCase().includes(q) ||
-    (u.prenom||'').toLowerCase().includes(q)
-  );
+  const filtre = users.filter(function(u) {
+    return (u.pseudo||'').toLowerCase().includes(q) ||
+           (u.email||'').toLowerCase().includes(q) ||
+           (u.nom||'').toLowerCase().includes(q) ||
+           (u.prenom||'').toLowerCase().includes(q);
+  });
   afficherListeUsers(filtre);
 }
 
 function selectionnerUser(userId, pseudo, email, nom, prenom) {
   document.getElementById('pushUserId').value = userId;
-  const label = [prenom, nom].filter(Boolean).join(' ') || pseudo;
-  document.getElementById('pushUserSelectedLabel').textContent =
-    `✅ ${pseudo}${label !== pseudo ? ' — ' + label : ''} (${email || 'pas d\'email'})`;
+  const nomComplet = [prenom, nom].filter(Boolean).join(' ');
+  const label = '✅ ' + (pseudo || '') + (nomComplet ? ' — ' + nomComplet : '') + (email ? ' (' + email + ')' : '');
+  document.getElementById('pushUserSelectedLabel').textContent = label;
   document.getElementById('pushUserSelected').style.display = 'block';
   document.getElementById('pushUserList').style.display = 'none';
   document.getElementById('pushUserSearch').style.display = 'none';
