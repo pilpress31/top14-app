@@ -303,20 +303,26 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="card-title">📣 Envoyer une notification push</div>
 
         <label>Destinataire</label>
-        <select id="pushTarget" onchange="toggleUserSelect()">
-          <option value="all">Tous les utilisateurs</option>
-          <option value="one">Un utilisateur spécifique</option>
-        </select>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button id="btnTous" onclick="setPushTarget('all')"
+            style="flex:1;padding:8px;border-radius:var(--border-radius-md);border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500;">
+            👥 Tous les utilisateurs
+          </button>
+          <button id="btnUn" onclick="setPushTarget('one')"
+            style="flex:1;padding:8px;border-radius:var(--border-radius-md);border:2px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:13px;font-weight:500;">
+            👤 Un utilisateur
+          </button>
+        </div>
+        <input type="hidden" id="pushTarget" value="all">
 
-        <div id="pushUserRow" style="display:none; margin-top:14px">
-          <label>Utilisateur</label>
-          <input type="text" id="pushUserSearch" placeholder="🔍 Rechercher par pseudo, nom ou email..." oninput="filtrerListeUsers()" style="margin-bottom:8px;">
-          <div id="pushUserList" style="border:0.5px solid var(--border);border-radius:var(--border-radius-md);max-height:220px;overflow-y:auto;background:var(--surface2);">
+        <div id="pushUserRow" style="display:none;margin-bottom:14px;">
+          <input type="text" id="pushUserSearch" placeholder="🔍 Rechercher par pseudo, nom ou email..." oninput="filtrerListeUsers()" style="margin-bottom:6px;">
+          <div id="pushUserList" style="border:0.5px solid var(--border);border-radius:var(--border-radius-md);max-height:200px;overflow-y:auto;background:var(--color-background-secondary);">
             <div style="padding:12px;color:var(--muted);font-size:13px;text-align:center">Chargement...</div>
           </div>
-          <div id="pushUserSelected" style="display:none;margin-top:8px;padding:8px 12px;background:var(--color-background-info);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-info);">
+          <div id="pushUserSelected" style="display:none;margin-top:6px;padding:8px 12px;background:var(--color-background-info);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-info);">
             <span id="pushUserSelectedLabel"></span>
-            <button onclick="deselectionnerUser()" style="float:right;background:none;border:none;color:var(--red);cursor:pointer;font-size:14px">✕</button>
+            <button onclick="deselectionnerUser()" style="float:right;background:none;border:none;color:var(--color-text-danger);cursor:pointer;font-size:15px;line-height:1;">✕</button>
           </div>
           <input type="hidden" id="pushUserId" value="">
         </div>
@@ -877,9 +883,16 @@ function setPreset(key) {
   document.getElementById('pushUrl').value = p.url;
 }
 
-function toggleUserSelect() {
-  const val = document.getElementById('pushTarget').value;
+function setPushTarget(val) {
+  document.getElementById('pushTarget').value = val;
   document.getElementById('pushUserRow').style.display = val === 'one' ? 'block' : 'none';
+  // Styles boutons
+  document.getElementById('btnTous').style.background = val === 'all' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('btnTous').style.color = val === 'all' ? '#fff' : 'var(--text)';
+  document.getElementById('btnTous').style.borderColor = val === 'all' ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('btnUn').style.background = val === 'one' ? 'var(--accent)' : 'var(--surface2)';
+  document.getElementById('btnUn').style.color = val === 'one' ? '#fff' : 'var(--text)';
+  document.getElementById('btnUn').style.borderColor = val === 'one' ? 'var(--accent)' : 'var(--border)';
 }
 
 async function sendPush() {
