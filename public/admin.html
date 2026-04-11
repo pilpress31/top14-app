@@ -316,8 +316,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <input type="hidden" id="pushTarget" value="all">
 
         <div id="pushUserRow" style="display:none;margin-bottom:14px;">
-          <input type="text" id="pushUserSearch" placeholder="🔍 Rechercher par pseudo, nom ou email..." oninput="filtrerListeUsers()" style="margin-bottom:6px;">
-          <div id="pushUserList" style="border:0.5px solid var(--border);border-radius:var(--border-radius-md);max-height:200px;overflow-y:auto;background:var(--color-background-secondary);">
+          <input type="text" id="pushUserSearch" placeholder="🔍 Rechercher par pseudo, nom ou email..." 
+            oninput="filtrerListeUsers()" 
+            onfocus="document.getElementById('pushUserList').style.display='block'; afficherListeUsers(users);"
+            style="margin-bottom:6px;">
+          <div id="pushUserList" style="display:none;border:0.5px solid var(--border);border-radius:var(--border-radius-md);max-height:200px;overflow-y:auto;background:var(--color-background-secondary);">
             <div style="padding:12px;color:var(--muted);font-size:13px;text-align:center">Chargement...</div>
           </div>
           <div id="pushUserSelected" style="display:none;margin-top:6px;padding:8px 12px;background:var(--color-background-info);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-info);">
@@ -902,9 +905,8 @@ function setPushTarget(val) {
   row.style.display = val === 'one' ? 'block' : 'none';
 
   // Si on ouvre la liste utilisateurs, la rafraîchir
-  if (val === 'one' && users.length > 0) {
-    afficherListeUsers(users);
-    document.getElementById('pushUserList').style.display = 'block';
+  if (val === 'one') {
+    document.getElementById('pushUserList').style.display = 'none'; // fermée par défaut
     document.getElementById('pushUserSearch').style.display = 'block';
   }
 
