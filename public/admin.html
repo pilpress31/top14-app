@@ -364,6 +364,34 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <div class="stat-box"><div class="stat-val" id="psTotal">—</div><div class="stat-lbl">Total</div></div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <div class="card-title">🔕 Utilisateurs sans notifications</div>
+          <button class="btn" onclick="loadSansNotifs()">↻ Actualiser</button>
+        </div>
+        <div id="sansNotifsResult" style="color:var(--muted);font-size:13px;padding:8px 0;">
+          Cliquez sur Actualiser
+        </div>
+        <div class="table-wrap" id="sansNotifsTable" style="display:none;">
+          <table>
+            <thead><tr>
+              <th>Pseudo</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr></thead>
+            <tbody id="sansNotifsBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row" id="sansNotifsBtnRow" style="display:none;margin-top:12px;">
+          <button class="btn btn-gold" id="mailNotifsBtn" onclick="envoyerMailsNotifs()">
+            <div class="spinner"></div>
+            <span class="btn-text">📧 Envoyer instructions à tous</span>
+          </button>
+        </div>
+        <div class="result" id="mailNotifsResult"></div>
+      </div>
     </div>
 
     <!-- CLASSEMENT -->
@@ -1471,6 +1499,55 @@ async function envoyerCodeEmail() {
   }
 }
 
+
+async function loadSansNotifs() {
+  const data = await api('/api/admin/users/sans-notifs');
+  const tbody = document.getElementById('sansNotifsBody');
+  const table = document.getElementById('sansNotifsTable');
+  const btnRow = document.getElementById('sansNotifsBtnRow');
+  const result = document.getElementById('sansNotifsResult');
+
+  if (!data.success || !data.users?.length) {
+    result.textContent = '✅ Tous les utilisateurs ont activé les notifications !';
+    table.style.display = 'none';
+    btnRow.style.display = 'none';
+    return;
+  }
+
+  result.textContent = `${data.count} utilisateur(s) sans notifications`;
+  tbody.innerHTML = data.users.map(u => `
+    <tr>
+      <td style="font-weight:600">${u.pseudo || '—'}</td>
+      <td>${[u.prenom, u.nom].filter(Boolean).join(' ') || '—'}</td>
+      <td style="font-size:12px;color:var(--muted2)">${u.email || '—'}</td>
+      <td><button class="btn" style="padding:4px 10px;font-size:12px;"
+        onclick="envoyerMailsNotifs(['${u.user_id}'])">📧 Envoyer</button></td>
+    </tr>
+  `).join('');
+  table.style.display = 'block';
+  btnRow.style.display = 'flex';
+}
+
+async function envoyerMailsNotifs(userIds = null) {
+  const btn = document.getElementById('mailNotifsBtn');
+  setLoading(btn, true);
+  showResult('mailNotifsResult', 'ok', '⏳ Envoi en cours...');
+  try {
+    const data = await api('/api/admin/users/envoyer-mail-notifs', {
+      method: 'POST',
+      body: JSON.stringify({ userIds: userIds || [] })
+    });
+    if (data.success) {
+      showResult('mailNotifsResult', 'ok', `✅ ${data.envoyes} email(s) envoyé(s) — ${data.echecs} échec(s)`);
+    } else {
+      showResult('mailNotifsResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('mailNotifsResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
 
 async function loadUsersAccess() {
   const data = await api('/api/admin/users-access');
