@@ -310,7 +310,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
         <div id="pushUserRow" style="display:none; margin-top:14px">
           <label>Utilisateur</label>
-          <select id="pushUserId"><option value="">Chargement...</option></select>
+          <input type="text" id="pushUserSearch" placeholder="🔍 Rechercher par pseudo, nom ou email..." oninput="filtrerListeUsers()" style="margin-bottom:8px;">
+          <div id="pushUserList" style="border:0.5px solid var(--border);border-radius:var(--border-radius-md);max-height:220px;overflow-y:auto;background:var(--surface2);">
+            <div style="padding:12px;color:var(--muted);font-size:13px;text-align:center">Chargement...</div>
+          </div>
+          <div id="pushUserSelected" style="display:none;margin-top:8px;padding:8px 12px;background:var(--color-background-info);border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-info);">
+            <span id="pushUserSelectedLabel"></span>
+            <button onclick="deselectionnerUser()" style="float:right;background:none;border:none;color:var(--red);cursor:pointer;font-size:14px">✕</button>
+          </div>
+          <input type="hidden" id="pushUserId" value="">
         </div>
 
         <label>Titre</label>
@@ -788,16 +796,70 @@ async function loadUsers() {
   const data = await api('/api/admin/users');
   users = (Array.isArray(data) ? data : []).sort((a,b) => (a.pseudo||'').localeCompare(b.pseudo||''));
 
-  ['pushUserId', 'jetonsUserId'].forEach(id => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = '<option value="">-- Choisir --</option>';
-    users.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u.user_id;
-      opt.textContent = u.pseudo || u.user_id.substring(0,8);
-      sel.appendChild(opt);
-    });
+  // Select jetons (inchangé)
+  const selJetons = document.getElementById('jetonsUserId');
+  selJetons.innerHTML = '<option value="">-- Choisir --</option>';
+  users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.user_id;
+    opt.textContent = u.pseudo || u.user_id.substring(0,8);
+    selJetons.appendChild(opt);
   });
+
+  // Liste push enrichie
+  afficherListeUsers(users);
+}
+
+function afficherListeUsers(liste) {
+  const container = document.getElementById('pushUserList');
+  if (!container) return;
+  if (!liste.length) {
+    container.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:13px;text-align:center">Aucun utilisateur trouvé</div>';
+    return;
+  }
+  container.innerHTML = liste.map(u => `
+    <div onclick="selectionnerUser('${u.user_id}','${(u.pseudo||'').replace(/'/g,"\\'")}','${(u.email||'').replace(/'/g,"\\'")}','${(u.nom||'').replace(/'/g,"\\'")}','${(u.prenom||'').replace(/'/g,"\\'")}') "
+      style="padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--border);display:flex;flex-direction:column;gap:2px;"
+      onmouseover="this.style.background='var(--color-background-secondary)'"
+      onmouseout="this.style.background=''"
+    >
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">
+        ${u.pseudo || '—'}
+        ${u.nom || u.prenom ? `<span style="font-weight:400;color:var(--color-text-secondary)"> — ${[u.prenom,u.nom].filter(Boolean).join(' ')}</span>` : ''}
+      </div>
+      <div style="font-size:11px;color:var(--color-text-tertiary)">${u.email || '—'}</div>
+    </div>
+  `).join('');
+}
+
+function filtrerListeUsers() {
+  const q = (document.getElementById('pushUserSearch').value || '').toLowerCase();
+  const filtre = users.filter(u =>
+    (u.pseudo||'').toLowerCase().includes(q) ||
+    (u.email||'').toLowerCase().includes(q) ||
+    (u.nom||'').toLowerCase().includes(q) ||
+    (u.prenom||'').toLowerCase().includes(q)
+  );
+  afficherListeUsers(filtre);
+}
+
+function selectionnerUser(userId, pseudo, email, nom, prenom) {
+  document.getElementById('pushUserId').value = userId;
+  const label = [prenom, nom].filter(Boolean).join(' ') || pseudo;
+  document.getElementById('pushUserSelectedLabel').textContent =
+    `✅ ${pseudo}${label !== pseudo ? ' — ' + label : ''} (${email || 'pas d\'email'})`;
+  document.getElementById('pushUserSelected').style.display = 'block';
+  document.getElementById('pushUserList').style.display = 'none';
+  document.getElementById('pushUserSearch').style.display = 'none';
+}
+
+function deselectionnerUser() {
+  document.getElementById('pushUserId').value = '';
+  document.getElementById('pushUserSelected').style.display = 'none';
+  document.getElementById('pushUserList').style.display = 'block';
+  document.getElementById('pushUserSearch').style.display = 'block';
+  document.getElementById('pushUserSearch').value = '';
+  afficherListeUsers(users);
 }
 
 // ── PUSH ──
