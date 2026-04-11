@@ -318,7 +318,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div id="pushUserRow" style="display:none;margin-bottom:14px;">
           <input type="text" id="pushUserSearch" placeholder="🔍 Rechercher par pseudo, nom ou email..." 
             oninput="filtrerListeUsers()" 
-            onfocus="document.getElementById('pushUserList').style.display='block'; afficherListeUsers(users);"
+            onclick="toggleListeUsers()"
             style="margin-bottom:6px;">
           <div id="pushUserList" style="display:none;border:0.5px solid var(--border);border-radius:var(--border-radius-md);max-height:200px;overflow-y:auto;background:var(--color-background-secondary);">
             <div style="padding:12px;color:var(--muted);font-size:13px;text-align:center">Chargement...</div>
@@ -831,8 +831,16 @@ function afficherListeUsers(liste) {
   liste.forEach(function(u) {
     const div = document.createElement('div');
     div.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary);';
-    div.onmouseover = function() { this.style.background = 'var(--color-background-tertiary)'; };
-    div.onmouseout = function() { this.style.background = ''; };
+    div.onmouseover = function() { 
+      this.style.background = 'rgba(201,168,76,0.15)'; 
+      this.style.borderLeft = '3px solid var(--gold, #C9A84C)';
+      this.querySelector('div').style.color = 'var(--gold, #C9A84C)';
+    };
+    div.onmouseout = function() { 
+      this.style.background = ''; 
+      this.style.borderLeft = '';
+      this.querySelector('div').style.color = 'var(--color-text-primary)';
+    };
 
     const nomComplet = [u.prenom, u.nom].filter(Boolean).join(' ');
     const ligne1 = document.createElement('div');
@@ -852,6 +860,17 @@ function afficherListeUsers(liste) {
 
     container.appendChild(div);
   });
+}
+
+function toggleListeUsers() {
+  const list = document.getElementById('pushUserList');
+  const isVisible = list.style.display !== 'none';
+  if (isVisible) {
+    list.style.display = 'none';
+  } else {
+    list.style.display = 'block';
+    afficherListeUsers(users);
+  }
 }
 
 function filtrerListeUsers() {
