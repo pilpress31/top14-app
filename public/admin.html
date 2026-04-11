@@ -743,6 +743,7 @@ async function doLogin() {
     document.getElementById('appScreen').style.display = 'block';
 
     await loadUsers();
+    setPushTarget('all');
     setPreset('test');
     const now = new Date();
     document.getElementById('distMonth').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -885,14 +886,20 @@ function setPreset(key) {
 
 function setPushTarget(val) {
   document.getElementById('pushTarget').value = val;
-  document.getElementById('pushUserRow').style.display = val === 'one' ? 'block' : 'none';
+  const row = document.getElementById('pushUserRow');
+  row.style.display = val === 'one' ? 'block' : 'none';
+
+  // Si on ouvre la liste utilisateurs, la rafraîchir
+  if (val === 'one' && users.length > 0) {
+    afficherListeUsers(users);
+    document.getElementById('pushUserList').style.display = 'block';
+    document.getElementById('pushUserSearch').style.display = 'block';
+  }
+
   // Styles boutons
-  document.getElementById('btnTous').style.background = val === 'all' ? 'var(--accent)' : 'var(--surface2)';
-  document.getElementById('btnTous').style.color = val === 'all' ? '#fff' : 'var(--text)';
-  document.getElementById('btnTous').style.borderColor = val === 'all' ? 'var(--accent)' : 'var(--border)';
-  document.getElementById('btnUn').style.background = val === 'one' ? 'var(--accent)' : 'var(--surface2)';
-  document.getElementById('btnUn').style.color = val === 'one' ? '#fff' : 'var(--text)';
-  document.getElementById('btnUn').style.borderColor = val === 'one' ? 'var(--accent)' : 'var(--border)';
+  const accent = 'var(--gold, #C9A84C)';
+  document.getElementById('btnTous').style.cssText = `flex:1;padding:8px;border-radius:var(--border-radius-md);border:2px solid ${val==='all' ? accent : 'var(--border)'};background:${val==='all' ? accent : 'var(--color-background-secondary)'};color:${val==='all' ? '#1a1208' : 'var(--color-text-primary)'};cursor:pointer;font-size:13px;font-weight:500;`;
+  document.getElementById('btnUn').style.cssText = `flex:1;padding:8px;border-radius:var(--border-radius-md);border:2px solid ${val==='one' ? accent : 'var(--border)'};background:${val==='one' ? accent : 'var(--color-background-secondary)'};color:${val==='one' ? '#1a1208' : 'var(--color-text-primary)'};cursor:pointer;font-size:13px;font-weight:500;`;
 }
 
 async function sendPush() {
