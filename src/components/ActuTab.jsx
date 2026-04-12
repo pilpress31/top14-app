@@ -226,6 +226,17 @@ export default function ActuTab() {
                           </div>
                         )}
 
+                        {actu.insights && (
+                          <SectionBlock
+                            icon={<span className="text-base leading-none">🔍</span>}
+                            title="Insights algorithmiques"
+                            isOpen={isSectionOpen(actu.match_id, 'insights', true)}
+                            onToggle={() => toggleSection(actu.match_id, 'insights')}
+                          >
+                            <InsightsSection insights={actu.insights} />
+                          </SectionBlock>
+                        )}
+
                         {actu.pronostic_ia && actu.pronostic_ia !== 'Information non disponible' && (
                           <SectionBlock
                             icon={<span className="text-base leading-none">🤖</span>}
@@ -350,7 +361,95 @@ function TeamSection({ name, logo, content }) {
   );
 }
 
-// ─── Section fusionnée : Compo + Blessés par équipe ───
+// ─── Section Insights algorithmiques ───
+function InsightBadge({ label, confiance, color }) {
+  const pct = Math.min(100, Math.max(0, confiance || 0));
+  const barColor = pct >= 70 ? 'bg-green-400' : pct >= 45 ? 'bg-amber-400' : 'bg-gray-300';
+  return (
+    <div className={`rounded-lg border px-3 py-2 ${color}`}>
+      <p className="text-xs font-semibold text-gray-800 mb-1">{label}</p>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+        </div>
+        <span className="text-[10px] text-gray-500 font-medium">{pct}%</span>
+      </div>
+    </div>
+  );
+}
+
+function InsightsSection({ insights }) {
+  if (!insights) return null;
+  const { total_ft, total_mt, ecart_ft, ecart_mt, vainqueur_ft, vainqueur_mt, score_predit } = insights;
+
+  return (
+    <div className="space-y-2">
+      {/* Score prédit */}
+      {score_predit && (
+        <div className="bg-rugby-gold/10 border border-rugby-gold/30 rounded-lg px-3 py-2 flex items-center justify-between">
+          <div>
+            <p className="text-[9px] font-bold text-rugby-gold uppercase tracking-wide mb-0.5">Score prédit</p>
+            <p className="text-sm font-bold text-gray-800">{score_predit.ft}</p>
+          </div>
+          {score_predit.mt && (
+            <div className="text-right">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Mi-temps</p>
+              <p className="text-sm font-bold text-gray-600">{score_predit.mt}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-2">
+        {total_ft && (
+          <InsightBadge
+            label={total_ft.label}
+            confiance={total_ft.confiance}
+            color={total_ft.direction === 'over' ? 'bg-orange-50 border-orange-200' : 'bg-sky-50 border-sky-200'}
+          />
+        )}
+        {vainqueur_ft && (
+          <InsightBadge
+            label={`${vainqueur_ft.label}${vainqueur_ft.proba ? ` (${vainqueur_ft.proba}%)` : ''}`}
+            confiance={vainqueur_ft.confiance}
+            color="bg-purple-50 border-purple-200"
+          />
+        )}
+        {ecart_ft && (
+          <InsightBadge
+            label={ecart_ft.label}
+            confiance={ecart_ft.confiance}
+            color={ecart_ft.type === 'tight' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}
+          />
+        )}
+        {total_mt && (
+          <InsightBadge
+            label={total_mt.label}
+            confiance={total_mt.confiance}
+            color={total_mt.direction === 'over' ? 'bg-orange-50 border-orange-100' : 'bg-sky-50 border-sky-100'}
+          />
+        )}
+        {ecart_mt && (
+          <InsightBadge
+            label={ecart_mt.label}
+            confiance={ecart_mt.confiance}
+            color={ecart_mt.type === 'tight' ? 'bg-yellow-50 border-yellow-100' : 'bg-green-50 border-green-100'}
+          />
+        )}
+        {vainqueur_mt && (
+          <InsightBadge
+            label={`Mène à la pause : ${vainqueur_mt.label}`}
+            confiance={vainqueur_mt.confiance}
+            color="bg-teal-50 border-teal-200"
+          />
+        )}
+      </div>
+      <p className="text-[9px] text-gray-400 italic text-center pt-1">
+        Basé sur les prédictions algorithmiques — à titre informatif uniquement
+      </p>
+    </div>
+  );
+}
 function CompoEtBlessesSection({ name, logo, compo, blesses }) {
   const compoIndispo = !compo || compo === 'Information non disponible';
   const blessesIndispo = !blesses ||
