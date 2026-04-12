@@ -362,12 +362,13 @@ function TeamSection({ name, logo, content }) {
 }
 
 // ─── Section Insights algorithmiques ───
-function InsightBadge({ label, confiance, color }) {
+function InsightBadge({ label, sublabel, confiance, color }) {
   const pct = Math.min(100, Math.max(0, confiance || 0));
-  const barColor = pct >= 70 ? 'bg-green-400' : pct >= 45 ? 'bg-amber-400' : 'bg-gray-300';
+  const barColor = pct >= 70 ? 'bg-green-500' : pct >= 45 ? 'bg-green-300' : 'bg-amber-300';
   return (
     <div className={`rounded-lg border px-3 py-2 ${color}`}>
-      <p className="text-xs font-semibold text-gray-800 mb-1 leading-snug">{label}</p>
+      <p className="text-xs font-semibold text-gray-800 mb-0.5 leading-snug">{label}</p>
+      {sublabel && <p className="text-[10px] text-gray-500 mb-1">{sublabel}</p>}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
@@ -382,10 +383,29 @@ function InsightsSection({ insights }) {
   if (!insights) return null;
   const { total_ft, total_mt, ecart_ft, ecart_mt, vainqueur_ft, vainqueur_mt, score_predit } = insights;
 
+  // Raccourcir les noms d'équipes BDD → nom court lisible
+  const nomCourt = (nom) => {
+    if (!nom) return '—';
+    const map = {
+      'STADE TOULOUSAIN': 'Toulouse', 'STADE ROCHELAIS': 'La Rochelle',
+      'BORDEAUX BÈGLES': 'Bordeaux', 'RACING 92': 'Racing 92',
+      'ASM CLERMONT': 'Clermont', 'STADE FRANÇAIS PARIS': 'Stade Français',
+      'RC TOULON': 'Toulon', 'LYON OU': 'Lyon',
+      'MONTPELLIER HÉRAULT RUGBY': 'Montpellier', 'CASTRES OLYMPIQUE': 'Castres',
+      'SECTION PALOISE': 'Pau', 'AVIRON BAYONNAIS': 'Bayonne',
+      'USA PERPIGNAN': 'Perpignan', 'US MONTAUBAN': 'Montauban',
+    };
+    return map[nom] || nom.split(' ')[0];
+  };
+
   const labelVainqueurFT = vainqueur_ft
     ? (vainqueur_ft.label === 'Match nul'
-        ? `Score nul prédit (confiance ${vainqueur_ft.proba || 0}%)`
-        : `${vainqueur_ft.label} gagne (${vainqueur_ft.proba || 0}%)`)
+        ? { main: '🤝 Score nul prédit', sub: `Probabilité : ${vainqueur_ft.proba || 0}%` }
+        : { main: `🏆 ${nomCourt(vainqueur_ft.label)} gagne`, sub: `Probabilité : ${vainqueur_ft.proba || 0}%` })
+    : null;
+
+  const labelVainqueurMT = vainqueur_mt
+    ? { main: `⏸ Mène à la pause : ${nomCourt(vainqueur_mt.label)}`, sub: null }
     : null;
 
   return (
@@ -400,13 +420,15 @@ function InsightsSection({ insights }) {
           {total_ft && (
             <InsightBadge
               label={total_ft.label}
+              sublabel="Total de points FT"
               confiance={total_ft.confiance}
               color={total_ft.direction === 'over' ? 'bg-orange-50 border-orange-200' : 'bg-sky-50 border-sky-200'}
             />
           )}
-          {vainqueur_ft && (
+          {vainqueur_ft && labelVainqueurFT && (
             <InsightBadge
-              label={labelVainqueurFT}
+              label={labelVainqueurFT.main}
+              sublabel={labelVainqueurFT.sub}
               confiance={vainqueur_ft.confiance}
               color="bg-purple-50 border-purple-200"
             />
@@ -414,6 +436,7 @@ function InsightsSection({ insights }) {
           {ecart_ft && (
             <InsightBadge
               label={ecart_ft.label}
+              sublabel="Écart prédit FT"
               confiance={ecart_ft.confiance}
               color={ecart_ft.type === 'tight' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}
             />
@@ -429,13 +452,15 @@ function InsightsSection({ insights }) {
           {total_mt && (
             <InsightBadge
               label={total_mt.label}
+              sublabel="Total de points MT"
               confiance={total_mt.confiance}
               color={total_mt.direction === 'over' ? 'bg-orange-50 border-orange-100' : 'bg-sky-50 border-sky-100'}
             />
           )}
-          {vainqueur_mt && (
+          {vainqueur_mt && labelVainqueurMT && (
             <InsightBadge
-              label={`Mène à la pause : ${vainqueur_mt.label}`}
+              label={labelVainqueurMT.main}
+              sublabel={labelVainqueurMT.sub}
               confiance={vainqueur_mt.confiance}
               color="bg-teal-50 border-teal-200"
             />
@@ -443,6 +468,7 @@ function InsightsSection({ insights }) {
           {ecart_mt && (
             <InsightBadge
               label={ecart_mt.label}
+              sublabel="Écart prédit MT"
               confiance={ecart_mt.confiance}
               color={ecart_mt.type === 'tight' ? 'bg-yellow-50 border-yellow-100' : 'bg-green-50 border-green-100'}
             />
