@@ -178,7 +178,9 @@ function RegisterPage() {
     try {
       await axios.post(`${API_URL}/api/user-profiles`, {
         user_id: userId,
-        pseudo
+        pseudo,
+        nom,
+        prenom
       })
     } catch (profileError) {
       console.error('Erreur création profil:', profileError)
