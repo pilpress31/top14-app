@@ -272,6 +272,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <span class="btn-text">Connexion</span>
     </button>
     <div class="login-error" id="loginError"></div>
+    <a href="https://app.top14pronos.fr" style="display:block;text-align:center;margin-top:16px;color:var(--muted);font-size:13px;text-decoration:none;">
+      ← Retour à l'application
+    </a>
   </div>
 </div>
 
@@ -827,6 +830,28 @@ function showTab(name, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
+
+  // Chargement automatique selon l'onglet
+  switch(name) {
+    case 'classement':
+      loadClassement();
+      break;
+    case 'jetons':
+      loadSoldes();
+      break;
+    case 'paris':
+      loadParis();
+      break;
+    case 'distribution':
+      loadDistributions();
+      break;
+    case 'invitations':
+      loadInvitations();
+      break;
+    case 'push':
+      loadSansNotifs();
+      break;
+  }
 }
 
 // ── USERS ──
@@ -1007,8 +1032,9 @@ async function sendPush() {
 
 // ── CLASSEMENT ──
 async function loadClassement() {
-  const data = await api('/api/admin/classement');
   const tbody = document.getElementById('classementBody');
+  tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
+  const data = await api('/api/admin/classement');
   if (!Array.isArray(data) || !data.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>';
     return;
@@ -1060,8 +1086,9 @@ async function crediterJetons() {
 }
 
 async function loadSoldes() {
-  const data = await api('/api/admin/soldes');
   const tbody = document.getElementById('soldesBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
+  const data = await api('/api/admin/soldes');
   if (!Array.isArray(data) || !data.length) {
     tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>';
     return;
@@ -1078,8 +1105,9 @@ async function loadSoldes() {
 
 // ── PARIS ──
 async function loadParis() {
-  const data = await api('/api/admin/paris-pending');
   const tbody = document.getElementById('parisBody');
+  tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
+  const data = await api('/api/admin/paris-pending');
   if (!Array.isArray(data) || !data.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucun pari en attente</td></tr>';
     return;
@@ -1131,8 +1159,9 @@ async function distribuer() {
 }
 
 async function loadDistributions() {
-  const data = await api('/api/admin/distributions');
   const tbody = document.getElementById('distBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
+  const data = await api('/api/admin/distributions');
   if (!Array.isArray(data) || !data.length) {
     tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune distribution</td></tr>';
     return;
@@ -1409,8 +1438,9 @@ function copyCode(code) {
 }
 
 async function loadInvitations() {
-  const data = await api('/api/admin/invitations');
   const tbody = document.getElementById('invitationsBody');
+  tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
+  const data = await api('/api/admin/invitations');
   if (!data.success || !data.codes?.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucun code</td></tr>';
     return;
