@@ -367,7 +367,7 @@ function InsightBadge({ label, confiance, color }) {
   const barColor = pct >= 70 ? 'bg-green-400' : pct >= 45 ? 'bg-amber-400' : 'bg-gray-300';
   return (
     <div className={`rounded-lg border px-3 py-2 ${color}`}>
-      <p className="text-xs font-semibold text-gray-800 mb-1">{label}</p>
+      <p className="text-xs font-semibold text-gray-800 mb-1 leading-snug">{label}</p>
       <div className="flex items-center gap-2">
         <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
@@ -382,67 +382,72 @@ function InsightsSection({ insights }) {
   if (!insights) return null;
   const { total_ft, total_mt, ecart_ft, ecart_mt, vainqueur_ft, vainqueur_mt, score_predit } = insights;
 
+  const labelVainqueurFT = vainqueur_ft
+    ? (vainqueur_ft.label === 'Match nul'
+        ? `Score nul prédit (confiance ${vainqueur_ft.proba || 0}%)`
+        : `${vainqueur_ft.label} gagne (${vainqueur_ft.proba || 0}%)`)
+    : null;
+
   return (
     <div className="space-y-2">
-      {/* Score prédit */}
-      {score_predit && (
-        <div className="bg-rugby-gold/10 border border-rugby-gold/30 rounded-lg px-3 py-2 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] font-bold text-rugby-gold uppercase tracking-wide mb-0.5">Score prédit</p>
-            <p className="text-sm font-bold text-gray-800">{score_predit.ft}</p>
+      <div className="grid grid-cols-2 gap-2">
+        {/* Colonne FT */}
+        <div className="space-y-2">
+          <div className="bg-rugby-gold/10 border border-rugby-gold/30 rounded-lg px-3 py-2 text-center">
+            <p className="text-[9px] font-bold text-rugby-gold uppercase tracking-wide mb-0.5">⏱ Temps plein</p>
+            <p className="text-base font-bold text-gray-800">{score_predit?.ft || '—'}</p>
           </div>
-          {score_predit.mt && (
-            <div className="text-right">
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Mi-temps</p>
-              <p className="text-sm font-bold text-gray-600">{score_predit.mt}</p>
-            </div>
+          {total_ft && (
+            <InsightBadge
+              label={total_ft.label}
+              confiance={total_ft.confiance}
+              color={total_ft.direction === 'over' ? 'bg-orange-50 border-orange-200' : 'bg-sky-50 border-sky-200'}
+            />
+          )}
+          {vainqueur_ft && (
+            <InsightBadge
+              label={labelVainqueurFT}
+              confiance={vainqueur_ft.confiance}
+              color="bg-purple-50 border-purple-200"
+            />
+          )}
+          {ecart_ft && (
+            <InsightBadge
+              label={ecart_ft.label}
+              confiance={ecart_ft.confiance}
+              color={ecart_ft.type === 'tight' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}
+            />
           )}
         </div>
-      )}
 
-      <div className="grid grid-cols-2 gap-2">
-        {total_ft && (
-          <InsightBadge
-            label={total_ft.label}
-            confiance={total_ft.confiance}
-            color={total_ft.direction === 'over' ? 'bg-orange-50 border-orange-200' : 'bg-sky-50 border-sky-200'}
-          />
-        )}
-        {vainqueur_ft && (
-          <InsightBadge
-            label={`${vainqueur_ft.label}${vainqueur_ft.proba ? ` (${vainqueur_ft.proba}%)` : ''}`}
-            confiance={vainqueur_ft.confiance}
-            color="bg-purple-50 border-purple-200"
-          />
-        )}
-        {ecart_ft && (
-          <InsightBadge
-            label={ecart_ft.label}
-            confiance={ecart_ft.confiance}
-            color={ecart_ft.type === 'tight' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}
-          />
-        )}
-        {total_mt && (
-          <InsightBadge
-            label={total_mt.label}
-            confiance={total_mt.confiance}
-            color={total_mt.direction === 'over' ? 'bg-orange-50 border-orange-100' : 'bg-sky-50 border-sky-100'}
-          />
-        )}
-        {ecart_mt && (
-          <InsightBadge
-            label={ecart_mt.label}
-            confiance={ecart_mt.confiance}
-            color={ecart_mt.type === 'tight' ? 'bg-yellow-50 border-yellow-100' : 'bg-green-50 border-green-100'}
-          />
-        )}
-        {vainqueur_mt && (
-          <InsightBadge
-            label={`Mène à la pause : ${vainqueur_mt.label}`}
-            confiance={vainqueur_mt.confiance}
-            color="bg-teal-50 border-teal-200"
-          />
-        )}
+        {/* Colonne MT */}
+        <div className="space-y-2">
+          <div className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-center">
+            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">⏸ Mi-temps</p>
+            <p className="text-base font-bold text-gray-700">{score_predit?.mt || '—'}</p>
+          </div>
+          {total_mt && (
+            <InsightBadge
+              label={total_mt.label}
+              confiance={total_mt.confiance}
+              color={total_mt.direction === 'over' ? 'bg-orange-50 border-orange-100' : 'bg-sky-50 border-sky-100'}
+            />
+          )}
+          {vainqueur_mt && (
+            <InsightBadge
+              label={`Mène à la pause : ${vainqueur_mt.label}`}
+              confiance={vainqueur_mt.confiance}
+              color="bg-teal-50 border-teal-200"
+            />
+          )}
+          {ecart_mt && (
+            <InsightBadge
+              label={ecart_mt.label}
+              confiance={ecart_mt.confiance}
+              color={ecart_mt.type === 'tight' ? 'bg-yellow-50 border-yellow-100' : 'bg-green-50 border-green-100'}
+            />
+          )}
+        </div>
       </div>
       <p className="text-[9px] text-gray-400 italic text-center pt-1">
         Basé sur les prédictions algorithmiques — à titre informatif uniquement
@@ -450,6 +455,8 @@ function InsightsSection({ insights }) {
     </div>
   );
 }
+
+// ─── Section fusionnée : Compo + Blessés par équipe ───
 function CompoEtBlessesSection({ name, logo, compo, blesses }) {
   const compoIndispo = !compo || compo === 'Information non disponible';
   const blessesIndispo = !blesses ||
