@@ -1,24 +1,48 @@
 {
-  "name": "Top14 Pronos",
-  "short_name": "Top14",
-  "description": "Application de pronostics Top 14",
+  "name": "Top 14 Pronos",
+  "short_name": "Top14 Pronos",
+  "description": "Pronostics rugby Top 14 par IA — Algorithme Elo, paris virtuels, compos probables et analyses avant chaque journée.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#F5F5DC",
+  "background_color": "#1a1208",
   "theme_color": "#D4AF37",
-  "orientation": "any",
+  "orientation": "portrait",
+  "lang": "fr",
+  "categories": ["sports", "entertainment"],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pronostics Top 14"
+    }
+  ],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
