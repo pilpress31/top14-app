@@ -15,6 +15,41 @@
   "categories": ["sports", "entertainment"],
   "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+top14pronos",
+      "url": "/?uri=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "shortcuts": [
+    {
+      "name": "Mes Paris",
+      "url": "/paris",
+      "description": "Accéder à mes paris"
+    },
+    {
+      "name": "Actualités",
+      "url": "/actus",
+      "description": "Analyses et compos"
+    },
+    {
+      "name": "Classement",
+      "url": "/classement",
+      "description": "Classement communauté"
+    }
+  ],
   "related_applications": [
     {
       "platform": "play",
