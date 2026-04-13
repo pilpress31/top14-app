@@ -1,5 +1,4 @@
 {
-  "id": "fr.top14pronos.app",
   "name": "Top 14 Pronos",
   "short_name": "Top14 Pronos",
   "description": "Pronostics rugby Top 14 par IA — Algorithme Elo, paris virtuels, compos probables et analyses avant chaque journée.",
@@ -11,6 +10,14 @@
   "orientation": "portrait",
   "lang": "fr",
   "categories": ["sports", "entertainment"],
+  "prefer_related_applications": false,
+  "related_applications": [
+  {
+    "platform": "play",
+    "url": "https://play.google.com/store/apps/details?id=fr.top14pronos.app",
+    "id": "fr.top14pronos.app"
+  }
+],
   "screenshots": [
     {
       "src": "/screenshot1.png",
@@ -19,7 +26,15 @@
       "form_factor": "narrow",
       "label": "Pronostics Top 14"
     }
+    {
+    "src": "/screenshot-wide.png",
+    "sizes": "1920x1080",
+    "type": "image/png",
+    "form_factor": "wide",
+    "label": "Top 14 Pronos — Vue desktop"
+    }
   ],
+  
   "icons": [
     {
       "src": "/icon-192.png",
