@@ -400,8 +400,8 @@ function InsightsSection({ insights }) {
 
   const labelVainqueurFT = vainqueur_ft
     ? (vainqueur_ft.label === 'Match nul'
-        ? { main: '🤝 Score nul prédit', sub: `Probabilité : ${vainqueur_ft.proba || 0}%` }
-        : { main: `🏆 ${nomCourt(vainqueur_ft.label)} gagne`, sub: `Probabilité : ${vainqueur_ft.proba || 0}%` })
+        ? { main: '🤝 Score nul prédit', sub: 'Probabilité algo' }
+        : { main: `🏆 ${nomCourt(vainqueur_ft.label)} gagne`, sub: 'Probabilité algo' })
     : null;
 
   const labelVainqueurMT = vainqueur_mt
@@ -429,7 +429,7 @@ function InsightsSection({ insights }) {
             <InsightBadge
               label={labelVainqueurFT.main}
               sublabel={labelVainqueurFT.sub}
-              confiance={vainqueur_ft.confiance}
+              confiance={vainqueur_ft.proba || vainqueur_ft.confiance}
               color="bg-purple-50 border-purple-200"
             />
           )}
