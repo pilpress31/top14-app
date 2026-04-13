@@ -5,12 +5,15 @@
   "description": "Pronostics rugby Top 14 par IA — Algorithme Elo, paris virtuels, compos probables et analyses avant chaque journée.",
   "start_url": "/",
   "scope": "/",
+  "dir": "ltr",
+  "lang": "fr",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
   "background_color": "#1a1208",
   "theme_color": "#D4AF37",
   "orientation": "portrait",
-  "lang": "fr",
   "categories": ["sports", "entertainment"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "prefer_related_applications": false,
   "related_applications": [
     {
@@ -18,6 +21,10 @@
       "url": "https://play.google.com/store/apps/details?id=fr.top14pronos.app",
       "id": "fr.top14pronos.app"
     }
+  ],
+  "scope_extensions": [
+    { "origin": "https://app.top14pronos.fr" },
+    { "origin": "https://top14pronos.fr" }
   ],
   "screenshots": [
     {
@@ -29,7 +36,7 @@
     },
     {
       "src": "/screenshot-wide.png",
-      "sizes": "1920x1080",
+      "sizes": "2400x1080",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Top 14 Pronos — Vue desktop"
