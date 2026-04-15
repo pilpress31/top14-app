@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
-import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
 export default function AlgoPronosTab() {
-  const { isD2 } = useChampionnat();
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
@@ -17,43 +15,25 @@ export default function AlgoPronosTab() {
   // Flag : true = premier chargement, false = refresh Realtime
   const isFirstLoad = useRef(true);
 
-  // ✅ Realtime — rafraîchit quand les cotes changent (Top14 ou D2)
+  // ✅ Realtime — rafraîchit quand les cotes changent
   useRealtimeSync([
-    { table: isD2 ? 'match_cotes_d2' : 'match_cotes', onUpdate: () => loadPronos() },
+    { table: 'match_cotes', onUpdate: () => loadPronos() },
   ]);
 
-  // Recharger à chaque changement de championnat
   useEffect(() => {
-    setLoading(true);
-    setPronos([]);
-    isFirstLoad.current = true;
     loadPronos();
-  }, [isD2]);
+  }, []);
 
-  const loadPronos = useCallback(async () => {
+  const loadPronos = async () => {
     try {
-      const url = isD2 ? `${API_BASE}/api/d2/pronos` : `${API_BASE}/api/pronos`;
-      const response = await axios.get(url);
+      const response = await axios.get(`${API_BASE}/api/pronos`);
       const pronosData = response.data.pronos || response.data || [];
-
-      // Normaliser la structure D2 pour qu'elle soit compatible avec PronoCard
-      const normalized = isD2
-        ? pronosData.map(p => ({
-            ...p,
-            // PronoCard attend prono_ft.domicile / prono_ft.exterieur
-            prono_ft: { domicile: p.score_predit_dom ?? 0, exterieur: p.score_predit_ext ?? 0 },
-            prono_ht: null,  // Pas de MT en D2
-            date: p.date_match,
-            confiance_algo: p.confiance_algo ? p.confiance_algo * 100 : 0, // D2 stocke en 0-1
-            isD2: true,
-          }))
-        : pronosData;
-
-      setPronos(normalized);
+      setPronos(pronosData);
 
       // N'ouvrir la première journée QUE lors du tout premier chargement
-      if (isFirstLoad.current && normalized.length > 0) {
-        const journees = [...new Set(normalized.map(p => p.journee))].sort((a, b) => {
+      // Les refreshs Realtime ne doivent pas toucher à l'accordéon
+      if (isFirstLoad.current && pronosData.length > 0) {
+        const journees = [...new Set(pronosData.map(p => p.journee))].sort((a, b) => {
           const numA = typeof a === 'string' ? parseInt(a.replace('J', '')) : a;
           const numB = typeof b === 'string' ? parseInt(b.replace('J', '')) : b;
           return numA - numB;
@@ -67,7 +47,7 @@ export default function AlgoPronosTab() {
     } finally {
       setLoading(false);
     }
-  }, [isD2]);
+  };
 
   const scrollToJournee = (journee) => {
     setTimeout(() => {
@@ -143,9 +123,6 @@ export default function AlgoPronosTab() {
                   <Calendar className="w-4 h-4 text-rugby-gold" />
                   <span className="font-bold text-rugby-black text-sm">Journée {journee}</span>
                   <span className="text-xs text-gray-500">({pronosJournee.length} {pronosJournee.length > 1 ? 'matchs' : 'match'})</span>
-                  {pronosJournee[0]?.isD2 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-700 text-white">PRO D2</span>
-                  )}
                 </div>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4 text-rugby-gold" />
@@ -829,148 +806,6 @@ const getAbbrev = (nomEquipe) => {
 };
 
 // ============================================
-// COMPOSANT : Historique des confrontations
-// ============================================
-function HistoriqueConfrontations({ match, isOpen, onToggle }) {
-  const [confrontations, setConfrontations] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handleToggle = async () => {
-    onToggle();
-    if (!isOpen && !confrontations && !loading) {
-      setLoading(true);
-      setError(null);
-      try {
-        const equipeA = match.equipe_domicile?.toUpperCase();
-        const equipeB = match.equipe_exterieure?.toUpperCase();
-        let found = [];
-        let offset = 0;
-        const limit = 100;
-
-        while (found.length < 10) {
-          const res = await axios.get(`${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`);
-          const data = res.data;
-          const matchs = data.matchs || [];
-          if (matchs.length === 0) break;
-
-          const confronts = matchs.filter(m => {
-            const dom = m.equipe_domicile?.toUpperCase();
-            const ext = m.equipe_exterieure?.toUpperCase();
-            return (dom === equipeA && ext === equipeB) ||
-                   (dom === equipeB && ext === equipeA);
-          });
-          found = [...found, ...confronts];
-          offset += limit;
-          if (offset >= Math.min(data.total || 9999, 3700)) break;
-        }
-        setConfrontations(found.slice(0, 10));
-      } catch (e) {
-        setError('Impossible de charger l\'historique.');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  return (
-    <div className="mt-3 border-t border-gray-100 pt-3">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">⚔️</span>
-          <span className="text-xs font-semibold text-gray-700">Historique des confrontations</span>
-          {confrontations && (
-            <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
-              {confrontations.length} matchs
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 text-teal-500 animate-spin" />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
-            : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
-          }
-        </div>
-      </button>
-
-      {isOpen && (
-        <div className="mt-2">
-          {error && <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>}
-          {loading && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
-            </div>
-          )}
-          {confrontations && !loading && confrontations.length === 0 && (
-            <p className="text-xs text-gray-400 text-center py-3 italic">
-              Aucune confrontation trouvée dans l'historique
-            </p>
-          )}
-          {confrontations && !loading && confrontations.length > 0 && (
-            <div className="bg-teal-50 rounded-lg border border-teal-100 overflow-hidden">
-              {/* Header */}
-              <div className="grid grid-cols-5 px-2 py-1.5 bg-teal-100/70 text-[10px] font-bold text-teal-700 uppercase tracking-wide text-center">
-                <div className="text-left">Sais./J.</div>
-                <div>DOM</div>
-                <div>FT</div>
-                <div>MT</div>
-                <div>EXT</div>
-              </div>
-
-              {confrontations.map((m, i) => {
-                const saisonCourt = (m.saison || '').replace('20', '').replace('-20', '-');
-                const journee = `J${m.journee}`;
-                const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
-                const mtScore = (m.score_ht_domicile != null && m.score_ht_exterieur != null)
-                  ? `${m.score_ht_domicile}-${m.score_ht_exterieur}` : '-';
-                const domGagne = m.score_domicile > m.score_exterieur;
-                const nul = m.score_domicile === m.score_exterieur;
-                const bgRow = i % 2 === 0 ? 'bg-white' : 'bg-teal-50/40';
-                const abbrevDom = getAbbrev(m.equipe_domicile);
-                const abbrevExt = getAbbrev(m.equipe_exterieure);
-
-                return (
-                  <div
-                    key={m.id || i}
-                    className={`grid grid-cols-5 px-2 py-2 items-center text-center border-b border-teal-100/50 last:border-0 ${bgRow}`}
-                  >
-                    {/* Saison + Journée empilées */}
-                    <div className="text-left">
-                      <div className="text-[11px] font-semibold text-gray-600">{saisonCourt}</div>
-                      <div className="text-[10px] text-gray-400">{journee}</div>
-                    </div>
-
-                    {/* DOM abrégé */}
-                    <div className={`text-[12px] font-bold ${domGagne ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
-                      {abbrevDom}
-                    </div>
-
-                    {/* Score FT */}
-                    <div className="text-[12px] font-bold text-rugby-gold">{ftScore}</div>
-
-                    {/* Score MT */}
-                    <div className="text-[11px] text-gray-500">{mtScore}</div>
-
-                    {/* EXT abrégé */}
-                    <div className={`text-[12px] font-bold ${!domGagne && !nul ? 'text-green-600' : nul ? 'text-gray-500' : 'text-red-500'}`}>
-                      {abbrevExt}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================
 // COMPOSANT : Tooltip barre de confiance
 // ============================================
 function InfoConfiance() {
@@ -1066,8 +901,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
   const scoreDom = match.prono_ft?.domicile ?? 0;
   const scoreExt = match.prono_ft?.exterieur ?? 0;
 
-  const scoreHtDom = match.isD2 ? null : (match.prono_ht?.domicile ?? null);
-  const scoreHtExt = match.isD2 ? null : (match.prono_ht?.exterieur ?? null);
+  const scoreHtDom = match.prono_ht?.domicile ?? null;
+  const scoreHtExt = match.prono_ht?.exterieur ?? null;
   const scoreHtText = (scoreHtDom !== null && scoreHtExt !== null)
     ? `${scoreHtDom} - ${scoreHtExt}`
     : null;
@@ -1215,30 +1050,21 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Analyse historique + Actu match + Confrontations */}
       <div className="px-4">
-        {/* Sections indisponibles en Pro D2 (pas de données MT ni d'actu IA) */}
-        {!match.isD2 && (
-          <>
-            <div ref={analyseRef}>
-              <AnalyseHistorique
-                match={match}
-                isOpen={openPanel === 'analyse'}
-                onToggle={() => handleTogglePanel('analyse')}
-              />
-            </div>
-            <div ref={actuRef}>
-              <ActuMatch
-                match={match}
-                isOpen={openPanel === 'actu'}
-                onToggle={() => handleTogglePanel('actu')}
-              />
-            </div>
-          </>
-        )}
-        <HistoriqueConfrontations
-          match={match}
-          isOpen={openPanel === 'confrontations'}
-          onToggle={() => handleTogglePanel('confrontations')}
-        />
+        <div ref={analyseRef}>
+          <AnalyseHistorique
+            match={match}
+            isOpen={openPanel === 'analyse'}
+            onToggle={() => handleTogglePanel('analyse')}
+          />
+        </div>
+        <div ref={actuRef}>
+          <ActuMatch
+            match={match}
+            isOpen={openPanel === 'actu'}
+            onToggle={() => handleTogglePanel('actu')}
+          />
+        </div>
+
       </div>
 
       {/* Popup fiche équipe */}
