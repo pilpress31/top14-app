@@ -12,6 +12,8 @@ export default function AlgoPronosTab() {
   const [loading, setLoading] = useState(true);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   const journeeRefs = useRef({});
+  // Flag : true = premier chargement, false = refresh Realtime
+  const isFirstLoad = useRef(true);
 
   // ✅ Realtime — rafraîchit quand les cotes changent
   useRealtimeSync([
@@ -28,13 +30,16 @@ export default function AlgoPronosTab() {
       const pronosData = response.data.pronos || response.data || [];
       setPronos(pronosData);
 
-      if (pronosData.length > 0) {
+      // N'ouvrir la première journée QUE lors du tout premier chargement
+      // Les refreshs Realtime ne doivent pas toucher à l'accordéon
+      if (isFirstLoad.current && pronosData.length > 0) {
         const journees = [...new Set(pronosData.map(p => p.journee))].sort((a, b) => {
           const numA = typeof a === 'string' ? parseInt(a.replace('J', '')) : a;
           const numB = typeof b === 'string' ? parseInt(b.replace('J', '')) : b;
           return numA - numB;
         });
         if (journees.length > 0) setExpandedJournees(new Set([journees[0]]));
+        isFirstLoad.current = false;
       }
     } catch (error) {
       console.error('Erreur chargement pronos:', error);
