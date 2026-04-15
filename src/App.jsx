@@ -5,8 +5,10 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
+import { ChampionnatProvider, useChampionnat } from "./contexts/ChampionnatContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
+import ChampionnatBadge from "@/components/ChampionnatBadge";
 import { useState } from "react";
 import { useAccessControl } from "./hooks/useAccessControl";
 import PaywallPage from "./pages/PaywallPage";
@@ -59,6 +61,7 @@ function AppContent() {
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { isD2 } = useChampionnat();
 
   // ── TOUS LES HOOKS EN HAUT ──
   const {
@@ -133,6 +136,9 @@ function AppContent() {
         <AccessBanner joursRestants={joursRestants} tarif={tarif} />
       )}
 
+      {/* Badge switch TOP14 / PRO D2 — visible sur toutes les pages protégées */}
+      {user && !hideBottomNav && <ChampionnatBadge />}
+
       <Routes>
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
@@ -165,7 +171,7 @@ function AppContent() {
         <Route path="/notifications-diagnostic" element={<ProtectedRoute><NotificationsDiagnosticPage /></ProtectedRoute>} />
       </Routes>
 
-      {!hideBottomNav && (
+      {!hideBottomNav && !isD2 && (
         <BottomNav
           active={active}
           onPronosClick={() => setResetFlag(prev => !prev)}
@@ -178,9 +184,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <ChatNotificationProvider>
-        <AppContent />
-      </ChatNotificationProvider>
+      <ChampionnatProvider>
+        <ChatNotificationProvider>
+          <AppContent />
+        </ChatNotificationProvider>
+      </ChampionnatProvider>
     </AuthProvider>
   );
 }
