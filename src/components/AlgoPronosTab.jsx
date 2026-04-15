@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
 export default function AlgoPronosTab() {
+  const { isD2 } = useChampionnat();
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
@@ -15,25 +17,43 @@ export default function AlgoPronosTab() {
   // Flag : true = premier chargement, false = refresh Realtime
   const isFirstLoad = useRef(true);
 
-  // ✅ Realtime — rafraîchit quand les cotes changent
+  // ✅ Realtime — rafraîchit quand les cotes changent (Top14 ou D2)
   useRealtimeSync([
-    { table: 'match_cotes', onUpdate: () => loadPronos() },
+    { table: isD2 ? 'match_cotes_d2' : 'match_cotes', onUpdate: () => loadPronos() },
   ]);
 
+  // Recharger à chaque changement de championnat
   useEffect(() => {
+    setLoading(true);
+    setPronos([]);
+    isFirstLoad.current = true;
     loadPronos();
-  }, []);
+  }, [isD2]);
 
-  const loadPronos = async () => {
+  const loadPronos = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE}/api/pronos`);
+      const url = isD2 ? `${API_BASE}/api/d2/pronos` : `${API_BASE}/api/pronos`;
+      const response = await axios.get(url);
       const pronosData = response.data.pronos || response.data || [];
-      setPronos(pronosData);
+
+      // Normaliser la structure D2 pour qu'elle soit compatible avec PronoCard
+      const normalized = isD2
+        ? pronosData.map(p => ({
+            ...p,
+            // PronoCard attend prono_ft.domicile / prono_ft.exterieur
+            prono_ft: { domicile: p.score_predit_dom ?? 0, exterieur: p.score_predit_ext ?? 0 },
+            prono_ht: null,  // Pas de MT en D2
+            date: p.date_match,
+            confiance_algo: p.confiance_algo ? p.confiance_algo * 100 : 0, // D2 stocke en 0-1
+            isD2: true,
+          }))
+        : pronosData;
+
+      setPronos(normalized);
 
       // N'ouvrir la première journée QUE lors du tout premier chargement
-      // Les refreshs Realtime ne doivent pas toucher à l'accordéon
-      if (isFirstLoad.current && pronosData.length > 0) {
-        const journees = [...new Set(pronosData.map(p => p.journee))].sort((a, b) => {
+      if (isFirstLoad.current && normalized.length > 0) {
+        const journees = [...new Set(normalized.map(p => p.journee))].sort((a, b) => {
           const numA = typeof a === 'string' ? parseInt(a.replace('J', '')) : a;
           const numB = typeof b === 'string' ? parseInt(b.replace('J', '')) : b;
           return numA - numB;
@@ -47,7 +67,7 @@ export default function AlgoPronosTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isD2]);
 
   const scrollToJournee = (journee) => {
     setTimeout(() => {
@@ -123,6 +143,9 @@ export default function AlgoPronosTab() {
                   <Calendar className="w-4 h-4 text-rugby-gold" />
                   <span className="font-bold text-rugby-black text-sm">Journée {journee}</span>
                   <span className="text-xs text-gray-500">({pronosJournee.length} {pronosJournee.length > 1 ? 'matchs' : 'match'})</span>
+                  {pronosJournee[0]?.isD2 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-700 text-white">PRO D2</span>
+                  )}
                 </div>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4 text-rugby-gold" />
@@ -1043,8 +1066,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
   const scoreDom = match.prono_ft?.domicile ?? 0;
   const scoreExt = match.prono_ft?.exterieur ?? 0;
 
-  const scoreHtDom = match.prono_ht?.domicile ?? null;
-  const scoreHtExt = match.prono_ht?.exterieur ?? null;
+  const scoreHtDom = match.isD2 ? null : (match.prono_ht?.domicile ?? null);
+  const scoreHtExt = match.isD2 ? null : (match.prono_ht?.exterieur ?? null);
   const scoreHtText = (scoreHtDom !== null && scoreHtExt !== null)
     ? `${scoreHtDom} - ${scoreHtExt}`
     : null;
@@ -1192,20 +1215,25 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Analyse historique + Actu match + Confrontations */}
       <div className="px-4">
-        <div ref={analyseRef}>
-          <AnalyseHistorique
-            match={match}
-            isOpen={openPanel === 'analyse'}
-            onToggle={() => handleTogglePanel('analyse')}
-          />
-        </div>
-        <div ref={actuRef}>
-          <ActuMatch
-            match={match}
-            isOpen={openPanel === 'actu'}
-            onToggle={() => handleTogglePanel('actu')}
-          />
-        </div>
+        {/* Sections indisponibles en Pro D2 (pas de données MT ni d'actu IA) */}
+        {!match.isD2 && (
+          <>
+            <div ref={analyseRef}>
+              <AnalyseHistorique
+                match={match}
+                isOpen={openPanel === 'analyse'}
+                onToggle={() => handleTogglePanel('analyse')}
+              />
+            </div>
+            <div ref={actuRef}>
+              <ActuMatch
+                match={match}
+                isOpen={openPanel === 'actu'}
+                onToggle={() => handleTogglePanel('actu')}
+              />
+            </div>
+          </>
+        )}
         <HistoriqueConfrontations
           match={match}
           isOpen={openPanel === 'confrontations'}
