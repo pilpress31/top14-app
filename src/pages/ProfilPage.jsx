@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { User, Mail, Edit2, Save, X, Trash2, AlertCircle, CheckCircle, ArrowLeft, AtSign, Loader2, Camera, Upload } from 'lucide-react'
@@ -17,6 +17,8 @@ function ProfilPage() {
   const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || '')
   const [loading, setLoading] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  // Ref pour le file input — nécessaire pour le fix Samsung TWA
+  const fileInputRef = useRef(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -374,19 +376,24 @@ function ProfilPage() {
 
           {/* Boutons */}
           <div className="flex flex-col gap-2">
-            <label className="cursor-pointer">
-              <div className="flex items-center gap-2 bg-rugby-gold hover:bg-rugby-orange text-white font-semibold px-4 py-2 rounded-lg transition-colors">
-                <Upload className="w-4 h-4" />
-                {avatarUrl ? 'Changer' : 'Ajouter'}
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={uploadAvatar}
-                disabled={uploadingAvatar}
-                className="hidden"
-              />
-            </label>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="flex items-center gap-2 bg-rugby-gold hover:bg-rugby-orange text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              {avatarUrl ? 'Changer' : 'Ajouter'}
+            </button>
+            {/* Fix Samsung TWA : types MIME explicites au lieu de image/* */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+              onChange={uploadAvatar}
+              disabled={uploadingAvatar}
+              className="hidden"
+            />
             
             {avatarUrl && (
               <button
