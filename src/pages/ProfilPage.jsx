@@ -17,8 +17,8 @@ function ProfilPage() {
   const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || '')
   const [loading, setLoading] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  // Ref pour le file input — nécessaire pour le fix Samsung TWA
-  const fileInputRef = useRef(null)
+  const fileInputGalerieRef = useRef(null)
+  const fileInputCameraRef = useRef(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -374,22 +374,47 @@ function ProfilPage() {
             )}
           </div>
 
-          {/* Boutons */}
+          {/* Boutons avatar */}
           <div className="flex flex-col gap-2">
+
+            {/* Bouton Caméra — fonctionne toujours sur Samsung (pas besoin de permission stockage) */}
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => fileInputCameraRef.current?.click()}
               disabled={uploadingAvatar}
               className="flex items-center gap-2 bg-rugby-gold hover:bg-rugby-orange text-white font-semibold px-4 py-2 rounded-lg transition-colors"
             >
-              <Upload className="w-4 h-4" />
-              {avatarUrl ? 'Changer' : 'Ajouter'}
+              <Camera className="w-4 h-4" />
+              Prendre une photo
             </button>
-            {/* Fix Samsung TWA : types MIME explicites au lieu de image/* */}
+
+            {/* Bouton Galerie — peut échouer sur Android 11 Samsung si permission refusée */}
+            <button
+              type="button"
+              onClick={() => fileInputGalerieRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="flex items-center gap-2 bg-white border border-rugby-gold text-rugby-gold hover:bg-yellow-50 font-semibold px-4 py-2 rounded-lg transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              {avatarUrl ? 'Changer depuis la galerie' : 'Depuis la galerie'}
+            </button>
+
+            {/* Input caméra — capture direct, ne nécessite pas READ_EXTERNAL_STORAGE */}
             <input
-              ref={fileInputRef}
+              ref={fileInputCameraRef}
               type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+              accept="image/jpeg,image/jpg,image/png"
+              capture="user"
+              onChange={uploadAvatar}
+              disabled={uploadingAvatar}
+              className="hidden"
+            />
+
+            {/* Input galerie — types MIME explicites pour Android 11 */}
+            <input
+              ref={fileInputGalerieRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
               onChange={uploadAvatar}
               disabled={uploadingAvatar}
               className="hidden"
