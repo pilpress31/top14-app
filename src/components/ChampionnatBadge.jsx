@@ -30,7 +30,12 @@ export default function ChampionnatBadge() {
       className="fixed top-3 left-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-md border-2 font-bold text-xs tracking-wide shadow-sm transition-opacity duration-200 hover:opacity-85"
       title={`Passer en ${isD2 ? 'TOP 14' : 'PRO D2'}`}
     >
-      <span className="text-sm leading-none">🏉</span>
+      {/* Icône appli depuis /public */}
+      <img
+        src="/icon-192.png"
+        alt=""
+        className="w-4 h-4 rounded-sm object-contain"
+      />
       <span className="leading-none">{isD2 ? 'PRO D2' : 'TOP 14'}</span>
       {/* Icône switch */}
       <svg
