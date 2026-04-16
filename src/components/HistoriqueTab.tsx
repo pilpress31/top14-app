@@ -125,6 +125,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [totalD2, setTotalD2] = useState<number>(0);
   const [d2Page, setD2Page] = useState<number>(1);
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
+  const [equipesD2, setEquipesD2] = useState<string[]>([]);
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number, equipe?: string, saison?: string) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
@@ -171,6 +172,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
       const data = await res.json();
       setSaisonsD2([...(data.saisons || [])].reverse());
+      setEquipesD2(data.equipes || []);
     } catch (e) {
       console.error("Erreur saisons D2:", e);
     }
@@ -185,10 +187,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setLoading(true);
     setMatches([]);
     setCurrentPage(1);
+    setD2Page(1);
+    setTotalD2(0);
     setSelectedTeam('all');
     setSelectedSaison('all');
-    console.log('HistoriqueTab isD2=', isD2);
-    loadHistorique(isD2);
+    if (isD2) loadSaisonsD2();
+    loadHistorique(isD2, 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
@@ -205,9 +209,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
-  const equipes = Array.from(
-    new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))
-  ).sort();
+  const equipes = isD2
+    ? equipesD2
+    : Array.from(new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))).sort();
 
   const saisons = isD2 ? saisonsD2 : Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
 
