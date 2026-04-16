@@ -15,27 +15,46 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
   // Flag : true = premier chargement, false = refresh Realtime
   const isFirstLoad = useRef(true);
 
-  // ✅ Realtime — rafraîchit quand les cotes changent
+  // ✅ Realtime — rafraîchit quand les cotes changent (Top14 ou D2)
   useRealtimeSync([
-    { table: 'match_cotes', onUpdate: () => loadPronos() },
+    { table: isD2 ? 'match_cotes_d2' : 'match_cotes', onUpdate: () => loadPronos() },
   ]);
 
+  // Recharge quand loadPronos change (= quand isD2 change)
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setLoading(true);
+    setPronos([]);
+    setExpandedJournees(new Set());
+    isFirstLoad.current = true;
     loadPronos();
-  }, []);
+  }, [loadPronos]);
 
   const loadPronos = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE}/api/pronos`);
-      const pronosData = response.data.pronos || response.data || [];
+      const url = isD2 ? `${API_BASE}/api/d2/pronos` : `${API_BASE}/api/pronos`;
+      const response = await axios.get(url);
+      const raw = response.data.pronos || response.data || [];
+
+      // Normaliser la structure D2 pour PronoCard
+      const pronosData = isD2
+        ? raw.map(p => ({
+            ...p,
+            prono_ft: { domicile: p.score_predit_dom ?? 0, exterieur: p.score_predit_ext ?? 0 },
+            prono_ht: null,
+            date: p.date_match,
+            confiance_algo: p.confiance_algo ? Number(p.confiance_algo) * 100 : 0,
+            isD2: true,
+          }))
+        : raw;
+
       setPronos(pronosData);
 
-      // N'ouvrir la première journée QUE lors du tout premier chargement
-      // Les refreshs Realtime ne doivent pas toucher à l'accordéon
+      // Ouvrir la première journée uniquement au premier chargement
       if (isFirstLoad.current && pronosData.length > 0) {
         const journees = [...new Set(pronosData.map(p => p.journee))].sort((a, b) => {
-          const numA = typeof a === 'string' ? parseInt(a.replace('J', '')) : a;
-          const numB = typeof b === 'string' ? parseInt(b.replace('J', '')) : b;
+          const numA = typeof a === 'string' ? parseInt(String(a).replace('J', '')) : a;
+          const numB = typeof b === 'string' ? parseInt(String(b).replace('J', '')) : b;
           return numA - numB;
         });
         if (journees.length > 0) setExpandedJournees(new Set([journees[0]]));
