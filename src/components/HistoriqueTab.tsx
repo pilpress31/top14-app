@@ -166,6 +166,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setCurrentPage(1);
     setSelectedTeam('all');
     setSelectedSaison('all');
+    console.log('HistoriqueTab isD2=', isD2);
     loadHistorique(isD2);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
