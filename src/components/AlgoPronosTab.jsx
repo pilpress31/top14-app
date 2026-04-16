@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
@@ -14,13 +14,15 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
   const journeeRefs = useRef({});
   // Flag : true = premier chargement, false = refresh Realtime
   const isFirstLoad = useRef(true);
+  // Ref stable pour capturer isD2 dans les closures async
+  const isD2Ref = useRef(isD2);
+  useEffect(() => { isD2Ref.current = isD2; }, [isD2]);
 
-  // ✅ Realtime — rafraîchit quand les cotes changent (Top14 ou D2)
+  // ✅ Realtime — rafraîchit quand les cotes changent
   useRealtimeSync([
     { table: isD2 ? 'match_cotes_d2' : 'match_cotes', onUpdate: () => loadPronos() },
   ]);
 
-  // Recharge quand loadPronos change (= quand isD2 change)
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setLoading(true);
@@ -28,16 +30,17 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
     setExpandedJournees(new Set());
     isFirstLoad.current = true;
     loadPronos();
-  }, [loadPronos]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isD2]);
 
-  const loadPronos = useCallback(async () => {
+  const loadPronos = async () => {
     try {
-      const url = isD2 ? `${API_BASE}/api/d2/pronos` : `${API_BASE}/api/pronos`;
+      const url = isD2Ref.current ? `${API_BASE}/api/d2/pronos` : `${API_BASE}/api/pronos`;
       const response = await axios.get(url);
       const raw = response.data.pronos || response.data || [];
 
       // Normaliser la structure D2 pour PronoCard
-      const pronosData = isD2
+      const pronosData = isD2Ref.current
         ? raw.map(p => ({
             ...p,
             prono_ft: { domicile: p.score_predit_dom ?? 0, exterieur: p.score_predit_ext ?? 0 },
@@ -50,11 +53,10 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
 
       setPronos(pronosData);
 
-      // Ouvrir la première journée uniquement au premier chargement
       if (isFirstLoad.current && pronosData.length > 0) {
         const journees = [...new Set(pronosData.map(p => p.journee))].sort((a, b) => {
-          const numA = typeof a === 'string' ? parseInt(String(a).replace('J', '')) : a;
-          const numB = typeof b === 'string' ? parseInt(String(b).replace('J', '')) : b;
+          const numA = typeof a === 'string' ? parseInt(a.replace('J', '')) : a;
+          const numB = typeof b === 'string' ? parseInt(b.replace('J', '')) : b;
           return numA - numB;
         });
         if (journees.length > 0) setExpandedJournees(new Set([journees[0]]));
@@ -66,7 +68,7 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
     } finally {
       setLoading(false);
     }
-  }, [isD2]);
+  };
 
   const scrollToJournee = (journee) => {
     setTimeout(() => {
@@ -1062,8 +1064,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
   const scoreDom = match.prono_ft?.domicile ?? 0;
   const scoreExt = match.prono_ft?.exterieur ?? 0;
 
-  const scoreHtDom = match.prono_ht?.domicile ?? null;
-  const scoreHtExt = match.prono_ht?.exterieur ?? null;
+  const scoreHtDom = match.isD2 ? null : (match.prono_ht?.domicile ?? null);
+  const scoreHtExt = match.isD2 ? null : (match.prono_ht?.exterieur ?? null);
   const scoreHtText = (scoreHtDom !== null && scoreHtExt !== null)
     ? `${scoreHtDom} - ${scoreHtExt}`
     : null;
@@ -1209,22 +1211,26 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
         </div>
       </div>
 
-      {/* Analyse historique + Actu match + Confrontations */}
+      {/* Analyse historique + Actu match (masqués en Pro D2) */}
       <div className="px-4">
-        <div ref={analyseRef}>
-          <AnalyseHistorique
-            match={match}
-            isOpen={openPanel === 'analyse'}
-            onToggle={() => handleTogglePanel('analyse')}
-          />
-        </div>
-        <div ref={actuRef}>
-          <ActuMatch
-            match={match}
-            isOpen={openPanel === 'actu'}
-            onToggle={() => handleTogglePanel('actu')}
-          />
-        </div>
+        {!match.isD2 && (
+          <>
+            <div ref={analyseRef}>
+              <AnalyseHistorique
+                match={match}
+                isOpen={openPanel === 'analyse'}
+                onToggle={() => handleTogglePanel('analyse')}
+              />
+            </div>
+            <div ref={actuRef}>
+              <ActuMatch
+                match={match}
+                isOpen={openPanel === 'actu'}
+                onToggle={() => handleTogglePanel('actu')}
+              />
+            </div>
+          </>
+        )}
         <HistoriqueConfrontations
           match={match}
           isOpen={openPanel === 'confrontations'}
