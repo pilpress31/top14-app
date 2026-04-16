@@ -129,6 +129,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number, equipe?: string, saison?: string) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
+    console.log('=== loadHistorique useD2=', useD2, 'page=', page, 'equipe=', equipe, 'saison=', saison);
     try {
       let raw: any[] = [];
       if (useD2) {
@@ -171,6 +172,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     try {
       const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
       const data = await res.json();
+      console.log('=== loadSaisonsD2 response=', data);
       setSaisonsD2([...(data.saisons || [])].reverse());
       setEquipesD2(data.equipes || []);
     } catch (e) {
@@ -184,6 +186,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   ]);
 
   useEffect(() => {
+    console.log('=== SWITCH isD2=', isD2);
     setLoading(true);
     setMatches([]);
     setCurrentPage(1);
