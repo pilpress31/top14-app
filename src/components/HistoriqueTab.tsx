@@ -111,8 +111,8 @@ interface HistoriqueTabProps {
 }
 
 export default function HistoriqueTab({ headerVisible = true, isD2 = false }: HistoriqueTabProps) {
-  const [matches, setMatches] = useState<MatchHistorique[]>([]);
   const isD2Ref = useRef(isD2);
+  const [matches, setMatches] = useState<MatchHistorique[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [selectedSaison, setSelectedSaison] = useState<string>("all");
@@ -124,17 +124,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const matchesPerPage = 21;
 
-  useEffect(() => {
-    isD2Ref.current = isD2;
-    setLoading(true);
-    setMatches([]);
-    setCurrentPage(1);
-    setSelectedTeam('all');
-    setSelectedSaison('all');
-    loadHistorique();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isD2]);
-
   const loadHistorique = async () => {
     try {
       const url = isD2Ref.current
@@ -142,7 +131,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         : "https://top14-api-production.up.railway.app/api/matchs/historique/all";
       const response = await fetch(url);
       const data = await response.json();
-      // Normaliser la structure D2
       const raw = data.matchs || [];
       const normalized: MatchHistorique[] = isD2Ref.current
         ? raw.map((m: any) => ({
@@ -173,8 +161,15 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   ]);
 
   useEffect(() => {
+    isD2Ref.current = isD2;
+    setLoading(true);
+    setMatches([]);
+    setCurrentPage(1);
+    setSelectedTeam('all');
+    setSelectedSaison('all');
     loadHistorique();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isD2]);
 
   // Fermer les dropdowns au clic extérieur
   useEffect(() => {
