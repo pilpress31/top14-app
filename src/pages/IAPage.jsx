@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useChampionnat } from '../contexts/ChampionnatContext';
 import { Brain, Clock } from 'lucide-react';
 import AlgoPronosTab from '../components/AlgoPronosTab';
 import HistoriqueTab from '../components/HistoriqueTab';
@@ -12,6 +13,7 @@ const HEADER_HEIGHT = 120;
 
 export default function IAPage() {
   const navigate = useNavigate();
+  const { isD2, toggle, championnat } = useChampionnat();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -90,7 +92,7 @@ export default function IAPage() {
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
-          <div className="flex">
+          <div className="flex items-stretch">
             {/* Onglet Algorithme */}
             <button
               onClick={() => setActiveTab('algorithme')}
@@ -108,6 +110,22 @@ export default function IAPage() {
                 Prédictions des prochains matchs
               </span>
             </button>
+
+            {/* Badge switch TOP14 / PRO D2 — centré entre les deux tabs */}
+            <div className="flex items-center justify-center px-2 border-x border-rugby-gray/30">
+              <button
+                onClick={toggle}
+                className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-md border-2 font-bold text-[10px] tracking-wide transition-all duration-200 hover:opacity-85 min-w-[52px]"
+                style={isD2
+                  ? { backgroundColor: '#00174D', borderColor: '#97C1FE', color: '#FFFFFF' }
+                  : { backgroundColor: '#000000', borderColor: '#CBA135', color: '#CBA135' }
+                }
+                title={`Passer en ${isD2 ? 'TOP 14' : 'PRO D2'}`}
+              >
+                <img src="/icon-192.png" alt="" className="w-4 h-4 rounded-sm object-contain" />
+                <span className="leading-none">{isD2 ? 'PRO D2' : 'TOP 14'}</span>
+              </button>
+            </div>
 
             {/* Onglet Historique */}
             <button
@@ -136,7 +154,7 @@ export default function IAPage() {
         style={{ paddingTop: `${contentPadding}px` }}
       >
         {activeTab === 'algorithme' ? (
-          <AlgoPronosTab onMatchClick={handleMatchClick} />
+          <AlgoPronosTab onMatchClick={handleMatchClick} isD2={isD2} />
         ) : (
           <HistoriqueTab headerVisible={headerVisible} />
         )}

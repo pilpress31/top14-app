@@ -8,7 +8,6 @@ import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import { ChampionnatProvider, useChampionnat } from "./contexts/ChampionnatContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
-import ChampionnatBadge from "@/components/ChampionnatBadge";
 import { useState } from "react";
 import { useAccessControl } from "./hooks/useAccessControl";
 import PaywallPage from "./pages/PaywallPage";
@@ -136,8 +135,6 @@ function AppContent() {
         <AccessBanner joursRestants={joursRestants} tarif={tarif} />
       )}
 
-      {/* Badge switch TOP14 / PRO D2 — visible sur toutes les pages protégées */}
-      {user && !hideBottomNav && <ChampionnatBadge />}
 
       <Routes>
         {/* Routes publiques */}
