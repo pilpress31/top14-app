@@ -156,7 +156,7 @@ export default function IAPage() {
         {activeTab === 'algorithme' ? (
           <AlgoPronosTab onMatchClick={handleMatchClick} isD2={isD2} />
         ) : (
-          <HistoriqueTab headerVisible={headerVisible} />
+          <HistoriqueTab headerVisible={headerVisible} isD2={isD2} />
         )}
       </div>
     </div>
