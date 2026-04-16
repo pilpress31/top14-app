@@ -122,16 +122,29 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [saisonDropdownOpen, setSaisonDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const matchesPerPage = 21;
+  const [totalD2, setTotalD2] = useState<number>(0);
+  const [d2Page, setD2Page] = useState<number>(1);
 
   const loadHistorique = async (forceIsD2?: boolean) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
     try {
-      const url = useD2
-        ? "https://top14-api-production.up.railway.app/api/d2/historique?limit=500"
-        : "https://top14-api-production.up.railway.app/api/matchs/historique/all";
-      const response = await fetch(url);
-      const data = await response.json();
-      const raw = data.matchs || [];
+      let raw: any[] = [];
+      if (useD2) {
+        // Pagination serveur pour D2 (4947 matchs)
+        const pageToLoad = forceIsD2 !== undefined ? 1 : d2Page;
+        const offset = (pageToLoad - 1) * matchesPerPage;
+        const url = `https://top14-api-production.up.railway.app/api/d2/historique?limit=${matchesPerPage}&offset=${offset}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        raw = data.matchs || [];
+        setTotalD2(data.stats?.total || 0);
+        if (forceIsD2 !== undefined) setD2Page(1);
+      } else {
+        const url = "https://top14-api-production.up.railway.app/api/matchs/historique/all";
+        const response = await fetch(url);
+        const data = await response.json();
+        raw = data.matchs || [];
+      }
       const normalized: MatchHistorique[] = useD2
         ? raw.map((m: any) => ({
             ...m,
@@ -166,7 +179,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setCurrentPage(1);
     setSelectedTeam('all');
     setSelectedSaison('all');
-    console.log('HistoriqueTab isD2=', isD2);
     loadHistorique(isD2);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
@@ -242,12 +254,13 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
   });
 
-  const totalPages = Math.ceil(filteredMatches.length / matchesPerPage);
-  const startIndex = (currentPage - 1) * matchesPerPage;
-  const paginatedMatches = filteredMatches.slice(
-    startIndex,
-    startIndex + matchesPerPage
-  );
+  // En D2 : pagination serveur, en Top14 : pagination client
+  const totalPages = isD2
+    ? Math.ceil(totalD2 / matchesPerPage)
+    : Math.ceil(filteredMatches.length / matchesPerPage);
+  const paginatedMatches = isD2
+    ? filteredMatches  // déjà paginé côté serveur
+    : filteredMatches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage);
 
   const journeesOptions = selectedSaison !== "all" ? getJourneesForSaison(selectedSaison) : [];
 
@@ -588,10 +601,18 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       <div className="fixed left-0 w-full flex justify-center items-center gap-4 bg-white py-2 shadow-md z-50 bottom-[60px]">
         <button
           onClick={() => {
-            setCurrentPage(p => Math.max(1, p - 1));
+            if (isD2) {
+              const newPage = Math.max(1, d2Page - 1);
+              setD2Page(newPage);
+              setCurrentPage(newPage);
+              setLoading(true);
+              loadHistorique(true);
+            } else {
+              setCurrentPage(p => Math.max(1, p - 1));
+            }
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          disabled={currentPage === 1}
+          disabled={isD2 ? d2Page === 1 : currentPage === 1}
           className="px-4 py-2 rounded font-semibold text-white
                     bg-rugby-gold hover:bg-rugby-bronze
                     disabled:bg-gray-300 disabled:text-gray-500
@@ -601,15 +622,23 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         </button>
 
         <span className="px-4 py-2 font-semibold text-rugby-gold">
-          Page {currentPage} / {totalPages}
+          Page {isD2 ? d2Page : currentPage} / {totalPages}
         </span>
 
         <button
           onClick={() => {
-            setCurrentPage(p => Math.min(totalPages, p + 1));
+            if (isD2) {
+              const newPage = Math.min(totalPages, d2Page + 1);
+              setD2Page(newPage);
+              setCurrentPage(newPage);
+              setLoading(true);
+              loadHistorique(true);
+            } else {
+              setCurrentPage(p => Math.min(totalPages, p + 1));
+            }
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          disabled={currentPage === totalPages}
+          disabled={isD2 ? d2Page === totalPages : currentPage === totalPages}
           className="px-4 py-2 rounded font-semibold text-white
                     bg-rugby-gold hover:bg-rugby-bronze
                     disabled:bg-gray-300 disabled:text-gray-500

@@ -1125,8 +1125,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
       <div className="grid grid-cols-3 items-start px-4 mb-2">
         {/* Équipe domicile — cliquable */}
         <button
-          onClick={() => setTeamPopup(equipeDom)}
-          className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
+          onClick={() => !match.isD2 && setTeamPopup(equipeDom)}
+          className={`flex flex-col items-center text-center transition-opacity ${!match.isD2 ? "hover:opacity-80 cursor-pointer" : "cursor-default"}`}
         >
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -1136,7 +1136,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2">
+          <div className={`text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}>
             {equipeDom}
           </div>
         </button>
@@ -1168,8 +1168,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
         {/* Équipe extérieure — cliquable */}
         <button
-          onClick={() => setTeamPopup(equipeExt)}
-          className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
+          onClick={() => !match.isD2 && setTeamPopup(equipeExt)}
+          className={`flex flex-col items-center text-center transition-opacity ${!match.isD2 ? "hover:opacity-80 cursor-pointer" : "cursor-default"}`}
         >
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -1179,7 +1179,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className="text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2">
+          <div className={`text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}>
             {equipeExt}
           </div>
         </button>
