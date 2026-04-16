@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
@@ -111,7 +111,6 @@ interface HistoriqueTabProps {
 }
 
 export default function HistoriqueTab({ headerVisible = true, isD2 = false }: HistoriqueTabProps) {
-  const isD2Ref = useRef(isD2);
   const [matches, setMatches] = useState<MatchHistorique[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
@@ -124,15 +123,16 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const matchesPerPage = 21;
 
-  const loadHistorique = async () => {
+  const loadHistorique = async (forceIsD2?: boolean) => {
+    const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
     try {
-      const url = isD2Ref.current
+      const url = useD2
         ? "https://top14-api-production.up.railway.app/api/d2/historique?limit=500"
         : "https://top14-api-production.up.railway.app/api/matchs/historique/all";
       const response = await fetch(url);
       const data = await response.json();
       const raw = data.matchs || [];
-      const normalized: MatchHistorique[] = isD2Ref.current
+      const normalized: MatchHistorique[] = useD2
         ? raw.map((m: any) => ({
             ...m,
             id: m.id || m.match_id,
@@ -161,13 +161,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   ]);
 
   useEffect(() => {
-    isD2Ref.current = isD2;
     setLoading(true);
     setMatches([]);
     setCurrentPage(1);
     setSelectedTeam('all');
     setSelectedSaison('all');
-    loadHistorique();
+    loadHistorique(isD2);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
