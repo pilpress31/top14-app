@@ -125,15 +125,14 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [totalD2, setTotalD2] = useState<number>(0);
   const [d2Page, setD2Page] = useState<number>(1);
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
-  const [equipesD2, setEquipesD2] = useState<string[]>([]);
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number, equipe?: string, saison?: string) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
-    console.log('=== loadHistorique useD2=', useD2, 'page=', page, 'equipe=', equipe, 'saison=', saison);
     try {
       let raw: any[] = [];
       if (useD2) {
-        const pageNum = page !== undefined ? page : d2Page;
+        // Toujours utiliser page passé en param — jamais d2Page (state stale)
+        const pageNum = (page !== undefined && page !== null) ? page : 1;
         const offset = (pageNum - 1) * matchesPerPage;
         const params = new URLSearchParams({ limit: String(matchesPerPage), offset: String(offset) });
         if (equipe) params.set('equipe', equipe);
@@ -172,9 +171,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     try {
       const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
       const data = await res.json();
-      console.log('=== loadSaisonsD2 response=', data);
       setSaisonsD2([...(data.saisons || [])].reverse());
-      setEquipesD2(data.equipes || []);
     } catch (e) {
       console.error("Erreur saisons D2:", e);
     }
@@ -182,20 +179,17 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
 
   // ✅ Realtime
   useRealtimeSync([
-    { table: isD2 ? 'match_cotes_d2' : 'matchs_results', onUpdate: () => loadHistorique() },
+    ...(isD2 ? [] : [{ table: 'matchs_results', onUpdate: () => loadHistorique() }]),
   ]);
 
   useEffect(() => {
-    console.log('=== SWITCH isD2=', isD2);
     setLoading(true);
     setMatches([]);
     setCurrentPage(1);
-    setD2Page(1);
-    setTotalD2(0);
     setSelectedTeam('all');
     setSelectedSaison('all');
-    if (isD2) loadSaisonsD2();
-    loadHistorique(isD2, 1);
+    console.log('HistoriqueTab isD2=', isD2);
+    loadHistorique(isD2);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
@@ -212,9 +206,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
-  const equipes = isD2
-    ? equipesD2
-    : Array.from(new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))).sort();
+  const equipes = Array.from(
+    new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))
+  ).sort();
 
   const saisons = isD2 ? saisonsD2 : Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
 
