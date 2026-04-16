@@ -124,6 +124,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const matchesPerPage = 21;
   const [totalD2, setTotalD2] = useState<number>(0);
   const [d2Page, setD2Page] = useState<number>(1);
+  const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
@@ -136,7 +137,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         const response = await fetch(url);
         const data = await response.json();
         raw = data.matchs || [];
-        // Lire le total réel depuis stats.total
         if (data.stats?.total) setTotalD2(data.stats.total);
       } else {
         const url = "https://top14-api-production.up.railway.app/api/matchs/historique/all";
@@ -167,6 +167,17 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
+  // Charger les saisons D2 disponibles (appel unique)
+  const loadSaisonsD2 = async () => {
+    try {
+      const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
+      const data = await res.json();
+      setSaisonsD2((data.saisons || []).slice().reverse()); // plus récent en premier
+    } catch (e) {
+      console.error("Erreur chargement saisons D2:", e);
+    }
+  };
+
   // ✅ Realtime
   useRealtimeSync([
     { table: isD2 ? 'match_cotes_d2' : 'matchs_results', onUpdate: () => loadHistorique() },
@@ -176,9 +187,11 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setLoading(true);
     setMatches([]);
     setCurrentPage(1);
+    setD2Page(1);
     setSelectedTeam('all');
     setSelectedSaison('all');
-    loadHistorique(isD2);
+    if (isD2) loadSaisonsD2();
+    loadHistorique(isD2, 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
@@ -199,7 +212,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))
   ).sort();
 
-  const saisons = Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
+  const saisons = isD2 ? saisonsD2 : Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
 
   const getJourneesForSaison = (saison: string) => {
     const matchesSaison = matches.filter(m => m.saison === saison);
