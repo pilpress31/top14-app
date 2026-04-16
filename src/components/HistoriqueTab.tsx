@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
@@ -107,10 +107,12 @@ interface MatchHistorique {
 
 interface HistoriqueTabProps {
   headerVisible?: boolean;
+  isD2?: boolean;
 }
 
-export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabProps) {
+export default function HistoriqueTab({ headerVisible = true, isD2 = false }: HistoriqueTabProps) {
   const [matches, setMatches] = useState<MatchHistorique[]>([]);
+  const isD2Ref = useRef(isD2);
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [selectedSaison, setSelectedSaison] = useState<string>("all");
@@ -122,11 +124,41 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const matchesPerPage = 21;
 
+  useEffect(() => {
+    isD2Ref.current = isD2;
+    setLoading(true);
+    setMatches([]);
+    setCurrentPage(1);
+    setSelectedTeam('all');
+    setSelectedSaison('all');
+    loadHistorique();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isD2]);
+
   const loadHistorique = async () => {
     try {
-      const response = await fetch("https://top14-api-production.up.railway.app/api/matchs/historique/all");
+      const url = isD2Ref.current
+        ? "https://top14-api-production.up.railway.app/api/d2/historique?limit=500"
+        : "https://top14-api-production.up.railway.app/api/matchs/historique/all";
+      const response = await fetch(url);
       const data = await response.json();
-      setMatches(data.matchs || []);
+      // Normaliser la structure D2
+      const raw = data.matchs || [];
+      const normalized: MatchHistorique[] = isD2Ref.current
+        ? raw.map((m: any) => ({
+            ...m,
+            id: m.id || m.match_id,
+            date: m.date_match,
+            score_domicile: m.score_reel_dom ?? 0,
+            score_exterieur: m.score_reel_ext ?? 0,
+            prono_ft: m.score_predit_dom != null
+              ? { domicile: m.score_predit_dom, exterieur: m.score_predit_ext }
+              : undefined,
+            comp_ft: m.prediction_correcte === true ? 'OK'
+                   : m.prediction_correcte === false ? 'KO' : undefined,
+          }))
+        : raw;
+      setMatches(normalized);
     } catch (e) {
       console.error("Erreur chargement historique:", e);
       setMatches([]);
@@ -137,7 +169,7 @@ export default function HistoriqueTab({ headerVisible = true }: HistoriqueTabPro
 
   // ✅ Realtime
   useRealtimeSync([
-    { table: 'matchs_results', onUpdate: () => loadHistorique() },
+    { table: isD2 ? 'match_cotes_d2' : 'matchs_results', onUpdate: () => loadHistorique() },
   ]);
 
   useEffect(() => {
