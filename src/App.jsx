@@ -60,7 +60,7 @@ function AppContent() {
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
-  const { isD2 } = useChampionnat();
+
 
   // ── TOUS LES HOOKS EN HAUT ──
   const {
@@ -168,7 +168,7 @@ function AppContent() {
         <Route path="/notifications-diagnostic" element={<ProtectedRoute><NotificationsDiagnosticPage /></ProtectedRoute>} />
       </Routes>
 
-      {!hideBottomNav && !isD2 && (
+      {!hideBottomNav && (
         <BottomNav
           active={active}
           onPronosClick={() => setResetFlag(prev => !prev)}

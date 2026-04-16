@@ -125,20 +125,19 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [totalD2, setTotalD2] = useState<number>(0);
   const [d2Page, setD2Page] = useState<number>(1);
 
-  const loadHistorique = async (forceIsD2?: boolean) => {
+  const loadHistorique = async (forceIsD2?: boolean, page?: number) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
     try {
       let raw: any[] = [];
       if (useD2) {
-        // Pagination serveur pour D2 (4947 matchs)
-        const pageToLoad = forceIsD2 !== undefined ? 1 : d2Page;
-        const offset = (pageToLoad - 1) * matchesPerPage;
+        const pageNum = page !== undefined ? page : d2Page;
+        const offset = (pageNum - 1) * matchesPerPage;
         const url = `https://top14-api-production.up.railway.app/api/d2/historique?limit=${matchesPerPage}&offset=${offset}`;
         const response = await fetch(url);
         const data = await response.json();
         raw = data.matchs || [];
-        setTotalD2(data.stats?.total || 0);
-        if (forceIsD2 !== undefined) setD2Page(1);
+        // Lire le total réel depuis stats.total
+        if (data.stats?.total) setTotalD2(data.stats.total);
       } else {
         const url = "https://top14-api-production.up.railway.app/api/matchs/historique/all";
         const response = await fetch(url);
@@ -254,12 +253,11 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
   });
 
-  // En D2 : pagination serveur, en Top14 : pagination client
   const totalPages = isD2
-    ? Math.ceil(totalD2 / matchesPerPage)
+    ? Math.max(1, Math.ceil(totalD2 / matchesPerPage))
     : Math.ceil(filteredMatches.length / matchesPerPage);
   const paginatedMatches = isD2
-    ? filteredMatches  // déjà paginé côté serveur
+    ? filteredMatches
     : filteredMatches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage);
 
   const journeesOptions = selectedSaison !== "all" ? getJourneesForSaison(selectedSaison) : [];
@@ -604,9 +602,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
             if (isD2) {
               const newPage = Math.max(1, d2Page - 1);
               setD2Page(newPage);
-              setCurrentPage(newPage);
               setLoading(true);
-              loadHistorique(true);
+              loadHistorique(true, newPage);
             } else {
               setCurrentPage(p => Math.max(1, p - 1));
             }
@@ -630,9 +627,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
             if (isD2) {
               const newPage = Math.min(totalPages, d2Page + 1);
               setD2Page(newPage);
-              setCurrentPage(newPage);
               setLoading(true);
-              loadHistorique(true);
+              loadHistorique(true, newPage);
             } else {
               setCurrentPage(p => Math.min(totalPages, p + 1));
             }
