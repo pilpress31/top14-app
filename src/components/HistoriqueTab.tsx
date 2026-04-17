@@ -41,6 +41,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const matchesPerPage = 21;
   const [totalD2, setTotalD2] = useState<number>(0);
   const [d2Page, setD2Page] = useState<number>(1);
+  const [totalTop14, setTotalTop14] = useState<number>(0);
+  const [t14Page, setT14Page] = useState<number>(1);
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
   const [journeesD2, setJourneesD2] = useState<{journee: number, date_match: string}[]>([]);
   const [equipesD2, setEquipesD2] = useState<string[]>([]);
@@ -62,9 +64,16 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         raw = data.matchs || [];
         if (data.stats?.total !== undefined) setTotalD2(data.stats.total);
       } else {
-        const response = await fetch("https://top14-api-production.up.railway.app/api/matchs/historique/all");
+        const pageNum = (page !== undefined && page !== null) ? page : 1;
+        const offset = (pageNum - 1) * matchesPerPage;
+        const params = new URLSearchParams({ limit: String(matchesPerPage), offset: String(offset) });
+        if (equipe) params.set('equipe', equipe);
+        if (saison) params.set('saison', saison);
+        const url = `https://top14-api-production.up.railway.app/api/matchs/historique?${params}`;
+        const response = await fetch(url);
         const data = await response.json();
         raw = data.matchs || [];
+        if (data.total !== undefined) setTotalTop14(data.total);
       }
       const normalized: MatchHistorique[] = useD2
         ? raw.map((m: any) => ({
@@ -117,7 +126,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setMatches([]);
     setCurrentPage(1);
     setD2Page(1);
+    setT14Page(1);
     setTotalD2(0);
+    setTotalTop14(0);
     setSelectedTeam('all');
     setSelectedSaison('all');
     setJourneesD2([]);
@@ -181,21 +192,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       }));
   };
 
+  // Pagination serveur — les données arrivent déjà filtrées
   let filteredMatches = matches;
-
-  if (selectedTeam !== "all") {
-    filteredMatches = filteredMatches.filter(
-      m => m.equipe_domicile === selectedTeam || m.equipe_exterieure === selectedTeam
-    );
-  }
-
-  if (selectedSaison !== "all") {
-    filteredMatches = filteredMatches.filter(m => m.saison === selectedSaison);
-  }
-
-  if (selectedJournee !== "all") {
-    filteredMatches = filteredMatches.filter(m => m.journee === parseInt(selectedJournee));
-  }
 
   filteredMatches = filteredMatches.sort((a, b) => {
     const dateA = new Date(a.date).getTime();
@@ -205,10 +203,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
 
   const totalPages = isD2
     ? Math.max(1, Math.ceil(totalD2 / matchesPerPage))
-    : Math.ceil(filteredMatches.length / matchesPerPage);
-  const paginatedMatches = isD2
-    ? filteredMatches
-    : filteredMatches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage);
+    : Math.max(1, Math.ceil(totalTop14 / matchesPerPage));
+  const paginatedMatches = filteredMatches; // pagination serveur pour les deux
 
   const journeesOptions = selectedSaison !== "all" ? getJourneesForSaison(selectedSaison) : [];
 
@@ -250,7 +246,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setTeamDropdownOpen(false);
                     setCurrentPage(1);
                     setD2Page(1);
-                    if (isD2) { setLoading(true); loadHistorique(true, 1, undefined, selectedSaison !== 'all' ? selectedSaison : undefined); }
+                    setT14Page(1);
+                    setLoading(true);
+                    loadHistorique(isD2, 1, undefined, selectedSaison !== 'all' ? selectedSaison : undefined);
                   }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
                     selectedTeam === "all" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
@@ -266,7 +264,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                       setTeamDropdownOpen(false);
                       setCurrentPage(1);
                       setD2Page(1);
-                      if (isD2) { setLoading(true); loadHistorique(true, 1, team, selectedSaison !== 'all' ? selectedSaison : undefined); }
+                      setT14Page(1);
+                      setLoading(true);
+                      loadHistorique(isD2, 1, team, selectedSaison !== 'all' ? selectedSaison : undefined);
                     }}
                     className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
                       selectedTeam === team ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
@@ -309,7 +309,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setSaisonDropdownOpen(false);
                     setCurrentPage(1);
                     setD2Page(1);
-                    if (isD2) { setLoading(true); loadHistorique(true, 1, selectedTeam !== 'all' ? selectedTeam : undefined, undefined); }
+                    setT14Page(1);
+                    setLoading(true);
+                    loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, undefined);
                   }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
                     selectedSaison === "all" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
@@ -330,7 +332,10 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         setD2Page(1);
                         if (isD2 && newSaison !== 'all') loadJourneesD2(newSaison);
                         else if (isD2) setJourneesD2([]);
-                        if (isD2) { setLoading(true); loadHistorique(true, 1, selectedTeam !== 'all' ? selectedTeam : undefined, newSaison !== 'all' ? newSaison : undefined); }
+                        setD2Page(1);
+                        setT14Page(1);
+                        setLoading(true);
+                        loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, newSaison !== 'all' ? newSaison : undefined);
                       }}
                       className={`w-full text-left px-3 py-2 text-sm font-semibold hover:bg-rugby-gold hover:bg-opacity-10 transition-colors border-t border-gray-100 ${
                         selectedSaison === saison ? "bg-rugby-gold bg-opacity-20 text-rugby-gold" : "text-gray-800"
@@ -566,11 +571,17 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                 selectedSaison !== 'all' ? selectedSaison : undefined,
                 selectedJournee !== 'all' ? selectedJournee : undefined);
             } else {
-              setCurrentPage(p => Math.max(1, p - 1));
+              const newPage = Math.max(1, t14Page - 1);
+              setT14Page(newPage);
+              setCurrentPage(newPage);
+              setLoading(true);
+              loadHistorique(false, newPage,
+                selectedTeam !== 'all' ? selectedTeam : undefined,
+                selectedSaison !== 'all' ? selectedSaison : undefined);
             }
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          disabled={isD2 ? d2Page === 1 : currentPage === 1}
+          disabled={isD2 ? d2Page === 1 : t14Page === 1}
           className="px-4 py-2 rounded font-semibold transition-colors shadow-md"
           style={isD2
             ? { backgroundColor: '#00174D', color: '#C0C0C0', border: '1px solid #C0C0C0' }
@@ -580,7 +591,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         </button>
 
         <span className="px-4 py-2 font-semibold" style={isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>
-          Page {isD2 ? d2Page : currentPage} / {totalPages}
+          Page {isD2 ? d2Page : t14Page} / {totalPages}
         </span>
 
         <button
@@ -594,11 +605,17 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                 selectedSaison !== 'all' ? selectedSaison : undefined,
                 selectedJournee !== 'all' ? selectedJournee : undefined);
             } else {
-              setCurrentPage(p => Math.min(totalPages, p + 1));
+              const newPage = Math.min(totalPages, t14Page + 1);
+              setT14Page(newPage);
+              setCurrentPage(newPage);
+              setLoading(true);
+              loadHistorique(false, newPage,
+                selectedTeam !== 'all' ? selectedTeam : undefined,
+                selectedSaison !== 'all' ? selectedSaison : undefined);
             }
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          disabled={isD2 ? d2Page === totalPages : currentPage === totalPages}
+          disabled={isD2 ? d2Page === totalPages : t14Page === totalPages}
           className="px-4 py-2 rounded font-semibold transition-colors shadow-md"
           style={isD2
             ? { backgroundColor: '#C0C0C0', color: '#00174D', fontWeight: 700 }
