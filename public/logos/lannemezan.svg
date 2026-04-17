@@ -6,7 +6,7 @@
 >
   <defs>
     <!-- Hexagone -->
-    <clipPath id="br-hex-clip">
+    <clipPath id="cal-hex-clip">
       <polygon points="
         100,10
         175,50
@@ -17,16 +17,16 @@
       " />
     </clipPath>
 
-    <!-- Dégradé bleu ciel / rouge -->
-    <linearGradient id="br-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5AB1E4" />
-      <stop offset="100%" stop-color="#D62828" />
+    <!-- Dégradé rouge / blanc -->
+    <linearGradient id="cal-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C00000" />
+      <stop offset="100%" stop-color="#FFFFFF" />
     </linearGradient>
   </defs>
 
-  <!-- Fond bleu ciel -->
-  <g clip-path="url(#br-hex-clip)">
-    <rect width="200" height="200" fill="#5AB1E4" />
+  <!-- Fond rouge -->
+  <g clip-path="url(#cal-hex-clip)">
+    <rect width="200" height="200" fill="#C00000" />
   </g>
 
   <!-- Contour extérieur -->
@@ -45,20 +45,20 @@
     stroke-width="4"
   />
 
-  <!-- Texte BR -->
+  <!-- Texte CAL -->
   <text
     x="50%"
     y="112"
     text-anchor="middle"
     dominant-baseline="central"
-    fill="url(#br-grad)"
+    fill="url(#cal-grad)"
     stroke="#FFFFFF"
     stroke-width="6"
     paint-order="stroke"
     font-family="Arial Black, Arial, sans-serif"
     font-weight="900"
-    font-size="72"
+    font-size="64"
   >
-    BR
+    CAL
   </text>
 </svg>
