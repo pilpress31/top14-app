@@ -90,7 +90,7 @@ export default function IAPage() {
       <div
         className="sticky z-40 shadow-sm transition-all duration-300"
         style={isD2
-          ? { backgroundColor: '#00174D', borderBottom: '2px solid #97C1FE' }
+          ? { backgroundColor: '#00174D', borderBottom: '2px solid #C0C0C0' }
           : { backgroundColor: '#FFFFFF', borderBottom: '2px solid #e5e7eb' }
         }
         style={{ top: `${tabsTop}px` }}
@@ -102,21 +102,24 @@ export default function IAPage() {
               onClick={() => setActiveTab('algorithme')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
                 activeTab === 'algorithme'
-                  ? (isD2 ? 'text-white border-b-4 border-[#97C1FE] bg-white/10' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
-                  : (isD2 ? 'text-[#97C1FE] hover:text-white hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
+                  ? (isD2 ? 'border-b-4' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
+                  : (isD2 ? 'hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
               }`}
+              style={isD2 && activeTab === 'algorithme'
+                ? { color: '#FFFFFF', borderBottomColor: '#C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 }
+                : isD2 ? { color: '#97C1FE' } : {}}
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5" />
                 <span className="font-bold">Algorithme</span>
               </div>
-              <span className={`text-xs font-normal ${isD2 ? "text-[#97C1FE]/80" : "text-rugby-bronze"}`}>
+              <span className="text-xs font-normal" style={isD2 ? { color: 'rgba(192,192,192,0.8)' } : { color: '#9ca3af' }}>
                 Prédictions des prochains matchs
               </span>
             </button>
 
             {/* Badge switch TOP14 / PRO D2 — centré entre les deux tabs */}
-            <div className={`flex items-center justify-center px-2 border-x ${isD2 ? "border-[#97C1FE]/30" : "border-rugby-gray/30"}`}>
+            <div className="flex items-center justify-center px-2 border-x" style={isD2 ? { borderColor: 'rgba(192,192,192,0.3)' } : { borderColor: 'rgba(156,163,175,0.3)' }}>
               <button
                 onClick={toggle}
                 className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-md border-2 font-bold text-[10px] tracking-wide transition-all duration-200 hover:opacity-85 min-w-[52px]"
@@ -136,15 +139,18 @@ export default function IAPage() {
               onClick={() => setActiveTab('historique')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
                 activeTab === 'historique'
-                  ? (isD2 ? 'text-white border-b-4 border-[#97C1FE] bg-white/10' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
-                  : (isD2 ? 'text-[#97C1FE] hover:text-white hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
+                  ? (isD2 ? 'border-b-4' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
+                  : (isD2 ? 'hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
               }`}
+              style={isD2 && activeTab === 'historique'
+                ? { color: '#FFFFFF', borderBottomColor: '#C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 }
+                : isD2 ? { color: '#97C1FE' } : {}}
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 <span className="font-bold">Historique</span>
               </div>
-              <span className={`text-xs font-normal ${isD2 ? "text-[#97C1FE]/80" : "text-rugby-bronze"}`}>
+              <span className="text-xs font-normal" style={isD2 ? { color: 'rgba(192,192,192,0.8)' } : { color: '#9ca3af' }}>
                 Matchs déjà joués
               </span>
             </button>
