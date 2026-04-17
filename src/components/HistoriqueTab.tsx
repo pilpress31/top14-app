@@ -104,10 +104,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setLoading(true);
     setMatches([]);
     setCurrentPage(1);
+    setD2Page(1);
+    setTotalD2(0);
     setSelectedTeam('all');
     setSelectedSaison('all');
-    console.log('HistoriqueTab isD2=', isD2);
-    loadHistorique(isD2);
+    if (isD2) loadSaisonsD2();
+    loadHistorique(isD2, 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
@@ -127,7 +129,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const equipes = isD2
     ? equipesD2
     : Array.from(new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))).sort();
-
   const saisons = isD2 ? saisonsD2 : Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
 
   const getJourneesForSaison = (saison: string) => {
