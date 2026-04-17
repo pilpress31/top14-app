@@ -88,7 +88,11 @@ export default function IAPage() {
 
       {/* Onglets - STICKY avec position dynamique calculée */}
       <div
-        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        className="sticky z-40 shadow-sm transition-all duration-300"
+        style={isD2
+          ? { backgroundColor: '#00174D', borderBottom: '2px solid #97C1FE' }
+          : { backgroundColor: '#FFFFFF', borderBottom: '2px solid #e5e7eb' }
+        }
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
@@ -98,21 +102,21 @@ export default function IAPage() {
               onClick={() => setActiveTab('algorithme')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
                 activeTab === 'algorithme'
-                  ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
-                  : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20'
+                  ? (isD2 ? 'text-white border-b-4 border-[#97C1FE] bg-white/10' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
+                  : (isD2 ? 'text-[#97C1FE] hover:text-white hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
               }`}
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5" />
                 <span className="font-bold">Algorithme</span>
               </div>
-              <span className="text-xs font-normal text-rugby-bronze">
+              <span className={`text-xs font-normal ${isD2 ? "text-[#97C1FE]/80" : "text-rugby-bronze"}`}>
                 Prédictions des prochains matchs
               </span>
             </button>
 
             {/* Badge switch TOP14 / PRO D2 — centré entre les deux tabs */}
-            <div className="flex items-center justify-center px-2 border-x border-rugby-gray/30">
+            <div className={`flex items-center justify-center px-2 border-x ${isD2 ? "border-[#97C1FE]/30" : "border-rugby-gray/30"}`}>
               <button
                 onClick={toggle}
                 className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-md border-2 font-bold text-[10px] tracking-wide transition-all duration-200 hover:opacity-85 min-w-[52px]"
@@ -132,15 +136,15 @@ export default function IAPage() {
               onClick={() => setActiveTab('historique')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
                 activeTab === 'historique'
-                  ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
-                  : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20'
+                  ? (isD2 ? 'text-white border-b-4 border-[#97C1FE] bg-white/10' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
+                  : (isD2 ? 'text-[#97C1FE] hover:text-white hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
               }`}
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 <span className="font-bold">Historique</span>
               </div>
-              <span className="text-xs font-normal text-rugby-bronze">
+              <span className={`text-xs font-normal ${isD2 ? "text-[#97C1FE]/80" : "text-rugby-bronze"}`}>
                 Matchs déjà joués
               </span>
             </button>
