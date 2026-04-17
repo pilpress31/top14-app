@@ -6,6 +6,7 @@ export const TEAMS_DATA = {
 
   'UNION BORDEAUX BÈGLES': { logo: '/logos/ubb.svg', name: 'Bordeaux' },
   'BORDEAUX BÈGLES': { logo: '/logos/ubb.svg', name: 'Bordeaux' },
+  'UNION BORDEAUX-BÈGLES': { logo: '/logos/ubb.svg', name: 'Bordeaux' },
 
   'LA ROCHELLE': { logo: '/logos/la-rochelle.svg', name: 'La Rochelle' },
   'STADE ROCHELAIS': { logo: '/logos/la-rochelle.svg', name: 'La Rochelle' },
@@ -94,7 +95,6 @@ export const TEAMS_DATA = {
 
   'CARCASSONNE': { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'US CARCASSONNE': { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
-  'US CARCASSONNAISE': { logo: '/logos/carcassonne.svg', name: 'Carcassonnaise' },
 
   'AURILLAC': { logo: '/logos/aurillac.svg', name: 'Aurillac' },
   'STADE AURILLACOIS': { logo: '/logos/aurillac.svg', name: 'Aurillac' },
@@ -127,11 +127,16 @@ export const TEAMS_DATA = {
   'TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
   'STADO TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
   'STADO TARBES PYRÉNÉES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-  'STADO TARBES PYRÉNÉES RUGBY': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-
-  'BÉZIERS': { logo: '/logos/beziers.svg', name: 'Béziers' },
-  'AS BÉZIERS': { logo: '/logos/beziers.svg', name: 'Béziers' },
-  'AS BÉZIERS HÉRAULT': { logo: '/logos/beziers.svg', name: 'Béziers' }
+  'AUCH': { logo: '/logos/default.svg', name: 'Auch' },
+  'BLAGNAC': { logo: '/logos/default.svg', name: 'Blagnac' },
+  'BOURG-EN-BRESSE': { logo: '/logos/default.svg', name: 'Bourg-en-Bresse' },
+  'GAILLAC': { logo: '/logos/default.svg', name: 'Gaillac' },
+  'LANNEMEZAN': { logo: '/logos/default.svg', name: 'Lannemezan' },
+  'LIMOGES': { logo: '/logos/default.svg', name: 'Limoges' },
+  'PÉRIGUEUX': { logo: '/logos/default.svg', name: 'Périgueux' },
+  'SAINT-ETIENNE': { logo: '/logos/default.svg', name: 'Saint-Étienne' },
+  'TYROSSE': { logo: '/logos/default.svg', name: 'Tyrosse' },
+  'STADO TARBES PYRÉNÉES RUGBY': { logo: '/logos/tarbes.svg', name: 'Tarbes' }
 };
 
 // Fonction helper : retourne les données d'une équipe
