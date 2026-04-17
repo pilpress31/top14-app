@@ -843,25 +843,65 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
         const equipeA = match.equipe_domicile?.toUpperCase();
         const equipeB = match.equipe_exterieure?.toUpperCase();
         let found = [];
-        let offset = 0;
-        const limit = 100;
 
-        while (found.length < 10) {
-          const res = await axios.get(`${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`);
-          const data = res.data;
-          const matchs = data.matchs || [];
-          if (matchs.length === 0) break;
-
-          const confronts = matchs.filter(m => {
-            const dom = m.equipe_domicile?.toUpperCase();
-            const ext = m.equipe_exterieure?.toUpperCase();
-            return (dom === equipeA && ext === equipeB) ||
-                   (dom === equipeB && ext === equipeA);
-          });
-          found = [...found, ...confronts];
-          offset += limit;
-          if (offset >= Math.min(data.total || 9999, 3700)) break;
+        if (match.isD2) {
+          // Pro D2 : filtre serveur par équipe, dédoublonnage
+          const seen = new Set();
+          for (const equipe of [equipeA, equipeB]) {
+            let offset = 0;
+            const limit = 100;
+            while (true) {
+              const url = `${API_BASE}/api/d2/historique?limit=${limit}&offset=${offset}&equipe=${encodeURIComponent(equipe)}`;
+              const res = await axios.get(url);
+              const data = res.data;
+              const matchs = data.matchs || [];
+              if (matchs.length === 0) break;
+              matchs.forEach(m => {
+                const dom = m.equipe_domicile?.toUpperCase();
+                const ext = m.equipe_exterieure?.toUpperCase();
+                const isConfrontation =
+                  (dom === equipeA && ext === equipeB) ||
+                  (dom === equipeB && ext === equipeA);
+                const key = m.match_id || m.id;
+                if (isConfrontation && !seen.has(key)) {
+                  seen.add(key);
+                  found.push({
+                    ...m,
+                    score_domicile: m.score_reel_dom ?? 0,
+                    score_exterieur: m.score_reel_ext ?? 0,
+                    score_ht_domicile: null,
+                    score_ht_exterieur: null,
+                  });
+                }
+              });
+              if (found.length >= 10) break;
+              offset += limit;
+              if (offset >= (data.stats?.total || 9999)) break;
+            }
+            if (found.length >= 10) break;
+          }
+        } else {
+          // Top 14 : logique existante
+          let offset = 0;
+          const limit = 100;
+          while (found.length < 10) {
+            const url = `${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`;
+            const res = await axios.get(url);
+            const data = res.data;
+            const matchs = data.matchs || [];
+            if (matchs.length === 0) break;
+            const confronts = matchs.filter(m => {
+              const dom = m.equipe_domicile?.toUpperCase();
+              const ext = m.equipe_exterieure?.toUpperCase();
+              return (dom === equipeA && ext === equipeB) ||
+                     (dom === equipeB && ext === equipeA);
+            });
+            found = [...found, ...confronts];
+            offset += limit;
+            if (offset >= Math.min(data.total || 9999, 3700)) break;
+          }
         }
+
         setConfrontations(found.slice(0, 10));
       } catch (e) {
         setError('Impossible de charger l\'historique.');
@@ -870,7 +910,6 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
       }
     }
   };
-
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
       <button
