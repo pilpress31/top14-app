@@ -230,12 +230,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                 setTeamDropdownOpen(!teamDropdownOpen);
                 setSaisonDropdownOpen(false);
               }}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-rugby-gold transition-colors"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between transition-colors" style={isD2 ? { borderColor: '#97C1FE' } : {}}
             >
               <span className="text-gray-700">
                 {selectedTeam === "all" ? "Toutes les équipes" : selectedTeam}
               </span>
-              <ChevronDown className={`w-4 h-4 text-rugby-gold transition-transform ${teamDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform ${teamDropdownOpen ? 'rotate-180' : ''}`} style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
             </button>
             
             {teamDropdownOpen && (
@@ -250,8 +250,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setLoading(true);
                     loadHistorique(isD2, 1, undefined, selectedSaison !== 'all' ? selectedSaison : undefined);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                    selectedTeam === "all" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
+                    selectedTeam === "all" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
                   }`}
                 >
                   Toutes les équipes
@@ -268,8 +268,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                       setLoading(true);
                       loadHistorique(isD2, 1, team, selectedSaison !== 'all' ? selectedSaison : undefined);
                     }}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                      selectedTeam === team ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
+                      selectedTeam === team ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
                     }`}
                   >
                     {team}
@@ -287,7 +287,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                 setSaisonDropdownOpen(!saisonDropdownOpen);
                 setTeamDropdownOpen(false);
               }}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-rugby-gold transition-colors"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between transition-colors" style={isD2 ? { borderColor: '#97C1FE' } : {}}
             >
               <span className="text-gray-700">
                 {selectedSaison === "all" 
@@ -297,7 +297,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     : `${selectedSaison} - J${selectedJournee}`
                 }
               </span>
-              <ChevronDown className={`w-4 h-4 text-rugby-gold transition-transform ${saisonDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform ${saisonDropdownOpen ? 'rotate-180' : ''}`} style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
             </button>
             
             {saisonDropdownOpen && (
@@ -313,8 +313,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setLoading(true);
                     loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, undefined);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                    selectedSaison === "all" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
+                    selectedSaison === "all" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
                   }`}
                 >
                   Toutes les saisons
@@ -337,8 +337,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         setLoading(true);
                         loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, newSaison !== 'all' ? newSaison : undefined);
                       }}
-                      className={`w-full text-left px-3 py-2 text-sm font-semibold hover:bg-rugby-gold hover:bg-opacity-10 transition-colors border-t border-gray-100 ${
-                        selectedSaison === saison ? "bg-rugby-gold bg-opacity-20 text-rugby-gold" : "text-gray-800"
+                      className={`w-full text-left px-3 py-2 text-sm font-semibold hover:bg-opacity-10 transition-colors border-t border-gray-100 ${
+                        selectedSaison === saison ? (isD2 ? "text-[#97C1FE] font-semibold" : "bg-rugby-gold bg-opacity-20 text-rugby-gold") : "text-gray-800"
                       }`}
                     >
                       Saison {saison}
@@ -353,8 +353,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                             setSaisonDropdownOpen(false);
                             setCurrentPage(1);
                           }}
-                          className={`w-full text-left px-6 py-1.5 text-xs hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                            selectedJournee === "all" ? "bg-rugby-gold bg-opacity-30 font-semibold" : ""
+                          className={`w-full text-left px-6 py-1.5 text-xs hover:bg-opacity-10 transition-colors ${
+                            selectedJournee === "all" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
                           }`}
                         >
                           Toutes les journées
@@ -370,8 +370,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                               setD2Page(1);
                               if (isD2) { setLoading(true); loadHistorique(true, 1, selectedTeam !== 'all' ? selectedTeam : undefined, selectedSaison !== 'all' ? selectedSaison : undefined, journee.toString()); }
                             }}
-                            className={`w-full text-left px-6 py-1.5 text-xs hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                              selectedJournee === journee.toString() ? "bg-rugby-gold bg-opacity-30 font-semibold" : ""
+                            className={`w-full text-left px-6 py-1.5 text-xs hover:bg-opacity-10 transition-colors ${
+                              selectedJournee === journee.toString() ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
                             }`}
                           >
                             {label}
@@ -394,12 +394,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                 setTeamDropdownOpen(false);
                 setSaisonDropdownOpen(false);
               }}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between hover:border-rugby-gold transition-colors"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between transition-colors" style={isD2 ? { borderColor: '#97C1FE' } : {}}
             >
               <span className="text-gray-700">
                 {sortOrder === "desc" ? "Date décroissante (récent → ancien)" : "Date croissante (ancien → récent)"}
               </span>
-              <ChevronDown className={`w-4 h-4 text-rugby-gold transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
             </button>
             
             {sortDropdownOpen && (
@@ -410,8 +410,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setSortDropdownOpen(false);
                     setCurrentPage(1);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                    sortOrder === "desc" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
+                    sortOrder === "desc" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
                   }`}
                 >
                   Date décroissante (récent → ancien)
@@ -422,8 +422,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setSortDropdownOpen(false);
                     setCurrentPage(1);
                   }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-rugby-gold hover:bg-opacity-10 transition-colors ${
-                    sortOrder === "asc" ? "bg-rugby-gold bg-opacity-20 font-semibold" : ""
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
+                    sortOrder === "asc" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
                   }`}
                 >
                   Date croissante (ancien → récent)
