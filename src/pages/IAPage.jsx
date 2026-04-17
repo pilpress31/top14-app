@@ -21,6 +21,8 @@ export default function IAPage() {
   }, []);
 
   const [activeTab, setActiveTab] = useState('algorithme');
+  // Point rouge notification — disparaît après le premier switch
+  const [showDot, setShowDot] = useState(true);
   const [stats, setStats] = useState({
     nombre_matchs_historique: 3651,
     precision: { ft: { pourcentage: 0 } }
@@ -123,14 +125,21 @@ export default function IAPage() {
             {/* Badge switch TOP14 / PRO D2 — centré entre les deux tabs */}
             <div className="flex items-center justify-center px-2 border-x" style={isD2 ? { borderColor: 'rgba(192,192,192,0.3)' } : { borderColor: 'rgba(156,163,175,0.3)' }}>
               <button
-                onClick={toggle}
-                className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-md border-2 font-bold text-[10px] tracking-wide transition-all duration-200 hover:opacity-85 min-w-[52px]"
+                onClick={() => { toggle(); setShowDot(false); }}
+                className="relative flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-md border-2 font-bold text-[10px] tracking-wide transition-all duration-200 hover:opacity-85 min-w-[52px]"
                 style={isD2
                   ? { backgroundColor: '#00174D', borderColor: '#97C1FE', color: '#FFFFFF' }
                   : { backgroundColor: '#000000', borderColor: '#CBA135', color: '#CBA135' }
                 }
                 title={`Passer en ${isD2 ? 'TOP 14' : 'PRO D2'}`}
               >
+                {/* Point rouge notification */}
+                {showDot && !isD2 && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                )}
                 <img src="/icon-192.png" alt="" className="w-4 h-4 rounded-sm object-contain" />
                 <span className="leading-none">{isD2 ? 'PRO D2' : 'TOP 14'}</span>
               </button>
