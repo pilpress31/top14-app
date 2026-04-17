@@ -91,10 +91,9 @@ export default function IAPage() {
       <div
         className="sticky z-40 shadow-sm transition-all duration-300"
         style={isD2
-          ? { backgroundColor: '#00174D', borderBottom: '2px solid #C0C0C0' }
-          : { backgroundColor: '#FFFFFF', borderBottom: '2px solid #e5e7eb' }
+          ? { top: `${tabsTop}px`, backgroundColor: '#00174D', borderBottom: '2px solid #C0C0C0' }
+          : { top: `${tabsTop}px`, backgroundColor: '#FFFFFF', borderBottom: '2px solid #e5e7eb' }
         }
-        style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
           <div className="flex items-stretch">
@@ -103,12 +102,14 @@ export default function IAPage() {
               onClick={() => setActiveTab('algorithme')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
                 activeTab === 'algorithme'
-                  ? (isD2 ? 'border-b-4' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
-                  : (isD2 ? 'hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
+                  ? (isD2 ? '' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
+                  : (isD2 ? '' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
               }`}
-              style={isD2 && activeTab === 'algorithme'
-                ? { color: '#FFFFFF', borderBottomColor: '#C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 }
-                : isD2 ? { color: '#97C1FE' } : {}}
+              style={isD2
+                ? activeTab === 'algorithme'
+                  ? { color: '#FFFFFF', borderBottom: '4px solid #C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 }
+                  : { color: '#97C1FE' }
+                : {}}
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5" />
@@ -140,12 +141,14 @@ export default function IAPage() {
               onClick={() => setActiveTab('historique')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
                 activeTab === 'historique'
-                  ? (isD2 ? 'border-b-4' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
-                  : (isD2 ? 'hover:bg-white/10' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
+                  ? (isD2 ? '' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
+                  : (isD2 ? '' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
               }`}
-              style={isD2 && activeTab === 'historique'
-                ? { color: '#FFFFFF', borderBottomColor: '#C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 }
-                : isD2 ? { color: '#97C1FE' } : {}}
+              style={isD2
+                ? activeTab === 'historique'
+                  ? { color: '#FFFFFF', borderBottom: '4px solid #C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 }
+                  : { color: '#97C1FE' }
+                : {}}
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
