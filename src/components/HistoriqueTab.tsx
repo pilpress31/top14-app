@@ -445,11 +445,11 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
             : null;
 
           return (
-            <div key={m.id} className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-200">
+            <div key={m.id} className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3" style={isD2 ? { border: '1px solid rgba(0,23,77,0.3)', borderLeft: '3px solid #97C1FE' } : { border: '1px solid #e5e7eb' }}>
               
               {/* Header */}
               <div className="flex justify-between items-center mb-2">
-                <div className="text-xs text-rugby-orange font-bold uppercase">J{m.journee}</div>
+                <div className="text-xs font-bold uppercase" style={isD2 ? { color: '#97C1FE' } : { color: '#f97316' }}>J{m.journee}</div>
                 <div className="text-xs text-gray-500">
                   {new Date(m.date).toLocaleDateString("fr-FR", {
                     day: "numeric", month: "short", year: "numeric"
@@ -490,7 +490,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                 {/* Ligne Temps plein */}
                 <div className="grid grid-cols-4 items-center border-b border-gray-100">
                   <div className="px-2 py-2 text-[10px] text-gray-500 font-semibold">Temps plein</div>
-                  <div className="px-2 py-2 text-center font-bold text-rugby-orange text-sm">
+                  <div className="px-2 py-2 text-center font-bold text-sm" style={isD2 ? { color: '#C0C0C0' } : { color: '#f97316' }}>
                     {m.score_domicile} - {m.score_exterieur}
                   </div>
                   <div className="px-2 py-2 text-center text-sm text-gray-500">
@@ -554,7 +554,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       </div>
 
       {/* Pagination */}
-      <div className="fixed left-0 w-full flex justify-center items-center gap-4 bg-white py-2 shadow-md z-50 bottom-[60px]">
+      <div className="fixed left-0 w-full flex justify-center items-center gap-4 py-2 shadow-md z-50 bottom-[60px]" style={isD2 ? { backgroundColor: '#00174D', borderTop: '1px solid rgba(192,192,192,0.3)' } : { backgroundColor: '#FFFFFF' }}>
         <button
           onClick={() => {
             if (isD2) {
@@ -571,15 +571,15 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           disabled={isD2 ? d2Page === 1 : currentPage === 1}
-          className="px-4 py-2 rounded font-semibold text-white
-                    bg-rugby-gold hover:bg-rugby-bronze
-                    disabled:bg-gray-300 disabled:text-gray-500
-                    transition-colors shadow-md"
+          className="px-4 py-2 rounded font-semibold transition-colors shadow-md"
+          style={isD2
+            ? { backgroundColor: '#00174D', color: '#C0C0C0', border: '1px solid #C0C0C0' }
+            : { backgroundColor: '#CBA135', color: '#FFFFFF' }}
         >
           ◀ Précédent
         </button>
 
-        <span className="px-4 py-2 font-semibold text-rugby-gold">
+        <span className="px-4 py-2 font-semibold" style={isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>
           Page {isD2 ? d2Page : currentPage} / {totalPages}
         </span>
 
@@ -599,10 +599,10 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           disabled={isD2 ? d2Page === totalPages : currentPage === totalPages}
-          className="px-4 py-2 rounded font-semibold text-white
-                    bg-rugby-gold hover:bg-rugby-bronze
-                    disabled:bg-gray-300 disabled:text-gray-500
-                    transition-colors shadow-md"
+          className="px-4 py-2 rounded font-semibold transition-colors shadow-md"
+          style={isD2
+            ? { backgroundColor: '#C0C0C0', color: '#00174D', fontWeight: 700 }
+            : { backgroundColor: '#CBA135', color: '#FFFFFF' }}
         >
           Suivant ▶
         </button>
