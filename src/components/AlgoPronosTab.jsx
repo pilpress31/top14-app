@@ -137,18 +137,21 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
           >
             <button
               onClick={() => toggleJournee(journee)}
-              className="w-full bg-rugby-gold/10 px-3 py-2 border-b border-rugby-gray hover:bg-rugby-gold/20 transition-colors"
+              className="w-full px-3 py-2 border-b transition-colors"
+              style={pronosJournee[0]?.isD2
+                ? { backgroundColor: 'rgba(0,23,77,0.08)', borderColor: 'rgba(192,192,192,0.3)' }
+                : { backgroundColor: 'rgba(203,161,53,0.1)', borderColor: '#e5e7eb' }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-rugby-gold" />
-                  <span className="font-bold text-rugby-black text-sm">Journée {journee}</span>
+                  <Calendar className="w-4 h-4" style={pronosJournee[0]?.isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
+                  <span className="font-bold text-sm" style={pronosJournee[0]?.isD2 ? { color: '#00174D' } : {}}>Journée {journee}</span>
                   <span className="text-xs text-gray-500">({pronosJournee.length} {pronosJournee.length > 1 ? 'matchs' : 'match'})</span>
                 </div>
                 {isExpanded ? (
-                  <ChevronUp className="w-4 h-4 text-rugby-gold" />
+                  <ChevronUp className="w-4 h-4" style={pronosJournee[0]?.isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-rugby-gold" />
+                  <ChevronDown className="w-4 h-4" style={pronosJournee[0]?.isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
                 )}
               </div>
             </button>
@@ -1154,9 +1157,9 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Date + Heure */}
       <div className="flex justify-between items-center px-4 mb-3">
-        <div className="text-xs text-rugby-bronze font-semibold">{dateFormatted}</div>
+        <div className="text-xs font-semibold" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>{dateFormatted}</div>
         {heureFormatted && (
-          <div className="text-xs text-rugby-gold font-bold">{heureFormatted}</div>
+          <div className="text-xs font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>{heureFormatted}</div>
         )}
       </div>
 
@@ -1175,19 +1178,20 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className={`text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}>
+          <div className={`text-base font-bold leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
+               style={match.isD2 ? { color: '#00174D' } : { color: '#1a1a1a' }}>
             {equipeDom}
           </div>
         </button>
 
         <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-xs text-rugby-bronze font-medium mb-1">Score final</div>
-          <div className="flex items-center gap-2 text-[1.65rem] font-bold text-rugby-gold">
+          <div className="text-xs font-medium mb-1" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score final</div>
+          <div className="flex items-center gap-2 text-[1.65rem] font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>
             {scoreDom} - {scoreExt}
           </div>
           {scoreHtText && (
             <>
-              <div className="text-xs text-rugby-bronze font-medium mt-2">Score M-T</div>
+              <div className="text-xs font-medium mt-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score M-T</div>
               <div className="text-sm text-rugby-black font-semibold">{scoreHtText}</div>
               <div className="mt-1 flex items-center gap-2 w-full">
                 <div className="flex-1 bg-gray-200 h-1 rounded-full overflow-hidden">
@@ -1218,7 +1222,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className={`text-base font-bold text-rugby-black leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}>
+          <div className={`text-base font-bold leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
+               style={match.isD2 ? { color: '#00174D' } : { color: '#1a1a1a' }}>
             {equipeExt}
           </div>
         </button>
@@ -1226,12 +1231,12 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Barre FT */}
       <div className="mt-4 px-4">
-        <div className="flex justify-between text-xs text-rugby-bronze mb-2">
+        <div className="flex justify-between text-xs mb-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>
           <div className="flex items-center gap-1.5">
             <span className="font-medium">Indice favori</span>
             <InfoConfiance />
           </div>
-          <span className="font-bold text-rugby-gold">{confidencePct}%</span>
+          <span className="font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>{confidencePct}%</span>
         </div>
         <div className="relative w-full bg-gray-200 rounded-full h-[7px]">
           <div className="absolute top-0 left-1/4 w-px h-full bg-gray-300"></div>
