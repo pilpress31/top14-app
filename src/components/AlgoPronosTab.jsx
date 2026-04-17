@@ -871,17 +871,17 @@ function InsightsD2({ match, isOpen, onToggle }) {
   );
 
   return (
-    <div className="mt-3 border-t pt-3" style={{ borderColor: 'rgba(151,193,254,0.2)' }}>
+    <div className="mt-3 border-t pt-3" style={{ borderColor: '#97C1FE' }}>
       <button
         onClick={handleToggle}
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors group"
-        style={{ backgroundColor: 'rgba(0,23,77,0.05)', border: '1px solid rgba(151,193,254,0.2)' }}
+        style={{ backgroundColor: '#EEF2FF', border: '1px solid #97C1FE' }}
       >
         <div className="flex items-center gap-2">
           <span className="text-sm">📊</span>
-          <span className="text-xs font-semibold" style={{ color: '#00174D' }}>Insights algorithmiques</span>
+          <span className="text-xs font-semibold" style={{ color: '#00174D', fontWeight: 700 }}>Insights algorithmiques</span>
           {data && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(192,192,192,0.2)', color: '#97C1FE' }}>
+            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: '#97C1FE', color: '#00174D', fontWeight: 700 }}>
               {data.h2h.nb_matchs} confrontations
             </span>
           )}
@@ -904,8 +904,8 @@ function InsightsD2({ match, isOpen, onToggle }) {
             <>
               {/* ── Head-to-Head ── */}
               {data.h2h.nb_matchs > 0 ? (
-                <div className="rounded-lg p-3" style={{ backgroundColor: 'rgba(0,23,77,0.04)', border: '1px solid rgba(151,193,254,0.2)' }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: '#97C1FE' }}>
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#F0F4FF', border: '1px solid #97C1FE' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: '#00174D' }}>
                     ⚔️ Head-to-Head — {data.h2h.nb_matchs} matchs
                   </p>
 
@@ -929,26 +929,26 @@ function InsightsD2({ match, isOpen, onToggle }) {
 
                   {/* Stats clés */}
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="rounded p-2 text-center" style={{ backgroundColor: 'rgba(0,23,77,0.06)' }}>
-                      <p className="text-[11px] font-bold" style={{ color: '#C0C0C0' }}>{data.h2h.moy_points_match} pts</p>
-                      <p className="text-[9px]" style={{ color: '#97C1FE' }}>Moy. points/match</p>
+                    <div className="rounded p-2 text-center" style={{ backgroundColor: '#E8EEFF', border: '1px solid #C0C0C0' }}>
+                      <p className="text-[11px] font-bold" style={{ color: '#00174D' }}>{data.h2h.moy_points_match} pts</p>
+                      <p className="text-[9px]" style={{ color: '#334d99' }}>Moy. points/match</p>
                     </div>
-                    <div className="rounded p-2 text-center" style={{ backgroundColor: 'rgba(0,23,77,0.06)' }}>
-                      <p className="text-[11px] font-bold" style={{ color: '#C0C0C0' }}>{data.h2h.pct_plus_50_pts}%</p>
-                      <p className="text-[9px]" style={{ color: '#97C1FE' }}>Matchs +50 pts</p>
+                    <div className="rounded p-2 text-center" style={{ backgroundColor: '#E8EEFF', border: '1px solid #C0C0C0' }}>
+                      <p className="text-[11px] font-bold" style={{ color: '#00174D' }}>{data.h2h.pct_plus_50_pts}%</p>
+                      <p className="text-[9px]" style={{ color: '#334d99' }}>Matchs +50 pts</p>
                     </div>
-                    <div className="rounded p-2 text-center" style={{ backgroundColor: 'rgba(0,23,77,0.06)' }}>
-                      <p className="text-[11px] font-bold" style={{ color: '#C0C0C0' }}>{data.h2h.pct_matchs_serrés}%</p>
-                      <p className="text-[9px]" style={{ color: '#97C1FE' }}>Matchs serrés (&lt;10 pts)</p>
+                    <div className="rounded p-2 text-center" style={{ backgroundColor: '#E8EEFF', border: '1px solid #C0C0C0' }}>
+                      <p className="text-[11px] font-bold" style={{ color: '#00174D' }}>{data.h2h.pct_matchs_serrés}%</p>
+                      <p className="text-[9px]" style={{ color: '#334d99' }}>Matchs serrés (&lt;10 pts)</p>
                     </div>
-                    <div className="rounded p-2 text-center" style={{ backgroundColor: 'rgba(0,23,77,0.06)' }}>
-                      <p className="text-[11px] font-bold" style={{ color: '#C0C0C0' }}>{data.h2h.moy_dom} - {data.h2h.moy_ext}</p>
-                      <p className="text-[9px]" style={{ color: '#97C1FE' }}>Score moyen</p>
+                    <div className="rounded p-2 text-center" style={{ backgroundColor: '#E8EEFF', border: '1px solid #C0C0C0' }}>
+                      <p className="text-[11px] font-bold" style={{ color: '#00174D' }}>{data.h2h.moy_dom} - {data.h2h.moy_ext}</p>
+                      <p className="text-[9px]" style={{ color: '#334d99' }}>Score moyen</p>
                     </div>
                     {data.h2h.fiabilite_algo !== null && (
-                      <div className="col-span-2 rounded p-2 text-center" style={{ backgroundColor: 'rgba(0,23,77,0.06)' }}>
-                        <p className="text-[11px] font-bold" style={{ color: '#C0C0C0' }}>{data.h2h.fiabilite_algo}%</p>
-                        <p className="text-[9px]" style={{ color: '#97C1FE' }}>Fiabilité algo sur ce duel</p>
+                      <div className="col-span-2 rounded p-2 text-center" style={{ backgroundColor: '#E8EEFF', border: '1px solid #C0C0C0' }}>
+                        <p className="text-[11px] font-bold" style={{ color: '#00174D', fontSize: '13px' }}>{data.h2h.fiabilite_algo}% des duels bien prédits</p>
+                        <p className="text-[9px]" style={{ color: '#334d99' }}>🎯 L'algo a trouvé le bon vainqueur</p>
                       </div>
                     )}
                   </div>
@@ -959,13 +959,13 @@ function InsightsD2({ match, isOpen, onToggle }) {
 
               {/* ── Forme récente ── */}
               {[data.forme_dom, data.forme_ext].map(forme => (
-                <div key={forme.equipe} className="rounded-lg p-3" style={{ backgroundColor: 'rgba(0,23,77,0.04)', border: '1px solid rgba(151,193,254,0.2)' }}>
-                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: '#97C1FE' }}>
+                <div key={forme.equipe} className="rounded-lg p-3" style={{ backgroundColor: '#F0F4FF', border: '1px solid #97C1FE' }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: '#00174D' }}>
                     🏉 {forme.equipe} — 5 derniers matchs
                   </p>
                   <SerieBlocs serie={forme.serie} />
                   <div className="flex gap-3 mt-2">
-                    <span className="text-[10px]" style={{ color: '#C0C0C0' }}>
+                    <span className="text-[10px]" style={{ color: '#00174D' }}>
                       <span className="font-bold">{forme.victoires}V</span> <span className="text-gray-400">{forme.nuls}N</span> <span className="font-bold" style={{ color: '#ef4444' }}>{forme.defaites}D</span>
                     </span>
                     <span className="text-[10px]" style={{ color: '#97C1FE' }}>
