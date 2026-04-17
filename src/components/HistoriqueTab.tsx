@@ -1,90 +1,7 @@
 import { useState, useEffect } from "react";
+import { getTeamData } from "../utils/teams";
 import { ChevronDown } from "lucide-react";
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
-
-// Mapping des équipes vers leurs logos
-const TEAMS_DATA = {
-  'STADE TOULOUSAIN': { logo: '/logos/toulouse.svg', name: 'Toulouse' },
-  'TOULOUSE': { logo: '/logos/toulouse.svg', name: 'Toulouse' },
-  'UNION BORDEAUX BÈGLES': { logo: '/logos/ubb.svg', name: 'Bordeaux' },
-  'BORDEAUX BÈGLES': { logo: '/logos/ubb.svg', name: 'Bordeaux' },
-  'LA ROCHELLE': { logo: '/logos/la-rochelle.svg', name: 'La Rochelle' },
-  'STADE ROCHELAIS': { logo: '/logos/la-rochelle.svg', name: 'La Rochelle' },
-  'RACING 92': { logo: '/logos/racing92.svg', name: 'Racing 92' },
-  'ASM CLERMONT': { logo: '/logos/clermont.svg', name: 'Clermont' },
-  'CLERMONT AUVERGNE': { logo: '/logos/clermont.svg', name: 'Clermont' },
-  'CASTRES OLYMPIQUE': { logo: '/logos/castres.svg', name: 'Castres' },
-  'CASTRES': { logo: '/logos/castres.svg', name: 'Castres' },
-  'US MONTAUBAN': { logo: '/logos/montauban.svg', name: 'Montauban' },
-  'MONTAUBAN': { logo: '/logos/montauban.svg', name: 'Montauban' },
-  'MONTPELLIER HR': { logo: '/logos/montpellier.svg', name: 'Montpellier' },
-  'MONTPELLIER': { logo: '/logos/montpellier.svg', name: 'Montpellier' },
-  'MONTPELLIER HÉRAULT RUGBY': { logo: '/logos/montpellier.svg', name: 'Montpellier' },
-  'STADE FRANÇAIS': { logo: '/logos/paris.svg', name: 'Stade Français' },
-  'STADE FRANÇAIS PARIS': { logo: '/logos/paris.svg', name: 'Stade Français' },
-  'LYON': { logo: '/logos/lyon.svg', name: 'Lyon' },
-  'LOU RUGBY': { logo: '/logos/lyon.svg', name: 'Lyon' },
-  'LYON OU': { logo: '/logos/lyon.svg', name: 'Lyon' },
-  'TOULON': { logo: '/logos/toulon.svg', name: 'Toulon' },
-  'RC TOULON': { logo: '/logos/toulon.svg', name: 'Toulon' },
-  'PERPIGNAN': { logo: '/logos/perpignan.svg', name: 'Perpignan' },
-  'USA PERPIGNAN': { logo: '/logos/perpignan.svg', name: 'Perpignan' },
-  'USAP': { logo: '/logos/perpignan.svg', name: 'Perpignan' },
-  'BAYONNE': { logo: '/logos/bayonne.svg', name: 'Bayonne' },
-  'AVIRON BAYONNAIS': { logo: '/logos/bayonne.svg', name: 'Bayonne' },
-  'PAU': { logo: '/logos/pau.svg', name: 'Pau' },
-  'SECTION PALOISE': { logo: '/logos/pau.svg', name: 'Pau' },
-  'AGEN': { logo: '/logos/agen.svg', name: 'Agen' },
-  'SU AGEN': { logo: '/logos/agen.svg', name: 'Agen' },
-  'US DAX': { logo: '/logos/dax.svg', name: 'Dax' },
-  'DAX': { logo: '/logos/dax.svg', name: 'Dax' },
-  'MONT DE MARSAN': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
-  'MONT-DE-MARSAN': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
-  'STADE MONTOIS': { logo: '/logos/mont-de-marsan.svg', name: 'Mont-de-Marsan' },
-  'BOURGOIN': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
-  'BOURGOIN-JALLIEU': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
-  'CS BOURGOIN-JALLIEU': { logo: '/logos/bourgoin.svg', name: 'Bourgoin-Jallieu' },
-  'AUCH': { logo: '/logos/auch.svg', name: 'Auch' },
-  'RC AUCH': { logo: '/logos/auch.svg', name: 'Auch' },
-  'BRIVE': { logo: '/logos/brive.svg', name: 'Brive' },
-  'CA BRIVE': { logo: '/logos/brive.svg', name: 'Brive' },
-  'VANNES': { logo: '/logos/vannes.svg', name: 'Vannes' },
-  'RC VANNES': { logo: '/logos/vannes.svg', name: 'Vannes' },
-  'BIARRITZ': { logo: '/logos/biarritz.svg', name: 'Biarritz' },
-  'BIARRITZ OLYMPIQUE': { logo: '/logos/biarritz.svg', name: 'Biarritz' },
-  'COLOMIERS': { logo: '/logos/colomiers.svg', name: 'Colomiers' },
-  'FC GRENOBLE': { logo: '/logos/grenoble.svg', name: 'Grenoble' },
-  'OYONNAX': { logo: '/logos/oyonnax.svg', name: 'Oyonnax' },
-  'NEVERS': { logo: '/logos/nevers.svg', name: 'Nevers' },
-  'USON NEVERS': { logo: '/logos/nevers.svg', name: 'Nevers' },
-  'CARCASSONNE': { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
-  'US CARCASSONNE': { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
-  'AURILLAC': { logo: '/logos/aurillac.svg', name: 'Aurillac' },
-  'STADE AURILLACOIS': { logo: '/logos/aurillac.svg', name: 'Aurillac' },
-  'PROVENCE': { logo: '/logos/provence.svg', name: 'Provence' },
-  'PROVENCE RUGBY': { logo: '/logos/provence.svg', name: 'Provence' },
-  'ROUEN': { logo: '/logos/rouen.svg', name: 'Rouen' },
-  'ROUEN NORMANDIE': { logo: '/logos/rouen.svg', name: 'Rouen' },
-  'SOYAUX-ANGOULÊME': { logo: '/logos/soyaux-angouleme.svg', name: 'Soyaux-Angoulême' },
-  'MASSY': { logo: '/logos/massy.svg', name: 'Massy' },
-  'RC MASSY': { logo: '/logos/massy.svg', name: 'Massy' },
-  'VALENCE-ROMANS': { logo: '/logos/valence-romans.svg', name: 'Valence Romans' },
-  'VALENCE ROMANS': { logo: '/logos/valence-romans.svg', name: 'Valence Romans' },
-  'NARBONNE': { logo: '/logos/narbonne.svg', name: 'Narbonne' },
-  'RC NARBONNE': { logo: '/logos/narbonne.svg', name: 'Narbonne' },
-  'ALBI': { logo: '/logos/albi.svg', name: 'Albi' },
-  'SC ALBI': { logo: '/logos/albi.svg', name: 'Albi' },
-  'TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-  'STADO TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' }
-};
-
-function getTeamData(teamName: string) {
-  const normalizedName = teamName?.toUpperCase().trim();
-  return TEAMS_DATA[normalizedName as keyof typeof TEAMS_DATA] || {
-    logo: '/logos/default.svg',
-    name: teamName
-  };
-}
 
 interface MatchHistorique {
   id: string;
@@ -125,13 +42,13 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [totalD2, setTotalD2] = useState<number>(0);
   const [d2Page, setD2Page] = useState<number>(1);
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
+  const [equipesD2, setEquipesD2] = useState<string[]>([]);
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number, equipe?: string, saison?: string) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
     try {
       let raw: any[] = [];
       if (useD2) {
-        // Toujours utiliser page passé en param — jamais d2Page (state stale)
         const pageNum = (page !== undefined && page !== null) ? page : 1;
         const offset = (pageNum - 1) * matchesPerPage;
         const params = new URLSearchParams({ limit: String(matchesPerPage), offset: String(offset) });
@@ -172,6 +89,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
       const data = await res.json();
       setSaisonsD2([...(data.saisons || [])].reverse());
+      setEquipesD2(data.equipes || []);
     } catch (e) {
       console.error("Erreur saisons D2:", e);
     }
@@ -206,9 +124,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
-  const equipes = Array.from(
-    new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))
-  ).sort();
+  const equipes = isD2
+    ? equipesD2
+    : Array.from(new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))).sort();
 
   const saisons = isD2 ? saisonsD2 : Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
 
