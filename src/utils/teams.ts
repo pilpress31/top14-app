@@ -95,6 +95,7 @@ export const TEAMS_DATA = {
 
   'CARCASSONNE': { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'US CARCASSONNE': { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
+  'US CARCASSONNAISE': { logo: '/logos/carcassonne.svg', name: 'Carcassonnaise' },
 
   'AURILLAC': { logo: '/logos/aurillac.svg', name: 'Aurillac' },
   'STADE AURILLACOIS': { logo: '/logos/aurillac.svg', name: 'Aurillac' },
@@ -136,7 +137,10 @@ export const TEAMS_DATA = {
   'PÉRIGUEUX': { logo: '/logos/perigueux.svg', name: 'Périgueux' },
   'SAINT-ETIENNE': { logo: '/logos/saint-etienne.svg', name: 'Saint-Étienne' },
   'TYROSSE': { logo: '/logos/tyrosse.svg', name: 'Tyrosse' },
-  'STADO TARBES PYRÉNÉES RUGBY': { logo: '/logos/tarbes.svg', name: 'Tarbes' }
+  'STADO TARBES PYRÉNÉES RUGBY': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
+  'BÉZIERS': { logo: '/logos/beziers.svg', name: 'Béziers' },
+  'AS BÉZIERS': { logo: '/logos/beziers.svg', name: 'Béziers' },
+  'AS BÉZIERS HÉRAULT': { logo: '/logos/beziers.svg', name: 'Béziers' }
 };
 
 // Fonction helper : retourne les données d'une équipe
