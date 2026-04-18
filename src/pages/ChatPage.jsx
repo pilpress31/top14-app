@@ -99,6 +99,7 @@ export default function ChatPage() {
       .order('created_at', { ascending: true })
       .limit(100);
 
+    console.log('Chat messages:', data?.length, 'Erreur:', error);  
     if (!error && data) {
       setMessages(data);
       
