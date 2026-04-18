@@ -387,10 +387,10 @@ export default function MaCagnotte() {
 
   // ✅ Realtime
   useRealtimeSync([
-    { table: 'user_credits', onUpdate: () => { if (user?.id) loadData(user.id); } },
-    { table: 'user_bets', onUpdate: () => { if (user?.id) loadData(user.id); } },
-    { table: 'credit_transactions', onUpdate: () => { if (user?.id) loadData(user.id); } },
-  ]);
+  { table: 'user_credits', onUpdate: () => { if (user?.id && !loading) loadData(user.id); } },
+  { table: 'user_bets', onUpdate: () => { if (user?.id && !loading) loadData(user.id); } },
+  { table: 'credit_transactions', onUpdate: () => { if (user?.id && !loading) loadData(user.id); } },
+]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -410,6 +410,7 @@ export default function MaCagnotte() {
   }, [user]);
 
   const loadData = async (userId) => {
+    if (loading) return; // guard anti-boucle
     try {
       setLoading(true);
 
