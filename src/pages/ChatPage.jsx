@@ -95,11 +95,10 @@ export default function ChatPage() {
     const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
-      .eq('deleted', false)
+      .or('deleted.eq.false,deleted.is.null')
       .order('created_at', { ascending: true })
       .limit(100);
 
-    console.log('Chat messages:', data?.length, 'Erreur:', error);  
     if (!error && data) {
       setMessages(data);
       
@@ -204,7 +203,8 @@ export default function ChatPage() {
       user_id: user.id,
       username: generatePseudo(),  // ✅ Pseudo court au lieu de nom complet
       avatar_url: user.user_metadata?.avatar_url || null,
-      message: newMessage.trim()
+      message: newMessage.trim(),
+      deleted: false
     };
 
     const { data, error } = await supabase
