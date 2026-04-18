@@ -97,7 +97,7 @@ export default function ChatPage() {
       .select('*')
       .or('deleted.eq.false,deleted.is.null')
       .order('created_at', { ascending: true })
-      .limit(100);
+      .limit(500);
 
     if (!error && data) {
       setMessages(data);
