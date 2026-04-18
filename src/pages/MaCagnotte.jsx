@@ -370,6 +370,7 @@ export default function MaCagnotte() {
   const [transactions, setTransactions] = useState([]);
   const [bets, setBets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(false); // guard anti-boucle Realtime
   const [activeTab, setActiveTab] = useState("overview");
   
   const [sortMode, setSortMode] = useState("recent");
@@ -387,9 +388,9 @@ export default function MaCagnotte() {
 
   // ✅ Realtime
   useRealtimeSync([
-    { table: 'user_credits', onUpdate: () => { if (user?.id && !loading) loadData(user.id); } },
-    { table: 'user_bets', onUpdate: () => { if (user?.id && !loading) loadData(user.id); } },
-    { table: 'credit_transactions', onUpdate: () => { if (user?.id && !loading) loadData(user.id); } },
+    { table: 'user_credits', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
+    { table: 'user_bets', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
+    { table: 'credit_transactions', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
   ]);
 
   useEffect(() => {
@@ -411,6 +412,7 @@ export default function MaCagnotte() {
 
   const loadData = async (userId) => {
     try {
+      loadingRef.current = true;
       setLoading(true);
 
       const creditsResponse = await axios.get(
@@ -671,9 +673,11 @@ export default function MaCagnotte() {
         bonusInitial
       });
 
+      loadingRef.current = false;
       setLoading(false);
     } catch (err) {
       console.error("Erreur chargement cagnotte:", err);
+      loadingRef.current = false;
       setLoading(false);
     }
   };
