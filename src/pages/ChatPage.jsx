@@ -96,11 +96,11 @@ export default function ChatPage() {
       .from('chat_messages')
       .select('*')
       .or('deleted.eq.false,deleted.is.null')
-      .order('created_at', { ascending: true })
-      .limit(500);
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (!error && data) {
-      setMessages(data);
+      setMessages([...data].reverse());
       
       const { data: reactionsData } = await supabase
         .from('message_reactions')
