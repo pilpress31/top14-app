@@ -9,7 +9,7 @@ import axios from 'axios';
 import { ChevronDown, Check } from "lucide-react";
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
-import { getSaisonCourante } from '../../season';
+import { getSaisonCourante } from '../utils/season';
 
 
 // ---------------------------------------------------------
