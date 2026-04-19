@@ -3,6 +3,8 @@
 // ============================================
 
 import { useState, useEffect } from "react";
+
+const IA_USER_ID = "00000000-0000-0000-0000-000000000001";
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -248,7 +250,12 @@ export default function ClassementCommunauteTab() {
     );
   }
 
-  const top3 = filteredUsers.slice(0, 3);
+  // Masquer l'IA du classement Par Jetons (0 jetons = pas pertinent)
+  const displayedUsers = classementType === 'jetons'
+    ? filteredUsers.filter(u => u.user_id !== IA_USER_ID)
+    : filteredUsers;
+
+  const top3 = displayedUsers.slice(0, 3);
 
   return (
     <div className="pb-24 space-y-4">
@@ -393,17 +400,19 @@ export default function ClassementCommunauteTab() {
 
       {/* Liste classement */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {filteredUsers.length === 0 ? (
+        {displayedUsers.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             Aucun utilisateur trouvé
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {filteredUsers.map((user) => (
+            {displayedUsers.map((user) => (
               <div
                 key={user.user_id}
                 className={`flex items-center gap-4 p-4 transition-colors ${
-                  user.user_id === currentUserId
+                  user.user_id === IA_USER_ID
+                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400'
+                    : user.user_id === currentUserId
                     ? 'bg-rugby-gold/10 border-l-4 border-rugby-gold'
                     : 'hover:bg-gray-50'
                 }`}
@@ -414,8 +423,10 @@ export default function ClassementCommunauteTab() {
                 </div>
 
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rugby-gold to-rugby-bronze flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden">
-                  {user.avatar ? (
+                <div className={}>
+                  {user.user_id === IA_USER_ID ? (
+                    <span className="text-lg">🤖</span>
+                  ) : user.avatar ? (
                     <img
                       src={user.avatar}
                       alt={user.pseudo}
@@ -429,9 +440,15 @@ export default function ClassementCommunauteTab() {
                 {/* Pseudo */}
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-semibold truncate ${
+                    user.user_id === IA_USER_ID ? 'text-blue-600' :
                     user.user_id === currentUserId ? 'text-rugby-gold' : 'text-gray-800'
                   }`}>
-                    {user.pseudo}
+                    {user.user_id === IA_USER_ID ? '🤖 IA Top14Pronos' : user.pseudo}
+                    {user.user_id === IA_USER_ID && (
+                      <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
+                        IA
+                      </span>
+                    )}
                     {user.user_id === currentUserId && (
                       <span className="ml-2 text-xs bg-rugby-gold text-white px-2 py-0.5 rounded-full">
                         Vous
