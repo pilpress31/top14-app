@@ -229,7 +229,7 @@ export default function ActuTab() {
                         {actu.insights && (
                           <SectionBlock
                             icon={<span className="text-base leading-none">🔍</span>}
-                            title="Insights algorithmiques"
+                            title="Statistiques du duel"
                             isOpen={isSectionOpen(actu.match_id, 'insights', true)}
                             onToggle={() => toggleSection(actu.match_id, 'insights')}
                           >

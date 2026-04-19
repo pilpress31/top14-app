@@ -879,7 +879,7 @@ function InsightsD2({ match, isOpen, onToggle }) {
       >
         <div className="flex items-center gap-2">
           <span className="text-sm">📊</span>
-          <span className="text-xs font-semibold" style={{ color: '#00174D', fontWeight: 700 }}>Insights algorithmiques</span>
+          <span className="text-xs font-semibold" style={{ color: '#00174D', fontWeight: 700 }}>Statistiques du duel</span>
           {data && (
             <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: '#97C1FE', color: '#00174D', fontWeight: 700 }}>
               {data.h2h.nb_matchs} confrontations
