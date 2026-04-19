@@ -39,6 +39,7 @@ export default function ChatPage() {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const loadingMoreRef = useRef(false); // guard anti-scroll
   const [sending, setSending] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [showUsersModal, setShowUsersModal] = useState(false);
@@ -73,8 +74,8 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    if (!loadingMore) scrollToBottom();
-  }, [messages, loadingMore]);
+    if (!loadingMoreRef.current) scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     loadMessages();
@@ -127,7 +128,8 @@ export default function ChatPage() {
   };
 
   const loadMoreMessages = async () => {
-    if (loadingMore) return;
+    if (loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     try {
       const { data, error } = await supabase
@@ -155,6 +157,7 @@ export default function ChatPage() {
       console.error('Erreur chargement messages:', e);
     } finally {
       setLoadingMore(false);
+      loadingMoreRef.current = false;
     }
   };
 
@@ -445,7 +448,7 @@ export default function ChatPage() {
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
         {/* Bouton charger messages précédents */}
         {hasMore && (
-          <div className="flex justify-center mb-2">
+          <div className="flex justify-center mb-6 mt-2">
             <button
               onClick={loadMoreMessages}
               disabled={loadingMore}
