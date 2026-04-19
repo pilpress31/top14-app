@@ -73,8 +73,8 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!loadingMore) scrollToBottom();
+  }, [messages, loadingMore]);
 
   useEffect(() => {
     loadMessages();
@@ -140,8 +140,14 @@ export default function ChatPage() {
       if (!error && data && data.length > 0) {
         setOffset(prev => prev + 100);
         setHasMore(data.length === 100);
-        // Ajouter les anciens messages en tête
+        // Sauvegarder hauteur avant ajout pour restaurer position
+        const scrollHeightBefore = document.documentElement.scrollHeight;
         setMessages(prev => [...[...data].reverse(), ...prev]);
+        // Restaurer position après rendu
+        requestAnimationFrame(() => {
+          const scrollHeightAfter = document.documentElement.scrollHeight;
+          window.scrollTo(0, scrollHeightAfter - scrollHeightBefore);
+        });
       } else {
         setHasMore(false);
       }
