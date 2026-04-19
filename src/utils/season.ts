@@ -58,3 +58,4 @@ export function getSaisonCourante(): string {
   const month = now.getMonth() + 1;
   return month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
 }
+
