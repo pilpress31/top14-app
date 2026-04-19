@@ -36,6 +36,9 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [showUsersModal, setShowUsersModal] = useState(false);
@@ -100,6 +103,8 @@ export default function ChatPage() {
       .limit(100);
 
     if (!error && data) {
+      setOffset(100);
+      setHasMore(data.length === 100);
       setMessages([...data].reverse());
       
       const { data: reactionsData } = await supabase
@@ -119,6 +124,32 @@ export default function ChatPage() {
     }
     
     setLoading(false);
+  };
+
+  const loadMoreMessages = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .or('deleted.eq.false,deleted.is.null')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + 99);
+
+      if (!error && data && data.length > 0) {
+        setOffset(prev => prev + 100);
+        setHasMore(data.length === 100);
+        // Ajouter les anciens messages en tête
+        setMessages(prev => [...[...data].reverse(), ...prev]);
+      } else {
+        setHasMore(false);
+      }
+    } catch (e) {
+      console.error('Erreur chargement messages:', e);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   const subscribeToMessages = () => {
@@ -338,9 +369,7 @@ export default function ChatPage() {
               <MessageCircle className="w-8 h-8" />
               <div>
                 <h1 className="text-2xl font-bold">Chat Communauté</h1>
-                <p className="text-sm text-white/80">
-                  {messages.length} message{messages.length > 1 ? 's' : ''}
-                </p>
+
               </div>
             </div>
 
@@ -408,6 +437,23 @@ export default function ChatPage() {
 
       {/* ✅ Zone messages - AVEC PADDING-TOP pour header sticky */}
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
+        {/* Bouton charger messages précédents */}
+        {hasMore && (
+          <div className="flex justify-center mb-2">
+            <button
+              onClick={loadMoreMessages}
+              disabled={loadingMore}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-rugby-gold border border-rugby-gold rounded-full hover:bg-rugby-gold/10 transition-colors disabled:opacity-50"
+            >
+              {loadingMore ? (
+                <><div className="w-4 h-4 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" /> Chargement...</>
+              ) : (
+                '⬆️ Charger les messages précédents'
+              )}
+            </button>
+          </div>
+        )}
+
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
