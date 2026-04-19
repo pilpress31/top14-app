@@ -906,7 +906,7 @@ function InsightsD2({ match, isOpen, onToggle }) {
               {data.h2h.nb_matchs > 0 ? (
                 <div className="rounded-lg p-3" style={{ backgroundColor: '#F0F4FF', border: '1px solid #97C1FE' }}>
                   <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: '#00174D' }}>
-                    ⚔️ Head-to-Head — {data.h2h.nb_matchs} matchs
+                    ⚔️ Face-à-face — {data.h2h.nb_matchs} matchs
                   </p>
 
                   {/* Barre victoires */}
