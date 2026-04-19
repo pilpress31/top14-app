@@ -9,6 +9,8 @@ import axios from 'axios';
 import { ChevronDown, Check } from "lucide-react";
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { getSaisonCourante } from '../../season';
+
 
 // ---------------------------------------------------------
 // Dropdown Premium
@@ -425,7 +427,7 @@ export default function MaCagnotte() {
         .from('user_stats')
         .select('total_points')
         .eq('user_id', userId)
-        .eq('saison', '2025-2026')
+        .eq('saison', getSaisonCourante())
         .single();
 
       if (!statsError && userStatsData) {

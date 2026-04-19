@@ -50,3 +50,11 @@ export function getAvailableSeasons(startYear: number = 2020): string[] {
   
   return seasons;
 }
+
+
+export function getSaisonCourante(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  return month >= 8 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+}
