@@ -402,7 +402,17 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="card">
         <div class="card-header">
           <div class="card-title">🏆 Classement & Stats</div>
-          <button class="btn" onclick="loadClassement()">↻ Actualiser</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="classementTri" onchange="loadClassement()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px">
+              <option value="points">📊 Tri par Points</option>
+              <option value="jetons">🪙 Tri par Jetons</option>
+            </select>
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="classementTousUsers" onchange="loadClassement()" style="cursor:pointer">
+              Inclure 0 pts
+            </label>
+            <button class="btn" onclick="loadClassement()">↻ Actualiser</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
@@ -410,6 +420,54 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <tbody id="classementBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- BLOC NOTIF ALGO -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-header">
+          <div class="card-title">📊 Notification Algo — Résultats journée</div>
+          <button class="btn" onclick="chargerStatsAlgo()">↻ Calculer</button>
+        </div>
+        <div id="algoStatsPreview" style="display:none;padding:12px 0">
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Journée</div>
+              <div id="algoJournee" style="font-size:20px;font-weight:700;color:var(--gold-light)">—</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">% FT</div>
+              <div id="algoPctFT" style="font-size:20px;font-weight:700;color:var(--green)">—</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">% MT</div>
+              <div id="algoPctMT" style="font-size:20px;font-weight:700;color:var(--blue)">—</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Matchs analysés</div>
+              <div id="algoNbMatchs" style="font-size:20px;font-weight:700;color:var(--text)">—</div>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">Inclure dans la notification :</label>
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" id="algoSendFT" checked style="cursor:pointer"> % Temps Plein (FT)
+              </label>
+              <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" id="algoSendMT" checked style="cursor:pointer"> % Mi-Temps (MT)
+              </label>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Aperçu du message :</label>
+            <div id="algoMsgPreview" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px;color:var(--text)">—</div>
+          </div>
+          <button class="btn btn-gold" id="algoSendBtn" onclick="envoyerNotifAlgo()">
+            📣 Envoyer à tous les utilisateurs
+          </button>
+        </div>
+        <div id="algoStatsLoading" style="display:none;color:var(--muted);padding:12px">⏳ Calcul en cours...</div>
+        <div class="result" id="algoResult"></div>
       </div>
     </div>
 
@@ -1034,14 +1092,60 @@ async function sendPush() {
 async function loadClassement() {
   const tbody = document.getElementById('classementBody');
   tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
-  const data = await api('/api/admin/classement');
-  if (!Array.isArray(data) || !data.length) {
+
+  const tri = document.getElementById('classementTri')?.value || 'points';
+  const tousUsers = document.getElementById('classementTousUsers')?.checked || false;
+
+  // Charger classement stats + tous les users avec jetons
+  const [statsData, soldesData] = await Promise.all([
+    api('/api/admin/classement'),
+    api('/api/admin/soldes')
+  ]);
+
+  if (!Array.isArray(soldesData)) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Erreur chargement</td></tr>';
+    return;
+  }
+
+  // Fusionner stats + soldes pour avoir tous les users
+  const statsMap = {};
+  if (Array.isArray(statsData)) {
+    statsData.forEach(s => { statsMap[s.user_id || s.pseudo] = s; });
+  }
+
+  // Construire liste complète depuis soldes (tous les users)
+  let liste = soldesData.map(c => {
+    const s = statsMap[c.user_id] || {};
+    return {
+      pseudo:       c.pseudo || s.pseudo || '—',
+      user_id:      c.user_id,
+      total_points: s.total_points || 0,
+      total_pronos: s.total_pronos || 0,
+      taux_reussite: s.taux_reussite || 0,
+      credits:      c.credits || 0,
+    };
+  });
+
+  // Filtrer si on ne veut pas les 0 points
+  if (!tousUsers) {
+    liste = liste.filter(u => u.total_points > 0);
+  }
+
+  // Trier
+  if (tri === 'jetons') {
+    liste.sort((a, b) => b.credits - a.credits);
+  } else {
+    liste.sort((a, b) => b.total_points - a.total_points);
+  }
+
+  if (!liste.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Aucune donnee</td></tr>';
     return;
   }
-  tbody.innerHTML = data.map((s, i) => `
+
+  tbody.innerHTML = liste.map((s, i) => `
     <tr>
-      <td><span class="badge ${i===0?'badge-gold':i===1?'badge-blue':i===2?'badge-green':''}">${s.rang}</span></td>
+      <td><span class="badge ${i===0?'badge-gold':i===1?'badge-blue':i===2?'badge-green':''}">${i+1}</span></td>
       <td style="font-weight:600">${s.pseudo}</td>
       <td style="color:var(--gold-light);font-weight:700">${s.total_points}</td>
       <td>${s.total_pronos}</td>
@@ -1049,6 +1153,103 @@ async function loadClassement() {
       <td style="color:var(--green)">${s.credits.toLocaleString()} 🪙</td>
     </tr>
   `).join('');
+}
+
+// ── NOTIF ALGO ──
+async function chargerStatsAlgo() {
+  document.getElementById('algoStatsLoading').style.display = 'block';
+  document.getElementById('algoStatsPreview').style.display = 'none';
+  document.getElementById('algoResult').innerHTML = '';
+
+  try {
+    const data = await api('/api/admin/stats-algo-journee');
+    if (!data || data.error) {
+      document.getElementById('algoResult').innerHTML = '<span style="color:var(--red)">❌ ' + (data?.error || 'Erreur') + '</span>';
+      return;
+    }
+
+    document.getElementById('algoJournee').textContent = 'J' + data.journee;
+    document.getElementById('algoPctFT').textContent = data.pct_ft + '%';
+    document.getElementById('algoPctMT').textContent = data.pct_mt !== null ? data.pct_mt + '%' : '—';
+    document.getElementById('algoNbMatchs').textContent = data.nb_matchs;
+
+    // Mettre à jour l'aperçu du message
+    majApercuAlgo();
+
+    document.getElementById('algoStatsPreview').style.display = 'block';
+  } catch(e) {
+    document.getElementById('algoResult').innerHTML = '<span style="color:var(--red)">❌ ' + e.message + '</span>';
+  } finally {
+    document.getElementById('algoStatsLoading').style.display = 'none';
+  }
+}
+
+function majApercuAlgo() {
+  const journee = document.getElementById('algoJournee').textContent;
+  const pctFT = document.getElementById('algoPctFT').textContent;
+  const pctMT = document.getElementById('algoPctMT').textContent;
+  const sendFT = document.getElementById('algoSendFT').checked;
+  const sendMT = document.getElementById('algoSendMT').checked;
+
+  let msg = '🏉 Résultats algo ' + journee + ' : ';
+  const parts = [];
+  if (sendFT) parts.push('Temps plein ' + pctFT + ' de réussite');
+  if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT + ' de réussite');
+  if (!parts.length) { msg += '(rien sélectionné)'; }
+  else { msg += parts.join(' • '); }
+
+  document.getElementById('algoMsgPreview').textContent = msg;
+}
+
+// Mettre à jour l'aperçu quand on coche/décoche
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'algoSendFT' || e.target.id === 'algoSendMT') majApercuAlgo();
+});
+
+async function envoyerNotifAlgo() {
+  const sendFT = document.getElementById('algoSendFT').checked;
+  const sendMT = document.getElementById('algoSendMT').checked;
+  if (!sendFT && !sendMT) {
+    showResult('algoResult', 'err', '❌ Sélectionnez au moins FT ou MT');
+    return;
+  }
+
+  const journee = document.getElementById('algoJournee').textContent;
+  const pctFT = document.getElementById('algoPctFT').textContent;
+  const pctMT = document.getElementById('algoPctMT').textContent;
+
+  const parts = [];
+  if (sendFT) parts.push('Temps plein ' + pctFT);
+  if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
+
+  const title = '🏉 Résultats algo ' + journee;
+  const body = parts.join(' • ') + ' de réussite sur les pronostics !';
+
+  const btn = document.getElementById('algoSendBtn');
+  setLoading(btn, true);
+
+  try {
+    // 1. Notif in-app pour tous les users
+    await api('/api/admin/notif-algo-all', {
+      method: 'POST',
+      body: JSON.stringify({ title, body, journee })
+    });
+
+    // 2. Push pour les abonnés
+    const res = await fetch(API + '/api/notifications/send-to-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify({ title, body, url: '/pronos' })
+    });
+    const data = await res.json();
+
+    showResult('algoResult', 'ok',
+      '✅ Notif in-app envoyée à tous + push envoyé à ' + (data.sent || 0) + ' abonnés');
+  } catch(e) {
+    showResult('algoResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
 }
 
 // ── JETONS ──
