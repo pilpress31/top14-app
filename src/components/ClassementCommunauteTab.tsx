@@ -423,7 +423,11 @@ export default function ClassementCommunauteTab() {
                 </div>
 
                 {/* Avatar */}
-                <div className={}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden ${
+                  user.user_id === IA_USER_ID
+                    ? 'bg-gradient-to-br from-blue-400 to-purple-500'
+                    : 'bg-gradient-to-br from-rugby-gold to-rugby-bronze'
+                }`}>
                   {user.user_id === IA_USER_ID ? (
                     <span className="text-lg">🤖</span>
                   ) : user.avatar ? (
