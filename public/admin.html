@@ -459,8 +459,16 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             </div>
           </div>
           <div style="margin-bottom:10px">
-            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Aperçu du message :</label>
-            <div id="algoMsgPreview" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px;color:var(--text)">—</div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:8px">Aperçu de la notification :</label>
+            <div style="background:#1a1a2e;border:1px solid #333;border-radius:12px;padding:12px 14px;max-width:360px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <img src="/icon-192.png" style="width:20px;height:20px;border-radius:4px" onerror="this.style.display='none'">
+                <span style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px">Top 14 Pronos</span>
+                <span style="font-size:11px;color:#888;margin-left:auto">maintenant</span>
+              </div>
+              <div id="algoMsgTitle" style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px">—</div>
+              <div id="algoMsgPreview" style="font-size:13px;color:#ccc;line-height:1.4">—</div>
+            </div>
           </div>
           <button class="btn btn-gold" id="algoSendBtn" onclick="envoyerNotifAlgo()">
             📣 Envoyer à tous les utilisateurs
@@ -1191,14 +1199,16 @@ function majApercuAlgo() {
   const sendFT = document.getElementById('algoSendFT').checked;
   const sendMT = document.getElementById('algoSendMT').checked;
 
-  let msg = '🏉 Résultats algo ' + journee + ' : ';
+  const title = '🏉 Résultats algo ' + journee;
   const parts = [];
-  if (sendFT) parts.push('Temps plein ' + pctFT + ' de réussite');
-  if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT + ' de réussite');
-  if (!parts.length) { msg += '(rien sélectionné)'; }
-  else { msg += parts.join(' • '); }
+  if (sendFT) parts.push('Temps plein ' + pctFT);
+  if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
+  const body = parts.length
+    ? parts.join(' • ') + ' de réussite sur les pronostics !'
+    : '(rien sélectionné)';
 
-  document.getElementById('algoMsgPreview').textContent = msg;
+  document.getElementById('algoMsgTitle').textContent = title;
+  document.getElementById('algoMsgPreview').textContent = body;
 }
 
 // Mettre à jour l'aperçu quand on coche/décoche
