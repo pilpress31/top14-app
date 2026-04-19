@@ -70,6 +70,7 @@ export default function ChatPage() {
   ];
 
   const scrollToBottom = (smooth = true) => {
+    if (loadingMoreRef.current) return; // bloquer scroll pendant chargement anciens msgs
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
   };
 
@@ -144,11 +145,14 @@ export default function ChatPage() {
         setHasMore(data.length === 100);
         // Sauvegarder hauteur avant ajout pour restaurer position
         const scrollHeightBefore = document.documentElement.scrollHeight;
+        const scrollTopBefore = window.scrollY;
         setMessages(prev => [...[...data].reverse(), ...prev]);
-        // Restaurer position après rendu
+        // Restaurer position après rendu - double RAF pour attendre le paint
         requestAnimationFrame(() => {
-          const scrollHeightAfter = document.documentElement.scrollHeight;
-          window.scrollTo(0, scrollHeightAfter - scrollHeightBefore);
+          requestAnimationFrame(() => {
+            const scrollHeightAfter = document.documentElement.scrollHeight;
+            window.scrollTo(0, scrollTopBefore + (scrollHeightAfter - scrollHeightBefore));
+          });
         });
       } else {
         setHasMore(false);
@@ -448,7 +452,7 @@ export default function ChatPage() {
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
         {/* Bouton charger messages précédents */}
         {hasMore && (
-          <div className="flex justify-center mb-6 mt-2">
+          <div className="flex justify-center mb-4">
             <button
               onClick={loadMoreMessages}
               disabled={loadingMore}
