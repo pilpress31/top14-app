@@ -59,6 +59,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef(null);
   const channelRef = useRef(null);
   const presenceChannelRef = useRef(null);
+  const topSentinelRef = useRef(null); // sentinel scroll infini
 
   // Emojis rapides
   const quickEmojis = [
@@ -77,6 +78,21 @@ export default function ChatPage() {
   useEffect(() => {
     if (!loadingMoreRef.current) scrollToBottom();
   }, [messages]);
+
+  // ── Scroll infini : charger anciens messages quand on arrive en haut
+  useEffect(() => {
+    if (!topSentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMoreRef.current) {
+          loadMoreMessages();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(topSentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore]);
 
   useEffect(() => {
     loadMessages();
@@ -455,20 +471,11 @@ export default function ChatPage() {
 
       {/* ✅ Zone messages - AVEC PADDING-TOP pour header sticky */}
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
-        {/* Bouton charger messages précédents */}
-        {hasMore && (
-          <div className="flex justify-center mb-3 mt-0">
-            <button
-              onClick={loadMoreMessages}
-              disabled={loadingMore}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-rugby-gold border border-rugby-gold rounded-full hover:bg-rugby-gold/10 transition-colors disabled:opacity-50"
-            >
-              {loadingMore ? (
-                <><div className="w-4 h-4 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" /> Chargement...</>
-              ) : (
-                '⬆️ Charger les messages précédents'
-              )}
-            </button>
+        {/* Sentinel scroll infini - invisible, déclenche le chargement */}
+        <div ref={topSentinelRef} className="h-1" />
+        {loadingMore && (
+          <div className="flex justify-center py-3">
+            <div className="w-5 h-5 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
