@@ -106,7 +106,12 @@ export default function ChatPage() {
 
     if (!error && data) {
       setOffset(100);
-      setHasMore(data.length === 100);
+      // COUNT réel pour savoir s'il y a plus de 100 messages
+      const { count } = await supabase
+        .from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .or('deleted.eq.false,deleted.is.null');
+      setHasMore((count || 0) > 100);
       setMessages([...data].reverse());
       
       const { data: reactionsData } = await supabase
@@ -452,7 +457,7 @@ export default function ChatPage() {
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
         {/* Bouton charger messages précédents */}
         {hasMore && (
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-3 mt-0">
             <button
               onClick={loadMoreMessages}
               disabled={loadingMore}
