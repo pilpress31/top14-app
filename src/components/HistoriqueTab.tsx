@@ -100,6 +100,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
+  
   const loadSaisonsD2 = async () => {
     try {
       const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
