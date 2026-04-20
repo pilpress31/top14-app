@@ -1246,12 +1246,10 @@ async function envoyerNotifAlgo() {
     });
 
     // 2. Push pour les abonnés
-    const res = await fetch(API + '/api/notifications/send-to-all', {
+    const data = await api('/api/notifications/send-to-all', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
       body: JSON.stringify({ title, body, url: '/pronos' })
     });
-    const data = await res.json();
 
     showResult('algoResult', 'ok',
       '✅ Notif in-app envoyée à tous + push envoyé à ' + (data.sent || 0) + ' abonnés');
