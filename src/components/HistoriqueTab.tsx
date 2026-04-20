@@ -16,10 +16,10 @@ interface MatchHistorique {
   score_ht_exterieur?: number;
   vainqueur?: string;
   prono_ft?: { domicile: number | null; exterieur: number | null; };
-  prono_ht?: { domicile: number | null; exterieur: number | null; };  // ✅ ajout
+  prono_ht?: { domicile: number | null; exterieur: number | null; };
   prono_text?: string;
   comp_ft?: string;
-  comp_ht?: string;  // ✅ ajout
+  comp_ht?: string;
 }
 
 interface HistoriqueTabProps {
@@ -46,6 +46,10 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
   const [journeesD2, setJourneesD2] = useState<{journee: number, date_match: string}[]>([]);
   const [equipesD2, setEquipesD2] = useState<string[]>([]);
+  // ✅ NOUVEAU : états dédiés Top 14 pour les listes complètes
+  const [saisonsT14, setSaisonsT14] = useState<string[]>([]);
+  const [equipesT14, setEquipesT14] = useState<string[]>([]);
+  const [journeesT14, setJourneesT14] = useState<{journee: number, date_match: string}[]>([]);
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number, equipe?: string, saison?: string, journee?: string) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
@@ -69,6 +73,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         const params = new URLSearchParams({ limit: String(matchesPerPage), offset: String(offset) });
         if (equipe) params.set('equipe', equipe);
         if (saison) params.set('saison', saison);
+        if (journee) params.set('journee', journee);
         const url = `https://top14-api-production.up.railway.app/api/matchs/historique?${params}`;
         const response = await fetch(url);
         const data = await response.json();
@@ -116,6 +121,28 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
+  // ✅ NOUVEAU : chargement complet des saisons et équipes Top 14
+  const loadSaisonsT14 = async () => {
+    try {
+      const res = await fetch("https://top14-api-production.up.railway.app/api/matchs/saisons");
+      const data = await res.json();
+      setSaisonsT14([...(data.saisons || [])].reverse());
+      setEquipesT14(data.equipes || []);
+    } catch (e) {
+      console.error("Erreur saisons T14:", e);
+    }
+  };
+
+  const loadJourneesT14 = async (saison: string) => {
+    try {
+      const res = await fetch(`https://top14-api-production.up.railway.app/api/matchs/journees?saison=${saison}`);
+      const data = await res.json();
+      setJourneesT14(data.journees || []);
+    } catch (e) {
+      console.error('Erreur journées T14:', e);
+    }
+  };
+
   // ✅ Realtime
   useRealtimeSync([
     ...(isD2 ? [] : [{ table: 'matchs_results', onUpdate: () => loadHistorique() }]),
@@ -131,8 +158,11 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setTotalTop14(0);
     setSelectedTeam('all');
     setSelectedSaison('all');
+    setSelectedJournee('all');
     setJourneesD2([]);
+    setJourneesT14([]);
     if (isD2) loadSaisonsD2();
+    else loadSaisonsT14();
     loadHistorique(isD2, 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
@@ -150,46 +180,18 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
-  const equipes = isD2
-    ? equipesD2
-    : Array.from(new Set(matches.flatMap(m => [m.equipe_domicile, m.equipe_exterieure]))).sort();
-  const saisons = isD2 ? saisonsD2 : Array.from(new Set(matches.map(m => m.saison))).sort().reverse();
+  // ✅ FIX : utilise les listes complètes des deux championnats
+  const equipes = isD2 ? equipesD2 : equipesT14;
+  const saisons = isD2 ? saisonsD2 : saisonsT14;
 
   const getJourneesForSaison = (saison: string) => {
-    if (isD2) {
-      return journeesD2.map(({ journee, date_match }) => ({
-        journee,
-        date: date_match,
-        label: `J ${journee} - ${new Date(date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}`
-      }));
-    }
-    const matchesSaison = matches.filter(m => m.saison === saison);
-    const journeesMap = new Map<number, string>();
-    
-    matchesSaison.forEach(m => {
-      if (!journeesMap.has(m.journee)) {
-        journeesMap.set(m.journee, m.date);
-      } else {
-        const existingDate = new Date(journeesMap.get(m.journee)!);
-        const currentDate = new Date(m.date);
-        if (currentDate < existingDate) {
-          journeesMap.set(m.journee, m.date);
-        }
-      }
-    });
-
-    return Array.from(journeesMap.entries())
-      .sort((a, b) => a[0] - b[0])
-      .map(([journee, date]) => ({
-        journee,
-        date,
-        label: `J ${journee} - ${new Date(date).toLocaleDateString("fr-FR", {
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })}`
-      }));
+    // ✅ FIX : même logique pour les deux championnats (endpoints dédiés)
+    const source = isD2 ? journeesD2 : journeesT14;
+    return source.map(({ journee, date_match }) => ({
+      journee,
+      date: date_match,
+      label: `J ${journee} - ${new Date(date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}`
+    }));
   };
 
   // Pagination serveur — les données arrivent déjà filtrées
@@ -204,7 +206,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const totalPages = isD2
     ? Math.max(1, Math.ceil(totalD2 / matchesPerPage))
     : Math.max(1, Math.ceil(totalTop14 / matchesPerPage));
-  const paginatedMatches = filteredMatches; // pagination serveur pour les deux
+  const paginatedMatches = filteredMatches;
 
   const journeesOptions = selectedSaison !== "all" ? getJourneesForSaison(selectedSaison) : [];
 
@@ -248,7 +250,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                     setD2Page(1);
                     setT14Page(1);
                     setLoading(true);
-                    loadHistorique(isD2, 1, undefined, selectedSaison !== 'all' ? selectedSaison : undefined);
+                    loadHistorique(isD2, 1, undefined, selectedSaison !== 'all' ? selectedSaison : undefined, selectedJournee !== 'all' ? selectedJournee : undefined);
                   }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
                     selectedTeam === "all" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
@@ -266,7 +268,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                       setD2Page(1);
                       setT14Page(1);
                       setLoading(true);
-                      loadHistorique(isD2, 1, team, selectedSaison !== 'all' ? selectedSaison : undefined);
+                      loadHistorique(isD2, 1, team, selectedSaison !== 'all' ? selectedSaison : undefined, selectedJournee !== 'all' ? selectedJournee : undefined);
                     }}
                     className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
                       selectedTeam === team ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
@@ -330,10 +332,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         setSelectedJournee("all");
                         setCurrentPage(1);
                         setD2Page(1);
+                        setT14Page(1);
+                        // ✅ FIX : charge les journées dans les deux championnats
                         if (isD2 && newSaison !== 'all') loadJourneesD2(newSaison);
                         else if (isD2) setJourneesD2([]);
-                        setD2Page(1);
-                        setT14Page(1);
+                        else if (!isD2 && newSaison !== 'all') loadJourneesT14(newSaison);
+                        else setJourneesT14([]);
                         setLoading(true);
                         loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, newSaison !== 'all' ? newSaison : undefined);
                       }}
@@ -352,6 +356,10 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                             setSelectedJournee("all");
                             setSaisonDropdownOpen(false);
                             setCurrentPage(1);
+                            setD2Page(1);
+                            setT14Page(1);
+                            setLoading(true);
+                            loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, saison);
                           }}
                           className={`w-full text-left px-6 py-1.5 text-xs hover:bg-opacity-10 transition-colors ${
                             selectedJournee === "all" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
@@ -359,19 +367,21 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         >
                           Toutes les journées
                         </button>
-                        {getJourneesForSaison(saison).map(({ journee, label }) => (
+                        {journeesOptions.map(({ journee, label }) => (
                           <button
                             key={journee}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedJournee(journee.toString());
+                              setSelectedJournee(String(journee));
                               setSaisonDropdownOpen(false);
                               setCurrentPage(1);
                               setD2Page(1);
-                              if (isD2) { setLoading(true); loadHistorique(true, 1, selectedTeam !== 'all' ? selectedTeam : undefined, selectedSaison !== 'all' ? selectedSaison : undefined, journee.toString()); }
+                              setT14Page(1);
+                              setLoading(true);
+                              loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, saison, String(journee));
                             }}
                             className={`w-full text-left px-6 py-1.5 text-xs hover:bg-opacity-10 transition-colors ${
-                              selectedJournee === journee.toString() ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
+                              selectedJournee === String(journee) ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
                             }`}
                           >
                             {label}
@@ -385,8 +395,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
             )}
           </div>
 
-          {/* Tri par date */}
-          <div className="relative md:w-64">
+          {/* Sélecteur de tri */}
+          <div className="relative flex-1">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -397,36 +407,23 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white flex items-center justify-between transition-colors" style={isD2 ? { borderColor: '#97C1FE' } : {}}
             >
               <span className="text-gray-700">
-                {sortOrder === "desc" ? "Date décroissante (récent → ancien)" : "Date croissante (ancien → récent)"}
+                {sortOrder === "desc" ? "Plus récents d'abord" : "Plus anciens d'abord"}
               </span>
               <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
             </button>
-            
             {sortDropdownOpen && (
               <div className="absolute top-full mt-1 w-full bg-white border border-gray-300 rounded shadow-lg z-40">
                 <button
-                  onClick={() => {
-                    setSortOrder("desc");
-                    setSortDropdownOpen(false);
-                    setCurrentPage(1);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
-                    sortOrder === "desc" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
-                  }`}
+                  onClick={() => { setSortOrder("desc"); setSortDropdownOpen(false); }}
+                  className={`w-full text-left px-3 py-2 text-sm ${sortOrder === "desc" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""}`}
                 >
-                  Date décroissante (récent → ancien)
+                  Plus récents d'abord
                 </button>
                 <button
-                  onClick={() => {
-                    setSortOrder("asc");
-                    setSortDropdownOpen(false);
-                    setCurrentPage(1);
-                  }}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-opacity-10 transition-colors ${
-                    sortOrder === "asc" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""
-                  }`}
+                  onClick={() => { setSortOrder("asc"); setSortDropdownOpen(false); }}
+                  className={`w-full text-left px-3 py-2 text-sm ${sortOrder === "asc" ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-20 font-semibold") : ""}`}
                 >
-                  Date croissante (ancien → récent)
+                  Plus anciens d'abord
                 </button>
               </div>
             )}
@@ -435,27 +432,22 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       </div>
 
       {/* Liste des matchs */}
-      <div className="grid gap-4 pb-20">
-        {paginatedMatches.map((m) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 px-2 pb-32">
+        {paginatedMatches.map(m => {
           const teamDomData = getTeamData(m.equipe_domicile);
           const teamExtData = getTeamData(m.equipe_exterieure);
-          
           const pronoOK = m.comp_ft && (m.comp_ft.includes('OK') || m.comp_ft === 'OK');
-          
-          const ecartDom = m.prono_ft?.domicile !== null && m.prono_ft?.domicile !== undefined
-            ? m.score_domicile - m.prono_ft.domicile
-            : null;
-          const ecartExt = m.prono_ft?.exterieur !== null && m.prono_ft?.exterieur !== undefined
-            ? m.score_exterieur - m.prono_ft.exterieur
-            : null;
+          const ecartDom = m.prono_ft?.domicile != null ? m.score_domicile - m.prono_ft.domicile : null;
+          const ecartExt = m.prono_ft?.exterieur != null ? m.score_exterieur - m.prono_ft.exterieur! : null;
 
           return (
-            <div key={m.id} className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3" style={isD2 ? { border: '1px solid rgba(0,23,77,0.3)', borderLeft: '3px solid #97C1FE' } : { border: '1px solid #e5e7eb' }}>
-              
+            <div key={m.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
               {/* Header */}
-              <div className="flex justify-between items-center mb-2">
-                <div className="text-xs font-bold uppercase" style={isD2 ? { color: '#97C1FE' } : { color: '#f97316' }}>J{m.journee}</div>
-                <div className="text-xs text-gray-500">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] font-bold uppercase tracking-wider" style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }}>
+                  Saison {m.saison} · J{m.journee}
+                </div>
+                <div className="text-[10px] text-gray-400">
                   {new Date(m.date).toLocaleDateString("fr-FR", {
                     day: "numeric", month: "short", year: "numeric"
                   })}
@@ -577,7 +569,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
               setLoading(true);
               loadHistorique(false, newPage,
                 selectedTeam !== 'all' ? selectedTeam : undefined,
-                selectedSaison !== 'all' ? selectedSaison : undefined);
+                selectedSaison !== 'all' ? selectedSaison : undefined,
+                selectedJournee !== 'all' ? selectedJournee : undefined);
             }
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
@@ -611,7 +604,8 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
               setLoading(true);
               loadHistorique(false, newPage,
                 selectedTeam !== 'all' ? selectedTeam : undefined,
-                selectedSaison !== 'all' ? selectedSaison : undefined);
+                selectedSaison !== 'all' ? selectedSaison : undefined,
+                selectedJournee !== 'all' ? selectedJournee : undefined);
             }
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
