@@ -88,7 +88,7 @@ export default function ChatPage() {
           loadMoreMessages();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0, rootMargin: '200px 0px 0px 0px' }
     );
     observer.observe(topSentinelRef.current);
     return () => observer.disconnect();
@@ -472,7 +472,7 @@ export default function ChatPage() {
       {/* ✅ Zone messages - AVEC PADDING-TOP pour header sticky */}
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
         {/* Sentinel scroll infini - invisible, déclenche le chargement */}
-        <div ref={topSentinelRef} className="h-1" />
+        {hasMore && <div ref={topSentinelRef} className="h-4" />}
         {loadingMore && (
           <div className="flex justify-center py-3">
             <div className="w-5 h-5 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" />
