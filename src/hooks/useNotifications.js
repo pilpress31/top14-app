@@ -201,6 +201,25 @@ export function useNotifications() {
     return () => clearInterval(interval);
   }, [loadUnreadCount]);
 
+  // Supprimer toutes les notifications
+  const deleteAllNotifications = useCallback(async () => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+
+      await axios.delete(
+        `${API_URL}/notifications/all`,
+        { headers: { 'x-user-id': user.id } }
+      );
+
+      setNotifications([]);
+      setUnreadCount(0);
+
+    } catch (err) {
+      console.error('Erreur suppression toutes notifications:', err);
+    }
+  }, []);
+
   return {
     notifications,
     unreadCount,
@@ -211,6 +230,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    deleteAllNotifications,
     refresh: loadNotifications
   };
 }

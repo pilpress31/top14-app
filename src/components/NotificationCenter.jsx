@@ -22,7 +22,8 @@ export default function NotificationCenter({ isOpen, onClose }) {
     loading,
     markAsRead,
     markAllAsRead,
-    deleteNotification
+    deleteNotification,
+    deleteAllNotifications
   } = useNotifications();
 
   // Fermer si clic extérieur
@@ -112,6 +113,21 @@ export default function NotificationCenter({ isOpen, onClose }) {
                 title="Marquer toutes comme lues"
               >
                 <Check className="w-4 h-4 text-green-600" />
+              </button>
+            )}
+
+            {/* Tout supprimer */}
+            {notifications.length > 0 && (
+              <button
+                onClick={() => {
+                  if (window.confirm('Supprimer toutes les notifications ?')) {
+                    deleteAllNotifications();
+                  }
+                }}
+                className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
+                title="Tout supprimer"
+              >
+                <Trash2 className="w-4 h-4 text-red-500" />
               </button>
             )}
 
