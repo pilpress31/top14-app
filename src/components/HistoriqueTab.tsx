@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getTeamData } from "../utils/teams";
 import { ChevronDown } from "lucide-react";
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
@@ -46,10 +46,13 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
   const [journeesD2, setJourneesD2] = useState<{journee: number, date_match: string}[]>([]);
   const [equipesD2, setEquipesD2] = useState<string[]>([]);
-  // ✅ NOUVEAU : états dédiés Top 14 pour les listes complètes
+  // ✅ états dédiés Top 14 pour les listes complètes
   const [saisonsT14, setSaisonsT14] = useState<string[]>([]);
   const [equipesT14, setEquipesT14] = useState<string[]>([]);
   const [journeesT14, setJourneesT14] = useState<{journee: number, date_match: string}[]>([]);
+
+  // ✅ Garde-fou : empêche le Realtime d'écraser les filtres au premier montage
+  const initialLoadDone = useRef(false);
 
   const loadHistorique = async (forceIsD2?: boolean, page?: number, equipe?: string, saison?: string, journee?: string) => {
     const useD2 = forceIsD2 !== undefined ? forceIsD2 : isD2;
@@ -100,7 +103,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
-  
   const loadSaisonsD2 = async () => {
     try {
       const res = await fetch("https://top14-api-production.up.railway.app/api/d2/saisons");
@@ -122,7 +124,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
-  // ✅ NOUVEAU : chargement complet des saisons et équipes Top 14
+  // ✅ chargement complet des saisons et équipes Top 14
   const loadSaisonsT14 = async () => {
     try {
       const res = await fetch("https://top14-api-production.up.railway.app/api/matchs/saisons");
@@ -144,9 +146,21 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
-  // ✅ Realtime
+  // ✅ Realtime — respecte les filtres actifs ET ignore les updates avant le chargement initial
   useRealtimeSync([
-    ...(isD2 ? [] : [{ table: 'matchs_results', onUpdate: () => loadHistorique() }]),
+    ...(isD2 ? [] : [{
+      table: 'matchs_results',
+      onUpdate: () => {
+        if (!initialLoadDone.current) return;
+        loadHistorique(
+          false,
+          t14Page,
+          selectedTeam !== 'all' ? selectedTeam : undefined,
+          selectedSaison !== 'all' ? selectedSaison : undefined,
+          selectedJournee !== 'all' ? selectedJournee : undefined
+        );
+      }
+    }]),
   ]);
 
   useEffect(() => {
@@ -162,9 +176,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     setSelectedJournee('all');
     setJourneesD2([]);
     setJourneesT14([]);
+    initialLoadDone.current = false;
     if (isD2) loadSaisonsD2();
     else loadSaisonsT14();
-    loadHistorique(isD2, 1);
+    loadHistorique(isD2, 1).then(() => {
+      initialLoadDone.current = true;
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
@@ -181,12 +198,11 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
-  // ✅ FIX : utilise les listes complètes des deux championnats
+  // ✅ utilise les listes complètes des deux championnats
   const equipes = isD2 ? equipesD2 : equipesT14;
   const saisons = isD2 ? saisonsD2 : saisonsT14;
 
   const getJourneesForSaison = (saison: string) => {
-    // ✅ FIX : même logique pour les deux championnats (endpoints dédiés)
     const source = isD2 ? journeesD2 : journeesT14;
     return source.map(({ journee, date_match }) => ({
       journee,
@@ -334,7 +350,6 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         setCurrentPage(1);
                         setD2Page(1);
                         setT14Page(1);
-                        // ✅ FIX : charge les journées dans les deux championnats
                         if (isD2 && newSaison !== 'all') loadJourneesD2(newSaison);
                         else if (isD2) setJourneesD2([]);
                         else if (!isD2 && newSaison !== 'all') loadJourneesT14(newSaison);
