@@ -81,17 +81,13 @@ export default function ChatPage() {
 
   // ── Scroll infini : charger anciens messages quand on arrive en haut
   useEffect(() => {
-    if (!topSentinelRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMoreRef.current) {
-          loadMoreMessages();
-        }
-      },
-      { threshold: 0, rootMargin: '200px 0px 0px 0px' }
-    );
-    observer.observe(topSentinelRef.current);
-    return () => observer.disconnect();
+    const handleScroll = () => {
+      if (window.scrollY < 100 && hasMore && !loadingMoreRef.current) {
+        loadMoreMessages();
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore]);
 
   useEffect(() => {
@@ -472,7 +468,6 @@ export default function ChatPage() {
       {/* ✅ Zone messages - AVEC PADDING-TOP pour header sticky */}
       <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
         {/* Sentinel scroll infini - invisible, déclenche le chargement */}
-        {hasMore && <div ref={topSentinelRef} className="h-4" />}
         {loadingMore && (
           <div className="flex justify-center py-3">
             <div className="w-5 h-5 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" />
