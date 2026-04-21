@@ -59,7 +59,7 @@ export default function PronosPage() {
 
   // Hauteur des onglets ≈ 65px — on laisse cet espacement sous la zone sticky
   // pour que le 1er élément de contenu (bandeau cagnotte) ne soit pas masqué.
-  const contentPaddingTop = 65;
+  const contentPaddingTop = 110;
 
   // Couleurs dynamiques des onglets selon championnat
   const activeTabColor = isD2
