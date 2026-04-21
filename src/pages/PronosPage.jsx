@@ -4,14 +4,13 @@ import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MainHeader from '../components/MainHeaderFull';
-import ChampionnatToggle from '../components/ChampionnatToggle';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const HEADER_HEIGHT = 120;
 
 export default function PronosPage() {
   const location = useLocation();
-  const { isD2 } = useChampionnat();
+  const { isD2, toggle } = useChampionnat();
   const [activeTab, setActiveTab] = useState('a-parier');
   const [headerVisible, setHeaderVisible] = useState(true);
 
@@ -69,23 +68,17 @@ export default function PronosPage() {
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      {/* Header */}
       <MainHeader />
 
-      {/* Zone sticky : toggle + onglets */}
+      {/* Zone sticky : onglets + bouton central de bascule championnat */}
       <div
         className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
+          <div className="flex items-stretch relative">
 
-          {/* Bouton bascule TOP 14 / PRO D2 */}
-          <div className="px-4 py-2 border-b border-rugby-gray/50">
-            <ChampionnatToggle />
-          </div>
-
-          {/* Onglets */}
-          <div className="flex">
+            {/* Onglet À parier */}
             <button
               onClick={() => setActiveTab('a-parier')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
@@ -99,6 +92,30 @@ export default function PronosPage() {
               <span className="text-xs font-normal">Prochains matchs disponibles</span>
             </button>
 
+            {/* ✅ BOUTON CENTRAL : bascule Top 14 ↔ Pro D2 */}
+            <button
+              onClick={toggle}
+              aria-label={isD2 ? 'Basculer vers Top 14' : 'Basculer vers Pro D2'}
+              className={`self-center mx-1 px-3 py-2 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-95 ${
+                isD2
+                  ? 'bg-[#00174D] text-[#97C1FE] hover:bg-[#001a5c]'
+                  : 'bg-rugby-gold text-white hover:bg-rugby-bronze'
+              }`}
+            >
+              {isD2 ? (
+                <div className="flex flex-col items-center gap-0.5 leading-none">
+                  <span>🥈</span>
+                  <span className="text-[10px]">PRO D2</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-0.5 leading-none">
+                  <span>🏆</span>
+                  <span className="text-[10px]">TOP 14</span>
+                </div>
+              )}
+            </button>
+
+            {/* Onglet Mes paris */}
             <button
               onClick={() => setActiveTab('mes-paris')}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
@@ -111,12 +128,12 @@ export default function PronosPage() {
               </div>
               <span className="text-xs font-normal">Historique &amp; statistiques</span>
             </button>
-          </div>
 
+          </div>
         </div>
       </div>
 
-      {/* ✅ Contenu : plus de padding-top surcalibré, juste un py-4 naturel */}
+      {/* Contenu */}
       <div className="container mx-auto px-4 py-4">
         {activeTab === 'a-parier' && (
           <MesPronosTab goToMesParis={goToMesParis} />
