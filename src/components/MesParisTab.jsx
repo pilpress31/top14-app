@@ -110,14 +110,25 @@ export default function MesParisTab() {
 
       const useD2 = isD2Ref.current;
 
-      // Crédits (communs Top 14 + D2)
+      // Crédits + total gagné GLOBAL (Top 14 + Pro D2) — indépendant du championnat affiché
       try {
         const creditsResponse = await axios.get(`${API_BASE}/api/user/credits`, {
           headers: { 'x-user-id': user.id }
         });
-        setUserCredits(creditsResponse.data);
+
+        // Agrégation totale des gains sur les deux championnats
+        const [{ data: wonTop14 }, { data: wonD2 }] = await Promise.all([
+          supabase.from('user_bets').select('payout').eq('user_id', user.id).eq('status', 'won'),
+          supabase.from('user_bets_d2').select('payout').eq('user_id', user.id).eq('status', 'won'),
+        ]);
+
+        const totalWonFromBets =
+          (wonTop14 || []).reduce((s, b) => s + (b.payout || 0), 0) +
+          (wonD2 || []).reduce((s, b) => s + (b.payout || 0), 0);
+
+        setUserCredits({ ...creditsResponse.data, totalWonFromBets });
       } catch {
-        setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
+        setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0, totalWonFromBets: 0 });
       }
 
       // ✅ Paris selon championnat
@@ -200,9 +211,9 @@ export default function MesParisTab() {
   const parisWon = paris.filter(p => p.status === 'won').length;
   const parisLost = paris.filter(p => p.status === 'lost').length;
 
-  const totalWonFromBets = paris
-    .filter(p => p.status === 'won')
-    .reduce((sum, p) => sum + (p.payout || 0), 0);
+  // ⚠️ totalWonFromBets est chargé dans userCredits (agrégé Top14 + D2)
+  // Le calcul ci-dessous n'est PAS utilisé pour le bandeau cagnotte — laissé ici si besoin ailleurs
+  // const totalWonFromBets = paris.filter(p => p.status === 'won').reduce((sum, p) => sum + (p.payout || 0), 0);
 
   // Couleurs selon championnat
   const bandeauBg = isD2
@@ -233,7 +244,7 @@ export default function MesParisTab() {
             <p className="text-white/80 text-xs">Total gagné</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
-              {totalWonFromBets}
+              {userCredits?.totalWonFromBets || 0}
             </p>
           </button>
         </div>
