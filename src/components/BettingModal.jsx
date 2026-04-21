@@ -80,7 +80,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     // ✅ NOUVEAU : en Pro D2, jamais de pari MT
     if (isD2) {
       setBetOnMT(false);
-    }
+    }}
 
   }, [existingFT, existingMT, isD2]);
 
