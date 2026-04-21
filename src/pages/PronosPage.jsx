@@ -57,6 +57,10 @@ export default function PronosPage() {
 
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
 
+  // Hauteur des onglets ≈ 65px — on laisse cet espacement sous la zone sticky
+  // pour que le 1er élément de contenu (bandeau cagnotte) ne soit pas masqué.
+  const contentPaddingTop = 65;
+
   // Couleurs dynamiques des onglets selon championnat
   const activeTabColor = isD2
     ? 'text-[#00174D] border-b-4 border-[#00174D] bg-[#97C1FE]/10'
@@ -133,8 +137,11 @@ export default function PronosPage() {
         </div>
       </div>
 
-      {/* Contenu */}
-      <div className="container mx-auto px-4 py-4">
+      {/* ✅ Contenu avec padding-top = hauteur des onglets pour que Ma Cagnotte soit visible */}
+      <div
+        className="container mx-auto px-4 pb-4"
+        style={{ paddingTop: `${contentPaddingTop}px` }}
+      >
         {activeTab === 'a-parier' && (
           <MesPronosTab goToMesParis={goToMesParis} />
         )}
