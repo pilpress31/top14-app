@@ -1,5 +1,5 @@
 // ============================================
-// CARTE DE MATCH - VERSION OPTIMISÉE
+// CARTE DE MATCH - VERSION avec support Pro D2
 // ============================================
 
 import { useState } from 'react';
@@ -30,19 +30,20 @@ const getBlockingMessage = (match) => {
     : "Paris fermés (jour du match)";
 };
 
-export default function MatchCard({ match, existingProno, onBetClick, goToMesParis, jouable = true, prochaineJournee }) {
+export default function MatchCard({ match, existingProno, onBetClick, goToMesParis, jouable = true, prochaineJournee, isD2 = false }) {
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
   const navigate = useNavigate();
   const [teamPopup, setTeamPopup] = useState(null);
 
+  // ✅ En Pro D2, pas de paris MT du tout
   const pronoFT = existingProno?.find(p => p.bet_type === 'FT' && p.status !== 'cancelled');
-  const pronoMT = existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
+  const pronoMT = isD2 ? null : existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
   const hasFT = !!pronoFT;
   const hasMT = !!pronoMT;
-  const pariComplet = hasFT && hasMT;
-  const pariPartiel = (hasFT && !hasMT) || (!hasFT && hasMT);
+  const pariComplet = isD2 ? hasFT : (hasFT && hasMT);
+  const pariPartiel = isD2 ? false : ((hasFT && !hasMT) || (!hasFT && hasMT));
   const aucunPari = !hasFT && !hasMT;
 
   // Scores prédits IA
@@ -51,14 +52,15 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const iaMTDom = match.cotes?.score_predit_mt_dom;
   const iaMTExt = match.cotes?.score_predit_mt_ext;
   const hasIAFT = iaFTDom != null && iaFTExt != null;
-  const hasIAMT = iaMTDom != null && iaMTExt != null;
+  const hasIAMT = !isD2 && iaMTDom != null && iaMTExt != null;
 
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
 
   // ── Bloc Prono IA ───────────────────────────────────────────────
   const BlocPronoIA = ({ showFT, showMT }) => {
-    if (!showFT && !showMT) return null;
+    const displayMT = showMT && !isD2 && hasIAMT;
+    if (!showFT && !displayMT) return null;
     return (
       <div className="flex flex-col items-center px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-200 min-w-[110px]">
         <div className="flex items-center gap-1 mb-1">
@@ -68,7 +70,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {showFT && hasIAFT && (
           <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">FT : {iaFTDom} - {iaFTExt}</span>
         )}
-        {showMT && hasIAMT && (
+        {displayMT && (
           <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">MT : {iaMTDom} - {iaMTExt}</span>
         )}
       </div>
@@ -91,7 +93,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         </div>
         {pronoFT && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? '?'}
+            FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
           </span>
         )}
         {pronoMT && (
@@ -103,8 +105,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     );
   };
 
+  // Couleurs adaptées au championnat
+  const hoverColor = isD2 ? 'hover:bg-[#97C1FE]/5' : 'hover:bg-rugby-gold/5';
+
   return (
-    <div className="px-3 py-3 hover:bg-rugby-gold/5 transition-colors">
+    <div className={`px-3 py-3 ${hoverColor} transition-colors`}>
 
       {/* Date */}
       <p className="text-[10px] text-gray-500 mb-2">
@@ -162,8 +167,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             })}
           </div>
 
-          {/* Ligne Mi-temps — cliquable seulement si pas de pari MT */}
-          {match.cotes.cote_mt_domicile && (
+          {/* Ligne Mi-temps — UNIQUEMENT EN TOP 14 */}
+          {!isD2 && match.cotes.cote_mt_domicile && (
             <div className="flex items-center gap-1.5">
               <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
               {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => {
@@ -198,7 +203,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {/* Paris fermés */}
         {!bettingAllowed && (
           <>
-        {/* Cas : pari(s) existant(s) → zone verte + Prono IA côte à côte centrés */}
             {(hasFT || hasMT) && (
               <div className="flex justify-center gap-3">
                 <ZoneMonPari clickable={true} />
@@ -215,7 +219,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {/* Paris ouverts */}
         {bettingAllowed && (
           <>
-            {/* Cas : pari(s) existant(s) → zone verte + Prono IA côte à côte centrés */}
             {(hasFT || hasMT) && (
               <div className="flex justify-center gap-3">
                 <ZoneMonPari clickable={false} />
@@ -223,7 +226,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               </div>
             )}
 
-            {/* Cas : aucun pari → message + Prono IA dessous centré */}
             {aucunPari && (
               <div className="flex flex-col items-center gap-1.5 w-full mt-1">
                 <p className="text-[11px] text-gray-400 italic text-center">
@@ -233,7 +235,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               </div>
             )}
 
-            {/* Bouton compléter si pari partiel */}
+            {/* Bouton compléter si pari partiel (jamais en D2) */}
             {pariPartiel && (
               <button
                 onClick={() => onBetClick(match)}

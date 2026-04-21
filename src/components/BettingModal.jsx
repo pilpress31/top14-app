@@ -9,7 +9,7 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { validateBet, validateScoreInput, toInt } from '../utils/validationUtils';
 
-export default function BettingModal({ match, existingProno, userCredits, onClose, onSuccess }) {
+export default function BettingModal({ match, existingProno, userCredits, isD2 = false, onClose, onSuccess }) {
   // États des scores
   const [scoreDomFT, setScoreDomFT] = useState('');
   const [scoreExtFT, setScoreExtFT] = useState('');
@@ -76,9 +76,13 @@ export default function BettingModal({ match, existingProno, userCredits, onClos
       if (existingMT.score_ext_mt !== null) setScoreExtMT(existingMT.score_ext_mt.toString());
       setStakeMT('10');
       setBetOnMT(false);
+    
+    // ✅ NOUVEAU : en Pro D2, jamais de pari MT
+    if (isD2) {
+      setBetOnMT(false);
     }
 
-  }, [existingFT, existingMT]);
+  }, [existingFT, existingMT, isD2]);
 
   // ============================================
   // 🔥 Validation en temps réel (inchangée)
