@@ -1,3 +1,8 @@
+// ============================================
+// MES PARIS
+// Support Top 14 et Pro D2
+// ============================================
+
 import { useState, useEffect, useRef } from 'react';
 import { Coins, TrendingUp, TrendingDown, Trophy, Calendar, Clock, FileText, Target } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
@@ -6,8 +11,13 @@ import { getTeamData } from '../utils/teams';
 import ReglementModal from './ReglementModal';
 import { useLocation } from 'react-router-dom';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { useChampionnat } from '../contexts/ChampionnatContext';
+
+const API_BASE = 'https://top14-api-production.up.railway.app';
 
 export default function MesParisTab() {
+  const { isD2 } = useChampionnat();
+
   const location = useLocation();
   const [userCredits, setUserCredits] = useState(null);
   const [paris, setParis] = useState([]);
@@ -16,45 +26,46 @@ export default function MesParisTab() {
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
   const [matchResults, setMatchResults] = useState({});
-  
+
   const [targetMatchId, setTargetMatchId] = useState(null);
   const betRefs = useRef({});
 
-    const extractTeamsFromMatchId = (matchId) => {
+  // Ref pour capturer isD2 dans les closures async
+  const isD2Ref = useRef(isD2);
+  useEffect(() => { isD2Ref.current = isD2; }, [isD2]);
+
+  const extractTeamsFromMatchId = (matchId) => {
     if (!matchId) return { home: null, away: null };
-    
     const parts = matchId.split('_');
     if (parts.length < 4) return { home: null, away: null };
-    
     const teams = parts.slice(2).join('_');
     const possibleTeams = teams.split('_');
-    
     for (let i = 1; i < possibleTeams.length; i++) {
       const testHome = possibleTeams.slice(0, i).join(' ');
       const testAway = possibleTeams.slice(i).join(' ');
-      
       const homeData = getTeamData(testHome);
       const awayData = getTeamData(testAway);
-      
-      if (homeData?.logo !== '/logos/default.svg' && 
-          awayData?.logo !== '/logos/default.svg') {
+      if (homeData?.logo !== '/logos/default.svg' && awayData?.logo !== '/logos/default.svg') {
         return { home: homeData, away: awayData };
       }
     }
-    
     return { home: null, away: null };
   };
 
-  // ✅ Realtime
+  // ✅ Realtime selon championnat
   useRealtimeSync([
-    { table: 'user_bets', onUpdate: () => loadData() },
+    { table: isD2 ? 'user_bets_d2' : 'user_bets', onUpdate: () => loadData() },
     { table: 'user_credits', onUpdate: () => loadData() },
-    { table: 'matchs_results', onUpdate: () => loadData() },
+    ...(isD2
+      ? [{ table: 'match_cotes_d2', onUpdate: () => loadData() }]
+      : [{ table: 'matchs_results', onUpdate: () => loadData() }]
+    ),
   ]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isD2]);
 
   useEffect(() => {
     const matchIdFromState = location.state?.scrollToMatchId;
@@ -64,38 +75,28 @@ export default function MesParisTab() {
 
     if (matchId && paris.length > 0) {
       const targetBet = paris.find(bet => bet.match_id === matchId);
-      
       if (targetBet) {
         setTargetMatchId(matchId);
-        
-        if (targetBet.status === 'pending') {
-          setFilter('pending');
-        } else if (targetBet.status === 'won') {
-          setFilter('won');
-        } else if (targetBet.status === 'lost') {
-          setFilter('lost');
-        }
+        if (targetBet.status === 'pending') setFilter('pending');
+        else if (targetBet.status === 'won') setFilter('won');
+        else if (targetBet.status === 'lost') setFilter('lost');
       }
-
       if (window.history?.replaceState) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
-  }, [location.state, paris]);
+  }, [paris, location.state]);
 
   useEffect(() => {
-    if (targetMatchId && paris.length > 0) {
+    if (targetMatchId) {
       setTimeout(() => {
         const element = betRefs.current[targetMatchId];
-        
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           element.classList.add('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
-          
           setTimeout(() => {
             element.classList.remove('ring-4', 'ring-blue-500', 'ring-offset-2', 'scale-105', 'shadow-2xl');
           }, 3000);
-          
           setTargetMatchId(null);
         }
       }, 600);
@@ -107,44 +108,70 @@ export default function MesParisTab() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
+      const useD2 = isD2Ref.current;
+
+      // Crédits (communs Top 14 + D2)
       try {
-        const creditsResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/credits', {
+        const creditsResponse = await axios.get(`${API_BASE}/api/user/credits`, {
           headers: { 'x-user-id': user.id }
         });
         setUserCredits(creditsResponse.data);
-      } catch (error) {
+      } catch {
         setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0 });
       }
 
+      // ✅ Paris selon championnat
+      const parisUrl = useD2
+        ? `${API_BASE}/api/d2/user/bets/detailed`
+        : `${API_BASE}/api/user/bets/detailed`;
+
       try {
-        const parisResponse = await axios.get('https://top14-api-production.up.railway.app/api/user/bets/detailed', {
+        const parisResponse = await axios.get(parisUrl, {
           headers: { 'x-user-id': user.id }
         });
-        const parisList = parisResponse.data.bets || [];
-        setParis(parisList);
+        setParis(parisResponse.data.bets || []);
       } catch (error) {
+        console.error('Erreur chargement paris:', error);
         setParis([]);
       }
 
-      const { data: pronosData, error: pronosError } = await supabase
-        .from('user_pronos_view')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('match_date', { ascending: true });
+      if (!useD2) {
+        // Pronos Top 14 (pour récupérer noms d'équipes si nécessaire)
+        const { data: pronosData, error: pronosError } = await supabase
+          .from('user_pronos_view')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('match_date', { ascending: true });
+        if (!pronosError) setPronos(pronosData || []);
 
-      if (!pronosError) {
-        setPronos(pronosData || []);
-      }
+        // Scores réels Top 14
+        const { data: resultsData } = await supabase
+          .from('matchs_results')
+          .select('id, score_domicile, score_exterieur, score_ht_domicile, score_ht_exterieur');
+        if (resultsData) {
+          const resultsMap = {};
+          resultsData.forEach(r => { resultsMap[r.id] = r; });
+          setMatchResults(resultsMap);
+        }
+      } else {
+        // Pro D2 : pas de user_pronos_view, les infos équipes viennent de la vue detailed
+        setPronos([]);
 
-      // ✅ Charger les scores réels depuis matchs_results
-      const { data: resultsData } = await supabase
-        .from('matchs_results')
-        .select('id, score_domicile, score_exterieur, score_ht_domicile, score_ht_exterieur');
-      
-      if (resultsData) {
-        const resultsMap = {};
-        resultsData.forEach(r => { resultsMap[r.id] = r; });
-        setMatchResults(resultsMap);
+        // Scores réels D2 depuis match_cotes_d2
+        const { data: resultsD2 } = await supabase
+          .from('match_cotes_d2')
+          .select('match_id, score_reel_dom, score_reel_ext');
+        if (resultsD2) {
+          const resultsMap = {};
+          resultsD2.forEach(r => {
+            resultsMap[r.match_id] = {
+              id: r.match_id,
+              score_domicile: r.score_reel_dom,
+              score_exterieur: r.score_reel_ext,
+            };
+          });
+          setMatchResults(resultsMap);
+        }
       }
 
     } catch (error) {
@@ -169,20 +196,24 @@ export default function MesParisTab() {
     return true;
   });
 
-  const parisPending = paris.filter(b => b.status === 'pending').length;
-  const parisWon = paris.filter(b => b.status === 'won').length;
-  const parisLost = paris.filter(b => b.status === 'lost').length;
+  const parisPending = paris.filter(p => p.status === 'pending').length;
+  const parisWon = paris.filter(p => p.status === 'won').length;
+  const parisLost = paris.filter(p => p.status === 'lost').length;
 
   const totalWonFromBets = paris
     .filter(p => p.status === 'won')
-    .reduce((sum, p) => sum + p.payout, 0);
+    .reduce((sum, p) => sum + (p.payout || 0), 0);
 
+  // Couleurs selon championnat
+  const bandeauBg = isD2
+    ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE]'
+    : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze';
 
   return (
     <div className="space-y-3">
-      
+
       {/* BANDEAU CAGNOTTE */}
-      <div className="bg-gradient-to-r from-rugby-gold to-rugby-bronze rounded-lg p-4 shadow-lg">
+      <div className={`${bandeauBg} rounded-lg p-4 shadow-lg`}>
         <div className="flex items-center justify-between">
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
@@ -194,7 +225,7 @@ export default function MesParisTab() {
               <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
             </div>
           </button>
-          
+
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
@@ -208,13 +239,20 @@ export default function MesParisTab() {
         </div>
       </div>
 
+      {/* Badge championnat en mode D2 */}
+      {isD2 && (
+        <div className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00174D] rounded-lg w-fit mx-auto">
+          <span className="text-xs font-bold text-[#C0C0C0] uppercase tracking-wide">🏉 Paris Pro D2</span>
+        </div>
+      )}
+
       {/* STATS PARIS AVEC FILTRES */}
       <div className="grid grid-cols-3 gap-2">
         <button
           onClick={() => setFilter('pending')}
           className={`rounded-lg shadow-sm p-3 text-center border transition-all ${
-            filter === 'pending' 
-              ? 'bg-orange-500 border-orange-600 ring-2 ring-orange-300' 
+            filter === 'pending'
+              ? 'bg-orange-500 border-orange-600 ring-2 ring-orange-300'
               : 'bg-white border-rugby-gray hover:shadow-md'
           }`}
         >
@@ -224,16 +262,14 @@ export default function MesParisTab() {
               {parisPending}
             </p>
           </div>
-          <p className={`text-[10px] ${filter === 'pending' ? 'text-white' : 'text-gray-600'}`}>
-            En cours
-          </p>
+          <p className={`text-[10px] ${filter === 'pending' ? 'text-white' : 'text-gray-600'}`}>En cours</p>
         </button>
 
         <button
           onClick={() => setFilter('won')}
           className={`rounded-lg shadow-sm p-3 text-center border transition-all ${
-            filter === 'won' 
-              ? 'bg-green-600 border-green-700 ring-2 ring-green-300' 
+            filter === 'won'
+              ? 'bg-green-600 border-green-700 ring-2 ring-green-300'
               : 'bg-white border-rugby-gray hover:shadow-md'
           }`}
         >
@@ -243,16 +279,14 @@ export default function MesParisTab() {
               {parisWon}
             </p>
           </div>
-          <p className={`text-[10px] ${filter === 'won' ? 'text-white' : 'text-gray-600'}`}>
-            Gagnés
-          </p>
+          <p className={`text-[10px] ${filter === 'won' ? 'text-white' : 'text-gray-600'}`}>Gagnés</p>
         </button>
 
         <button
           onClick={() => setFilter('lost')}
           className={`rounded-lg shadow-sm p-3 text-center border transition-all ${
-            filter === 'lost' 
-              ? 'bg-red-600 border-red-700 ring-2 ring-red-300' 
+            filter === 'lost'
+              ? 'bg-red-600 border-red-700 ring-2 ring-red-300'
               : 'bg-white border-rugby-gray hover:shadow-md'
           }`}
         >
@@ -262,9 +296,7 @@ export default function MesParisTab() {
               {parisLost}
             </p>
           </div>
-          <p className={`text-[10px] ${filter === 'lost' ? 'text-white' : 'text-gray-600'}`}>
-            Perdus
-          </p>
+          <p className={`text-[10px] ${filter === 'lost' ? 'text-white' : 'text-gray-600'}`}>Perdus</p>
         </button>
       </div>
 
@@ -272,7 +304,7 @@ export default function MesParisTab() {
       {parisFiltered.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
           <p className="text-gray-500">
-            {filter === 'pending' && 'Aucun pari en cours'}
+            {filter === 'pending' && (isD2 ? 'Aucun pari Pro D2 en cours' : 'Aucun pari en cours')}
             {filter === 'won' && 'Aucun pari gagné'}
             {filter === 'lost' && 'Aucun pari perdu'}
           </p>
@@ -280,14 +312,27 @@ export default function MesParisTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
-            const prono = pronos.find(p => p.match_id === bet.match_id);
-            let teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
-            let teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
-            
+            // ✅ Récupération des équipes :
+            //    - En Top 14 : d'abord via user_pronos_view (pronos), fallback extraction match_id
+            //    - En Pro D2 : directement depuis bet.equipe_domicile/exterieure (vue detailed)
+            let teamDom = null;
+            let teamExt = null;
+
+            if (isD2) {
+              // Vue user_bets_d2_detailed expose equipe_domicile et equipe_exterieure
+              teamDom = bet.equipe_domicile ? getTeamData(bet.equipe_domicile) : null;
+              teamExt = bet.equipe_exterieure ? getTeamData(bet.equipe_exterieure) : null;
+            } else {
+              const prono = pronos.find(p => p.match_id === bet.match_id);
+              teamDom = prono ? getTeamData(prono.equipe_domicile) : null;
+              teamExt = prono ? getTeamData(prono.equipe_exterieure) : null;
+            }
+
+            // Fallback : extraction depuis le match_id
             if (!teamDom || !teamExt) {
               const extracted = extractTeamsFromMatchId(bet.match_id);
-              teamDom = extracted.home;
-              teamExt = extracted.away;
+              teamDom = teamDom || extracted.home;
+              teamExt = teamExt || extracted.away;
             }
 
             const potentialWin = Math.floor(bet.stake * (bet.odds || 1));
@@ -296,7 +341,7 @@ export default function MesParisTab() {
             const isLost = bet.status === 'lost';
 
             return (
-              <div 
+              <div
                 key={bet.id}
                 ref={el => {
                   if (el && !betRefs.current[bet.match_id]) {
@@ -304,13 +349,13 @@ export default function MesParisTab() {
                   }
                 }}
                 className={`bg-white rounded-xl shadow-md border-2 hover:shadow-lg transition-all duration-300 overflow-hidden ${
-                  isPending ? 'border-orange-400' : 
+                  isPending ? 'border-orange-400' :
                   isWon ? 'border-green-500' : 'border-red-500'
                 }`}
               >
                 {/* Header */}
                 <div className={`px-4 py-2 flex items-center justify-between ${
-                  isPending ? 'bg-orange-50' : 
+                  isPending ? 'bg-orange-50' :
                   isWon ? 'bg-green-50' : 'bg-red-50'
                 }`}>
                   <div className="flex items-center gap-2">
@@ -319,7 +364,7 @@ export default function MesParisTab() {
                     {isLost && <TrendingDown className="w-4 h-4 text-red-600" />}
 
                     <span className={`text-xs font-bold uppercase ${
-                      isPending ? 'text-orange-700' : 
+                      isPending ? 'text-orange-700' :
                       isWon ? 'text-green-700' : 'text-red-700'
                     }`}>
                       {isPending && 'En cours'}
@@ -327,10 +372,18 @@ export default function MesParisTab() {
                       {isLost && 'Perdu'}
                     </span>
                   </div>
-                  
-                  <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
-                    {bet.bet_type === 'FT' ? '🏉 Temps plein' : '⏱️ Mi-temps'}
-                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {/* Badge Pro D2 uniquement en D2 */}
+                    {isD2 && (
+                      <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#00174D] text-[#C0C0C0]">
+                        🏉 Pro D2
+                      </span>
+                    )}
+                    <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
+                      {bet.bet_type === 'FT' ? '🏉 Temps plein' : '⏱️ Mi-temps'}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-4">
@@ -339,9 +392,9 @@ export default function MesParisTab() {
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2 flex-1">
-                          <img 
-                            src={teamDom.logo} 
-                            alt={teamDom.name} 
+                          <img
+                            src={teamDom.logo}
+                            alt={teamDom.name}
                             className="w-8 h-8 object-contain"
                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           />
@@ -352,9 +405,9 @@ export default function MesParisTab() {
                         </div>
                         <div className="flex items-center gap-2 flex-1 justify-end">
                           <span className="font-bold text-gray-900">{teamExt.name}</span>
-                          <img 
-                            src={teamExt.logo} 
-                            alt={teamExt.name} 
+                          <img
+                            src={teamExt.logo}
+                            alt={teamExt.name}
                             className="w-8 h-8 object-contain"
                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           />
@@ -375,14 +428,14 @@ export default function MesParisTab() {
                         {/* Score réel - uniquement pour paris résolus */}
                         {!isPending && (() => {
                           const result = matchResults[bet.match_id];
-                          // Fallback : utiliser les scores depuis bet.matches si matchResults vide
                           const matchData = result || bet.matches;
                           if (!matchData) return null;
-                          const realHome = bet.bet_type === 'MT' 
-                            ? (matchData.score_ht_domicile ?? matchData.score_ht_home) 
+                          // En D2 : toujours FT ; en Top 14 : FT ou MT selon bet_type
+                          const realHome = (!isD2 && bet.bet_type === 'MT')
+                            ? (matchData.score_ht_domicile ?? matchData.score_ht_home)
                             : (matchData.score_domicile ?? matchData.score_home);
-                          const realAway = bet.bet_type === 'MT' 
-                            ? (matchData.score_ht_exterieur ?? matchData.score_ht_away) 
+                          const realAway = (!isD2 && bet.bet_type === 'MT')
+                            ? (matchData.score_ht_exterieur ?? matchData.score_ht_away)
                             : (matchData.score_exterieur ?? matchData.score_away);
                           if (realHome == null || realAway == null) return null;
                           return (
@@ -443,15 +496,15 @@ export default function MesParisTab() {
 
                   {/* Date */}
                   <p className="text-xs text-gray-400 mt-3 text-center">
-                    {new Date(bet.placed_at).toLocaleDateString('fr-FR', { 
-                      day: 'numeric', 
-                      month: 'long', 
-                      year: 'numeric' 
+                    {new Date(bet.placed_at || bet.created_at).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
                     })}
                     {' à '}
-                    {new Date(bet.placed_at).toLocaleTimeString('fr-FR', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
+                    {new Date(bet.placed_at || bet.created_at).toLocaleTimeString('fr-FR', {
+                      hour: '2-digit',
+                      minute: '2-digit'
                     })}
                   </p>
                 </div>
@@ -466,14 +519,14 @@ export default function MesParisTab() {
       <div className="flex justify-center mt-6 mb-4">
         <button
           onClick={() => setShowReglementModal(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+          className={`flex items-center gap-2 ${bandeauBg} text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all`}
         >
           <FileText className="w-5 h-5" />
           <span className="font-semibold">Consulter le règlement</span>
         </button>
       </div>
 
-      <ReglementModal 
+      <ReglementModal
         isOpen={showReglementModal}
         onClose={() => setShowReglementModal(false)}
       />
