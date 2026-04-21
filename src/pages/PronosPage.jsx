@@ -4,6 +4,7 @@ import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MainHeader from '../components/MainHeaderFull';
+import MainHeaderD2 from '../components/MainHeaderD2';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const HEADER_HEIGHT = 120;
@@ -72,7 +73,7 @@ export default function PronosPage() {
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      <MainHeader />
+      {isD2 ? <MainHeaderD2 /> : <MainHeader />}
 
       {/* Zone sticky : onglets + bouton central de bascule championnat */}
       <div
