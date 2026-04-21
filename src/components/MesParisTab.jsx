@@ -88,7 +88,7 @@ export default function MesParisTab() {
   }, [paris, location.state]);
 
   useEffect(() => {
-    if (targetMatchId) {
+    if (targetMatchId && paris.length > 0) {
       setTimeout(() => {
         const element = betRefs.current[targetMatchId];
         if (element) {
@@ -101,7 +101,7 @@ export default function MesParisTab() {
         }
       }, 600);
     }
-  }, [filter, targetMatchId]);
+  }, [filter, targetMatchId, paris.length]);
 
   const loadData = async () => {
     try {
