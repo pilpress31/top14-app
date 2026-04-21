@@ -10,6 +10,7 @@ import { ChevronDown, Check } from "lucide-react";
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getSaisonCourante } from '../utils/season';
+import { useChampionnat } from '../contexts/ChampionnatContext';
 
 
 // ---------------------------------------------------------
@@ -366,6 +367,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
 // ---------------------------------------------------------
 export default function MaCagnotte() {
   const navigate = useNavigate();
+  const { isD2, toggle } = useChampionnat();
   const [user, setUser] = useState(null);
   const [userCredits, setUserCredits] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
@@ -1055,34 +1057,84 @@ export default function MaCagnotte() {
               />
             </div>
 
-            {/* ✅ BANDEAU PARIS EN COURS */}
+            {/* ✅ BANDEAUX PARIS EN COURS — séparés par championnat */}
             {(() => {
-              const pendingBets = bets.filter(b => b.status === 'pending');
-              const totalStakePending = pendingBets.reduce((sum, b) => sum + (b.stake || 0), 0);
-              
-              if (pendingBets.length === 0) return null;
-              
+              const pendingTop14 = bets.filter(b => b.status === 'pending' && b.championnat !== 'prod2');
+              const pendingD2    = bets.filter(b => b.status === 'pending' && b.championnat === 'prod2');
+
+              const stakeTop14 = pendingTop14.reduce((sum, b) => sum + (b.stake || 0), 0);
+              const stakeD2    = pendingD2.reduce((sum, b) => sum + (b.stake || 0), 0);
+
+              // Handler pour aller vers l'onglet Mes paris d'un championnat précis
+              const goToMesParis = (targetIsD2) => {
+                // Si on doit changer de championnat, toggle avant de naviguer
+                if (targetIsD2 !== isD2) {
+                  toggle();
+                }
+                navigate('/pronos', {
+                  state: { activeTab: 'mes-paris', filterStatus: 'pending' }
+                });
+              };
+
+              if (pendingTop14.length === 0 && pendingD2.length === 0) return null;
+
               return (
-                <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-3 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-orange-500" />
-                      <div>
-                        <p className="text-sm font-semibold text-orange-900">
-                          {pendingBets.length} pari{pendingBets.length > 1 ? 's' : ''} en cours
-                        </p>
-                        <p className="text-xs text-orange-700">
-                          Mise totale : {totalStakePending} jetons
-                        </p>
+                <div className="space-y-2 mb-4">
+                  {/* Bandeau Top 14 */}
+                  {pendingTop14.length > 0 && (
+                    <div className="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5 text-orange-500" />
+                          <div>
+                            <p className="text-sm font-semibold text-orange-900">
+                              🏆 Top 14 — {pendingTop14.length} pari{pendingTop14.length > 1 ? 's' : ''} en cours
+                            </p>
+                            <p className="text-xs text-orange-700">
+                              Mise totale : {stakeTop14} jetons
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => goToMesParis(false)}
+                          className="px-3 py-1.5 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition"
+                        >
+                          Voir
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', filterStatus: 'pending' } })}
-                      className="px-3 py-1.5 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition"
+                  )}
+
+                  {/* Bandeau Pro D2 */}
+                  {pendingD2.length > 0 && (
+                    <div
+                      className="border-l-4 rounded-lg p-3"
+                      style={{ backgroundColor: '#97C1FE1A', borderColor: '#00174D' }}
                     >
-                      Voir
-                    </button>
-                  </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5" style={{ color: '#00174D' }} />
+                          <div>
+                            <p className="text-sm font-semibold" style={{ color: '#00174D' }}>
+                              🥈 Pro D2 — {pendingD2.length} pari{pendingD2.length > 1 ? 's' : ''} en cours
+                            </p>
+                            <p className="text-xs" style={{ color: '#002D6B' }}>
+                              Mise totale : {stakeD2} jetons
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => goToMesParis(true)}
+                          className="px-3 py-1.5 text-white text-xs font-semibold rounded-lg transition"
+                          style={{ backgroundColor: '#00174D' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#002D6B'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00174D'}
+                        >
+                          Voir
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}
