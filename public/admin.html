@@ -595,6 +595,47 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="result" id="actuResult"></div>
       </div>
 
+      <!-- ═════════════════════════════════════════════════════════════ -->
+      <!-- CARTE "GESTION DES COTES" POUR ADMIN.HTML                      -->
+      <!--                                                                 -->
+      <!-- À placer à un endroit logique dans admin.html, par exemple      -->
+      <!-- juste avant la carte "👥 Effectifs clubs" (ligne 599)            -->
+      <!-- ═════════════════════════════════════════════════════════════ -->
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">💰 Gestion des cotes</div>
+        </div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Recalcule les cotes 1/N/2 pour tous les matchs à venir en fonction des scores prédits par l'algorithme.<br>
+          À lancer <strong style="color:var(--gold-light)">après chaque import de pronos</strong> (Top 14 ou Pro D2).<br>
+          <em style="color:var(--muted)">Les matchs avec un pari déjà placé ne sont jamais recalculés.</em>
+        </p>
+
+        <!-- Bouton Top 14 -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">🏆 Top 14</div>
+          <button class="btn" id="cotesTop14Btn" onclick="recalculerCotesTop14()">
+            <div class="spinner"></div>
+            <span class="btn-text">🔄 Recalculer les cotes Top 14</span>
+          </button>
+          <div class="result" id="cotesTop14Result"></div>
+        </div>
+
+        <!-- Bouton Pro D2 -->
+        <div style="padding-top:16px;border-top:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">🥈 Pro D2</div>
+          <button class="btn" id="cotesD2Btn" onclick="recalculerCotesD2()">
+            <div class="spinner"></div>
+            <span class="btn-text">🔄 Recalculer les cotes Pro D2</span>
+          </button>
+          <div class="result" id="cotesD2Result"></div>
+        </div>
+      </div>
+
+
+
+
       <div class="card">
         <div class="card-header">
           <div class="card-title">👥 Effectifs clubs</div>
@@ -1461,6 +1502,61 @@ async function refreshEffectifs() {
     setLoading(btn, false);
   }
 }
+
+// ── Recalcul cotes TOP 14 ────────────────────────────────────
+async function recalculerCotesTop14() {
+  const btn = document.getElementById('cotesTop14Btn');
+  setLoading(btn, true);
+  showResult('cotesTop14Result', 'ok', '⏳ Recalcul des cotes Top 14 en cours... (peut prendre 1-2 minutes)');
+  try {
+    const data = await api('/api/cotes/update-all', { method: 'POST' });
+    const { total = 0, success = 0, errors = 0 } = data || {};
+    if (errors === 0) {
+      showResult('cotesTop14Result', 'ok', 
+        `✅ Cotes Top 14 recalculées : ${success}/${total} matchs traités`
+      );
+    } else {
+      showResult('cotesTop14Result', 'err', 
+        `⚠️ ${success}/${total} matchs OK — ${errors} erreurs (voir logs Railway)`
+      );
+    }
+  } catch (e) {
+    showResult('cotesTop14Result', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── Recalcul cotes PRO D2 ────────────────────────────────────
+async function recalculerCotesD2() {
+  const btn = document.getElementById('cotesD2Btn');
+  setLoading(btn, true);
+  showResult('cotesD2Result', 'ok', '⏳ Recalcul des cotes Pro D2 en cours...');
+  try {
+    const data = await api('/api/d2/cotes/recalculate', { method: 'POST' });
+    if (data.success) {
+      const { total = 0, success = 0, errors = 0 } = data.stats || {};
+      if (errors === 0) {
+        showResult('cotesD2Result', 'ok', 
+          `✅ Cotes Pro D2 recalculées : ${success}/${total} matchs traités`
+        );
+      } else {
+        showResult('cotesD2Result', 'err', 
+          `⚠️ ${success}/${total} matchs OK — ${errors} erreurs (voir logs Railway)`
+        );
+      }
+    } else {
+      showResult('cotesD2Result', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch (e) {
+    showResult('cotesD2Result', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
+
 
 async function voirEffectifsDetail() {
   try {
