@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getTeamData } from "../utils/teams";
 import { ChevronDown } from "lucide-react";
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { useRef } from "react"; // ← à ajouter dans l'import du haut
 
 interface MatchHistorique {
   id: string;
@@ -46,7 +47,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
   const [journeesD2, setJourneesD2] = useState<{journee: number, date_match: string}[]>([]);
   const [equipesD2, setEquipesD2] = useState<string[]>([]);
-  // ✅ états dédiés Top 14 pour les listes complètes
+  // ✅ NOUVEAU : états dédiés Top 14 pour les listes complètes
   const [saisonsT14, setSaisonsT14] = useState<string[]>([]);
   const [equipesT14, setEquipesT14] = useState<string[]>([]);
   const [journeesT14, setJourneesT14] = useState<{journee: number, date_match: string}[]>([]);
@@ -124,7 +125,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   };
 
-  // ✅ chargement complet des saisons et équipes Top 14
+  // ✅ NOUVEAU : chargement complet des saisons et équipes Top 14
   const loadSaisonsT14 = async () => {
     try {
       const res = await fetch("https://top14-api-production.up.railway.app/api/matchs/saisons");
@@ -198,11 +199,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
     }
   }, [teamDropdownOpen, saisonDropdownOpen, sortDropdownOpen]);
 
-  // ✅ utilise les listes complètes des deux championnats
+  // ✅ FIX : utilise les listes complètes des deux championnats
   const equipes = isD2 ? equipesD2 : equipesT14;
   const saisons = isD2 ? saisonsD2 : saisonsT14;
 
   const getJourneesForSaison = (saison: string) => {
+    // ✅ FIX : même logique pour les deux championnats (endpoints dédiés)
     const source = isD2 ? journeesD2 : journeesT14;
     return source.map(({ journee, date_match }) => ({
       journee,
@@ -350,6 +352,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         setCurrentPage(1);
                         setD2Page(1);
                         setT14Page(1);
+                        // ✅ FIX : charge les journées dans les deux championnats
                         if (isD2 && newSaison !== 'all') loadJourneesD2(newSaison);
                         else if (isD2) setJourneesD2([]);
                         else if (!isD2 && newSaison !== 'all') loadJourneesT14(newSaison);
