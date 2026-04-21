@@ -388,10 +388,11 @@ export default function MaCagnotte() {
     nbDistributions: 0
   });
 
-  // ✅ Realtime
+  // ✅ Realtime — inclut aussi user_bets_d2 pour les paris Pro D2
   useRealtimeSync([
     { table: 'user_credits', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
     { table: 'user_bets', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
+    { table: 'user_bets_d2', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
     { table: 'credit_transactions', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
   ]);
 
@@ -434,13 +435,49 @@ export default function MaCagnotte() {
         setUserPoints(userStatsData.total_points || 0);
       }
 
-      const historyResponse = await axios.get(
-        `${import.meta.env.VITE_API_URL}/user/bets/detailed`,
-        { headers: { "x-user-id": userId } }
-      );
+      const API_BASE_D2 = 'https://top14-api-production.up.railway.app';
+
+      // ✅ Charger paris Top 14 + Pro D2 en parallèle
+      const [historyResponse, betsD2Response] = await Promise.all([
+        axios.get(
+          `${import.meta.env.VITE_API_URL}/user/bets/detailed`,
+          { headers: { "x-user-id": userId } }
+        ),
+        axios.get(
+          `${API_BASE_D2}/api/d2/user/bets/detailed`,
+          { headers: { "x-user-id": userId } }
+        ).catch(() => ({ data: { bets: [] } })),
+      ]);
 
       const txs = historyResponse.data.transactions || [];
-      const allBets = historyResponse.data.bets || [];
+      const betsTop14 = historyResponse.data.bets || [];
+
+      // ✅ Normaliser les paris D2 au format attendu par le reste du composant
+      const betsD2 = (betsD2Response.data.bets || []).map(b => ({
+        ...b,
+        championnat: 'prod2',
+        placed_at: b.placed_at || b.created_at,
+        result_at: b.result_at || b.resolved_at,
+        matches: {
+          id: b.match_id,
+          home_team: b.equipe_domicile,
+          away_team: b.equipe_exterieure,
+          match_date: b.date_match,
+          round: b.journee,
+          score_domicile: b.score_reel_dom,
+          score_exterieur: b.score_reel_ext,
+          score_home: b.score_reel_dom,
+          score_away: b.score_reel_ext,
+          score_ht_domicile: null,
+          score_ht_exterieur: null,
+        }
+      }));
+
+      // ✅ Fusion Top 14 + Pro D2
+      const allBets = [
+        ...betsTop14.map(b => ({ ...b, championnat: b.championnat || 'top14' })),
+        ...betsD2
+      ];
 
       // ✅ Charger les match_results pour avoir les scores MT (score_ht_domicile / score_ht_exterieur)
       const matchIds = [...new Set(allBets.map(b => b.match_id).filter(Boolean))];
