@@ -125,9 +125,9 @@ export default function MesPronosTab({ goToMesParis }) {
 
       setMatchsDisponibles(matchsAvecCotes);
 
-      // Expand la première journée UNIQUEMENT au premier chargement
-      // (pour ne pas écraser le choix de l'utilisateur lors des refreshes Realtime)
-      if (matchsAvecCotes.length > 0 && expandedJournees.size === 0) {
+      // Expand la première journée UNIQUEMENT si aucune n'est ouverte
+      // (au premier chargement OU après un switch de championnat qui a reset le Set)
+      if (matchsAvecCotes.length > 0) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, m) => {
           if (!acc[m.journee]) acc[m.journee] = [];
           acc[m.journee].push(m);
@@ -137,7 +137,8 @@ export default function MesPronosTab({ goToMesParis }) {
           parseInt(String(a).replace('J', '')) - parseInt(String(b).replace('J', ''))
         );
         if (journees.length > 0) {
-          setExpandedJournees(new Set([journees[0]]));
+          // ✅ setter fonctionnel pour lire la valeur à jour (après le reset sur switch championnat)
+          setExpandedJournees(prev => prev.size === 0 ? new Set([journees[0]]) : prev);
         }
       }
 
