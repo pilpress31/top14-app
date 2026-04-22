@@ -70,84 +70,87 @@ export function useNotifications() {
     }
   }, []);
 
-  // Marquer notification comme lue
+  // Marquer notification comme lue (MISE À JOUR OPTIMISTE)
   const markAsRead = useCallback(async (notificationId) => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
+      // ✅ OPTIMISTE : mettre à jour l'UI IMMÉDIATEMENT
+      let wasUnread = false;
+      setNotifications(prev => {
+        const notif = prev.find(n => n.id === notificationId);
+        wasUnread = notif && !notif.is_read;
+        return prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n);
+      });
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      // Puis synchroniser avec le serveur en arrière-plan
       await axios.put(
         `${API_URL}/notifications/${notificationId}/read`,
         {},
         { headers: { 'x-user-id': user.id } }
       );
-
-      // Mettre à jour state local
-      setNotifications(prev => 
-        prev.map(n => 
-          n.id === notificationId ? { ...n, is_read: true } : n
-        )
-      );
-
-      setUnreadCount(prev => Math.max(0, prev - 1));
-
     } catch (err) {
       console.error('Erreur marquage notification:', err);
+      // En cas d'erreur, on recharge pour resynchroniser
+      loadNotifications();
     }
-  }, []);
+  }, [loadNotifications]);
 
-  // Marquer toutes comme lues
+  // Marquer toutes comme lues (MISE À JOUR OPTIMISTE)
   const markAllAsRead = useCallback(async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
+      // ✅ OPTIMISTE : mettre à jour l'UI IMMÉDIATEMENT
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+
+      // Puis synchroniser avec le serveur
       await axios.put(
         `${API_URL}/notifications/read-all`,
         {},
         { headers: { 'x-user-id': user.id } }
       );
-
-      // Mettre à jour state local
-      setNotifications(prev => 
-        prev.map(n => ({ ...n, is_read: true }))
-      );
-
-      setUnreadCount(0);
-
     } catch (err) {
       console.error('Erreur marquage toutes notifications:', err);
+      loadNotifications();
     }
-  }, []);
+  }, [loadNotifications]);
 
-  // Supprimer notification
+  // Supprimer notification (MISE À JOUR OPTIMISTE)
   const deleteNotification = useCallback(async (notificationId) => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
+      // ✅ OPTIMISTE : retirer de l'UI IMMÉDIATEMENT
+      let wasUnread = false;
+      setNotifications(prev => {
+        const notif = prev.find(n => n.id === notificationId);
+        wasUnread = notif && !notif.is_read;
+        return prev.filter(n => n.id !== notificationId);
+      });
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      // Puis synchroniser avec le serveur
       await axios.delete(
         `${API_URL}/notifications/${notificationId}`,
         { headers: { 'x-user-id': user.id } }
       );
-
-      // Retirer du state local
-      setNotifications(prev => 
-        prev.filter(n => n.id !== notificationId)
-      );
-
-      // Décrémenter compteur si non lue
-      const notification = notifications.find(n => n.id === notificationId);
-      if (notification && !notification.is_read) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-
     } catch (err) {
       console.error('Erreur suppression notification:', err);
+      loadNotifications();
     }
-  }, [notifications]);
+  }, [loadNotifications]);
 
-  // Écouter temps réel (Supabase Realtime)
+  // Écouter temps réel (Supabase Realtime) — INSERT, UPDATE, DELETE
   useEffect(() => {
     let channel;
 
@@ -156,23 +159,43 @@ export function useNotifications() {
       
       if (!user) return;
 
-      // S'abonner aux nouvelles notifications
+      // S'abonner à TOUS les changements de notifications (INSERT / UPDATE / DELETE)
       channel = supabase
         .channel('notifications')
         .on(
           'postgres_changes',
           {
-            event: 'INSERT',
+            event: '*',  // ✅ INSERT + UPDATE + DELETE
             schema: 'public',
             table: 'user_notifications',
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            console.log('Nouvelle notification reçue:', payload.new);
-            
-            // Ajouter au state
-            setNotifications(prev => [payload.new, ...prev]);
-            setUnreadCount(prev => prev + 1);
+            console.log('Événement notification:', payload.eventType, payload);
+
+            if (payload.eventType === 'INSERT') {
+              // Nouvelle notif reçue
+              setNotifications(prev => {
+                // Éviter doublons si déjà ajoutée localement
+                if (prev.some(n => n.id === payload.new.id)) return prev;
+                return [payload.new, ...prev];
+              });
+              setUnreadCount(prev => prev + 1);
+            }
+            else if (payload.eventType === 'UPDATE') {
+              // Notif marquée comme lue depuis un autre appareil
+              setNotifications(prev =>
+                prev.map(n => n.id === payload.new.id ? payload.new : n)
+              );
+              // Recharger le compteur pour être sûr
+              loadUnreadCount();
+            }
+            else if (payload.eventType === 'DELETE') {
+              // Notif supprimée depuis un autre appareil
+              setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
+              // Recharger le compteur pour être sûr
+              loadUnreadCount();
+            }
           }
         )
         .subscribe();
@@ -185,7 +208,7 @@ export function useNotifications() {
         supabase.removeChannel(channel);
       }
     };
-  }, []);
+  }, [loadUnreadCount]);
 
   // Charger au montage
   useEffect(() => {
@@ -201,24 +224,26 @@ export function useNotifications() {
     return () => clearInterval(interval);
   }, [loadUnreadCount]);
 
-  // Supprimer toutes les notifications
+  // Supprimer toutes les notifications (MISE À JOUR OPTIMISTE)
   const deleteAllNotifications = useCallback(async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
+      // ✅ OPTIMISTE : vider l'UI IMMÉDIATEMENT
+      setNotifications([]);
+      setUnreadCount(0);
+
+      // Puis synchroniser avec le serveur
       await axios.delete(
         `${API_URL}/notifications/all`,
         { headers: { 'x-user-id': user.id } }
       );
-
-      setNotifications([]);
-      setUnreadCount(0);
-
     } catch (err) {
       console.error('Erreur suppression toutes notifications:', err);
+      loadNotifications();
     }
-  }, []);
+  }, [loadNotifications]);
 
   return {
     notifications,
