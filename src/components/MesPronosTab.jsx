@@ -125,8 +125,9 @@ export default function MesPronosTab({ goToMesParis }) {
 
       setMatchsDisponibles(matchsAvecCotes);
 
-      // Expand la première journée par défaut
-      if (matchsAvecCotes.length > 0) {
+      // Expand la première journée UNIQUEMENT au premier chargement
+      // (pour ne pas écraser le choix de l'utilisateur lors des refreshes Realtime)
+      if (matchsAvecCotes.length > 0 && expandedJournees.size === 0) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, m) => {
           if (!acc[m.journee]) acc[m.journee] = [];
           acc[m.journee].push(m);
