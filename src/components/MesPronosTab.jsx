@@ -246,11 +246,13 @@ export default function MesPronosTab({ goToMesParis }) {
   };
 
   const toggleJournee = (journee) => {
+    // ✅ Accordéon exclusif : ferme toutes les autres journées, n'en garde qu'une
+    // Si on re-clique sur la journée déjà ouverte, on la ferme (Set vide)
     setExpandedJournees(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(journee)) newSet.delete(journee);
-      else newSet.add(journee);
-      return newSet;
+      if (prev.has(journee)) {
+        return new Set(); // toutes fermées
+      }
+      return new Set([journee]); // uniquement celle-ci ouverte
     });
   };
 
