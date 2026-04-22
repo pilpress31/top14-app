@@ -368,6 +368,36 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">🏉 Notif "Nouveaux matchs" (auto)</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.5">
+          Envoie une notification push <strong>ET</strong> cree une notification in-app
+          persistante pour tous les utilisateurs abonnes.
+          <br><br>
+          La journee et le nombre de matchs sont <strong>detectes automatiquement</strong>
+          depuis la base de donnees.
+        </p>
+
+        <div class="btn-row" style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-gold" id="nmTop14Btn" onclick="sendNewMatchesNotif('top14')"
+            style="flex:1;background:var(--gold,#C9A84C);color:#fff;">
+            <div class="spinner"></div>
+            <span class="btn-text">🏆 Top 14</span>
+          </button>
+          <button class="btn" id="nmProD2Btn" onclick="sendNewMatchesNotif('prod2')"
+            style="flex:1;background:#00174D;color:#fff;border:none;">
+            <div class="spinner"></div>
+            <span class="btn-text">🥈 Pro D2</span>
+          </button>
+        </div>
+        <div class="result" id="nmResult"></div>
+      </div>
+
+
+
+
+
       <div class="card" style="margin-top:16px;">
         <div class="card-header">
           <div class="card-title">🔕 Utilisateurs sans notifications</div>
@@ -1094,6 +1124,44 @@ function setPushTarget(val) {
   document.getElementById('btnTous').style.cssText = `flex:1;padding:8px;border-radius:var(--border-radius-md);border:2px solid ${val==='all' ? accent : 'var(--border)'};background:${val==='all' ? accent : 'var(--color-background-secondary)'};color:${val==='all' ? '#1a1208' : 'var(--color-text-primary)'};cursor:pointer;font-size:13px;font-weight:500;`;
   document.getElementById('btnUn').style.cssText = `flex:1;padding:8px;border-radius:var(--border-radius-md);border:2px solid ${val==='one' ? accent : 'var(--border)'};background:${val==='one' ? accent : 'var(--color-background-secondary)'};color:${val==='one' ? '#1a1208' : 'var(--color-text-primary)'};cursor:pointer;font-size:13px;font-weight:500;`;
 }
+
+
+async function sendNewMatchesNotif(champ) {
+  const endpoint = champ === 'prod2'
+    ? '/api/d2/notifications/new-matches'
+    : '/api/notifications/new-matches';
+
+  const label = champ === 'prod2' ? 'Pro D2' : 'Top 14';
+  const btnId = champ === 'prod2' ? 'nmProD2Btn' : 'nmTop14Btn';
+  const btn = document.getElementById(btnId);
+  setLoading(btn, true);
+
+  try {
+    const res = await fetch(`${API}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})  // plus besoin d'envoyer count, c'est auto
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      showResult('nmResult', 'err', `❌ ${data.error || data.message || 'Erreur'}`);
+    } else if (data.sent === 0 && data.count > 0) {
+      // Cas : matchs détectés mais personne n'est abonné aux push
+      showResult('nmResult', 'warn',
+        `⚠️ ${data.count} match(s) détectés pour J${String(data.journee).replace('J', '')} ${label} mais aucun utilisateur abonné aux push`);
+    } else {
+      showResult('nmResult', 'ok',
+        `✅ ${label} J${String(data.journee).replace('J', '')} — ${data.count} match(s) : ${data.sent} push + ${data.inAppCreated || 0} in-app envoyées`);
+    }
+  } catch (e) {
+    showResult('nmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
 
 async function sendPush() {
   const target = document.getElementById('pushTarget').value;
