@@ -450,7 +450,7 @@ export default function ClassementCommunauteTab() {
                     {user.user_id === IA_USER_ID ? '🤖 IA Top14Pronos' : user.pseudo}
                     {user.user_id === IA_USER_ID && (
                       <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                        IA
+                        IA TOP14
                       </span>
                     )}
                     {user.user_id === currentUserId && (
