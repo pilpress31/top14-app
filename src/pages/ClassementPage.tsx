@@ -28,6 +28,9 @@ function ClassementPage() {
     rowHover: isD2 ? 'hover:bg-[#00174D]/10' : 'hover:bg-rugby-orange/10',
   };
 
+  const loadClassementRef = useRef<() => void>(() => {});
+  const championnatRef = useRef<Championnat>(championnat);
+
   const loadClassement = useCallback(async () => {
     setLoading(true);
     try {
@@ -74,13 +77,32 @@ function ClassementPage() {
     }
   }, [championnat]);
 
-  // ✅ Realtime : tableau stabilisé via useMemo pour éviter les ré-abonnements
+  // Garder les refs à jour
+  useEffect(() => {
+    loadClassementRef.current = loadClassement;
+  }, [loadClassement]);
+
+  useEffect(() => {
+    championnatRef.current = championnat;
+  }, [championnat]);
+
+  // ✅ Realtime : abonnement STABLE (ne dépend jamais de championnat)
+  // On utilise les refs pour toujours avoir les dernières valeurs.
+  // Le garde évite de rafraîchir si l'utilisateur est sur Pro D2
+  // (puisque matchs_results ne concerne que le Top 14)
   const realtimeTables = useMemo(
-    () =>
-      championnat === 'top14'
-        ? [{ table: 'matchs_results', onUpdate: () => loadClassement() }]
-        : [],
-    [championnat, loadClassement]
+    () => [
+      {
+        table: 'matchs_results',
+        onUpdate: () => {
+          // Garde : ne déclencher le rechargement que si on est sur Top 14
+          if (championnatRef.current === 'top14') {
+            loadClassementRef.current?.();
+          }
+        },
+      },
+    ],
+    [] // tableau stable, créé une seule fois
   );
 
   useRealtimeSync(realtimeTables);
