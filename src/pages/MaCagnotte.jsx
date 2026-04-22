@@ -727,6 +727,13 @@ export default function MaCagnotte() {
     const matchId = trans.bets?.matches?.id;
     if (!matchId) return;
     const filterStatus = trans.type === 'bet_lost' ? 'lost' : 'won';
+
+    // ✅ Détecter le championnat du pari et basculer si nécessaire
+    const targetIsD2 = trans.bets?.championnat === 'prod2';
+    if (targetIsD2 !== isD2) {
+      toggle();
+    }
+
     navigate(`/pronos?scrollToMatchId=${matchId}`, {
       state: { activeTab: "mes-paris", filterStatus },
     });
