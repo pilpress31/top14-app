@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
@@ -28,7 +28,7 @@ function ClassementPage() {
     rowHover: isD2 ? 'hover:bg-[#00174D]/10' : 'hover:bg-rugby-orange/10',
   };
 
-  const loadClassement = async () => {
+  const loadClassement = useCallback(async () => {
     setLoading(true);
     try {
       if (championnat === 'top14') {
@@ -43,7 +43,7 @@ function ClassementPage() {
           const adapted = data.classement.map((eq: any) => ({
             rang: eq.rang,
             equipe: eq.equipe,
-            saison: '2025-2026', // ou depuis data.saison si dispo
+            saison: '2025-2026',
             points_classement: eq.points_classement,
             matchs_joues: eq.matchs_joues,
             victoires: eq.victoires,
@@ -57,7 +57,6 @@ function ClassementPage() {
             points_moy_contre: eq.points_moy_contre,
             taux_victoires: eq.taux_victoires,
             bonus: eq.bonus,
-            // Champs spécifiques Top14 non disponibles en Pro D2
             pct_victoires_domicile: null,
             pct_victoires_exterieur: null,
             serie_en_cours: null,
@@ -73,21 +72,24 @@ function ClassementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [championnat]);
 
-  // ✅ Realtime (pour Top14 uniquement, Pro D2 utilise son cache backend)
-  useRealtimeSync(
-    championnat === 'top14' 
-      ? [{ table: 'matchs_results', onUpdate: () => loadClassement() }]
-      : []
+  // ✅ Realtime : tableau stabilisé via useMemo pour éviter les ré-abonnements
+  const realtimeTables = useMemo(
+    () =>
+      championnat === 'top14'
+        ? [{ table: 'matchs_results', onUpdate: () => loadClassement() }]
+        : [],
+    [championnat, loadClassement]
   );
+
+  useRealtimeSync(realtimeTables);
 
   useEffect(() => {
     loadClassement();
     setSelectedEquipe(null); // reset sélection au changement de championnat
     setStatsDetaillees(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [championnat]);
+  }, [loadClassement]);
 
   useEffect(() => {
     async function loadStatsDetaillees() {
@@ -202,7 +204,9 @@ function ClassementPage() {
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">N</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">D</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">+/-</th>
-                  <th className="px-2 py-3 text-center text-xs font-bold uppercase">Forme</th>
+                  {!isD2 && (
+                    <th className="px-2 py-3 text-center text-xs font-bold uppercase">Forme</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -271,27 +275,29 @@ function ClassementPage() {
                         {(equipe.differentiel || 0) > 0 ? '+' : ''}{equipe.differentiel || 0}
                       </td>
 
-                      <td className="px-2 py-3">
-                        <div className="flex justify-center gap-0.5">
-                          {equipe.forme && equipe.forme.length > 0 ? (
-                            equipe.forme.map((resultat, i) => (
-                              <div
-                                key={i}
-                                className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                                  resultat === 'V' ? 'bg-green-500' :
-                                  resultat === 'D' ? 'bg-red-500' :
-                                  'bg-gray-400'
-                                }`}
-                                title={resultat === 'V' ? 'Victoire' : resultat === 'D' ? 'Défaite' : 'Nul'}
-                              >
-                                {resultat}
-                              </div>
-                            ))
-                          ) : (
-                            <span className="text-xs text-gray-400">-</span>
-                          )}
-                        </div>
-                      </td>
+                      {!isD2 && (
+                        <td className="px-2 py-3">
+                          <div className="flex justify-center gap-0.5">
+                            {equipe.forme && equipe.forme.length > 0 ? (
+                              equipe.forme.map((resultat, i) => (
+                                <div
+                                  key={i}
+                                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
+                                    resultat === 'V' ? 'bg-green-500' :
+                                    resultat === 'D' ? 'bg-red-500' :
+                                    'bg-gray-400'
+                                  }`}
+                                  title={resultat === 'V' ? 'Victoire' : resultat === 'D' ? 'Défaite' : 'Nul'}
+                                >
+                                  {resultat}
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-400">-</span>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
