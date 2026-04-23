@@ -933,7 +933,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <table>
             <thead>
               <tr>
-                <th style="width:40px"><input type="checkbox" id="mailCheckAll" onchange="selectAllMailUsers(this.checked)"></th>
+                <th style="width:40px"><input type="checkbox" id="mailCheckAll"></th>
                 <th>Pseudo</th>
                 <th>Prénom / Nom</th>
                 <th>Email</th>
@@ -2022,12 +2022,26 @@ async function loadMailUsers() {
     
     tbody.innerHTML = mailUsers.map(u => `
       <tr>
-        <td><input type="checkbox" class="mail-user-check" value="${u.user_id}" onchange="updateMailSendSummary()"></td>
+        <td><input type="checkbox" class="mail-user-check" value="${u.user_id}"></td>
         <td style="font-weight:600">${u.pseudo || '—'}</td>
         <td>${(u.prenom || '') + ' ' + (u.nom || '')}</td>
         <td style="color:var(--muted2);font-size:13px">${u.email}</td>
       </tr>
     `).join('');
+    
+    // Attacher les event listeners APRÈS insertion dans le DOM
+    document.querySelectorAll('.mail-user-check').forEach(cb => {
+      cb.addEventListener('change', updateMailSendSummary);
+    });
+    
+    // Idem pour le checkbox "tout cocher" (détacher avant de réattacher pour éviter doublon)
+    const checkAllBox = document.getElementById('mailCheckAll');
+    if (checkAllBox) {
+      // Clone pour retirer les anciens listeners
+      const newCheckAll = checkAllBox.cloneNode(true);
+      checkAllBox.parentNode.replaceChild(newCheckAll, checkAllBox);
+      newCheckAll.addEventListener('change', (e) => selectAllMailUsers(e.target.checked));
+    }
     
     updateMailSendSummary();
   } catch (e) {
@@ -2080,15 +2094,15 @@ async function envoyerBroadcast() {
   const userIds = getMailSelectedUserIds();
   
   if (subject.length < 3) {
-    showResult('mailSendResult', '⚠️ Le sujet doit faire au moins 3 caractères', 'error');
+    showResult('mailSendResult', 'err', '⚠️ Le sujet doit faire au moins 3 caractères');
     return;
   }
   if (htmlContent.length < 5) {
-    showResult('mailSendResult', '⚠️ Le contenu est trop court', 'error');
+    showResult('mailSendResult', 'err', '⚠️ Le contenu est trop court');
     return;
   }
   if (userIds.length === 0) {
-    showResult('mailSendResult', '⚠️ Aucun destinataire sélectionné', 'error');
+    showResult('mailSendResult', 'err', '⚠️ Aucun destinataire sélectionné');
     return;
   }
   
@@ -2101,7 +2115,7 @@ async function envoyerBroadcast() {
   btn.classList.add('loading');
   btn.disabled = true;
   
-  showResult('mailSendResult', '📤 Envoi en cours… cela peut prendre quelques secondes.', 'info');
+  showResult('mailSendResult', 'ok', '📤 Envoi en cours… cela peut prendre quelques secondes.');
   
   try {
     const data = await api('/api/admin/emails/broadcast', {
@@ -2118,12 +2132,12 @@ async function envoyerBroadcast() {
       if (data.echecs > 0) {
         msg += ` (${data.echecs} échec${data.echecs > 1 ? 's' : ''})`;
       }
-      showResult('mailSendResult', msg, data.echecs > 0 ? 'warning' : 'success');
+      showResult('mailSendResult', data.echecs > 0 ? 'warn' : 'ok', msg);
     } else {
-      showResult('mailSendResult', `❌ Erreur : ${data.error || 'inconnue'}`, 'error');
+      showResult('mailSendResult', 'err', `❌ Erreur : ${data.error || 'inconnue'}`);
     }
   } catch (e) {
-    showResult('mailSendResult', `❌ Erreur : ${e.message}`, 'error');
+    showResult('mailSendResult', 'err', `❌ Erreur : ${e.message}`);
   } finally {
     btn.classList.remove('loading');
     btn.disabled = false;
@@ -2133,12 +2147,22 @@ async function envoyerBroadcast() {
 
 // ── INIT : listener sur textarea pour preview en direct ──────────────────
 
-document.addEventListener('DOMContentLoaded', () => {
+let mailListenersAttached = false;
+function attachMailListeners() {
+  if (mailListenersAttached) return;
   const mailHtmlEl = document.getElementById('mailHtml');
   if (mailHtmlEl) {
     mailHtmlEl.addEventListener('input', updateMailPreview);
+    mailListenersAttached = true;
   }
-});
+}
+
+// Attachement robuste : que le DOM soit déjà chargé ou pas
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', attachMailListeners);
+} else {
+  attachMailListeners();
+}
 
 
 
