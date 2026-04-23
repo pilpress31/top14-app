@@ -1,6 +1,8 @@
 // ============================================
 // COMPOSANT : Popup fiche équipe
 // Réutilisable depuis AlgoPronosTab et MatchCard
+// 
+// V2 : support Pro D2 (désactive les stats historiques Top14 non disponibles)
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
@@ -12,10 +14,11 @@ const API_URL = 'https://top14-api-production.up.railway.app/api';
 interface TeamPopupProps {
   equipeNom: string;
   equipeStats?: any; // stats saison en cours (optionnel, depuis classement)
+  isD2?: boolean;    // ✅ NOUVEAU : contextualise le popup (couleurs + endpoints)
   onClose: () => void;
 }
 
-export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onClose }: TeamPopupProps) {
+export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD2 = false, onClose }: TeamPopupProps) {
   const [statsDetaillees, setStatsDetaillees] = useState<any>(null);
   const [equipeStats, setEquipeStats] = useState<any>(equipeStatsProp || null);
   const [loading, setLoading] = useState(true);
@@ -23,31 +26,58 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
 
   const teamData = getTeamData(equipeNom);
 
-  // Charger les stats détaillées + classement si pas fourni
+  // Couleurs dynamiques selon championnat
+  const primaryColor = isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
+  const primaryBorder = isD2 ? 'border-b-2 border-[#00174D]' : 'border-b-2 border-rugby-gold';
+  const accentColor = isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
+  const spinnerColor = isD2 ? 'border-[#00174D]' : 'border-rugby-gold';
+
+  // Charger les stats selon le championnat
   useEffect(() => {
     async function loadStats() {
       try {
         setLoading(true);
 
-        // Charger stats détaillées (historique + régularité)
-        const [detailRes, classementRes] = await Promise.all([
-          fetch(`${API_URL}/stats/detaillees?equipe=${encodeURIComponent(equipeNom)}`),
-          !equipeStatsProp
-            ? fetch(`${API_URL}/classement`)
-            : Promise.resolve(null)
-        ]);
+        if (isD2) {
+          // ─── PRO D2 : on charge seulement le classement D2 (stats historiques non disponibles) ───
+          if (!equipeStatsProp) {
+            const response = await fetch(`${API_URL}/d2/classement-officiel`);
+            const data = await response.json();
+            const equipes = data.classement || [];
+            const found = equipes.find((e: any) =>
+              e.equipe?.toUpperCase() === equipeNom.toUpperCase() ||
+              e.slug?.toLowerCase() === equipeNom.toLowerCase()
+            );
+            if (found) {
+              // Adapter le format au format EquipeStats attendu par le popup
+              setEquipeStats({
+                ...found,
+                differentiel: found.difference, // le champ s'appelle "difference" en D2
+              });
+            }
+          }
+          // Pas de stats détaillées en Pro D2
+          setStatsDetaillees(null);
+        } else {
+          // ─── TOP 14 : comportement actuel inchangé ───
+          const [detailRes, classementRes] = await Promise.all([
+            fetch(`${API_URL}/stats/detaillees?equipe=${encodeURIComponent(equipeNom)}`),
+            !equipeStatsProp
+              ? fetch(`${API_URL}/classement`)
+              : Promise.resolve(null)
+          ]);
 
-        const detailData = await detailRes.json();
-        setStatsDetaillees(detailData);
+          const detailData = await detailRes.json();
+          setStatsDetaillees(detailData);
 
-        // Si equipeStats pas fourni, on le récupère depuis le classement
-        if (!equipeStatsProp && classementRes) {
-          const classementData = await classementRes.json();
-          const equipes = classementData.classement || [];
-          const found = equipes.find((e: any) =>
-            e.equipe?.toUpperCase() === equipeNom.toUpperCase()
-          );
-          if (found) setEquipeStats(found);
+          if (!equipeStatsProp && classementRes) {
+            const classementData = await classementRes.json();
+            const equipes = classementData.classement || [];
+            const found = equipes.find((e: any) =>
+              e.equipe?.toUpperCase() === equipeNom.toUpperCase()
+            );
+            if (found) setEquipeStats(found);
+          }
         }
 
       } catch (e) {
@@ -57,7 +87,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
       }
     }
     loadStats();
-  }, [equipeNom]);
+  }, [equipeNom, isD2, equipeStatsProp]);
 
   // Fermer au clic en dehors
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -97,7 +127,10 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
               />
             </div>
             <div>
-              <h3 className="text-base font-bold text-rugby-gold leading-tight">{teamData.name}</h3>
+              <h3 className={`text-base font-bold ${primaryColor} leading-tight`}>
+                {teamData.name}
+                {isD2 && <span className="text-[10px] font-normal text-gray-400 ml-2">Pro D2</span>}
+              </h3>
               {equipeStats && (
                 <p className="text-xs text-gray-500">
                   #{equipeStats.rang} • {equipeStats.points_classement} pts
@@ -118,7 +151,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
 
           {loading && (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rugby-gold" />
+              <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${spinnerColor}`} />
             </div>
           )}
 
@@ -131,7 +164,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
                       <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Points marqués</p>
-                      <p className="text-xl font-bold text-rugby-gold">{equipeStats.points_pour}</p>
+                      <p className={`text-xl font-bold ${accentColor}`}>{equipeStats.points_pour}</p>
                       <p className="text-[10px] text-gray-500 mt-0.5">Moy: {equipeStats.points_moy_pour?.toFixed(1)}/match</p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
@@ -160,27 +193,38 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
                       }`}>
                         {(equipeStats.differentiel || 0) > 0 ? '+' : ''}{equipeStats.differentiel || 0}
                       </p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{equipeStats.serie_en_cours || '-'}</p>
+                      {/* En D2 : afficher le bonus (données dispo) / En Top14 : série en cours */}
+                      {isD2 ? (
+                        <p className="text-[10px] text-gray-500 mt-0.5">
+                          Bonus : {equipeStats.bonus || 0}
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-gray-500 mt-0.5">
+                          {equipeStats.serie_en_cours || '-'}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Dom / Ext */}
-                    <div className="bg-gray-50 rounded-lg p-2 text-center col-span-2">
-                      <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Performance domicile / extérieur</p>
-                      <div className="flex justify-around mt-1">
-                        <div>
-                          <p className="text-[10px] text-gray-500">Domicile</p>
-                          <p className="text-base font-bold text-green-600">
-                            {equipeStats.pct_victoires_domicile ? `${(equipeStats.pct_victoires_domicile * 100).toFixed(0)}%` : '-'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-gray-500">Extérieur</p>
-                          <p className="text-base font-bold text-blue-600">
-                            {equipeStats.pct_victoires_exterieur ? `${(equipeStats.pct_victoires_exterieur * 100).toFixed(0)}%` : '-'}
-                          </p>
+                    {/* Dom / Ext — UNIQUEMENT EN TOP 14 (données non dispo en D2) */}
+                    {!isD2 && (
+                      <div className="bg-gray-50 rounded-lg p-2 text-center col-span-2">
+                        <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Performance domicile / extérieur</p>
+                        <div className="flex justify-around mt-1">
+                          <div>
+                            <p className="text-[10px] text-gray-500">Domicile</p>
+                            <p className="text-base font-bold text-green-600">
+                              {equipeStats.pct_victoires_domicile ? `${(equipeStats.pct_victoires_domicile * 100).toFixed(0)}%` : '-'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500">Extérieur</p>
+                            <p className="text-base font-bold text-blue-600">
+                              {equipeStats.pct_victoires_exterieur ? `${(equipeStats.pct_victoires_exterieur * 100).toFixed(0)}%` : '-'}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Forme */}
                     {equipeStats.forme && equipeStats.forme.length > 0 && (
@@ -201,8 +245,8 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
                 </div>
               )}
 
-              {/* Analyse de régularité (stats historiques) */}
-              {statsDetaillees && (
+              {/* Analyse de régularité — UNIQUEMENT EN TOP 14 (pas de données historiques D2) */}
+              {!isD2 && statsDetaillees && (
                 <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-xl p-3 border border-blue-100">
                   <h4 className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1">
                     <span>📊</span> Analyse de régularité (historique)
@@ -240,7 +284,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, onC
                 </div>
               )}
 
-              {!statsDetaillees && !equipeStats && (
+              {!statsDetaillees && !equipeStats && !loading && (
                 <p className="text-center text-gray-400 text-sm py-4">Aucune donnée disponible</p>
               )}
             </>

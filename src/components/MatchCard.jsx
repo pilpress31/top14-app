@@ -265,6 +265,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
       {teamPopup && (
         <TeamPopup
           equipeNom={teamPopup}
+          isD2={isD2}
           onClose={() => setTeamPopup(null)}
         />
       )}
