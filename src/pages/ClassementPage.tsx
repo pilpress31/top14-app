@@ -154,12 +154,12 @@ function ClassementPage() {
 
       {/* Titre */}
       <div className="text-center mb-4">
-        <h2 className="text-2xl font-bold mb-2">
+        <h2 className="text-2xl font-bold mb-2 whitespace-nowrap">
           <span className={themeColors.primary}>
             Classement {isD2 ? 'Pro D2' : 'Top 14'}
           </span>
           {classement[0]?.saison && (
-            <span className="text-gray-600 text-sm ml-2">- Saison {classement[0].saison}</span>
+            <span className="text-gray-600 text-sm ml-2">{classement[0].saison}</span>
           )}
         </h2>
         <p className="text-xs text-gray-500 italic">
