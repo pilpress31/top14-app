@@ -105,7 +105,9 @@ function ClassementPage() {
     [] // tableau stable, créé une seule fois
   );
 
-  useRealtimeSync(realtimeTables);
+  // ⚠️ TEMPORAIREMENT DÉSACTIVÉ pour diagnostiquer le clignotement
+  // useRealtimeSync(realtimeTables);
+  void realtimeTables; // éviter warning "variable non utilisée"
 
   useEffect(() => {
     loadClassement();
