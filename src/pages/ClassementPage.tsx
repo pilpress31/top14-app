@@ -181,7 +181,7 @@ function ClassementPage() {
               MENTION ROTATION (mobile uniquement)
               ═══════════════════════════════════════════════════════ */}
           <p className="md:hidden text-[11px] text-gray-500 italic text-center mb-2">
-            🔄 Tournez l'écran pour voir toutes les colonnes (V/N/D/+-)
+            🔄 Tournez l'écran pour voir toutes les colonnes
           </p>
 
           {/* ═══════════════════════════════════════════════════════
