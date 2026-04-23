@@ -899,8 +899,26 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           sont automatiquement remplacées.
         </p>
 
+        <!-- Synthèse IA -->
+        <label>🤖 Synthèse hebdomadaire générée par l'IA</label>
+        <p style="color:var(--muted2);font-size:12px;margin-bottom:10px;line-height:1.5">
+          Gemini analyse ta base (classement, matchs, résultats) et recherche sur le web les actualités de la semaine (blessures, transferts, déclarations) pour générer une newsletter riche et engageante. Tu pourras toujours éditer le résultat avant envoi.
+        </p>
+        <div class="btn-row" style="flex-wrap:wrap;margin-top:0">
+          <button class="btn" id="synthBtnTop14" onclick="generateSynthese('top14')" style="background:#D4A017;color:#fff">
+            <div class="spinner"></div>
+            <span class="btn-text">🤖 Synthèse Top 14</span>
+          </button>
+          <button class="btn" id="synthBtnProD2" onclick="generateSynthese('prod2')" style="background:#00174D;color:#fff">
+            <div class="spinner"></div>
+            <span class="btn-text">🤖 Synthèse Pro D2</span>
+          </button>
+          <span id="synthStatus" style="color:var(--muted);font-size:12px;align-self:center"></span>
+        </div>
+        <div class="result" id="synthResult" style="margin-top:10px"></div>
+
         <!-- Templates rapides -->
-        <label>Template rapide</label>
+        <label style="margin-top:14px">Templates manuels</label>
         <div class="btn-row" style="flex-wrap:wrap">
           <button class="btn" onclick="applyMailTemplate('top14')" style="background:#D4A017;color:#fff">🏆 Top 14 ce soir</button>
           <button class="btn" onclick="applyMailTemplate('prod2')" style="background:#00174D;color:#fff">🥈 Pro D2 ce soir</button>
@@ -1990,6 +2008,75 @@ function applyMailTemplate(key) {
     document.getElementById('mailHtml').value = MAIL_TEMPLATES[key].html;
   }
   updateMailPreview();
+}
+
+// ── GÉNÉRATION SYNTHÈSE IA ─────────────────────────────────────────────
+async function generateSynthese(championnat) {
+  const btnId = championnat === 'prod2' ? 'synthBtnProD2' : 'synthBtnTop14';
+  const btn = document.getElementById(btnId);
+  const status = document.getElementById('synthStatus');
+  const resultEl = document.getElementById('synthResult');
+  const champLabel = championnat === 'prod2' ? 'Pro D2' : 'Top 14';
+  
+  // Confirmer si du contenu existe déjà
+  const currentSubject = document.getElementById('mailSubject').value.trim();
+  const currentHtml = document.getElementById('mailHtml').value.trim();
+  if ((currentSubject || currentHtml) && !confirm(`Une synthèse va être générée et remplacera le contenu actuel. Continuer ?`)) {
+    return;
+  }
+  
+  // Désactiver les 2 boutons pendant la génération
+  const btnTop14 = document.getElementById('synthBtnTop14');
+  const btnProD2 = document.getElementById('synthBtnProD2');
+  btnTop14.disabled = true;
+  btnProD2.disabled = true;
+  btn.classList.add('loading');
+  status.textContent = '';
+  resultEl.className = 'result';
+  resultEl.textContent = '';
+  
+  // Timer pour afficher la durée
+  const startTime = Date.now();
+  let timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    status.textContent = `⏳ Génération en cours… ${elapsed}s (jusqu'à 60s)`;
+  }, 1000);
+  
+  try {
+    const data = await api('/api/admin/emails/generate-synthesis', {
+      method: 'POST',
+      body: JSON.stringify({ championnat })
+    });
+    
+    clearInterval(timerInterval);
+    
+    if (data.success && data.subject && data.html) {
+      // Injecter dans les champs
+      document.getElementById('mailSubject').value = data.subject;
+      document.getElementById('mailHtml').value = data.html;
+      updateMailPreview();
+      
+      const duree = Math.floor((Date.now() - startTime) / 1000);
+      const meta = data.meta || {};
+      status.textContent = '';
+      showResult('synthResult', 'ok', 
+        `✅ Synthèse ${champLabel} générée en ${duree}s ` +
+        `(${meta.nb_matchs_recents || 0} résultats récents, ` +
+        `${meta.nb_matchs_a_venir || 0} matchs à venir analysés). ` +
+        `Relis et ajuste avant d'envoyer !`
+      );
+    } else {
+      showResult('synthResult', 'err', `❌ ${data.error || 'Réponse invalide'}`);
+    }
+  } catch (e) {
+    clearInterval(timerInterval);
+    status.textContent = '';
+    showResult('synthResult', 'err', `❌ Erreur : ${e.message}`);
+  } finally {
+    btn.classList.remove('loading');
+    btnTop14.disabled = false;
+    btnProD2.disabled = false;
+  }
 }
 
 // ── PREVIEW EN DIRECT ────────────────────────────────────────────────────
