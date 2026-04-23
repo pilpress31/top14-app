@@ -296,6 +296,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <button class="tab" onclick="showTab('distribution', this)">📦 Distribution</button>
     <button class="tab" onclick="showTab('actualites', this)">📰 Actualités</button>
     <button class="tab" onclick="showTab('invitations', this)">🎟️ Invitations</button>
+    <button class="tab" onclick="showTab('mail', this)">📧 Mail</button>
   </div>
 
   <div class="content">
@@ -878,6 +879,91 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
 
     </div>
+    <!-- MAIL -->
+    <div id="panel-mail" class="panel">
+
+      <!-- Composition du mail -->
+      <div class="card">
+        <div class="card-title">📧 Envoyer un email aux utilisateurs</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.6">
+          Composez un email qui sera envoyé aux destinataires sélectionnés ci-dessous. 
+          Les variables <code style="background:var(--dark3);padding:2px 6px;border-radius:4px;font-size:12px">{prenom}</code>, 
+          <code style="background:var(--dark3);padding:2px 6px;border-radius:4px;font-size:12px">{pseudo}</code> et 
+          <code style="background:var(--dark3);padding:2px 6px;border-radius:4px;font-size:12px">{salutation}</code> 
+          sont automatiquement remplacées.
+        </p>
+
+        <!-- Templates rapides -->
+        <label>Template rapide</label>
+        <div class="btn-row" style="flex-wrap:wrap">
+          <button class="btn" onclick="applyMailTemplate('top14')" style="background:#D4A017;color:#fff">🏆 Top 14 ce soir</button>
+          <button class="btn" onclick="applyMailTemplate('prod2')" style="background:#00174D;color:#fff">🥈 Pro D2 ce soir</button>
+          <button class="btn" onclick="applyMailTemplate('nouveautes')">✨ Nouveautés</button>
+          <button class="btn" onclick="applyMailTemplate('reset')">🗑 Effacer</button>
+        </div>
+
+        <label style="margin-top:14px">Sujet</label>
+        <input type="text" id="mailSubject" placeholder="Ex: 🏆 Matchs Top 14 ce soir — venez parier !">
+
+        <label>Contenu HTML</label>
+        <textarea id="mailHtml" rows="10" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px" placeholder="Ex: <p>{salutation},</p><p>Ce soir, ne rate pas...</p>"></textarea>
+
+        <div style="background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:8px">
+          <p style="color:var(--muted);font-size:11px;margin:0 0 8px 0;font-weight:bold">APERÇU</p>
+          <div id="mailPreview" style="background:#ffffff;color:#333;padding:16px;border-radius:6px;font-size:14px;line-height:1.6">
+            <p style="color:#999;font-style:italic">Le contenu apparaîtra ici…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Destinataires -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 Destinataires</div>
+          <button class="btn" onclick="loadMailUsers()">↻ Actualiser</button>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn" onclick="selectAllMailUsers(true)">✓ Tout cocher</button>
+          <button class="btn" onclick="selectAllMailUsers(false)">✗ Tout décocher</button>
+          <span id="mailCountSelected" style="margin-left:auto;color:var(--muted);font-size:13px;align-self:center"></span>
+        </div>
+
+        <div class="table-wrap" style="max-height:400px;overflow-y:auto">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px"><input type="checkbox" id="mailCheckAll" onchange="selectAllMailUsers(this.checked)"></th>
+                <th>Pseudo</th>
+                <th>Prénom / Nom</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody id="mailUsersBody">
+              <tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Envoi -->
+      <div class="card">
+        <div class="card-title">🚀 Envoyer</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px">
+          <strong id="mailSendSummary">Sélectionnez des destinataires ci-dessus</strong>
+        </p>
+        <div class="btn-row">
+          <button class="btn btn-gold" id="mailSendBtn" onclick="envoyerBroadcast()" disabled>
+            <div class="spinner"></div>
+            <span class="btn-text">📤 Envoyer l'email</span>
+          </button>
+        </div>
+        <div class="result" id="mailSendResult"></div>
+      </div>
+
+    </div>
+
+
 
   </div>
 </div>
@@ -988,6 +1074,9 @@ function showTab(name, el) {
     case 'push':
       loadSansNotifs();
       break;
+    case 'mail':
+      loadMailUsers();
+      break;  
   }
 }
 
@@ -1830,6 +1919,232 @@ async function loadInvitations() {
     </tr>
   `).join('');
 }
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// ONGLET MAIL — Envoi d'emails aux utilisateurs
+// ─────────────────────────────────────────────────────────────────────────
+
+let mailUsers = [];  // liste complète des users pour cet onglet
+
+// ── TEMPLATES PRÉDÉFINIS ────────────────────────────────────────────────
+
+const MAIL_TEMPLATES = {
+  top14: {
+    subject: '🏆 Matchs Top 14 ce soir — viens parier !',
+    html: `<p>{salutation},</p>
+<p>C'est aujourd'hui que ça se joue en <strong>Top 14</strong> ! 🏉</p>
+<p>N'oublie pas de poser tes pronostics avant le coup d'envoi pour tenter de remporter des jetons et des points au classement.</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="https://app.top14pronos.fr/pronos" style="display:inline-block;background:#D4A017;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+    👉 Parier maintenant
+  </a>
+</p>
+<p>À tout de suite sur l'app !</p>
+<p>— Top14 Pronos</p>`
+  },
+  prod2: {
+    subject: '🥈 Matchs Pro D2 ce soir — viens parier !',
+    html: `<p>{salutation},</p>
+<p>Ce soir, les matchs de <strong>Pro D2</strong> t'attendent ! 🏉</p>
+<p>Pose tes pronostics avant le coup d'envoi pour gagner des jetons et monter au classement.</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="https://app.top14pronos.fr/pronos" style="display:inline-block;background:#00174D;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+    👉 Parier sur la Pro D2
+  </a>
+</p>
+<p>Bonne chance !</p>
+<p>— Top14 Pronos</p>`
+  },
+  nouveautes: {
+    subject: '✨ Du nouveau sur Top14 Pronos',
+    html: `<p>{salutation},</p>
+<p>On a ajouté quelques nouveautés sur l'app :</p>
+<ul>
+  <li>✅ <strong>[Décris ta nouveauté ici]</strong></li>
+  <li>✅ [Autre nouveauté]</li>
+</ul>
+<p>Rends-toi sur l'app pour découvrir tout ça !</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="https://app.top14pronos.fr" style="display:inline-block;background:#D4A017;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+    👉 Découvrir les nouveautés
+  </a>
+</p>
+<p>À bientôt,</p>
+<p>— Top14 Pronos</p>`
+  }
+};
+
+function applyMailTemplate(key) {
+  if (key === 'reset') {
+    document.getElementById('mailSubject').value = '';
+    document.getElementById('mailHtml').value = '';
+  } else if (MAIL_TEMPLATES[key]) {
+    document.getElementById('mailSubject').value = MAIL_TEMPLATES[key].subject;
+    document.getElementById('mailHtml').value = MAIL_TEMPLATES[key].html;
+  }
+  updateMailPreview();
+}
+
+// ── PREVIEW EN DIRECT ────────────────────────────────────────────────────
+
+function updateMailPreview() {
+  const html = document.getElementById('mailHtml').value;
+  const previewEl = document.getElementById('mailPreview');
+  if (!html || html.trim().length === 0) {
+    previewEl.innerHTML = '<p style="color:#999;font-style:italic">Le contenu apparaîtra ici…</p>';
+    return;
+  }
+  // Remplacer les variables avec un exemple
+  const demo = html
+    .replace(/\{pseudo\}/g, 'Martin')
+    .replace(/\{prenom\}/g, 'Jean')
+    .replace(/\{salutation\}/g, 'Bonjour Jean');
+  previewEl.innerHTML = demo;
+}
+
+// ── LISTE USERS ──────────────────────────────────────────────────────────
+
+async function loadMailUsers() {
+  const tbody = document.getElementById('mailUsersBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Chargement…</td></tr>';
+  
+  try {
+    const data = await api('/api/admin/users');
+    mailUsers = (Array.isArray(data) ? data : [])
+      .filter(u => u.email && u.email.includes('@'))  // uniquement ceux avec email
+      .sort((a, b) => (a.pseudo || '').localeCompare(b.pseudo || ''));
+    
+    if (mailUsers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucun utilisateur avec email</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = mailUsers.map(u => `
+      <tr>
+        <td><input type="checkbox" class="mail-user-check" value="${u.user_id}" onchange="updateMailSendSummary()"></td>
+        <td style="font-weight:600">${u.pseudo || '—'}</td>
+        <td>${(u.prenom || '') + ' ' + (u.nom || '')}</td>
+        <td style="color:var(--muted2);font-size:13px">${u.email}</td>
+      </tr>
+    `).join('');
+    
+    updateMailSendSummary();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--red);text-align:center;padding:24px">Erreur : ${e.message}</td></tr>`;
+  }
+}
+
+// ── SÉLECTION ─────────────────────────────────────────────────────────────
+
+function selectAllMailUsers(check) {
+  document.querySelectorAll('.mail-user-check').forEach(cb => cb.checked = check);
+  document.getElementById('mailCheckAll').checked = check;
+  updateMailSendSummary();
+}
+
+function getMailSelectedUserIds() {
+  return Array.from(document.querySelectorAll('.mail-user-check:checked')).map(cb => cb.value);
+}
+
+function updateMailSendSummary() {
+  const selected = getMailSelectedUserIds();
+  const total = mailUsers.length;
+  const count = selected.length;
+  
+  document.getElementById('mailCountSelected').textContent = 
+    `${count} / ${total} sélectionné${count > 1 ? 's' : ''}`;
+  
+  const summaryEl = document.getElementById('mailSendSummary');
+  const btnEl = document.getElementById('mailSendBtn');
+  
+  if (count === 0) {
+    summaryEl.textContent = 'Sélectionnez des destinataires ci-dessus';
+    btnEl.disabled = true;
+  } else {
+    summaryEl.innerHTML = `L'email sera envoyé à <strong>${count}</strong> destinataire${count > 1 ? 's' : ''}.`;
+    btnEl.disabled = false;
+  }
+  
+  // Checkbox "tout cocher"
+  const checkAllBox = document.getElementById('mailCheckAll');
+  checkAllBox.checked = count === total && total > 0;
+  checkAllBox.indeterminate = count > 0 && count < total;
+}
+
+// ── ENVOI ─────────────────────────────────────────────────────────────────
+
+async function envoyerBroadcast() {
+  const subject = document.getElementById('mailSubject').value.trim();
+  const htmlContent = document.getElementById('mailHtml').value.trim();
+  const userIds = getMailSelectedUserIds();
+  
+  if (subject.length < 3) {
+    showResult('mailSendResult', '⚠️ Le sujet doit faire au moins 3 caractères', 'error');
+    return;
+  }
+  if (htmlContent.length < 5) {
+    showResult('mailSendResult', '⚠️ Le contenu est trop court', 'error');
+    return;
+  }
+  if (userIds.length === 0) {
+    showResult('mailSendResult', '⚠️ Aucun destinataire sélectionné', 'error');
+    return;
+  }
+  
+  // Confirmation utilisateur
+  if (!confirm(`Envoyer cet email à ${userIds.length} destinataire${userIds.length > 1 ? 's' : ''} ?\n\nSujet : "${subject}"`)) {
+    return;
+  }
+  
+  const btn = document.getElementById('mailSendBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  
+  showResult('mailSendResult', '📤 Envoi en cours… cela peut prendre quelques secondes.', 'info');
+  
+  try {
+    const data = await api('/api/admin/emails/broadcast', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_ids: userIds,
+        subject,
+        htmlContent,
+      })
+    });
+    
+    if (data.success) {
+      let msg = `✅ Envoi terminé : ${data.envoyes} / ${data.total} emails envoyés avec succès`;
+      if (data.echecs > 0) {
+        msg += ` (${data.echecs} échec${data.echecs > 1 ? 's' : ''})`;
+      }
+      showResult('mailSendResult', msg, data.echecs > 0 ? 'warning' : 'success');
+    } else {
+      showResult('mailSendResult', `❌ Erreur : ${data.error || 'inconnue'}`, 'error');
+    }
+  } catch (e) {
+    showResult('mailSendResult', `❌ Erreur : ${e.message}`, 'error');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    updateMailSendSummary();
+  }
+}
+
+// ── INIT : listener sur textarea pour preview en direct ──────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+  const mailHtmlEl = document.getElementById('mailHtml');
+  if (mailHtmlEl) {
+    mailHtmlEl.addEventListener('input', updateMailPreview);
+  }
+});
+
+
+
+
+
+
 
 async function supprimerCode(code) {
   if (!confirm(`Supprimer le code ${code} ?`)) return;
