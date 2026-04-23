@@ -902,8 +902,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <!-- Synthèse IA -->
         <label>🤖 Synthèse hebdomadaire générée par l'IA</label>
         <p style="color:var(--muted2);font-size:12px;margin-bottom:10px;line-height:1.5">
-          Gemini analyse ta base (classement, matchs, résultats) et recherche sur le web les actualités de la semaine (blessures, transferts, déclarations) pour générer une newsletter riche et engageante. Tu pourras toujours éditer le résultat avant envoi.
+          L'IA analyse ta base (classement, matchs, résultats) et recherche sur le web les actualités de la semaine (blessures, transferts, déclarations).
         </p>
+        <div style="background:#3a2410;border:1px solid #b8860b;border-radius:8px;padding:10px 12px;margin-bottom:12px">
+          <p style="color:#f5c542;font-size:12px;margin:0;line-height:1.5">
+            ⚠️ <strong>Important</strong> : l'IA peut se tromper sur des scores ou équipes. <strong>Relis toujours attentivement</strong> les sections "journée écoulée" et "classement" avant d'envoyer. Vérifie au moins un score en te référant au classement officiel.
+          </p>
+        </div>
         <div class="btn-row" style="flex-wrap:wrap;margin-top:0">
           <button class="btn" id="synthBtnTop14" onclick="generateSynthese('top14')" style="background:#D4A017;color:#fff">
             <div class="spinner"></div>
@@ -2039,7 +2044,7 @@ async function generateSynthese(championnat) {
   const startTime = Date.now();
   let timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    status.textContent = `⏳ Génération en cours… ${elapsed}s (jusqu'à 60s)`;
+    status.textContent = `⏳ Génération en cours… ${elapsed}s (jusqu'à 2 min avec Gemini Pro)`;
   }, 1000);
   
   try {
@@ -2059,12 +2064,18 @@ async function generateSynthese(championnat) {
       const duree = Math.floor((Date.now() - startTime) / 1000);
       const meta = data.meta || {};
       status.textContent = '';
-      showResult('synthResult', 'ok', 
-        `✅ Synthèse ${champLabel} générée en ${duree}s ` +
-        `(${meta.nb_matchs_recents || 0} résultats récents, ` +
-        `${meta.nb_matchs_a_venir || 0} matchs à venir analysés). ` +
-        `Relis et ajuste avant d'envoyer !`
-      );
+      
+      // Message selon si le web search a marché ou pas
+      const modelLabel = meta.model_used || 'IA';
+      const webLabel = meta.web_search_used 
+        ? '🌐 avec web search' 
+        : '⚠️ sans web search (actualité peut être limitée)';
+      
+      const msg = `✅ Synthèse ${champLabel} générée en ${duree}s par ${modelLabel} ${webLabel}. ` +
+        `${meta.nb_matchs_recents || 0} résultats et ${meta.nb_matchs_a_venir || 0} matchs à venir analysés. ` +
+        `🔍 RELIS attentivement avant d'envoyer !`;
+      
+      showResult('synthResult', meta.web_search_used ? 'ok' : 'warn', msg);
     } else {
       showResult('synthResult', 'err', `❌ ${data.error || 'Réponse invalide'}`);
     }
