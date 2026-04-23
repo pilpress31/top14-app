@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
-import { useRealtimeSync } from "../hooks/useRealtimeSync";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -27,9 +26,6 @@ function ClassementPage() {
     secondaryText: isD2 ? 'text-[#002A7D]' : 'text-rugby-orange',
     rowHover: isD2 ? 'hover:bg-[#00174D]/10' : 'hover:bg-rugby-orange/10',
   };
-
-  const loadClassementRef = useRef<() => void>(() => {});
-  const championnatRef = useRef<Championnat>(championnat);
 
   const loadClassement = useCallback(async () => {
     setLoading(true);
@@ -76,38 +72,6 @@ function ClassementPage() {
       setLoading(false);
     }
   }, [championnat]);
-
-  // Garder les refs à jour
-  useEffect(() => {
-    loadClassementRef.current = loadClassement;
-  }, [loadClassement]);
-
-  useEffect(() => {
-    championnatRef.current = championnat;
-  }, [championnat]);
-
-  // ✅ Realtime : abonnement STABLE (ne dépend jamais de championnat)
-  // On utilise les refs pour toujours avoir les dernières valeurs.
-  // Le garde évite de rafraîchir si l'utilisateur est sur Pro D2
-  // (puisque matchs_results ne concerne que le Top 14)
-  const realtimeTables = useMemo(
-    () => [
-      {
-        table: 'matchs_results',
-        onUpdate: () => {
-          // Garde : ne déclencher le rechargement que si on est sur Top 14
-          if (championnatRef.current === 'top14') {
-            loadClassementRef.current?.();
-          }
-        },
-      },
-    ],
-    [] // tableau stable, créé une seule fois
-  );
-
-  // ⚠️ TEMPORAIREMENT DÉSACTIVÉ pour diagnostiquer le clignotement
-  // useRealtimeSync(realtimeTables);
-  void realtimeTables; // éviter warning "variable non utilisée"
 
   useEffect(() => {
     loadClassement();
@@ -214,23 +178,28 @@ function ClassementPage() {
       ) : (
         <>
           {/* ═══════════════════════════════════════════════════════
+              MENTION ROTATION (mobile uniquement)
+              ═══════════════════════════════════════════════════════ */}
+          <p className="md:hidden text-[11px] text-gray-500 italic text-center mb-2">
+            🔄 Tournez l'écran pour voir toutes les colonnes (V/N/D/+-)
+          </p>
+
+          {/* ═══════════════════════════════════════════════════════
               TABLEAU DU CLASSEMENT
               ═══════════════════════════════════════════════════════ */}
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
             <table className="w-full">
               <thead className={`${themeColors.primaryBg} text-white`}>
                 <tr>
-                  <th className="px-2 py-3 text-left text-xs font-bold uppercase">#</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold uppercase">Équipe</th>
-                  <th className="px-2 py-3 text-center text-xs font-bold uppercase">Pts</th>
-                  <th className="px-2 py-3 text-center text-xs font-bold uppercase">MJ</th>
+                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-left text-xs font-bold uppercase`}>#</th>
+                  <th className={`${isD2 ? 'px-1' : 'px-3'} py-3 text-left text-xs font-bold uppercase`}>Équipe</th>
+                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-xs font-bold uppercase`}>Pts</th>
+                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-xs font-bold uppercase`}>MJ</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">V</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">N</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">D</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">+/-</th>
-                  {!isD2 && (
-                    <th className="px-2 py-3 text-center text-xs font-bold uppercase">Forme</th>
-                  )}
+                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-xs font-bold uppercase`}>Forme</th>
                 </tr>
               </thead>
               <tbody>
@@ -252,31 +221,31 @@ function ClassementPage() {
                       }`}
                       onClick={() => setSelectedEquipe(selectedEquipe?.equipe === equipe.equipe ? null : equipe)}
                     >
-                      <td className={`px-1 py-3 text-sm font-bold ${themeColors.primary}`}>
+                      <td className={`${isD2 ? 'px-1' : 'px-1'} py-3 text-sm font-bold ${themeColors.primary}`}>
                         {equipe.rang}
                       </td>
 
-                      <td className="px-1 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <td className={`${isD2 ? 'px-1' : 'px-1'} py-3`}>
+                        <div className={`flex items-center ${isD2 ? 'gap-1' : 'gap-2'}`}>
+                          <div className={`${isD2 ? 'w-6 h-6' : 'w-8 h-8'} bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0`}>
                             <img
                               src={teamData.logo}
                               alt={teamData.name}
-                              className="w-6 h-6 object-contain"
+                              className={`${isD2 ? 'w-5 h-5' : 'w-6 h-6'} object-contain`}
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
                           </div>
-                          <span className="text-sm font-semibold text-gray-800">
+                          <span className={`${isD2 ? 'text-xs' : 'text-sm'} font-semibold text-gray-800 leading-tight`}>
                             {teamData.name}
                           </span>
                         </div>
                       </td>
 
-                      <td className={`px-2 py-3 text-center text-sm font-bold ${themeColors.secondaryText}`}>
+                      <td className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-sm font-bold ${themeColors.secondaryText}`}>
                         {equipe.points_classement || 0}
                       </td>
 
-                      <td className="px-2 py-3 text-center text-sm text-gray-700">
+                      <td className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-sm text-gray-700`}>
                         {equipe.matchs_joues}
                       </td>
 
@@ -299,29 +268,27 @@ function ClassementPage() {
                         {(equipe.differentiel || 0) > 0 ? '+' : ''}{equipe.differentiel || 0}
                       </td>
 
-                      {!isD2 && (
-                        <td className="px-2 py-3">
-                          <div className="flex justify-center gap-0.5">
-                            {equipe.forme && equipe.forme.length > 0 ? (
-                              equipe.forme.map((resultat, i) => (
-                                <div
-                                  key={i}
-                                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                                    resultat === 'V' ? 'bg-green-500' :
-                                    resultat === 'D' ? 'bg-red-500' :
-                                    'bg-gray-400'
-                                  }`}
-                                  title={resultat === 'V' ? 'Victoire' : resultat === 'D' ? 'Défaite' : 'Nul'}
-                                >
-                                  {resultat}
-                                </div>
-                              ))
-                            ) : (
-                              <span className="text-xs text-gray-400">-</span>
-                            )}
-                          </div>
-                        </td>
-                      )}
+                      <td className={`${isD2 ? 'px-1' : 'px-2'} py-3`}>
+                        <div className="flex justify-center gap-0.5">
+                          {equipe.forme && equipe.forme.length > 0 ? (
+                            equipe.forme.map((resultat, i) => (
+                              <div
+                                key={i}
+                                className={`${isD2 ? 'w-3.5 h-3.5' : 'w-4 h-4'} rounded-full flex items-center justify-center text-[9px] font-bold text-white ${
+                                  resultat === 'V' ? 'bg-green-500' :
+                                  resultat === 'D' ? 'bg-red-500' :
+                                  'bg-gray-400'
+                                }`}
+                                title={resultat === 'V' ? 'Victoire' : resultat === 'D' ? 'Défaite' : 'Nul'}
+                              >
+                                {resultat}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
