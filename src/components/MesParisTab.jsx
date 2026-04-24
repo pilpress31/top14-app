@@ -136,25 +136,8 @@ export default function MesParisTab() {
         ? `${API_BASE}/api/d2/user/bets/detailed`
         : `${API_BASE}/api/user/bets/detailed`;
 
-      try {
-        const parisResponse = await axios.get(parisUrl, {
-          headers: { 'x-user-id': user.id }
-        });
-        setParis(parisResponse.data.bets || []);
-      } catch (error) {
-        console.error('Erreur chargement paris:', error);
-        setParis([]);
-      }
-
+      // ✅ D'abord charger les scores réels pour qu'ils soient dispos quand paris s'affiche
       if (!useD2) {
-        // Pronos Top 14 (pour récupérer noms d'équipes si nécessaire)
-        const { data: pronosData, error: pronosError } = await supabase
-          .from('user_pronos_view')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('match_date', { ascending: true });
-        if (!pronosError) setPronos(pronosData || []);
-
         // Scores réels Top 14
         const { data: resultsData } = await supabase
           .from('matchs_results')
@@ -164,14 +147,22 @@ export default function MesParisTab() {
           resultsData.forEach(r => { resultsMap[r.id] = r; });
           setMatchResults(resultsMap);
         }
+
+        // Pronos Top 14 (pour récupérer noms d'équipes si nécessaire)
+        const { data: pronosData, error: pronosError } = await supabase
+          .from('user_pronos_view')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('match_date', { ascending: true });
+        if (!pronosError) setPronos(pronosData || []);
       } else {
-        // Pro D2 : pas de user_pronos_view, les infos équipes viennent de la vue detailed
+        // Pro D2 : scores réels d'abord, puis paris
         setPronos([]);
 
-        // Scores réels D2 depuis match_cotes_d2
         const { data: resultsD2 } = await supabase
           .from('match_cotes_d2')
-          .select('match_id, score_reel_dom, score_reel_ext');
+          .select('match_id, score_reel_dom, score_reel_ext')
+          .not('score_reel_dom', 'is', null);  // ✅ ne charger que les matchs avec scores saisis
         if (resultsD2) {
           const resultsMap = {};
           resultsD2.forEach(r => {
@@ -183,6 +174,17 @@ export default function MesParisTab() {
           });
           setMatchResults(resultsMap);
         }
+      }
+
+      // ✅ Maintenant on charge les paris (matchResults est déjà en place)
+      try {
+        const parisResponse = await axios.get(parisUrl, {
+          headers: { 'x-user-id': user.id }
+        });
+        setParis(parisResponse.data.bets || []);
+      } catch (error) {
+        console.error('Erreur chargement paris:', error);
+        setParis([]);
       }
 
     } catch (error) {
@@ -440,14 +442,29 @@ export default function MesParisTab() {
                         {!isPending && (() => {
                           const result = matchResults[bet.match_id];
                           const matchData = result || bet.matches;
-                          if (!matchData) return null;
-                          // En D2 : toujours FT ; en Top 14 : FT ou MT selon bet_type
+                          
+                          // ✅ Fallback : lire directement depuis bet si matchResults n'a rien
                           const realHome = (!isD2 && bet.bet_type === 'MT')
-                            ? (matchData.score_ht_domicile ?? matchData.score_ht_home)
-                            : (matchData.score_domicile ?? matchData.score_home);
+                            ? (matchData?.score_ht_domicile ?? matchData?.score_ht_home ?? bet.score_reel_ht_dom)
+                            : (matchData?.score_domicile ?? matchData?.score_home ?? bet.score_reel_dom ?? bet.real_score_home);
                           const realAway = (!isD2 && bet.bet_type === 'MT')
-                            ? (matchData.score_ht_exterieur ?? matchData.score_ht_away)
-                            : (matchData.score_exterieur ?? matchData.score_away);
+                            ? (matchData?.score_ht_exterieur ?? matchData?.score_ht_away ?? bet.score_reel_ht_ext)
+                            : (matchData?.score_exterieur ?? matchData?.score_away ?? bet.score_reel_ext ?? bet.real_score_away);
+                          
+                          // 🐛 Log de diagnostic (à retirer quand le bug est confirmé corrigé)
+                          if (isD2 && bet.status === 'won') {
+                            console.log('🔍 [D2 pari gagné]', {
+                              bet_id: bet.id,
+                              match_id: bet.match_id,
+                              matchResults_key_exists: bet.match_id in matchResults,
+                              result,
+                              bet_matches: bet.matches,
+                              realHome,
+                              realAway,
+                              matchResults_size: Object.keys(matchResults).length,
+                            });
+                          }
+                          
                           if (realHome == null || realAway == null) return null;
                           return (
                             <div className={`rounded-lg py-2 px-3 border ${isWon ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
