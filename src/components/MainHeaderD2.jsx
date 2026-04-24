@@ -11,17 +11,13 @@ export default function MainHeaderD2() {
   useEffect(() => {
     async function loadStats() {
       try {
-        // Total matchs depuis /api/d2/saisons (rapide, pas de pagination)
-        const [resSaisons, resStats] = await Promise.all([
-          axios.get(`${API_BASE}/api/d2/saisons`),
-          axios.get(`${API_BASE}/api/d2/historique?limit=1&offset=0`)
-        ]);
-        // Compter le total réel via le COUNT Supabase
-        const total = resStats.data.stats?.total || 0;
-        // Précision globale : appel dédié sans filtre sur 100 matchs récents
-        const resPrec = await axios.get(`${API_BASE}/api/d2/historique?limit=500&offset=0`);
-        const taux = resPrec.data.stats?.taux_reussite || 0;
-        setStats({ precision: taux, total });
+        // ✅ Endpoint dédié : compte les matchs D2 avec prono + score réel
+        // Renvoie la précision sur le bon vainqueur
+        const res = await axios.get(`${API_BASE}/api/d2/stats/precision`);
+        setStats({
+          precision: parseFloat(res.data.precision) || 0,
+          total: res.data.total_matchs || 0,
+        });
       } catch (e) {
         console.error("Erreur stats D2:", e);
       }
