@@ -346,7 +346,7 @@ export default function ClassementCommunauteTab() {
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(2)}</div>
                 <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '110px' }}>
-                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[1].user_id === IA_USER_ID ? '🤖 IA' : truncatePseudo(top3[1].pseudo)}</p>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[1].user_id === IA_USER_ID ? `🤖 ${truncatePseudo(top3[1].pseudo)}` : truncatePseudo(top3[1].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
                     <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[1].jetons || 0) : (top3[1].points || 0)}
@@ -364,7 +364,7 @@ export default function ClassementCommunauteTab() {
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(1)}</div>
                 <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '130px' }}>
-                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[0].user_id === IA_USER_ID ? '🤖 IA' : truncatePseudo(top3[0].pseudo)}</p>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[0].user_id === IA_USER_ID ? `🤖 ${truncatePseudo(top3[0].pseudo)}` : truncatePseudo(top3[0].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
                     <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[0].jetons || 0) : (top3[0].points || 0)}
@@ -382,7 +382,7 @@ export default function ClassementCommunauteTab() {
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
                 <div className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '95px' }}>
-                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[2].user_id === IA_USER_ID ? '🤖 IA' : truncatePseudo(top3[2].pseudo)}</p>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[2].user_id === IA_USER_ID ? `🤖 ${truncatePseudo(top3[2].pseudo)}` : truncatePseudo(top3[2].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
                     <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[2].jetons || 0) : (top3[2].points || 0)}
@@ -447,7 +447,7 @@ export default function ClassementCommunauteTab() {
                     user.user_id === IA_USER_ID ? 'text-blue-600' :
                     user.user_id === currentUserId ? 'text-rugby-gold' : 'text-gray-800'
                   }`}>
-                    {user.user_id === IA_USER_ID ? '🤖 IA Top14Pronos' : user.pseudo}
+                    {user.user_id === IA_USER_ID ? `🤖 ${user.pseudo}` : user.pseudo}
                     {user.user_id === IA_USER_ID && (
                       <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
                         IA TOP14
