@@ -448,11 +448,6 @@ export default function ClassementCommunauteTab() {
                     user.user_id === currentUserId ? 'text-rugby-gold' : 'text-gray-800'
                   }`}>
                     {user.user_id === IA_USER_ID ? `🤖 ${user.pseudo}` : user.pseudo}
-                    {user.user_id === IA_USER_ID && (
-                      <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                        IA TOP14
-                      </span>
-                    )}
                     {user.user_id === currentUserId && (
                       <span className="ml-2 text-xs bg-rugby-gold text-white px-2 py-0.5 rounded-full">
                         Vous
