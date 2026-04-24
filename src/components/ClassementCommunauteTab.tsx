@@ -346,7 +346,7 @@ export default function ClassementCommunauteTab() {
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(2)}</div>
                 <div className="w-full bg-gradient-to-t from-gray-300 to-gray-400 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '110px' }}>
-                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[1].user_id === IA_USER_ID ? `🤖 ${truncatePseudo(top3[1].pseudo)}` : truncatePseudo(top3[1].pseudo)}</p>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{truncatePseudo(top3[1].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
                     <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[1].jetons || 0) : (top3[1].points || 0)}
@@ -364,7 +364,7 @@ export default function ClassementCommunauteTab() {
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(1)}</div>
                 <div className="w-full bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '130px' }}>
-                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[0].user_id === IA_USER_ID ? `🤖 ${truncatePseudo(top3[0].pseudo)}` : truncatePseudo(top3[0].pseudo)}</p>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{truncatePseudo(top3[0].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
                     <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[0].jetons || 0) : (top3[0].points || 0)}
@@ -382,7 +382,7 @@ export default function ClassementCommunauteTab() {
               <div className="flex flex-col items-center w-28">
                 <div className="mb-2">{getPodiumIcon(3)}</div>
                 <div className="w-full bg-gradient-to-t from-orange-400 to-orange-500 rounded-t-lg p-2.5 text-center flex flex-col justify-between" style={{ height: '95px' }}>
-                  <p className="font-bold text-white text-xs leading-tight mb-1">{top3[2].user_id === IA_USER_ID ? `🤖 ${truncatePseudo(top3[2].pseudo)}` : truncatePseudo(top3[2].pseudo)}</p>
+                  <p className="font-bold text-white text-xs leading-tight mb-1">{truncatePseudo(top3[2].pseudo)}</p>
                   <div className="flex-1 flex items-center justify-center">
                     <p className={`font-bold text-white ${classementType === 'jetons' ? 'text-3xl' : 'text-4xl'}`}>
                       {classementType === 'jetons' ? formatNumber(top3[2].jetons || 0) : (top3[2].points || 0)}
@@ -425,11 +425,16 @@ export default function ClassementCommunauteTab() {
                 {/* Avatar */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden ${
                   user.user_id === IA_USER_ID
-                    ? 'bg-gradient-to-br from-blue-400 to-purple-500'
+                    ? 'bg-gradient-to-br from-rugby-gold via-yellow-500 to-red-600 ring-2 ring-rugby-gold shadow-lg'
                     : 'bg-gradient-to-br from-rugby-gold to-rugby-bronze'
                 }`}>
                   {user.user_id === IA_USER_ID ? (
-                    <span className="text-lg">🤖</span>
+                    // Bouclier de Brennus stylisé (avatar IA Top 14)
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2 L20 5 L20 12 C20 16.5 16.5 20 12 22 C7.5 20 4 16.5 4 12 L4 5 Z" fill="white" stroke="#B91C1C" strokeWidth="1"/>
+                      <path d="M12 6 L16 7.5 L16 12 C16 14.5 14 16.5 12 17.5 C10 16.5 8 14.5 8 12 L8 7.5 Z" fill="#D4AF37" stroke="#B91C1C" strokeWidth="0.5"/>
+                      <text x="12" y="13.5" textAnchor="middle" fontSize="5" fontWeight="700" fill="#B91C1C">XIV</text>
+                    </svg>
                   ) : user.avatar ? (
                     <img
                       src={user.avatar}
@@ -444,10 +449,10 @@ export default function ClassementCommunauteTab() {
                 {/* Pseudo */}
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-semibold truncate ${
-                    user.user_id === IA_USER_ID ? 'text-blue-600' :
+                    user.user_id === IA_USER_ID ? 'text-red-700' :
                     user.user_id === currentUserId ? 'text-rugby-gold' : 'text-gray-800'
                   }`}>
-                    {user.user_id === IA_USER_ID ? `🤖 ${user.pseudo}` : user.pseudo}
+                    {user.pseudo}
                     {user.user_id === currentUserId && (
                       <span className="ml-2 text-xs bg-rugby-gold text-white px-2 py-0.5 rounded-full">
                         Vous
