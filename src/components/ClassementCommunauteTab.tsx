@@ -5,6 +5,8 @@
 import { useState, useEffect } from "react";
 
 const IA_USER_ID = "00000000-0000-0000-0000-000000000001";
+const IA_D2_USER_ID = "00000000-0000-0000-0000-000000000002";
+const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID];
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -250,9 +252,9 @@ export default function ClassementCommunauteTab() {
     );
   }
 
-  // Masquer l'IA du classement Par Jetons (0 jetons = pas pertinent)
+  // Masquer les IA du classement Par Jetons (0 jetons = pas pertinent)
   const displayedUsers = classementType === 'jetons'
-    ? filteredUsers.filter(u => u.user_id !== IA_USER_ID)
+    ? filteredUsers.filter(u => !BOT_USER_IDS.includes(u.user_id))
     : filteredUsers;
 
   const top3 = displayedUsers.slice(0, 3);
@@ -411,11 +413,21 @@ export default function ClassementCommunauteTab() {
                 key={user.user_id}
                 className={`flex items-center gap-4 p-4 transition-colors ${
                   user.user_id === IA_USER_ID
-                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400'
+                    ? 'bg-gradient-to-r from-rugby-gold/10 to-red-50 border-l-4 border-rugby-gold'
+                    : user.user_id === IA_D2_USER_ID
+                    ? 'border-l-4'
                     : user.user_id === currentUserId
                     ? 'bg-rugby-gold/10 border-l-4 border-rugby-gold'
                     : 'hover:bg-gray-50'
                 }`}
+                style={
+                  user.user_id === IA_D2_USER_ID
+                    ? {
+                        background: 'linear-gradient(to right, rgba(0, 23, 77, 0.08), rgba(151, 193, 254, 0.08))',
+                        borderLeftColor: '#00174D',
+                      }
+                    : undefined
+                }
               >
                 {/* Rang / Médaille */}
                 <div className="w-10 flex justify-center">
@@ -423,17 +435,39 @@ export default function ClassementCommunauteTab() {
                 </div>
 
                 {/* Avatar */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden ${
-                  user.user_id === IA_USER_ID
-                    ? 'bg-gradient-to-br from-rugby-gold via-yellow-500 to-red-600 ring-2 ring-rugby-gold shadow-lg'
-                    : 'bg-gradient-to-br from-rugby-gold to-rugby-bronze'
-                }`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden ${
+                    user.user_id === IA_USER_ID
+                      ? 'bg-gradient-to-br from-rugby-gold via-yellow-500 to-red-600 ring-2 ring-rugby-gold shadow-lg'
+                      : user.user_id === IA_D2_USER_ID
+                      ? 'ring-2 shadow-lg'
+                      : 'bg-gradient-to-br from-rugby-gold to-rugby-bronze'
+                  }`}
+                  style={
+                    user.user_id === IA_D2_USER_ID
+                      ? {
+                          background: 'linear-gradient(135deg, #00174D, #97C1FE)',
+                          boxShadow: '0 0 0 2px #C0C0C0, 0 2px 4px rgba(0,0,0,0.1)',
+                        }
+                      : undefined
+                  }
+                >
                   {user.user_id === IA_USER_ID ? (
-                    // Bouclier de Brennus stylisé (avatar IA Top 14)
+                    // Bouclier de Brennus stylisé (IA Top 14)
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2 L20 5 L20 12 C20 16.5 16.5 20 12 22 C7.5 20 4 16.5 4 12 L4 5 Z" fill="white" stroke="#B91C1C" strokeWidth="1"/>
                       <path d="M12 6 L16 7.5 L16 12 C16 14.5 14 16.5 12 17.5 C10 16.5 8 14.5 8 12 L8 7.5 Z" fill="#D4AF37" stroke="#B91C1C" strokeWidth="0.5"/>
                       <text x="12" y="13.5" textAnchor="middle" fontSize="5" fontWeight="700" fill="#B91C1C">XIV</text>
+                    </svg>
+                  ) : user.user_id === IA_D2_USER_ID ? (
+                    // Coupe du champion Pro D2 (IA Pro D2)
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 4 L16 4 L16 10 C16 13 14 15 12 15 C10 15 8 13 8 10 Z" fill="#C0C0C0" stroke="white" strokeWidth="0.5"/>
+                      <path d="M8 6 L5 6 C4 6 4 8 5 9 L8 9" fill="none" stroke="#C0C0C0" strokeWidth="1.2"/>
+                      <path d="M16 6 L19 6 C20 6 20 8 19 9 L16 9" fill="none" stroke="#C0C0C0" strokeWidth="1.2"/>
+                      <rect x="11" y="15" width="2" height="3" fill="#C0C0C0"/>
+                      <rect x="8" y="18" width="8" height="2" fill="#C0C0C0" rx="0.5"/>
+                      <text x="12" y="12" textAnchor="middle" fontSize="4" fontWeight="700" fill="#00174D">D2</text>
                     </svg>
                   ) : user.avatar ? (
                     <img
@@ -448,10 +482,17 @@ export default function ClassementCommunauteTab() {
 
                 {/* Pseudo */}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold truncate ${
-                    user.user_id === IA_USER_ID ? 'text-red-700' :
-                    user.user_id === currentUserId ? 'text-rugby-gold' : 'text-gray-800'
-                  }`}>
+                  <p
+                    className={`text-sm font-semibold truncate ${
+                      user.user_id === IA_USER_ID ? 'text-red-700' :
+                      user.user_id === currentUserId ? 'text-rugby-gold' : 'text-gray-800'
+                    }`}
+                    style={
+                      user.user_id === IA_D2_USER_ID
+                        ? { color: '#00174D' }
+                        : undefined
+                    }
+                  >
                     {user.pseudo}
                     {user.user_id === currentUserId && (
                       <span className="ml-2 text-xs bg-rugby-gold text-white px-2 py-0.5 rounded-full">
