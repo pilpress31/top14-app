@@ -482,15 +482,240 @@ function InsightsSection({ insights }) {
   );
 }
 
-// ─── Section fusionnée : Compo + Blessés par équipe ───
-function CompoEtBlessesSection({ name, logo, compo, blesses }) {
+// ──────────────────────────────────────────────────────────────────
+// Helper : parse une ligne "1. NOM Prénom (poste)" → { num, nom, poste }
+// ──────────────────────────────────────────────────────────────────
+function parsePlayerLine(line) {
+  // Ex: "1. Daniel BIBI BIZIWU (Pilier)"
+  const match = line.match(/^(\d+)[.\s]+(.+?)\s*\(([^)]+)\)\s*$/);
+  if (!match) return null;
+  const [, num, nom, poste] = match;
+  return {
+    num: parseInt(num, 10),
+    nom: nom.trim(),
+    poste: poste.trim()
+  };
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Vue Liste (existante)
+// ──────────────────────────────────────────────────────────────────
+function CompoListView({ titulaires, remplacants }) {
+  return (
+    <div className="space-y-2">
+      {titulaires.length > 0 && (
+        <div>
+          <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
+          <div className="space-y-0.5">
+            {titulaires.map((line, i) => (
+              <p key={i} className="text-xs text-gray-700 leading-relaxed">{line.trim()}</p>
+            ))}
+          </div>
+        </div>
+      )}
+      {remplacants.length > 0 && (
+        <div>
+          <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+          <div className="space-y-0.5">
+            {remplacants.map((line, i) => (
+              <p key={i} className="text-xs text-gray-500 leading-relaxed">{line.trim()}</p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Vue Terrain (nouvelle) - placement tactique 15 titulaires + remplaçants en bas
+// ──────────────────────────────────────────────────────────────────
+function CompoTerrainView({ titulaires, remplacants }) {
+  // Parser les titulaires
+  const players = titulaires
+    .map(line => parsePlayerLine(line))
+    .filter(p => p !== null);
+  
+  // Map par numéro pour accès rapide
+  const byNum = {};
+  players.forEach(p => { byNum[p.num] = p; });
+  
+  // Parser les remplaçants
+  const remps = remplacants
+    .map(line => parsePlayerLine(line))
+    .filter(p => p !== null);
+
+  // Positions des 15 titulaires sur le terrain
+  // Coordonnées en % (x: gauche-droite, y: bas-haut, 0 = bas/avant, 100 = haut/arrière)
+  // Le terrain est représenté en mode portrait : avants en bas, arrières en haut
+  const positions = {
+    // 1ère ligne (avants en mêlée) - rangée du bas
+    1: { x: 25, y: 8, label: 'Pilier G.' },     // Pilier gauche
+    2: { x: 50, y: 8, label: 'Talonneur' },     // Talonneur
+    3: { x: 75, y: 8, label: 'Pilier D.' },     // Pilier droit
+    // 2ème ligne
+    4: { x: 38, y: 22, label: '2ème ligne' },
+    5: { x: 62, y: 22, label: '2ème ligne' },
+    // 3ème ligne (flankers + n°8)
+    6: { x: 18, y: 35, label: '3L Aile' },      // Flanker gauche
+    8: { x: 50, y: 35, label: '3L Centre' },    // Numéro 8
+    7: { x: 82, y: 35, label: '3L Aile' },      // Flanker droit
+    // Demi de mêlée
+    9: { x: 50, y: 48, label: 'Mêlée' },
+    // Ouverture
+    10: { x: 35, y: 60, label: 'Ouverture' },
+    // 3 quarts
+    12: { x: 30, y: 72, label: '1er centre' },
+    13: { x: 55, y: 72, label: '2ème centre' },
+    // Ailiers
+    11: { x: 10, y: 78, label: 'Ailier' },
+    14: { x: 90, y: 78, label: 'Ailier' },
+    // Arrière
+    15: { x: 50, y: 92, label: 'Arrière' }
+  };
+
+  // Couleur du jersey par numéro (pack rouge, ligne arrière bleu)
+  const getJerseyColor = (num) => {
+    if (num >= 1 && num <= 8) return '#dc2626';   // Avants - rouge
+    if (num === 9 || num === 10) return '#7c3aed'; // Demis - violet
+    return '#2563eb';                              // Arrières - bleu
+  };
+
+  return (
+    <div className="space-y-2">
+      {/* Terrain SVG */}
+      <div className="relative w-full" style={{ aspectRatio: '5/7' }}>
+        <svg
+          viewBox="0 0 100 140"
+          className="w-full h-full rounded-md"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {/* Fond pelouse avec rayures */}
+          <defs>
+            <pattern id="grass" x="0" y="0" width="100" height="14" patternUnits="userSpaceOnUse">
+              <rect width="100" height="14" fill="#16a34a" />
+              <rect width="100" height="7" fill="#15803d" />
+            </pattern>
+          </defs>
+          <rect width="100" height="140" fill="url(#grass)" />
+          
+          {/* Lignes du terrain */}
+          {/* Ligne en-but bas */}
+          <line x1="2" y1="2" x2="98" y2="2" stroke="white" strokeWidth="0.4" />
+          {/* Ligne 22m bas */}
+          <line x1="2" y1="20" x2="98" y2="20" stroke="white" strokeWidth="0.3" strokeDasharray="0.8,0.4" opacity="0.7" />
+          {/* Ligne médiane */}
+          <line x1="2" y1="70" x2="98" y2="70" stroke="white" strokeWidth="0.4" />
+          {/* Ligne 22m haut */}
+          <line x1="2" y1="120" x2="98" y2="120" stroke="white" strokeWidth="0.3" strokeDasharray="0.8,0.4" opacity="0.7" />
+          {/* Ligne en-but haut */}
+          <line x1="2" y1="138" x2="98" y2="138" stroke="white" strokeWidth="0.4" />
+          
+          {/* Touches gauche & droite */}
+          <line x1="2" y1="2" x2="2" y2="138" stroke="white" strokeWidth="0.4" />
+          <line x1="98" y1="2" x2="98" y2="138" stroke="white" strokeWidth="0.4" />
+
+          {/* Joueurs (cercles + numéro + nom) */}
+          {Object.entries(positions).map(([num, pos]) => {
+            const player = byNum[parseInt(num, 10)];
+            if (!player) return null;
+            
+            const yReal = 140 - (pos.y * 140 / 100); // inversion : 0 = bas, 100 = haut
+            const xReal = pos.x;
+            
+            // Récupérer juste le nom de famille (en MAJUSCULES dans la donnée)
+            // Ex: "Daniel BIBI BIZIWU" → "BIBI BIZIWU"
+            const nameParts = player.nom.split(' ');
+            const lastNames = nameParts.filter(p => p === p.toUpperCase() && p.length > 1);
+            const displayName = lastNames.length > 0 
+              ? lastNames.join(' ').slice(0, 12)
+              : player.nom.slice(0, 12);
+            
+            return (
+              <g key={num}>
+                {/* Cercle joueur */}
+                <circle 
+                  cx={xReal} 
+                  cy={yReal} 
+                  r="3.5" 
+                  fill={getJerseyColor(parseInt(num, 10))} 
+                  stroke="white" 
+                  strokeWidth="0.4"
+                />
+                {/* Numéro de maillot */}
+                <text 
+                  x={xReal} 
+                  y={yReal + 0.8} 
+                  textAnchor="middle" 
+                  fill="white" 
+                  fontSize="2.8"
+                  fontWeight="700"
+                >
+                  {player.num}
+                </text>
+                {/* Nom du joueur (en dessous) */}
+                <text 
+                  x={xReal} 
+                  y={yReal + 6.5} 
+                  textAnchor="middle" 
+                  fill="white" 
+                  fontSize="2.1"
+                  fontWeight="600"
+                  style={{ textShadow: '0 0 2px rgba(0,0,0,0.8)' }}
+                >
+                  {displayName}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* Légende */}
+      <div className="flex items-center gap-3 text-[9px] text-gray-500 px-1">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-red-600 inline-block"></span>
+          Avants
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-purple-600 inline-block"></span>
+          Demis
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>
+          Arrières
+        </span>
+      </div>
+
+      {/* Remplaçants (bandeau) */}
+      {remps.length > 0 && (
+        <div>
+          <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+            {remps.map((r, i) => (
+              <p key={i} className="text-[10px] text-gray-500 leading-tight">
+                <span className="font-semibold text-gray-600">{r.num}.</span> {r.nom}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Composant principal
+// ──────────────────────────────────────────────────────────────────
+export function CompoEtBlessesSection({ name, logo, compo, blesses }) {
+  const [view, setView] = useState('liste'); // 'liste' | 'terrain'
+
   const compoIndispo = !compo || compo === 'Information non disponible';
   const blessesIndispo = !blesses ||
     blesses === 'Information non disponible' ||
     blesses === 'Aucune absence majeure signalée' ||
     blesses === 'Aucune absence signalée';
 
-  // Détecter type de compo
   const getTypeBadge = (text) => {
     if (!text) return null;
     if (text.toLowerCase().includes('officielle')) return { label: 'Officielle', color: 'bg-green-100 text-green-700' };
@@ -502,8 +727,12 @@ function CompoEtBlessesSection({ name, logo, compo, blesses }) {
   // Parser compo en titulaires + remplaçants
   const lines = !compoIndispo ? compo.split('\n').filter(l => l.trim()) : [];
   const remplacantsIdx = lines.findIndex(l => l.toLowerCase().includes('remplaçant'));
-  const titulaires = remplacantsIdx >= 0 ? lines.slice(0, remplacantsIdx) : lines;
-  const remplacants = remplacantsIdx >= 0 ? lines.slice(remplacantsIdx + 1) : [];
+  const titulairesRaw = remplacantsIdx >= 0 ? lines.slice(0, remplacantsIdx) : lines;
+  const remplacantsRaw = remplacantsIdx >= 0 ? lines.slice(remplacantsIdx + 1) : [];
+  
+  // Filtrer la ligne "Compo estimée" et autres en-têtes
+  const titulaires = titulairesRaw.filter(l => /^\d/.test(l.trim()));
+  const remplacants = remplacantsRaw.filter(l => /^\d/.test(l.trim()));
 
   return (
     <div className="bg-teal-50/40 rounded-lg border border-teal-100 overflow-hidden">
@@ -514,43 +743,50 @@ function CompoEtBlessesSection({ name, logo, compo, blesses }) {
             onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           <p className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">{name}</p>
         </div>
-        {badge && (
-          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${badge.color}`}>
-            {badge.label}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Toggle Liste / Terrain */}
+          {!compoIndispo && titulaires.length > 0 && (
+            <div className="flex items-center bg-white/80 rounded-full overflow-hidden text-[9px] font-semibold">
+              <button
+                type="button"
+                onClick={() => setView('liste')}
+                className={`px-2 py-0.5 transition-colors ${view === 'liste' ? 'bg-teal-600 text-white' : 'text-teal-700 hover:bg-teal-50'}`}
+                aria-label="Voir en liste"
+              >
+                📋 Liste
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('terrain')}
+                className={`px-2 py-0.5 transition-colors ${view === 'terrain' ? 'bg-teal-600 text-white' : 'text-teal-700 hover:bg-teal-50'}`}
+                aria-label="Voir sur terrain"
+              >
+                🏟️ Terrain
+              </button>
+            </div>
+          )}
+          {badge && (
+            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${badge.color}`}>
+              {badge.label}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="px-3 py-2 space-y-2">
-        {/* Titulaires */}
-        {titulaires.length > 0 && (
-          <div>
-            <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
-            <div className="space-y-0.5">
-              {titulaires.map((line, i) => (
-                <p key={i} className="text-xs text-gray-700 leading-relaxed">{line.trim()}</p>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Remplaçants */}
-        {remplacants.length > 0 && (
-          <div>
-            <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
-            <div className="space-y-0.5">
-              {remplacants.map((line, i) => (
-                <p key={i} className="text-xs text-gray-500 leading-relaxed">{line.trim()}</p>
-              ))}
-            </div>
-          </div>
-        )}
-
         {compoIndispo && (
           <p className="text-xs text-gray-400 italic">Composition non disponible</p>
         )}
 
-        {/* Blessés — séparateur + liste sans label */}
+        {!compoIndispo && view === 'liste' && (
+          <CompoListView titulaires={titulaires} remplacants={remplacants} />
+        )}
+
+        {!compoIndispo && view === 'terrain' && (
+          <CompoTerrainView titulaires={titulaires} remplacants={remplacants} />
+        )}
+
+        {/* Blessés */}
         {!blessesIndispo && (
           <div className="pt-2 mt-1 border-t border-teal-100">
             <p className="text-[9px] font-bold text-red-500 uppercase tracking-wide mb-1">Absents</p>
