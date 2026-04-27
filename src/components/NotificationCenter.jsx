@@ -2,6 +2,8 @@
 // NOTIFICATION CENTER
 // ==========================================
 // Fichier : src/components/NotificationCenter.jsx
+// 🆕 v2 : utilise NotificationsContext au lieu du hook direct
+// ==========================================
 
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +13,7 @@ import {
   getRelativeTime, 
   getNotificationIcon,
   getNotificationColor 
-} from '../hooks/useNotifications';
+} from '../contexts/NotificationsContext';
 
 export default function NotificationCenter({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -45,21 +47,17 @@ export default function NotificationCenter({ isOpen, onClose }) {
 
   // Gérer clic sur notification
   const handleNotificationClick = (notification) => {
-    // Marquer comme lue
     if (!notification.is_read) {
       markAsRead(notification.id);
     }
 
-    // Navigation selon type
     const { type, data } = notification;
 
     if (type === 'distribution' || type === 'bonus') {
-      // Aller à Ma Cagnotte
       navigate('/ma-cagnotte');
       onClose();
     } 
     else if (type === 'bet_won' || type === 'bet_lost') {
-      // Aller à Mes Paris avec filtre
       const filter = type === 'bet_won' ? 'won' : 'lost';
       navigate('/pronos', {
         state: { activeTab: 'mes-paris', filter }
@@ -67,12 +65,10 @@ export default function NotificationCenter({ isOpen, onClose }) {
       onClose();
     }
     else if (type === 'new_match') {
-      // Aller à Pronos
       navigate('/pronos');
       onClose();
     }
     else if (type === 'rank_up') {
-      // Aller au Classement
       navigate('/classement');
       onClose();
     }
@@ -82,13 +78,11 @@ export default function NotificationCenter({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Overlay */}
       <div 
         className="fixed inset-0 bg-black/20 z-40"
         onClick={onClose}
       />
 
-      {/* Panel */}
       <div 
         ref={panelRef}
         className="fixed top-16 right-4 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-2xl z-50 max-h-[80vh] flex flex-col"
@@ -105,7 +99,6 @@ export default function NotificationCenter({ isOpen, onClose }) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Marquer toutes comme lues */}
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
@@ -116,7 +109,6 @@ export default function NotificationCenter({ isOpen, onClose }) {
               </button>
             )}
 
-            {/* Tout supprimer */}
             {notifications.length > 0 && (
               <button
                 onClick={() => {
@@ -131,7 +123,6 @@ export default function NotificationCenter({ isOpen, onClose }) {
               </button>
             )}
 
-            {/* Fermer */}
             <button
               onClick={onClose}
               className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
@@ -188,18 +179,15 @@ function NotificationItem({ notification, onClick, onDelete, onMarkRead }) {
       }`}
       onClick={onClick}
     >
-      {/* Badge non lu */}
       {!is_read && (
         <div className="absolute top-3 right-3 w-2 h-2 bg-blue-500 rounded-full"></div>
       )}
 
       <div className="flex gap-3">
-        {/* Icône */}
         <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center border-2 ${colorClass}`}>
           <span className="text-xl">{icon}</span>
         </div>
 
-        {/* Contenu */}
         <div className="flex-1 min-w-0">
           <p className={`text-sm font-semibold ${!is_read ? 'text-gray-900' : 'text-gray-700'}`}>
             {title}
@@ -212,9 +200,7 @@ function NotificationItem({ notification, onClick, onDelete, onMarkRead }) {
           </p>
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col gap-1">
-          {/* Marquer comme lu */}
           {!is_read && (
             <button
               onClick={(e) => {
@@ -228,7 +214,6 @@ function NotificationItem({ notification, onClick, onDelete, onMarkRead }) {
             </button>
           )}
 
-          {/* Supprimer */}
           <button
             onClick={(e) => {
               e.stopPropagation();

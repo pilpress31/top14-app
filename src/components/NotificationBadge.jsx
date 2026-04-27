@@ -2,20 +2,20 @@
 // NOTIFICATION BADGE
 // ==========================================
 // Fichier : src/components/NotificationBadge.jsx
+// 🆕 v2 : utilise NotificationsContext au lieu du hook direct
+// ==========================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Bell } from 'lucide-react';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotifications } from '../contexts/NotificationsContext';
 import NotificationCenter from './NotificationCenter';
 
 export default function NotificationBadge() {
-  const { unreadCount, loadUnreadCount } = useNotifications();
+  const { unreadCount } = useNotifications();
   const [showCenter, setShowCenter] = useState(false);
 
-  // Rafraîchir compteur au montage
-  useEffect(() => {
-    loadUnreadCount();
-  }, [loadUnreadCount]);
+  // 🚫 SUPPRIMÉ : useEffect(() => loadUnreadCount(), []) 
+  // Le NotificationsProvider charge déjà au montage de l'app
 
   return (
     <>

@@ -5,6 +5,7 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
+import { NotificationsProvider } from "./contexts/NotificationsContext";
 import { ChampionnatProvider, useChampionnat } from "./contexts/ChampionnatContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomNav from "@/components/BottomNav";
@@ -183,7 +184,9 @@ function App() {
     <AuthProvider>
       <ChampionnatProvider>
         <ChatNotificationProvider>
-          <AppContent />
+          <NotificationsProvider>
+            <AppContent />
+          </NotificationsProvider>
         </ChatNotificationProvider>
       </ChampionnatProvider>
     </AuthProvider>
