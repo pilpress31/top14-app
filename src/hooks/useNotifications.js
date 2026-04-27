@@ -3,10 +3,10 @@
 // ==========================================
 // Fichier : src/hooks/useNotifications.js
 //
-// 🆕 v2 : badge réactif instantané
-//    - Suppression du polling 30s qui écrasait les optimistic updates
+// 🆕 v3 : badge réactif instantané ET compatibilité ascendante
 //    - unreadCount dérivé localement de notifications (calcul réactif)
-//    - Plus de loadUnreadCount() dans les events Realtime
+//    - Polling 30s supprimé
+//    - loadUnreadCount conservé pour compatibilité (ne fait plus rien de néfaste)
 // ==========================================
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -57,6 +57,13 @@ export function useNotifications() {
     }
   }, []);
 
+  // 🆕 loadUnreadCount conservé pour compatibilité ascendante
+  // Maintenant il appelle simplement loadNotifications(),
+  // ce qui recharge tout (notifs + compteur dérivé) sans risque de désync
+  const loadUnreadCount = useCallback(async () => {
+    return loadNotifications();
+  }, [loadNotifications]);
+
   // Marquer notification comme lue (MISE À JOUR OPTIMISTE)
   const markAsRead = useCallback(async (notificationId) => {
     try {
@@ -64,12 +71,10 @@ export function useNotifications() {
       if (!user) return;
 
       // ✅ OPTIMISTE : mettre à jour l'UI IMMÉDIATEMENT
-      // Le compteur unreadCount se recalcule automatiquement via useMemo
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
 
-      // Puis synchroniser avec le serveur en arrière-plan
       await axios.put(
         `${API_URL}/notifications/${notificationId}/read`,
         {},
@@ -77,7 +82,6 @@ export function useNotifications() {
       );
     } catch (err) {
       console.error('Erreur marquage notification:', err);
-      // En cas d'erreur, on recharge pour resynchroniser
       loadNotifications();
     }
   }, [loadNotifications]);
@@ -88,7 +92,6 @@ export function useNotifications() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // ✅ OPTIMISTE
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
 
       await axios.put(
@@ -108,7 +111,6 @@ export function useNotifications() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // ✅ OPTIMISTE
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
 
       await axios.delete(
@@ -127,7 +129,6 @@ export function useNotifications() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // ✅ OPTIMISTE : vider l'UI IMMÉDIATEMENT
       setNotifications([]);
 
       await axios.delete(
@@ -160,13 +161,12 @@ export function useNotifications() {
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            // Note : on évite TOUT loadUnreadCount() ici.
+            // 🆕 Note : on évite TOUT loadUnreadCount() ici.
             // Le compteur est dérivé de notifications via useMemo,
-            // donc il se met à jour automatiquement quand on touche notifications.
+            // donc il se met à jour automatiquement.
 
             if (payload.eventType === 'INSERT') {
               setNotifications(prev => {
-                // Éviter doublons si déjà ajoutée localement
                 if (prev.some(n => n.id === payload.new.id)) return prev;
                 return [payload.new, ...prev];
               });
@@ -207,6 +207,7 @@ export function useNotifications() {
     loading,
     error,
     loadNotifications,
+    loadUnreadCount,  // 🆕 conservé pour compatibilité (ne fait plus rien de néfaste)
     markAsRead,
     markAllAsRead,
     deleteNotification,
