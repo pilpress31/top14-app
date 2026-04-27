@@ -2,21 +2,30 @@
 // HOOK useNotifications
 // ==========================================
 // Fichier : src/hooks/useNotifications.js
+//
+// 🆕 v2 : badge réactif instantané
+//    - Suppression du polling 30s qui écrasait les optimistic updates
+//    - unreadCount dérivé localement de notifications (calcul réactif)
+//    - Plus de loadUnreadCount() dans les events Realtime
+// ==========================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 
-// const API_URL = import.meta.env.VITE_API_URL || 'https://top14-api-production.up.railway.app/api';
-// Hardcodé temporairement pour tester
 const API_URL = 'https://top14-api-production.up.railway.app/api';
 
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // 🆕 unreadCount DÉRIVÉ localement de notifications (toujours en sync avec l'UI)
+  const unreadCount = useMemo(
+    () => notifications.filter(n => !n.is_read).length,
+    [notifications]
+  );
 
   // Charger notifications
   const loadNotifications = useCallback(async (unreadOnly = false) => {
@@ -27,7 +36,6 @@ export function useNotifications() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) {
         setNotifications([]);
-        setUnreadCount(0);
         return;
       }
 
@@ -40,33 +48,12 @@ export function useNotifications() {
       });
 
       setNotifications(response.data.notifications || []);
-      setUnreadCount(response.data.unread_count || 0);
 
     } catch (err) {
       console.error('Erreur chargement notifications:', err);
       setError(err.message);
     } finally {
       setLoading(false);
-    }
-  }, []);
-
-  // Charger compteur uniquement
-  const loadUnreadCount = useCallback(async () => {
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) {
-        setUnreadCount(0);
-        return;
-      }
-
-      const response = await axios.get(`${API_URL}/notifications/unread-count`, {
-        headers: { 'x-user-id': user.id }
-      });
-
-      setUnreadCount(response.data.unread_count || 0);
-
-    } catch (err) {
-      console.error('Erreur comptage notifications:', err);
     }
   }, []);
 
@@ -77,15 +64,10 @@ export function useNotifications() {
       if (!user) return;
 
       // ✅ OPTIMISTE : mettre à jour l'UI IMMÉDIATEMENT
-      let wasUnread = false;
-      setNotifications(prev => {
-        const notif = prev.find(n => n.id === notificationId);
-        wasUnread = notif && !notif.is_read;
-        return prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n);
-      });
-      if (wasUnread) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
+      // Le compteur unreadCount se recalcule automatiquement via useMemo
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      );
 
       // Puis synchroniser avec le serveur en arrière-plan
       await axios.put(
@@ -106,11 +88,9 @@ export function useNotifications() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // ✅ OPTIMISTE : mettre à jour l'UI IMMÉDIATEMENT
+      // ✅ OPTIMISTE
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
 
-      // Puis synchroniser avec le serveur
       await axios.put(
         `${API_URL}/notifications/read-all`,
         {},
@@ -128,24 +108,34 @@ export function useNotifications() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      // ✅ OPTIMISTE : retirer de l'UI IMMÉDIATEMENT
-      let wasUnread = false;
-      setNotifications(prev => {
-        const notif = prev.find(n => n.id === notificationId);
-        wasUnread = notif && !notif.is_read;
-        return prev.filter(n => n.id !== notificationId);
-      });
-      if (wasUnread) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
+      // ✅ OPTIMISTE
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
 
-      // Puis synchroniser avec le serveur
       await axios.delete(
         `${API_URL}/notifications/${notificationId}`,
         { headers: { 'x-user-id': user.id } }
       );
     } catch (err) {
       console.error('Erreur suppression notification:', err);
+      loadNotifications();
+    }
+  }, [loadNotifications]);
+
+  // Supprimer toutes les notifications (MISE À JOUR OPTIMISTE)
+  const deleteAllNotifications = useCallback(async () => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+
+      // ✅ OPTIMISTE : vider l'UI IMMÉDIATEMENT
+      setNotifications([]);
+
+      await axios.delete(
+        `${API_URL}/notifications/all`,
+        { headers: { 'x-user-id': user.id } }
+      );
+    } catch (err) {
+      console.error('Erreur suppression toutes notifications:', err);
       loadNotifications();
     }
   }, [loadNotifications]);
@@ -159,42 +149,35 @@ export function useNotifications() {
       
       if (!user) return;
 
-      // S'abonner à TOUS les changements de notifications (INSERT / UPDATE / DELETE)
       channel = supabase
         .channel('notifications')
         .on(
           'postgres_changes',
           {
-            event: '*',  // ✅ INSERT + UPDATE + DELETE
+            event: '*',
             schema: 'public',
             table: 'user_notifications',
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            console.log('Événement notification:', payload.eventType, payload);
+            // Note : on évite TOUT loadUnreadCount() ici.
+            // Le compteur est dérivé de notifications via useMemo,
+            // donc il se met à jour automatiquement quand on touche notifications.
 
             if (payload.eventType === 'INSERT') {
-              // Nouvelle notif reçue
               setNotifications(prev => {
                 // Éviter doublons si déjà ajoutée localement
                 if (prev.some(n => n.id === payload.new.id)) return prev;
                 return [payload.new, ...prev];
               });
-              setUnreadCount(prev => prev + 1);
             }
             else if (payload.eventType === 'UPDATE') {
-              // Notif marquée comme lue depuis un autre appareil
               setNotifications(prev =>
                 prev.map(n => n.id === payload.new.id ? payload.new : n)
               );
-              // Recharger le compteur pour être sûr
-              loadUnreadCount();
             }
             else if (payload.eventType === 'DELETE') {
-              // Notif supprimée depuis un autre appareil
               setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
-              // Recharger le compteur pour être sûr
-              loadUnreadCount();
             }
           }
         )
@@ -208,42 +191,15 @@ export function useNotifications() {
         supabase.removeChannel(channel);
       }
     };
-  }, [loadUnreadCount]);
+  }, []);
 
   // Charger au montage
   useEffect(() => {
     loadNotifications();
   }, [loadNotifications]);
 
-  // Rafraîchir compteur toutes les 30s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadUnreadCount();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [loadUnreadCount]);
-
-  // Supprimer toutes les notifications (MISE À JOUR OPTIMISTE)
-  const deleteAllNotifications = useCallback(async () => {
-    try {
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) return;
-
-      // ✅ OPTIMISTE : vider l'UI IMMÉDIATEMENT
-      setNotifications([]);
-      setUnreadCount(0);
-
-      // Puis synchroniser avec le serveur
-      await axios.delete(
-        `${API_URL}/notifications/all`,
-        { headers: { 'x-user-id': user.id } }
-      );
-    } catch (err) {
-      console.error('Erreur suppression toutes notifications:', err);
-      loadNotifications();
-    }
-  }, [loadNotifications]);
+  // 🚫 SUPPRIMÉ : le polling 30s qui écrasait l'optimistic update
+  // Realtime Supabase suffit pour synchroniser avec d'autres appareils
 
   return {
     notifications,
@@ -251,7 +207,6 @@ export function useNotifications() {
     loading,
     error,
     loadNotifications,
-    loadUnreadCount,
     markAsRead,
     markAllAsRead,
     deleteNotification,
