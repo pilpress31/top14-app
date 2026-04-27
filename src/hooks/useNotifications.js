@@ -3,8 +3,11 @@
 // ==========================================
 // Fichier : src/hooks/useNotifications.js
 //
-// 🆕 v3.1 : badge réactif + logs de débogage temporaires
-//    À enlever après diagnostic terminé
+// v3.2 — version finale
+//   - unreadCount dérivé localement de notifications via useMemo
+//   - Pas de polling périodique (Realtime suffit)
+//   - À utiliser via NotificationsContext (Provider) pour partager
+//     le state entre Badge et Center
 // ==========================================
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -13,33 +16,21 @@ import axios from 'axios';
 
 const API_URL = 'https://top14-api-production.up.railway.app/api';
 
-// 🐛 Helper de log avec timestamp
-const dlog = (...args) => {
-  const now = new Date();
-  const t = `${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds().toString().padStart(3, '0')}`;
-  console.log(`%c[NOTIFS ${t}]`, 'color:#0d9488;font-weight:bold', ...args);
-};
-
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // unreadCount DÉRIVÉ localement de notifications
+  // unreadCount DÉRIVÉ localement de notifications (toujours en sync avec l'UI)
   const unreadCount = useMemo(
-    () => {
-      const count = notifications.filter(n => !n.is_read).length;
-      dlog(`📊 unreadCount recalculé = ${count} (sur ${notifications.length} notifs)`);
-      return count;
-    },
+    () => notifications.filter(n => !n.is_read).length,
     [notifications]
   );
 
   // Charger notifications
   const loadNotifications = useCallback(async (unreadOnly = false) => {
     try {
-      dlog('🔄 loadNotifications() appelé');
       setLoading(true);
       setError(null);
 
@@ -57,9 +48,7 @@ export function useNotifications() {
         }
       });
 
-      const newNotifs = response.data.notifications || [];
-      dlog(`✅ Reçu ${newNotifs.length} notifs du serveur`, newNotifs.map(n => ({id: n.id, read: n.is_read})));
-      setNotifications(newNotifs);
+      setNotifications(response.data.notifications || []);
 
     } catch (err) {
       console.error('Erreur chargement notifications:', err);
@@ -69,18 +58,18 @@ export function useNotifications() {
     }
   }, []);
 
+  // Conservé pour compatibilité ascendante (au cas où un composant l'appellerait)
+  // Redirige simplement vers loadNotifications
   const loadUnreadCount = useCallback(async () => {
-    dlog('🔢 loadUnreadCount() appelé (redirige vers loadNotifications)');
     return loadNotifications();
   }, [loadNotifications]);
 
-  // Marquer notification comme lue
+  // Marquer notification comme lue (mise à jour optimiste)
   const markAsRead = useCallback(async (notificationId) => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      dlog(`✏️ markAsRead(${notificationId}) - optimistic update`);
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
@@ -90,19 +79,18 @@ export function useNotifications() {
         {},
         { headers: { 'x-user-id': user.id } }
       );
-      dlog(`✅ markAsRead serveur OK`);
     } catch (err) {
       console.error('Erreur marquage notification:', err);
       loadNotifications();
     }
   }, [loadNotifications]);
 
+  // Marquer toutes comme lues (mise à jour optimiste)
   const markAllAsRead = useCallback(async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      dlog('✏️ markAllAsRead - optimistic update');
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
 
       await axios.put(
@@ -110,65 +98,55 @@ export function useNotifications() {
         {},
         { headers: { 'x-user-id': user.id } }
       );
-      dlog('✅ markAllAsRead serveur OK');
     } catch (err) {
       console.error('Erreur marquage toutes notifications:', err);
       loadNotifications();
     }
   }, [loadNotifications]);
 
-  // Supprimer notification
+  // Supprimer notification (mise à jour optimiste)
   const deleteNotification = useCallback(async (notificationId) => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      dlog(`🗑️ deleteNotification(${notificationId}) - optimistic update`);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
 
       await axios.delete(
         `${API_URL}/notifications/${notificationId}`,
         { headers: { 'x-user-id': user.id } }
       );
-      dlog('✅ deleteNotification serveur OK');
     } catch (err) {
       console.error('Erreur suppression notification:', err);
       loadNotifications();
     }
   }, [loadNotifications]);
 
+  // Supprimer toutes les notifications (mise à jour optimiste)
   const deleteAllNotifications = useCallback(async () => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) return;
 
-      dlog('🗑️ deleteAllNotifications - optimistic update');
       setNotifications([]);
 
       await axios.delete(
         `${API_URL}/notifications/all`,
         { headers: { 'x-user-id': user.id } }
       );
-      dlog('✅ deleteAllNotifications serveur OK');
     } catch (err) {
       console.error('Erreur suppression toutes notifications:', err);
       loadNotifications();
     }
   }, [loadNotifications]);
 
-  // Realtime
+  // Realtime Supabase — INSERT, UPDATE, DELETE
   useEffect(() => {
     let channel;
 
     async function setupRealtime() {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        dlog('❌ Pas de user, Realtime non démarré');
-        return;
-      }
-
-      dlog(`📡 Setup Realtime pour user ${user.id.substring(0, 8)}...`);
+      if (!user) return;
 
       channel = supabase
         .channel('notifications')
@@ -181,40 +159,32 @@ export function useNotifications() {
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            dlog(`🔔 REALTIME ${payload.eventType}:`, payload.new || payload.old);
+            // Note : on ne touche QUE notifications.
+            // unreadCount est dérivé via useMemo, il se met à jour automatiquement.
 
             if (payload.eventType === 'INSERT') {
               setNotifications(prev => {
-                if (prev.some(n => n.id === payload.new.id)) {
-                  dlog('⚠️ INSERT ignoré (doublon)');
-                  return prev;
-                }
-                dlog('➕ INSERT appliqué');
+                if (prev.some(n => n.id === payload.new.id)) return prev;
                 return [payload.new, ...prev];
               });
             }
             else if (payload.eventType === 'UPDATE') {
-              dlog('✏️ UPDATE appliqué');
               setNotifications(prev =>
                 prev.map(n => n.id === payload.new.id ? payload.new : n)
               );
             }
             else if (payload.eventType === 'DELETE') {
-              dlog('➖ DELETE appliqué');
               setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
             }
           }
         )
-        .subscribe((status) => {
-          dlog(`📡 Realtime status: ${status}`);
-        });
+        .subscribe();
     }
 
     setupRealtime();
 
     return () => {
       if (channel) {
-        dlog('🔌 Cleanup Realtime');
         supabase.removeChannel(channel);
       }
     };
@@ -241,7 +211,7 @@ export function useNotifications() {
 }
 
 // ==========================================
-// HELPERS (inchangés)
+// HELPER - Formater temps relatif
 // ==========================================
 
 export function getRelativeTime(date) {
@@ -265,6 +235,10 @@ export function getRelativeTime(date) {
   });
 }
 
+// ==========================================
+// HELPER - Icône selon type
+// ==========================================
+
 export function getNotificationIcon(type) {
   switch (type) {
     case 'distribution': return '💰';
@@ -276,6 +250,10 @@ export function getNotificationIcon(type) {
     default: return '🔔';
   }
 }
+
+// ==========================================
+// HELPER - Couleur selon type
+// ==========================================
 
 export function getNotificationColor(type) {
   switch (type) {
