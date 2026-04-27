@@ -659,7 +659,7 @@ function CompoTerrainView({ titulaires, remplacants }) {
                   y={yReal + 6.5} 
                   textAnchor="middle" 
                   fill="white" 
-                  fontSize="2.1"
+                  fontSize="2.6"
                   fontWeight="600"
                   style={{ textShadow: '0 0 2px rgba(0,0,0,0.8)' }}
                 >
