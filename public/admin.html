@@ -408,7 +408,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="card" style="margin-top:16px;">
         <div class="card-header">
           <div class="card-title">🔕 Utilisateurs sans notifications</div>
-          <button class="btn" onclick="loadSansNotifs()">↻ Actualiser</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn" onclick="openEditMailModal()">👁️ Aperçu / Éditer le mail</button>
+            <button class="btn" onclick="loadSansNotifs()">↻ Actualiser</button>
+          </div>
+        </div>
+        <div id="customMailIndicator" style="display:none;background:var(--color-background-info,#E3F2FD);color:var(--color-text-info,#0D47A1);padding:8px 12px;border-radius:6px;font-size:13px;margin-bottom:12px;">
+          ✏️ Mail personnalisé actif pour cette session — <a href="#" onclick="resetCustomMail();return false;" style="color:inherit;text-decoration:underline;">Réinitialiser</a>
         </div>
         <div id="sansNotifsResult" style="color:var(--muted);font-size:13px;padding:8px 0;">
           Cliquez sur Actualiser
@@ -431,6 +437,50 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </button>
         </div>
         <div class="result" id="mailNotifsResult"></div>
+      </div>
+    </div>
+
+    <!-- MODAL ÉDITION MAIL -->
+    <div id="editMailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+      <div style="background:var(--surface,#fff);border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
+        <div style="padding:20px;border-bottom:1px solid var(--border,#e0e0e0);display:flex;justify-content:space-between;align-items:center;">
+          <h2 style="margin:0;font-size:18px;color:var(--text,#212529);">✏️ Édition du mail "Notifications"</h2>
+          <button onclick="closeEditMailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted,#6c757d);padding:0;line-height:1;">×</button>
+        </div>
+        <div style="padding:20px;overflow-y:auto;flex:1;">
+          
+          <!-- Sujet -->
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;color:var(--text,#212529);">Sujet du mail</label>
+            <input type="text" id="editMailSubject" style="width:100%;padding:10px 12px;border:1px solid var(--border,#ced4da);border-radius:6px;font-size:14px;background:var(--surface,#fff);color:var(--text,#212529);box-sizing:border-box;">
+          </div>
+          
+          <!-- Toggle HTML / WYSIWYG -->
+          <div style="margin-bottom:8px;display:flex;gap:6px;">
+            <button id="btnModeHtml" class="btn" onclick="toggleEditorMode('html')" style="flex:1;background:#1F4E79;color:#fff;border-color:#1F4E79;">⌨️ HTML</button>
+            <button id="btnModeWysiwyg" class="btn" onclick="toggleEditorMode('wysiwyg')" style="flex:1;">📝 WYSIWYG</button>
+          </div>
+          <div style="font-size:12px;color:var(--muted,#6c757d);margin-bottom:8px;">
+            💡 Variable disponible : <code style="background:var(--color-background-secondary,#f0f0f0);padding:2px 6px;border-radius:3px;">{{PSEUDO}}</code> — sera remplacée par le pseudo/prénom de chaque utilisateur
+          </div>
+          
+          <!-- Éditeur HTML -->
+          <textarea id="editMailHtmlArea" style="width:100%;min-height:400px;padding:12px;border:1px solid var(--border,#ced4da);border-radius:6px;font-size:12px;font-family:monospace;background:var(--surface,#fff);color:var(--text,#212529);box-sizing:border-box;resize:vertical;" spellcheck="false"></textarea>
+          
+          <!-- Éditeur WYSIWYG -->
+          <div id="editMailWysiwygArea" contenteditable="true" style="display:none;width:100%;min-height:400px;padding:12px;border:1px solid var(--border,#ced4da);border-radius:6px;font-size:14px;background:var(--surface,#fff);color:var(--text,#212529);box-sizing:border-box;overflow-y:auto;"></div>
+          
+        </div>
+        <div style="padding:16px 20px;border-top:1px solid var(--border,#e0e0e0);display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn" onclick="resetMailEditor()">↺ Réinitialiser</button>
+            <button class="btn" onclick="previewMail()">👁️ Prévisualiser</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn" onclick="closeEditMailModal()">Annuler</button>
+            <button class="btn btn-gold" onclick="saveMailEdit()">✅ Valider les modifs</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2379,9 +2429,14 @@ async function envoyerMailsNotifs(userIds = null) {
   setLoading(btn, true);
   showResult('mailNotifsResult', 'ok', '⏳ Envoi en cours...');
   try {
+    // Si un mail custom est actif pour cette session, l'inclure dans la requête
+    const payload = { userIds: userIds || [] };
+    if (window.customMailHtml) payload.customHtml = window.customMailHtml;
+    if (window.customMailSubject) payload.customSubject = window.customMailSubject;
+    
     const data = await api('/api/admin/users/envoyer-mail-notifs', {
       method: 'POST',
-      body: JSON.stringify({ userIds: userIds || [] })
+      body: JSON.stringify(payload)
     });
     if (data.success) {
       showResult('mailNotifsResult', 'ok', `✅ ${data.envoyes} email(s) envoyé(s) — ${data.echecs} échec(s)`);
@@ -2394,6 +2449,146 @@ async function envoyerMailsNotifs(userIds = null) {
     setLoading(btn, false);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// ─── ÉDITEUR EMAIL NOTIFICATIONS ──────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+window.customMailHtml = null;     // HTML édité pour la session (null = template par défaut)
+window.customMailSubject = null;  // Sujet édité pour la session
+window._defaultMailHtml = null;   // Cache du template par défaut (chargé 1x)
+window._defaultMailSubject = null;
+window._currentEditorMode = 'html';  // 'html' ou 'wysiwyg'
+
+async function openEditMailModal() {
+  const modal = document.getElementById('editMailModal');
+  modal.style.display = 'flex';
+  
+  // Charger le template par défaut si pas déjà fait
+  if (!window._defaultMailHtml) {
+    try {
+      const data = await api('/api/admin/users/email-template-default');
+      if (data.success) {
+        window._defaultMailHtml = data.html;
+        window._defaultMailSubject = data.subject;
+      }
+    } catch(e) {
+      alert('Erreur chargement template : ' + e.message);
+      closeEditMailModal();
+      return;
+    }
+  }
+  
+  // Pré-remplir avec le custom existant OU le défaut
+  document.getElementById('editMailSubject').value = window.customMailSubject || window._defaultMailSubject || '';
+  const htmlValue = window.customMailHtml || window._defaultMailHtml || '';
+  document.getElementById('editMailHtmlArea').value = htmlValue;
+  document.getElementById('editMailWysiwygArea').innerHTML = htmlValue;
+  
+  // Mode HTML par défaut
+  toggleEditorMode('html');
+}
+
+function closeEditMailModal() {
+  document.getElementById('editMailModal').style.display = 'none';
+}
+
+function resetMailEditor() {
+  if (!confirm('Réinitialiser l\'éditeur avec le template par défaut ? Tes modifs seront perdues.')) return;
+  document.getElementById('editMailSubject').value = window._defaultMailSubject || '';
+  const htmlValue = window._defaultMailHtml || '';
+  document.getElementById('editMailHtmlArea').value = htmlValue;
+  document.getElementById('editMailWysiwygArea').innerHTML = htmlValue;
+}
+
+function toggleEditorMode(mode) {
+  const htmlArea = document.getElementById('editMailHtmlArea');
+  const wysiwygArea = document.getElementById('editMailWysiwygArea');
+  const btnHtml = document.getElementById('btnModeHtml');
+  const btnWysiwyg = document.getElementById('btnModeWysiwyg');
+  
+  // Synchroniser le contenu entre les 2 modes
+  if (window._currentEditorMode === 'html' && mode === 'wysiwyg') {
+    wysiwygArea.innerHTML = htmlArea.value;
+  } else if (window._currentEditorMode === 'wysiwyg' && mode === 'html') {
+    htmlArea.value = wysiwygArea.innerHTML;
+  }
+  
+  if (mode === 'html') {
+    htmlArea.style.display = 'block';
+    wysiwygArea.style.display = 'none';
+    btnHtml.style.background = '#1F4E79';
+    btnHtml.style.color = '#fff';
+    btnHtml.style.borderColor = '#1F4E79';
+    btnWysiwyg.style.background = '';
+    btnWysiwyg.style.color = '';
+    btnWysiwyg.style.borderColor = '';
+  } else {
+    htmlArea.style.display = 'none';
+    wysiwygArea.style.display = 'block';
+    btnWysiwyg.style.background = '#1F4E79';
+    btnWysiwyg.style.color = '#fff';
+    btnWysiwyg.style.borderColor = '#1F4E79';
+    btnHtml.style.background = '';
+    btnHtml.style.color = '';
+    btnHtml.style.borderColor = '';
+  }
+  window._currentEditorMode = mode;
+}
+
+function previewMail() {
+  // Récupérer le HTML courant (depuis la zone active)
+  let html;
+  if (window._currentEditorMode === 'html') {
+    html = document.getElementById('editMailHtmlArea').value;
+  } else {
+    html = document.getElementById('editMailWysiwygArea').innerHTML;
+  }
+  
+  // Remplacer {{PSEUDO}} par "Bernard" pour la preview
+  const previewHtml = html.replace(/\{\{PSEUDO\}\}/g, 'Bernard');
+  
+  // Ouvrir dans une nouvelle fenêtre
+  const w = window.open('', '_blank', 'width=700,height=900,scrollbars=yes');
+  w.document.open();
+  w.document.write(previewHtml);
+  w.document.close();
+}
+
+function saveMailEdit() {
+  // Récupérer le HTML courant
+  let html;
+  if (window._currentEditorMode === 'html') {
+    html = document.getElementById('editMailHtmlArea').value;
+  } else {
+    html = document.getElementById('editMailWysiwygArea').innerHTML;
+  }
+  
+  const subject = document.getElementById('editMailSubject').value;
+  
+  // Vérifier si c'est différent du défaut
+  if (html === window._defaultMailHtml && subject === window._defaultMailSubject) {
+    // Pas de modif, on revient au défaut
+    window.customMailHtml = null;
+    window.customMailSubject = null;
+    document.getElementById('customMailIndicator').style.display = 'none';
+  } else {
+    window.customMailHtml = html;
+    window.customMailSubject = subject;
+    document.getElementById('customMailIndicator').style.display = 'block';
+  }
+  
+  closeEditMailModal();
+}
+
+function resetCustomMail() {
+  if (!confirm('Annuler les modifs et revenir au mail par défaut ?')) return;
+  window.customMailHtml = null;
+  window.customMailSubject = null;
+  document.getElementById('customMailIndicator').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
 
 async function loadUsersAccess() {
   const data = await api('/api/admin/users-access');
