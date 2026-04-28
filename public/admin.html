@@ -451,45 +451,50 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- MODAL ÉDITION MAIL -->
-    <div id="editMailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
-      <div style="background:var(--surface,#fff);border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
-        <div style="padding:20px;border-bottom:1px solid var(--border,#e0e0e0);display:flex;justify-content:space-between;align-items:center;">
-          <h2 style="margin:0;font-size:18px;color:var(--text,#212529);">✏️ Édition du mail "Notifications"</h2>
-          <button onclick="closeEditMailModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted,#6c757d);padding:0;line-height:1;">×</button>
+    <!-- MODAL ÉDITION MAIL (v3 - lisibilité forcée) -->
+    <div id="editMailModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+      <div style="background:#FFFFFF !important;border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+        <!-- Header -->
+        <div style="padding:20px 24px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center;background:#F9FAFB !important;border-radius:12px 12px 0 0;">
+          <h2 style="margin:0;font-size:18px;color:#111827 !important;font-weight:600;">✏️ Édition du mail "Notifications"</h2>
+          <button onclick="closeEditMailModal()" style="background:none !important;border:none;font-size:28px;cursor:pointer;color:#6B7280 !important;padding:0;line-height:1;font-weight:300;">×</button>
         </div>
-        <div style="padding:20px;overflow-y:auto;flex:1;">
+        
+        <!-- Body -->
+        <div style="padding:20px 24px;overflow-y:auto;flex:1;background:#FFFFFF !important;">
           
           <!-- Sujet -->
-          <div style="margin-bottom:16px;">
-            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;color:var(--text,#212529);">Sujet du mail</label>
-            <input type="text" id="editMailSubject" style="width:100%;padding:10px 12px;border:1px solid var(--border,#ced4da);border-radius:6px;font-size:14px;background:var(--surface,#fff);color:var(--text,#212529);box-sizing:border-box;">
+          <div style="margin-bottom:18px;">
+            <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;color:#374151 !important;text-transform:uppercase;letter-spacing:0.5px;">Sujet du mail</label>
+            <input type="text" id="editMailSubject" style="width:100%;padding:10px 12px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;background:#FFFFFF !important;color:#111827 !important;box-sizing:border-box;">
           </div>
           
           <!-- Toggle HTML / WYSIWYG -->
-          <div style="margin-bottom:8px;display:flex;gap:6px;">
-            <button id="btnModeHtml" class="btn" onclick="toggleEditorMode('html')" style="flex:1;background:#1F4E79;color:#fff;border-color:#1F4E79;">⌨️ HTML</button>
-            <button id="btnModeWysiwyg" class="btn" onclick="toggleEditorMode('wysiwyg')" style="flex:1;">📝 WYSIWYG</button>
+          <div style="margin-bottom:10px;display:flex;gap:6px;">
+            <button id="btnModeHtml" type="button" onclick="toggleEditorMode('html')" style="flex:1;padding:8px 14px;border:1px solid #1F4E79;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;background:#1F4E79 !important;color:#FFFFFF !important;">⌨️ HTML</button>
+            <button id="btnModeWysiwyg" type="button" onclick="toggleEditorMode('wysiwyg')" style="flex:1;padding:8px 14px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;background:#FFFFFF !important;color:#374151 !important;">📝 WYSIWYG</button>
           </div>
-          <div style="font-size:12px;color:var(--muted,#6c757d);margin-bottom:8px;">
-            💡 Variable disponible : <code style="background:var(--color-background-secondary,#f0f0f0);padding:2px 6px;border-radius:3px;">{{PSEUDO}}</code> — sera remplacée par le pseudo/prénom de chaque utilisateur
+          <div style="font-size:12px;color:#6B7280 !important;margin-bottom:10px;line-height:1.4;">
+            💡 Variable disponible : <code style="background:#F3F4F6 !important;color:#1F2937 !important;padding:2px 8px;border-radius:4px;font-weight:600;border:1px solid #E5E7EB;">{{PSEUDO}}</code> — sera remplacée par le pseudo/prénom de chaque utilisateur
           </div>
           
           <!-- Éditeur HTML -->
-          <textarea id="editMailHtmlArea" style="width:100%;min-height:400px;padding:12px;border:1px solid var(--border,#ced4da);border-radius:6px;font-size:12px;font-family:monospace;background:var(--surface,#fff);color:var(--text,#212529);box-sizing:border-box;resize:vertical;" spellcheck="false"></textarea>
+          <textarea id="editMailHtmlArea" style="width:100%;min-height:400px;padding:14px;border:1px solid #D1D5DB;border-radius:6px;font-size:12px;font-family:'SF Mono',Monaco,Consolas,monospace;background:#FAFBFC !important;color:#111827 !important;box-sizing:border-box;resize:vertical;line-height:1.5;" spellcheck="false"></textarea>
           
           <!-- Éditeur WYSIWYG -->
-          <div id="editMailWysiwygArea" contenteditable="true" style="display:none;width:100%;min-height:400px;padding:12px;border:1px solid var(--border,#ced4da);border-radius:6px;font-size:14px;background:var(--surface,#fff);color:var(--text,#212529);box-sizing:border-box;overflow-y:auto;"></div>
+          <div id="editMailWysiwygArea" contenteditable="true" style="display:none;width:100%;min-height:400px;padding:14px;border:1px solid #D1D5DB;border-radius:6px;font-size:14px;background:#FFFFFF !important;color:#111827 !important;box-sizing:border-box;overflow-y:auto;line-height:1.5;"></div>
           
         </div>
-        <div style="padding:16px 20px;border-top:1px solid var(--border,#e0e0e0);display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;">
+        
+        <!-- Footer -->
+        <div style="padding:16px 24px;border-top:1px solid #E5E7EB;display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;background:#F9FAFB !important;border-radius:0 0 12px 12px;">
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn" onclick="resetMailEditor()">↺ Réinitialiser</button>
-            <button class="btn" onclick="previewMail()">👁️ Prévisualiser</button>
+            <button type="button" onclick="resetMailEditor()" style="padding:8px 14px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;font-weight:500;font-size:13px;background:#FFFFFF !important;color:#374151 !important;">↺ Réinitialiser</button>
+            <button type="button" onclick="previewMail()" style="padding:8px 14px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;font-weight:500;font-size:13px;background:#FFFFFF !important;color:#374151 !important;">👁️ Prévisualiser</button>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn" onclick="closeEditMailModal()">Annuler</button>
-            <button class="btn btn-gold" onclick="saveMailEdit()">✅ Valider les modifs</button>
+            <button type="button" onclick="closeEditMailModal()" style="padding:8px 14px;border:1px solid #D1D5DB;border-radius:6px;cursor:pointer;font-weight:500;font-size:13px;background:#FFFFFF !important;color:#374151 !important;">Annuler</button>
+            <button type="button" onclick="saveMailEdit()" style="padding:8px 18px;border:1px solid #D4A017;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;background:#D4A017 !important;color:#FFFFFF !important;">✅ Valider les modifs</button>
           </div>
         </div>
       </div>
