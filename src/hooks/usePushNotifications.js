@@ -6,7 +6,7 @@ export function usePushNotifications() {
   const { user } = useAuth();
   const [permission, setPermission] = useState(Notification.permission);
   const [subscription, setSubscription] = useState(null);
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(null); // null = pas encore vérifié, true/false = vérifié
 
   // Helper fonction
   const urlBase64ToUint8Array = (base64String) => {

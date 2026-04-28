@@ -25,7 +25,6 @@ export default function ParametresPage() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   });
 
-
   const { permission, isSupported, isSubscribed } = usePushNotifications();
 
   const [diagnosticResults, setDiagnosticResults] = useState({
@@ -208,18 +207,19 @@ Résultats du diagnostic :
           <Bell className="h-5 w-5 text-blue-500" />
           <span className="flex-1 text-left text-gray-800 font-medium">Notifications Push</span>
           <div className="flex items-center gap-2">
-            {/* 🆕 v2 : 4 états au lieu de 3 */}
-            {isSupported && permission === 'granted' && isSubscribed && (
+            {/* 🆕 v3 : isSubscribed peut être null pendant la vérification (anti-flash) */}
+            {isSupported && permission === 'granted' && isSubscribed === true && (
               <div className="flex items-center gap-1 text-green-600">
                 <Check className="w-4 h-4" />
                 <span className="text-xs font-medium">Activées</span>
               </div>
             )}
-            {isSupported && permission === 'granted' && !isSubscribed && (
+            {isSupported && permission === 'granted' && isSubscribed === false && (
               <div className="flex items-center gap-1 text-orange-600">
                 <span className="text-xs font-medium">⚠️ À reconfigurer</span>
               </div>
             )}
+            {/* Si isSubscribed === null : aucun badge affiché (vérification en cours) */}
             {isSupported && permission === 'denied' && (
               <div className="flex items-center gap-1 text-red-600">
                 <X className="w-4 h-4" />
