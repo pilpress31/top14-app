@@ -192,7 +192,7 @@ function NotificationItem({ notification, onClick, onDelete, onMarkRead }) {
           <p className={`text-sm font-semibold ${!is_read ? 'text-gray-900' : 'text-gray-700'}`}>
             {title}
           </p>
-          <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+          <p className="text-xs text-gray-600 mt-0.5 line-clamp-3">
             {message}
           </p>
           <p className="text-xs text-gray-400 mt-1">
