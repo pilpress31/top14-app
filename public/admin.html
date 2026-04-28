@@ -422,6 +422,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="table-wrap" id="sansNotifsTable" style="display:none;">
           <table>
             <thead><tr>
+              <th style="width:32px;text-align:center;">
+                <input type="checkbox" id="sansNotifsSelectAll" onchange="toggleSansNotifsSelectAll()" 
+                       style="width:16px;height:16px;cursor:pointer;" title="Tout cocher / décocher">
+              </th>
               <th>Pseudo</th>
               <th>Nom</th>
               <th>Email</th>
@@ -430,7 +434,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <tbody id="sansNotifsBody"></tbody>
           </table>
         </div>
-        <div class="btn-row" id="sansNotifsBtnRow" style="display:none;margin-top:12px;">
+        <!-- Indicateur de sélection -->
+        <div id="sansNotifsSelectionInfo" style="display:none;align-items:center;justify-content:space-between;margin-top:10px;padding:10px 14px;background:var(--color-background-info,#E3F2FD);color:var(--color-text-info,#0D47A1);border-radius:6px;font-size:13px;">
+          <span>0 utilisateur(s) sélectionné(s)</span>
+        </div>
+        <div class="btn-row" id="sansNotifsBtnRow" style="display:none;margin-top:12px;gap:8px;flex-wrap:wrap;">
+          <button class="btn" id="mailNotifsSelectionBtn" onclick="envoyerMailsAuxSelectionnes()" disabled>
+            📧 Envoyer aux sélectionnés
+          </button>
           <button class="btn btn-gold" id="mailNotifsBtn" onclick="envoyerMailsNotifs()">
             <div class="spinner"></div>
             <span class="btn-text">📧 Envoyer instructions à tous</span>
@@ -2407,12 +2418,17 @@ async function loadSansNotifs() {
     result.textContent = '✅ Tous les utilisateurs ont activé les notifications !';
     table.style.display = 'none';
     btnRow.style.display = 'none';
+    document.getElementById('sansNotifsSelectionInfo').style.display = 'none';
     return;
   }
 
   result.textContent = `${data.count} utilisateur(s) sans notifications`;
   tbody.innerHTML = data.users.map(u => `
     <tr>
+      <td style="text-align:center;">
+        <input type="checkbox" class="sans-notifs-check" data-user-id="${u.user_id}"
+               onchange="updateSansNotifsSelectionCount()" style="width:16px;height:16px;cursor:pointer;">
+      </td>
       <td style="font-weight:600">${u.pseudo || '—'}</td>
       <td>${[u.prenom, u.nom].filter(Boolean).join(' ') || '—'}</td>
       <td style="font-size:12px;color:var(--muted2)">${u.email || '—'}</td>
@@ -2422,6 +2438,54 @@ async function loadSansNotifs() {
   `).join('');
   table.style.display = 'block';
   btnRow.style.display = 'flex';
+  updateSansNotifsSelectionCount();
+}
+
+// 🆕 Cocher / décocher tous
+function toggleSansNotifsSelectAll() {
+  const master = document.getElementById('sansNotifsSelectAll');
+  document.querySelectorAll('.sans-notifs-check').forEach(cb => {
+    cb.checked = master.checked;
+  });
+  updateSansNotifsSelectionCount();
+}
+
+// 🆕 Mettre à jour le compteur de sélection + état du bouton
+function updateSansNotifsSelectionCount() {
+  const checked = document.querySelectorAll('.sans-notifs-check:checked');
+  const all = document.querySelectorAll('.sans-notifs-check');
+  const info = document.getElementById('sansNotifsSelectionInfo');
+  const btn = document.getElementById('mailNotifsSelectionBtn');
+  const master = document.getElementById('sansNotifsSelectAll');
+  
+  if (checked.length === 0) {
+    info.style.display = 'none';
+    if (btn) btn.disabled = true;
+  } else {
+    info.style.display = 'flex';
+    info.querySelector('span').textContent = 
+      `${checked.length} utilisateur(s) sélectionné(s)`;
+    if (btn) btn.disabled = false;
+  }
+  
+  // Synchroniser le master checkbox
+  if (master) {
+    if (checked.length === 0) master.checked = false;
+    else if (checked.length === all.length) master.checked = true;
+    else master.indeterminate = true;
+  }
+}
+
+// 🆕 Envoyer aux sélectionnés uniquement
+function envoyerMailsAuxSelectionnes() {
+  const checked = Array.from(document.querySelectorAll('.sans-notifs-check:checked'));
+  const ids = checked.map(cb => cb.dataset.userId);
+  if (ids.length === 0) {
+    alert('Aucun utilisateur sélectionné');
+    return;
+  }
+  if (!confirm(`Envoyer le mail "notifications" à ${ids.length} utilisateur(s) ?`)) return;
+  envoyerMailsNotifs(ids);
 }
 
 async function envoyerMailsNotifs(userIds = null) {
