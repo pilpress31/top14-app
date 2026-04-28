@@ -462,6 +462,70 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
         <div class="result" id="mailNotifsResult"></div>
       </div>
+
+      <!-- 🆕 CARD : Statistiques de relance -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <div class="card-title">📊 Stats de relance (conversion)</div>
+          <button class="btn" onclick="loadRelanceStats()">↻ Actualiser</button>
+        </div>
+        
+        <!-- KPI globaux -->
+        <div id="relanceKpis" style="display:none;margin:12px 0;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+          <div style="background:var(--color-background-secondary,#f5f5f5);padding:12px;border-radius:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;">Total relancés</div>
+            <div style="font-size:24px;font-weight:700;color:var(--text);" id="kpiTotal">—</div>
+          </div>
+          <div style="background:#dcfce7;padding:12px;border-radius:8px;text-align:center;">
+            <div style="font-size:11px;color:#166534;text-transform:uppercase;letter-spacing:0.5px;">✓ Convertis</div>
+            <div style="font-size:24px;font-weight:700;color:#15803d;" id="kpiConverted">—</div>
+          </div>
+          <div style="background:#fef3c7;padding:12px;border-radius:8px;text-align:center;">
+            <div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;">⏳ En attente</div>
+            <div style="font-size:24px;font-weight:700;color:#b45309;" id="kpiPending">—</div>
+          </div>
+          <div style="background:#dbeafe;padding:12px;border-radius:8px;text-align:center;">
+            <div style="font-size:11px;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;">Taux conversion</div>
+            <div style="font-size:24px;font-weight:700;color:#2563eb;" id="kpiTaux">—</div>
+          </div>
+        </div>
+        
+        <!-- KPI par canal -->
+        <div id="relanceCanal" style="display:none;margin:0 0 12px 0;gap:10px;flex-wrap:wrap;font-size:13px;">
+          <div style="flex:1;min-width:200px;background:var(--color-background-secondary,#f5f5f5);padding:10px 14px;border-radius:8px;">
+            <span style="color:var(--muted);">📧 Via mail :</span>
+            <strong id="kpiViaMail">—</strong>
+            <span style="color:var(--muted);">conversions /</span>
+            <strong id="kpiTotalMails">—</strong>
+            <span style="color:var(--muted);">envois</span>
+          </div>
+          <div style="flex:1;min-width:200px;background:var(--color-background-secondary,#f5f5f5);padding:10px 14px;border-radius:8px;">
+            <span style="color:var(--muted);">📲 Via in-app :</span>
+            <strong id="kpiViaInapp">—</strong>
+            <span style="color:var(--muted);">conversions /</span>
+            <strong id="kpiTotalInapp">—</strong>
+            <span style="color:var(--muted);">envois</span>
+          </div>
+        </div>
+        
+        <!-- Tableau détaillé -->
+        <div id="relanceStatsResult" style="color:var(--muted);font-size:13px;padding:8px 0;">
+          Cliquez sur "Actualiser" pour charger les statistiques
+        </div>
+        <div class="table-wrap" id="relanceStatsTable" style="display:none;">
+          <table>
+            <thead><tr>
+              <th>Pseudo</th>
+              <th>Email</th>
+              <th>📧 Mails</th>
+              <th>📲 In-app</th>
+              <th>Activé le</th>
+              <th>Statut</th>
+            </tr></thead>
+            <tbody id="relanceStatsBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- MODAL ÉDITION MAIL (v3 - lisibilité forcée) -->
@@ -2556,6 +2620,90 @@ function envoyerNotifInAppAuxSelectionnes() {
   }
   if (!confirm(`Envoyer une notification in-app "Active tes notifs push" à ${ids.length} utilisateur(s) ?`)) return;
   envoyerNotifInApp(ids);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ─── STATS DE RELANCE (CONVERSION) ────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+async function loadRelanceStats() {
+  const result = document.getElementById('relanceStatsResult');
+  const tableEl = document.getElementById('relanceStatsTable');
+  const tbody = document.getElementById('relanceStatsBody');
+  const kpisEl = document.getElementById('relanceKpis');
+  const canalEl = document.getElementById('relanceCanal');
+  
+  result.textContent = '⏳ Chargement...';
+  tableEl.style.display = 'none';
+  
+  try {
+    const data = await api('/api/admin/users/relance-stats');
+    if (!data.success) {
+      result.textContent = `❌ ${data.error || 'Erreur inconnue'}`;
+      return;
+    }
+    
+    const { kpis, users } = data;
+    
+    // Afficher les KPI globaux
+    document.getElementById('kpiTotal').textContent = kpis.total;
+    document.getElementById('kpiConverted').textContent = kpis.converted;
+    document.getElementById('kpiPending').textContent = kpis.pending;
+    document.getElementById('kpiTaux').textContent = kpis.taux_conversion + '%';
+    document.getElementById('kpiViaMail').textContent = kpis.converted_via_mail;
+    document.getElementById('kpiTotalMails').textContent = kpis.total_mails;
+    document.getElementById('kpiViaInapp').textContent = kpis.converted_via_inapp;
+    document.getElementById('kpiTotalInapp').textContent = kpis.total_inapp;
+    kpisEl.style.display = 'grid';
+    kpisEl.style.gridTemplateColumns = 'repeat(auto-fit, minmax(160px, 1fr))';
+    canalEl.style.display = 'flex';
+    
+    if (users.length === 0) {
+      result.textContent = 'ℹ️ Aucune relance enregistrée pour le moment';
+      return;
+    }
+    
+    result.textContent = `${users.length} utilisateur(s) relancé(s)`;
+    
+    // Helper de formatage de date
+    const fmtDate = (iso) => {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
+             ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    };
+    
+    tbody.innerHTML = users.map(u => {
+      const isConverted = u.conversion_status === 'converted';
+      const statusBadge = isConverted
+        ? `<span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;">✓ Converti</span>`
+        : `<span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;">⏳ En attente</span>`;
+      
+      const mailInfo = u.nb_mails > 0
+        ? `<strong>${u.nb_mails}</strong><br><span style="font-size:11px;color:var(--muted2);">${fmtDate(u.last_mail_at)}</span>`
+        : '<span style="color:var(--muted2);">—</span>';
+      
+      const inappInfo = u.nb_inapp > 0
+        ? `<strong>${u.nb_inapp}</strong><br><span style="font-size:11px;color:var(--muted2);">${fmtDate(u.last_inapp_at)}</span>`
+        : '<span style="color:var(--muted2);">—</span>';
+      
+      return `
+        <tr>
+          <td style="font-weight:600;">${u.pseudo || '—'}</td>
+          <td style="font-size:12px;color:var(--muted2);">${u.email || '—'}</td>
+          <td>${mailInfo}</td>
+          <td>${inappInfo}</td>
+          <td style="font-size:12px;">${fmtDate(u.activated_at)}</td>
+          <td>${statusBadge}</td>
+        </tr>
+      `;
+    }).join('');
+    
+    tableEl.style.display = 'block';
+    
+  } catch (e) {
+    result.textContent = `❌ ${e.message}`;
+  }
 }
 
 async function envoyerMailsNotifs(userIds = null) {
