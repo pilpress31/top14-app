@@ -5,6 +5,7 @@ import { ChevronRight, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, B
 import AvisModal from "../components/AvisModal";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
+
 const ADMIN_USER_ID = 'fe5951b6-316c-4bc6-abef-df6c153fe723';
 
 export default function ParametresPage() {
