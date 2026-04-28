@@ -17,25 +17,24 @@ export function usePushNotifications() {
   };
 
   // Créer subscription
+  // 🆕 v2 : timeout 10s sur le fetch + try/catch robuste
   const subscribeUser = async () => {
     try {
-      // Guard : user doit être chargé avant d'envoyer la subscription
       if (!user?.id) {
         console.warn('⚠️ subscribeUser appelé sans user — abandon');
         return null;
       }
 
       const registration = await navigator.serviceWorker.ready;
-      
+
       const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-      
       if (!vapidPublicKey) {
         console.error('❌ VAPID key manquante');
         return null;
       }
 
       let sub = await registration.pushManager.getSubscription();
-      
+
       if (!sub) {
         sub = await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -46,25 +45,38 @@ export function usePushNotifications() {
 
       setSubscription(sub);
 
-      const response = await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          subscription: sub,
-          userId: user.id
-        })
-      });
+      // 🆕 Timeout 10s sur le fetch (au cas où Railway down)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      if (response.ok) {
-        console.log('✅ Subscription sauvegardée en base');
-        setIsSubscribed(true);
-      } else {
-        console.error('❌ Erreur sauvegarde:', await response.text());
+      try {
+        const response = await fetch('https://top14-api-production.up.railway.app/api/notifications/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub, userId: user.id }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          console.log('✅ Subscription sauvegardée en base');
+          setIsSubscribed(true);
+        } else {
+          console.error('❌ Erreur sauvegarde:', await response.text());
+          setIsSubscribed(false);
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          console.error('❌ Timeout sauvegarde subscription (10s)');
+        } else {
+          console.error('❌ Erreur fetch subscription:', fetchError.message);
+        }
         setIsSubscribed(false);
       }
 
       return sub;
-      
+
     } catch (error) {
       console.error('❌ Erreur subscription:', error);
       return null;
@@ -72,22 +84,24 @@ export function usePushNotifications() {
   };
 
   // Demander permission
+  // 🆕 v2 : retourne le résultat ('granted' | 'denied' | 'default')
+  // pour que la page puisse afficher l'état correct immédiatement
   const requestPermission = async () => {
     if (!('Notification' in window)) {
       console.error('❌ Notifications non supportées');
-      return false;
+      return 'unsupported';
     }
 
     const result = await Notification.requestPermission();
     setPermission(result);
-    
+
     if (result === 'granted') {
-      // ✅ CRÉER AUTOMATIQUEMENT LA SUBSCRIPTION
       await subscribeUser();
-      return true;
+    } else if (result === 'denied') {
+      console.warn('⚠️ Permission refusée par l\'utilisateur');
     }
-    
-    return false;
+
+    return result;  // 🆕 Retourne 'granted' / 'denied' / 'default' au lieu de true/false
   };
 
   // ✅ Vérifier et renouveler la subscription

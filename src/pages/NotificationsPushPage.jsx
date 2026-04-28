@@ -68,11 +68,25 @@ export default function NotificationsPushPage() {
     localStorage.setItem('notif-distribution-mensuelle', newValue.toString());
   };
 
+  // 🆕 v2 : try/finally pour TOUJOURS désactiver le loader
+  // + feedback selon le résultat
   const handleActiverNotifications = async () => {
     if (permission === 'granted') return;
     setLoadingNotif(true);
-    await requestPermission();
-    setLoadingNotif(false);
+    try {
+      const result = await requestPermission();
+      // result peut être : 'granted' | 'denied' | 'default' | 'unsupported'
+      // Si 'denied' ou 'default' (pop-up fermée), on n'a rien à faire de plus,
+      // le re-render automatique via le state `permission` affichera le bon écran.
+      if (result === 'denied') {
+        console.warn('Activation refusée par l\'utilisateur');
+      }
+    } catch (e) {
+      console.error('Erreur lors de l\'activation des notifications:', e);
+    } finally {
+      // 🆕 GARANTIE : le bouton ne reste JAMAIS bloqué en "Activation..."
+      setLoadingNotif(false);
+    }
   };
 
   return (

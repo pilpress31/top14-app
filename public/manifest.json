@@ -8,11 +8,19 @@
   "dir": "ltr",
   "lang": "fr",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "background_color": "#1a1208",
   "theme_color": "#D4AF37",
   "orientation": "portrait",
-  "categories": ["sports", "entertainment"],
+  "categories": [
+    "sports",
+    "entertainment"
+  ],
   "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "prefer_related_applications": false,
   "launch_handler": {
@@ -20,7 +28,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+top14pronos",
+      "protocol": "web+toppronos",
       "url": "/?uri=%s"
     }
   ],
@@ -31,7 +39,8 @@
       "title": "title",
       "text": "text",
       "url": "url"
-    }
+    },
+    "enctype": "application/x-www-form-urlencoded"
   },
   "shortcuts": [
     {
@@ -56,10 +65,6 @@
       "url": "https://play.google.com/store/apps/details?id=fr.top14pronos.app",
       "id": "fr.top14pronos.app"
     }
-  ],
-  "scope_extensions": [
-    { "origin": "https://app.top14pronos.fr" },
-    { "origin": "https://top14pronos.fr" }
   ],
   "screenshots": [
     {
