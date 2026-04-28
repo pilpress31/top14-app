@@ -2527,8 +2527,15 @@ async function envoyerNotifInApp(userIds = null) {
       body: JSON.stringify({ userIds: userIds || [] })
     });
     if (data.success) {
-      showResult('mailNotifsResult', 'ok',
-        `📲 ${data.envoyes} notification(s) in-app envoyée(s) sur ${data.total}`);
+      // 🆕 Afficher le détail crees / mis_a_jour si dispo
+      let msg = `📲 ${data.envoyes} notification(s) in-app envoyée(s) sur ${data.total}`;
+      if (data.crees !== undefined && data.mis_a_jour !== undefined) {
+        const parts = [];
+        if (data.crees > 0) parts.push(`${data.crees} nouvelle(s)`);
+        if (data.mis_a_jour > 0) parts.push(`${data.mis_a_jour} remontée(s) en haut`);
+        if (parts.length > 0) msg += ` — ${parts.join(', ')}`;
+      }
+      showResult('mailNotifsResult', 'ok', msg);
     } else {
       showResult('mailNotifsResult', 'err', `❌ ${data.error || 'Erreur inconnue'}`);
     }
