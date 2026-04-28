@@ -4,6 +4,31 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
+
+/**
+ * 🆕 parseAsParis : interprète une chaîne datetime SANS appliquer
+ * de conversion de timezone par le navigateur.
+ *
+ * Les timestamps en BDD (generated_at, updated_at, date_match...)
+ * sont stockés en `timestamp without time zone` mais les valeurs
+ * écrites sont en heure de Paris. Si on fait `new Date(str)`,
+ * JavaScript suppose UTC et ajoute +2h (heure d'été).
+ *
+ * Cette fonction extrait les composants de la chaîne et crée
+ * une Date avec ces valeurs prises comme heure locale du navigateur.
+ * En pratique pour des users français, ça affiche la bonne heure.
+ */
+function parseAsParis(dateStr) {
+  if (!dateStr) return null;
+  // Nettoyer : retirer "Z" et fuseau "+00:00" éventuels
+  const clean = String(dateStr).replace(/Z$/, '').replace(/[+-]\d{2}:?\d{2}$/, '');
+  // Format attendu : "2026-04-27 15:15:13" ou "2026-04-27T15:15:13"
+  const m = clean.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):?(\d{2})?/);
+  if (!m) return new Date(dateStr); // Fallback
+  const [, y, mo, d, h, mi, se] = m;
+  return new Date(parseInt(y), parseInt(mo) - 1, parseInt(d), parseInt(h), parseInt(mi), parseInt(se || '0'));
+}
+
 export default function ActuTab() {
   const [actus, setActus] = useState([]);
   const [journee, setJournee] = useState(null);
@@ -87,7 +112,8 @@ export default function ActuTab() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const date = parseAsParis(dateStr);
+    if (!date) return '';
     return date.toLocaleDateString('fr-FR', {
       weekday: 'short', day: 'numeric', month: 'short',
     }) + ' • ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -125,9 +151,9 @@ export default function ActuTab() {
     <div className="space-y-4 mt-2">
       {derniereMaj && (
         <p className="text-center text-[10px] text-gray-400">
-          Analyses générées le {new Date(derniereMaj).toLocaleDateString('fr-FR', {
+          Analyses générées le {parseAsParis(derniereMaj).toLocaleDateString('fr-FR', {
             day: 'numeric', month: 'long'
-          })} à {new Date(derniereMaj).toLocaleTimeString('fr-FR', {
+          })} à {parseAsParis(derniereMaj).toLocaleTimeString('fr-FR', {
             hour: '2-digit', minute: '2-digit'
           })}
         </p>
@@ -165,9 +191,9 @@ export default function ActuTab() {
                       <p className="text-[10px] text-gray-400 mb-2">{formatDate(actu.date_match)}</p>
                       {(actu.generated_at || actu.updated_at) && (
                         <p className="text-[9px] text-gray-300 mb-1">
-                          Analyse du {new Date(actu.generated_at || actu.updated_at).toLocaleDateString('fr-FR', {
+                          Analyse du {parseAsParis(actu.generated_at || actu.updated_at).toLocaleDateString('fr-FR', {
                             day: 'numeric', month: 'short'
-                          })} à {new Date(actu.generated_at || actu.updated_at).toLocaleTimeString('fr-FR', {
+                          })} à {parseAsParis(actu.generated_at || actu.updated_at).toLocaleTimeString('fr-FR', {
                             hour: '2-digit', minute: '2-digit'
                           })}
                         </p>
@@ -308,7 +334,7 @@ export default function ActuTab() {
 
       {actus.length > 0 && actus[0].updated_at && (
         <p className="text-center text-[10px] text-gray-400 pb-2">
-          Dernière mise à jour : {new Date(actus[0].updated_at).toLocaleDateString('fr-FR', {
+          Dernière mise à jour : {parseAsParis(actus[0].updated_at).toLocaleDateString('fr-FR', {
             day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
           })}
         </p>
