@@ -247,6 +247,7 @@ export function getNotificationIcon(type) {
     case 'bet_lost': return '❌';
     case 'new_match': return '🆕';
     case 'rank_up': return '🏆';
+    case 'tuto_push_in_app': return '🛎️';
     default: return '🔔';
   }
 }
@@ -263,6 +264,7 @@ export function getNotificationColor(type) {
     case 'bet_lost': return 'bg-red-50 border-red-300';
     case 'new_match': return 'bg-blue-50 border-blue-300';
     case 'rank_up': return 'bg-purple-50 border-purple-300';
+    case 'tuto_push_in_app': return 'bg-amber-50 border-amber-300';
     default: return 'bg-gray-50 border-gray-300';
   }
 }

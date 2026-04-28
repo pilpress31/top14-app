@@ -72,6 +72,11 @@ export default function NotificationCenter({ isOpen, onClose }) {
       navigate('/classement');
       onClose();
     }
+    else if (type === 'tuto_push_in_app') {
+      // 🆕 Notif tuto activation des push : redirige vers la page d'aide
+      navigate('/notifications-push');
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
