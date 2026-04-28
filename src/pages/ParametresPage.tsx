@@ -25,6 +25,7 @@ export default function ParametresPage() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   });
 
+
   const { permission, isSupported, isSubscribed } = usePushNotifications();
 
   const [diagnosticResults, setDiagnosticResults] = useState({
