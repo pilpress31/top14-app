@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Volume2, VolumeX, Vibrate, Bell, BellOff, Settings } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Vibrate, Bell, BellOff, Settings, ChevronDown, Smartphone, Apple } from 'lucide-react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
 export default function NotificationsPushPage() {
@@ -17,6 +17,17 @@ export default function NotificationsPushPage() {
   const [notifBonusScore, setNotifBonusScore] = useState(localStorage.getItem('notif-bonus-score') !== 'false');
   const [notifNouveauxMatchs, setNotifNouveauxMatchs] = useState(localStorage.getItem('notif-nouveaux-matchs') !== 'false');
   const [notifDistributionMensuelle, setNotifDistributionMensuelle] = useState(localStorage.getItem('notif-distribution-mensuelle') !== 'false');
+
+  // 🆕 Détection OS pour ouvrir le bon onglet d'aide par défaut
+  const detectOS = () => {
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+    if (/Android/i.test(ua)) return 'android';
+    return 'android'; // par défaut
+  };
+  const [aideOS, setAideOS] = useState(detectOS());
+  // Aide ouverte par défaut si les notifs ne sont pas activées
+  const [aideOuverte, setAideOuverte] = useState(permission !== 'granted');
 
   const handleToggleSilence = () => {
     const newValue = !modeSilence;
@@ -142,6 +153,134 @@ export default function NotificationsPushPage() {
               <p className="text-gray-600">Notifications non supportées par votre navigateur</p>
             </div>
           )}
+
+          {/* 🆕 ZONE D'AIDE — Comment activer les notifications */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => setAideOuverte(!aideOuverte)}
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🤔</span>
+                <div className="text-left">
+                  <p className="font-medium text-gray-800">Comment activer les notifications ?</p>
+                  <p className="text-xs text-gray-500">Tutoriel pour Android et iPhone</p>
+                </div>
+              </div>
+              <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${aideOuverte ? 'rotate-180' : ''}`} />
+            </button>
+
+            {aideOuverte && (
+              <div className="border-t border-gray-100">
+                {/* Tabs OS */}
+                <div className="flex border-b border-gray-200">
+                  <button
+                    onClick={() => setAideOS('android')}
+                    className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                      aideOS === 'android'
+                        ? 'bg-green-50 text-green-700 border-b-2 border-green-500'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    Android
+                  </button>
+                  <button
+                    onClick={() => setAideOS('ios')}
+                    className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                      aideOS === 'ios'
+                        ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Apple className="w-4 h-4" />
+                    iPhone
+                  </button>
+                </div>
+
+                {/* Contenu Android */}
+                {aideOS === 'android' && (
+                  <div className="p-4 space-y-4">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-semibold">3 étapes simples</span> pour activer les notifications sur Android :
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500 text-white text-sm font-bold flex items-center justify-center">1</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Ouvre l'app Top14 Pronos</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Depuis l'icône installée sur ton écran d'accueil</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500 text-white text-sm font-bold flex items-center justify-center">2</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Va dans <span className="text-green-700">Profil 🔔</span> puis <span className="text-green-700">Notifications</span></p>
+                          <p className="text-xs text-gray-500 mt-0.5">Tu trouveras le bouton "Activer les notifications" en haut de cette page</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-500 text-white text-sm font-bold flex items-center justify-center">3</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Touche <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold">Autoriser</span> quand Chrome te demande</p>
+                          <p className="text-xs text-gray-500 mt-0.5">C'est tout, tu recevras désormais les notifications 🎉</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Contenu iOS */}
+                {aideOS === 'ios' && (
+                  <div className="p-4 space-y-4">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-semibold">5 étapes</span> (un peu plus exigeant côté Apple…) :
+                    </p>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+                      ⚠️ Nécessite iOS 16.4 ou plus récent
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white text-sm font-bold flex items-center justify-center">1</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Ouvre <span className="font-mono bg-blue-50 px-1.5 py-0.5 rounded text-blue-700">app.top14pronos.fr</span> dans <span className="text-blue-700">Safari</span></p>
+                          <p className="text-xs text-gray-500 mt-0.5">Important : ça doit être Safari, pas Chrome ni Firefox</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white text-sm font-bold flex items-center justify-center">2</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Touche le bouton <span className="text-blue-700">Partager</span> 🔼 en bas</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Le carré avec une flèche qui pointe vers le haut</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white text-sm font-bold flex items-center justify-center">3</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Choisis <span className="text-blue-700">"Sur l'écran d'accueil"</span> ➕</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Une icône Top14 Pronos apparaît sur ton écran d'accueil</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white text-sm font-bold flex items-center justify-center">4</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Ouvre l'app depuis <span className="text-blue-700">cette icône</span> (pas depuis Safari !)</p>
+                          <p className="text-xs text-gray-500 mt-0.5">⚠️ C'est l'étape la plus importante. Si tu utilises encore Safari, les notifs ne fonctionnent pas sur iOS.</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-500 text-white text-sm font-bold flex items-center justify-center">5</div>
+                        <div className="flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-gray-800">Va dans <span className="text-blue-700">Profil 🔔</span> puis <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">Activer les notifications</span></p>
+                          <p className="text-xs text-gray-500 mt-0.5">Touche "Autoriser" quand iOS te demande la permission. Done ! 🎉</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Section Silence */}
           {permission === 'granted' && (
