@@ -669,7 +669,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     {/* Bouton DOMICILE (1) */}
                     <button
                       type="button"
-                      onClick={() => setWinnerChoiceFT('domicile')}
+                      onClick={() => { setWinnerChoiceFT('domicile'); if (!hasFT) setBetOnFT(true); }}
                       className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                         winnerChoiceFT === 'domicile'
                           ? 'border-blue-500 bg-blue-50 shadow-md scale-105'
@@ -690,7 +690,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     {/* Bouton NUL (N) */}
                     <button
                       type="button"
-                      onClick={() => setWinnerChoiceFT('nul')}
+                      onClick={() => { setWinnerChoiceFT('nul'); if (!hasFT) setBetOnFT(true); }}
                       className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                         winnerChoiceFT === 'nul'
                           ? 'border-gray-700 bg-gray-100 shadow-md scale-105'
@@ -708,7 +708,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     {/* Bouton EXTÉRIEUR (2) */}
                     <button
                       type="button"
-                      onClick={() => setWinnerChoiceFT('exterieur')}
+                      onClick={() => { setWinnerChoiceFT('exterieur'); if (!hasFT) setBetOnFT(true); }}
                       className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                         winnerChoiceFT === 'exterieur'
                           ? 'border-red-500 bg-red-50 shadow-md scale-105'
@@ -762,6 +762,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '').slice(0, 2);
                       setScoreDomFT(val);
+                      if (val && !hasFT) setBetOnFT(true);
                       if (val.length === 2) extFTRef.current?.focus();
                     }}
                     onBlur={() => handleScoreBlur(scoreDomFT, 'scoreDomFT', domFTRef)}
@@ -785,6 +786,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '').slice(0, 2);
                       setScoreExtFT(val);
+                      if (val && !hasFT) setBetOnFT(true);
                     }}
                     onBlur={() => handleScoreBlur(scoreExtFT, 'scoreExtFT', extFTRef)}
                     onFocus={(e) => e.target.select()}
@@ -923,7 +925,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                       {/* Bouton DOMICILE (1) MT */}
                       <button
                         type="button"
-                        onClick={() => setWinnerChoiceMT('domicile')}
+                        onClick={() => { setWinnerChoiceMT('domicile'); if (!hasMT) setBetOnMT(true); }}
                         className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                           winnerChoiceMT === 'domicile'
                             ? 'border-blue-500 bg-blue-50 shadow-md scale-105'
@@ -944,7 +946,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                       {/* Bouton NUL (N) MT */}
                       <button
                         type="button"
-                        onClick={() => setWinnerChoiceMT('nul')}
+                        onClick={() => { setWinnerChoiceMT('nul'); if (!hasMT) setBetOnMT(true); }}
                         className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                           winnerChoiceMT === 'nul'
                             ? 'border-gray-700 bg-gray-100 shadow-md scale-105'
@@ -962,7 +964,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                       {/* Bouton EXTÉRIEUR (2) MT */}
                       <button
                         type="button"
-                        onClick={() => setWinnerChoiceMT('exterieur')}
+                        onClick={() => { setWinnerChoiceMT('exterieur'); if (!hasMT) setBetOnMT(true); }}
                         className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                           winnerChoiceMT === 'exterieur'
                             ? 'border-red-500 bg-red-50 shadow-md scale-105'
@@ -1016,6 +1018,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '').slice(0, 2);
                         setScoreDomMT(val);
+                        if (val && !hasMT) setBetOnMT(true);
                         if (val.length === 2) extMTRef.current?.focus();
                       }}
                       onBlur={() => handleScoreBlur(scoreDomMT, 'scoreDomMT', domMTRef)}
@@ -1039,6 +1042,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '').slice(0, 2);
                         setScoreExtMT(val);
+                        if (val && !hasMT) setBetOnMT(true);
                       }}
                       onBlur={() => handleScoreBlur(scoreExtMT, 'scoreExtMT', extMTRef)}
                       onFocus={(e) => e.target.select()}
