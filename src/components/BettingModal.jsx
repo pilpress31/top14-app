@@ -1,6 +1,7 @@
 // ============================================
 // MODAL DE PARI
-// Support Top 14 (FT + MT) et Pro D2 (FT uniquement)
+// Support Top 14 (FT + MT, chacun en mode Score ou Vainqueur)
+// Support Pro D2 (FT uniquement, mode Score ou Vainqueur)
 // ============================================
 
 import { useState, useRef, useEffect } from 'react';
@@ -13,14 +14,25 @@ import { validateBet, validateScoreInput, toInt } from '../utils/validationUtils
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
 export default function BettingModal({ match, existingProno, userCredits, isD2 = false, preselectedWinner = null, onClose, onSuccess }) {
-  // 🆕 v3 : Mode de pari D2 — 'score' (saisie scores) ou 'winner' (1/N/2)
-  // Mémorisé en localStorage (uniquement utile en D2, ignoré en Top 14)
-  const [betModeD2, setBetModeD2] = useState(() => {
+  // 🆕 Mode de pari pour FT — 'score' (saisie scores) ou 'winner' (1/N/2)
+  // Disponible en D2 ET Top 14
+  // Mémorisé en localStorage (clé séparée par championnat)
+  const [betModeFT, setBetModeFT] = useState(() => {
     if (typeof window === 'undefined') return 'winner';
-    return localStorage.getItem('betModeD2') || 'winner';
+    const key = isD2 ? 'betModeFT_D2' : 'betModeFT_T14';
+    return localStorage.getItem(key) || 'winner';
   });
-  // 🆕 v3 : choix vainqueur ('domicile' | 'nul' | 'exterieur') quand mode='winner'
-  const [winnerChoice, setWinnerChoice] = useState(null);
+
+  // 🆕 Mode de pari pour MT — Top 14 uniquement
+  const [betModeMT, setBetModeMT] = useState(() => {
+    if (typeof window === 'undefined') return 'winner';
+    if (isD2) return 'score'; // Pas utilisé en D2
+    return localStorage.getItem('betModeMT_T14') || 'winner';
+  });
+
+  // 🆕 choix vainqueur ('domicile' | 'nul' | 'exterieur') quand mode='winner'
+  const [winnerChoiceFT, setWinnerChoiceFT] = useState(null);
+  const [winnerChoiceMT, setWinnerChoiceMT] = useState(null);
 
   // États des scores
   const [scoreDomFT, setScoreDomFT] = useState('');
@@ -49,9 +61,11 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
   // ============================================
   // Pari existant (format tableau)
+  // 🆕 On considère FT + WINNER_FT comme "même slot FT"
+  //         et MT + WINNER_MT comme "même slot MT"
   // ============================================
-  const existingFT = existingProno?.find(p => p.bet_type === 'FT') || null;
-  const existingMT = isD2 ? null : (existingProno?.find(p => p.bet_type === 'MT') || null);
+  const existingFT = existingProno?.find(p => p.bet_type === 'FT' || p.bet_type === 'WINNER_FT') || null;
+  const existingMT = isD2 ? null : (existingProno?.find(p => p.bet_type === 'MT' || p.bet_type === 'WINNER_MT') || null);
 
   const hasFT = !!existingFT;
   const hasMT = !!existingMT;
@@ -90,114 +104,176 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     }
   }, [existingFT, existingMT, isD2]);
 
-  // 🆕 v3 : persister le mode D2 en localStorage à chaque changement
+  // 🆕 Persister les modes en localStorage à chaque changement
   useEffect(() => {
-    if (isD2) {
-      localStorage.setItem('betModeD2', betModeD2);
-    }
-  }, [betModeD2, isD2]);
+    const key = isD2 ? 'betModeFT_D2' : 'betModeFT_T14';
+    localStorage.setItem(key, betModeFT);
+  }, [betModeFT, isD2]);
 
-  // 🆕 v3 : pré-sélectionner le vainqueur si l'user a cliqué sur une cote depuis MesPronosTab
-  // On respecte le mode mémorisé (pas d'auto-bascule), mais on stocke quand même le winnerChoice
-  // pour qu'il soit prêt si l'user bascule sur "Vainqueur"
   useEffect(() => {
-    if (isD2 && preselectedWinner) {
-      setWinnerChoice(preselectedWinner);
+    if (!isD2) {
+      localStorage.setItem('betModeMT_T14', betModeMT);
     }
-  }, [isD2, preselectedWinner]);
+  }, [betModeMT, isD2]);
 
-  // 🆕 v3 : Si l'user change de mode, on reset les inputs de l'autre mode
-  // pour éviter d'envoyer des données incohérentes.
-  // EXCEPTION : si preselectedWinner est fourni (clic depuis cote), on conserve le choix
-  // pour qu'il soit prêt si l'user bascule plus tard sur 'Vainqueur'.
+  // 🆕 Pré-sélection du vainqueur si l'user a cliqué sur une cote depuis MesPronosTab
+  // preselectedWinner peut être :
+  //   - une string : 'domicile' | 'nul' | 'exterieur' (legacy D2 → applique à FT)
+  //   - un objet : { type: 'FT'|'MT', choice: 'domicile'|'nul'|'exterieur' } (Top 14)
   useEffect(() => {
-    if (!isD2) return;
-    if (betModeD2 === 'winner') {
+    if (!preselectedWinner) return;
+
+    // Format objet (nouveau)
+    if (typeof preselectedWinner === 'object' && preselectedWinner.choice) {
+      if (preselectedWinner.type === 'MT') {
+        setWinnerChoiceMT(preselectedWinner.choice);
+      } else {
+        setWinnerChoiceFT(preselectedWinner.choice);
+      }
+      return;
+    }
+
+    // Format string (legacy) → applique à FT
+    if (typeof preselectedWinner === 'string') {
+      setWinnerChoiceFT(preselectedWinner);
+    }
+  }, [preselectedWinner]);
+
+  // 🆕 Si l'user change de mode FT, on reset les inputs de l'autre mode
+  useEffect(() => {
+    if (betModeFT === 'winner') {
       // En mode winner : reset des scores FT (mais pas du stake)
       setScoreDomFT('');
       setScoreExtFT('');
     } else {
-      // En mode score : on ne reset le choix vainqueur QUE si pas de pré-sélection venue d'un clic
-      if (!preselectedWinner) {
-        setWinnerChoice(null);
+      // En mode score : on ne reset le choix vainqueur QUE si pas de pré-sélection
+      const hasPreselectFT = preselectedWinner && (
+        typeof preselectedWinner === 'string' ||
+        (typeof preselectedWinner === 'object' && preselectedWinner.type !== 'MT')
+      );
+      if (!hasPreselectFT) {
+        setWinnerChoiceFT(null);
       }
     }
-  }, [betModeD2, isD2, preselectedWinner]);
+  }, [betModeFT, preselectedWinner]);
+
+  // 🆕 Idem pour MT (Top 14 uniquement)
+  useEffect(() => {
+    if (isD2) return;
+
+    if (betModeMT === 'winner') {
+      setScoreDomMT('');
+      setScoreExtMT('');
+    } else {
+      const hasPreselectMT = preselectedWinner &&
+        typeof preselectedWinner === 'object' &&
+        preselectedWinner.type === 'MT';
+      if (!hasPreselectMT) {
+        setWinnerChoiceMT(null);
+      }
+    }
+  }, [betModeMT, isD2, preselectedWinner]);
 
   // ============================================
   // Validation en temps réel
   // ============================================
   useEffect(() => {
-    // 🆕 v3 : en mode winner D2, on n'utilise pas validateBet (qui attend des scores)
-    // → on construit notre propre validation
-    if (isD2 && betModeD2 === 'winner') {
-      const errs = [];
-      if (betOnFT && !winnerChoice) {
-        errs.push({ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2)' });
+    const errs = [];
+    const stakeFTNum = toInt(stakeFT) || 0;
+    const stakeMTNum = toInt(stakeMT) || 0;
+
+    // ────────────────────────────────────────────
+    // Validation FT (mode winner OU score)
+    // ────────────────────────────────────────────
+    const ftErrs = [];
+    if (betOnFT && !hasFT) {
+      if (betModeFT === 'winner') {
+        if (!winnerChoiceFT) {
+          ftErrs.push({ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2) pour le temps plein' });
+        }
+      } else {
+        // Mode score : utiliser validateBet pour FT uniquement
+        const validation = validateBet({
+          betOnFT: true,
+          betOnMT: false,
+          scoreDomFT, scoreExtFT,
+          scoreDomMT: '', scoreExtMT: '',
+          stakeFT, stakeMT: '0',
+          userCredits, hasFT: false, hasMT: true
+        });
+        validation.allMessages.forEach(err => {
+          if (err.field?.includes('FT') || err.field === 'scoreFT' ||
+              err.message.includes('FT') || err.message.includes('Temps Plein')) {
+            ftErrs.push(err);
+          }
+        });
       }
-      const stakeFTNum = toInt(stakeFT) || 0;
-      if (betOnFT && stakeFTNum < 10) {
-        errs.push({ type: 'stake', message: 'Mise minimum 10 jetons' });
+
+      if (stakeFTNum < 10) {
+        ftErrs.push({ type: 'stake', message: 'Mise FT minimum 10 jetons' });
       }
-      if (betOnFT && stakeFTNum > userCredits) {
-        errs.push({ type: 'credits', message: 'Jetons insuffisants' });
-      }
-      setValidationErrors(errs);
-      setErrorsFT(errs.filter(e => e.type !== 'credits' && e.type !== 'stake'));
-      setErrorsMT([]);
-      setErrorsGeneral(errs.filter(e => e.type === 'credits' || e.type === 'stake'));
-      return;
     }
-    // Mode score : validation classique
-    const validation = validateBet({
-      betOnFT,
-      betOnMT: isD2 ? false : betOnMT,  // ✅ force false en D2
-      scoreDomFT,
-      scoreExtFT,
-      scoreDomMT,
-      scoreExtMT,
-      stakeFT,
-      stakeMT,
-      userCredits,
-      hasFT,
-      hasMT
-    });
 
-    setValidationErrors(validation.allMessages);
+    // ────────────────────────────────────────────
+    // Validation MT (Top 14 uniquement, mode winner OU score)
+    // ────────────────────────────────────────────
+    const mtErrs = [];
+    if (!isD2 && betOnMT && !hasMT) {
+      if (betModeMT === 'winner') {
+        if (!winnerChoiceMT) {
+          mtErrs.push({ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2) pour la mi-temps' });
+        }
+      } else {
+        const validation = validateBet({
+          betOnFT: false,
+          betOnMT: true,
+          scoreDomFT: '', scoreExtFT: '',
+          scoreDomMT, scoreExtMT,
+          stakeFT: '0', stakeMT,
+          userCredits, hasFT: true, hasMT: false
+        });
+        validation.allMessages.forEach(err => {
+          if (err.field?.includes('MT') || err.field === 'scoreMT' ||
+              err.message.includes('MT') || err.message.includes('Mi-temps')) {
+            mtErrs.push(err);
+          }
+        });
+      }
 
-    const ftErrors = validation.allMessages.filter(err => {
-      if (err.field?.includes('FT') || err.field === 'scoreFT') return true;
-      if (err.message.includes('FT') || err.message.includes('Temps Plein')) return true;
-      if (err.type === 'stake' && betOnFT && !betOnMT && !err.message.includes('MT')) return true;
-      return false;
-    });
+      if (stakeMTNum < 10) {
+        mtErrs.push({ type: 'stake', message: 'Mise MT minimum 10 jetons' });
+      }
+    }
 
-    const mtErrors = isD2 ? [] : validation.allMessages.filter(err => {
-      if (err.field?.includes('MT') || err.field === 'scoreMT') return true;
-      if (err.message.includes('MT') || err.message.includes('Mi-temps')) return true;
-      if (err.type === 'stake' && betOnMT && !betOnFT && !err.message.includes('FT')) return true;
-      return false;
-    });
+    // ────────────────────────────────────────────
+    // Validation générale (crédits)
+    // ────────────────────────────────────────────
+    const generalErrs = [];
+    const totalStakeCheck =
+      (betOnFT && !hasFT ? stakeFTNum : 0) +
+      (!isD2 && betOnMT && !hasMT ? stakeMTNum : 0);
 
-    const coherenceErrors = validation.allMessages.filter(err => err.type === 'coherence');
+    if (totalStakeCheck > userCredits) {
+      generalErrs.push({ type: 'credits', message: `Jetons insuffisants (max ${userCredits})` });
+    }
 
-    const generalErrors = validation.allMessages.filter(err => {
-      if (err.type === 'credits') return true;
-      if (err.type === 'missing') return true;
-      if (err.type === 'stake' && betOnFT && betOnMT && !err.message.includes('FT') && !err.message.includes('MT')) return true;
+    if (!betOnFT && !betOnMT) {
+      generalErrs.push({ type: 'missing', message: 'Active au moins un type de pari (FT ou MT)' });
+    }
 
-      const isFT = err.field?.includes('FT') || err.field === 'scoreFT' || err.message.includes('FT');
-      const isMT = err.field?.includes('MT') || err.field === 'scoreMT' || err.message.includes('MT');
-      const isCoherence = err.type === 'coherence';
+    setErrorsFT(ftErrs);
+    setErrorsMT(mtErrs);
+    setErrorsGeneral(generalErrs);
+    setValidationErrors([...ftErrs, ...mtErrs, ...generalErrs]);
 
-      return !isFT && !isMT && !isCoherence;
-    });
-
-    setErrorsFT([...ftErrors, ...coherenceErrors]);
-    setErrorsMT(mtErrors);
-    setErrorsGeneral(generalErrors);
-
-  }, [betOnFT, betOnMT, scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT, stakeFT, stakeMT, userCredits, hasFT, hasMT, isD2, betModeD2, winnerChoice]);
+  }, [
+    betOnFT, betOnMT,
+    scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT,
+    stakeFT, stakeMT,
+    userCredits, hasFT, hasMT,
+    isD2, betModeFT, betModeMT,
+    winnerChoiceFT, winnerChoiceMT
+  ]);
 
   const handleScoreBlur = (score, field, refToFocus) => {
     const error = validateScoreInput(score, field);
@@ -210,12 +286,12 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // Calcul des cotes dynamiques selon le score saisi
   // ============================================
   const getCoteFT = () => {
-    // 🆕 v3 : Mode winner D2 — la cote dépend de winnerChoice
-    if (isD2 && betModeD2 === 'winner') {
-      if (!winnerChoice || !match.cotes) return null;
-      if (winnerChoice === 'domicile') return match.cotes.cote_domicile;
-      if (winnerChoice === 'exterieur') return match.cotes.cote_exterieur;
-      if (winnerChoice === 'nul') return match.cotes.cote_nul;
+    // Mode winner — la cote dépend de winnerChoiceFT
+    if (betModeFT === 'winner') {
+      if (!winnerChoiceFT || !match.cotes) return null;
+      if (winnerChoiceFT === 'domicile') return match.cotes.cote_domicile;
+      if (winnerChoiceFT === 'exterieur') return match.cotes.cote_exterieur;
+      if (winnerChoiceFT === 'nul') return match.cotes.cote_nul;
       return null;
     }
     // Mode score (FT classique)
@@ -230,6 +306,17 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
   const getCoteMT = () => {
     if (isD2) return null;  // ✅ pas de MT en D2
+
+    // 🆕 Mode winner MT — la cote dépend de winnerChoiceMT
+    if (betModeMT === 'winner') {
+      if (!winnerChoiceMT || !match.cotes) return null;
+      if (winnerChoiceMT === 'domicile') return match.cotes.cote_mt_domicile;
+      if (winnerChoiceMT === 'exterieur') return match.cotes.cote_mt_exterieur;
+      if (winnerChoiceMT === 'nul') return match.cotes.cote_mt_nul;
+      return null;
+    }
+
+    // Mode score classique
     if (!scoreDomMT || !scoreExtMT || !match.cotes) return null;
     const dom = toInt(scoreDomMT);
     const ext = toInt(scoreExtMT);
@@ -254,21 +341,43 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // Sauvegarde : appel API avec endpoint adapté
   // ============================================
   const handleSave = async () => {
-    // 🆕 v3 : en mode winner D2, on bypass validateBet (qui attend des scores)
-    if (isD2 && betModeD2 === 'winner') {
-      if (!winnerChoice) {
-        setErrorsGeneral([{ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2)' }]);
+    // Vérifier qu'au moins un pari est actif
+    if (!betOnFT && (!betOnMT || isD2)) {
+      setErrorsGeneral([{ type: 'missing', message: 'Active au moins un type de pari' }]);
+      return;
+    }
+
+    // Validation FT
+    if (betOnFT && !hasFT) {
+      if (betModeFT === 'winner' && !winnerChoiceFT) {
+        setErrorsGeneral([{ type: 'missing', message: 'Choisis un vainqueur pour le temps plein' }]);
         return;
       }
-    } else {
-      const validation = validateBet({
-        betOnFT,
-        betOnMT: isD2 ? false : betOnMT,
-        scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT,
-        stakeFT, stakeMT, userCredits, hasFT, hasMT
-      });
-      if (!validation.isValid) {
+      if (betModeFT === 'score') {
+        const validation = validateBet({
+          betOnFT: true, betOnMT: false,
+          scoreDomFT, scoreExtFT, scoreDomMT: '', scoreExtMT: '',
+          stakeFT, stakeMT: '0',
+          userCredits, hasFT: false, hasMT: true
+        });
+        if (!validation.isValid) return;
+      }
+    }
+
+    // Validation MT (Top 14 uniquement)
+    if (!isD2 && betOnMT && !hasMT) {
+      if (betModeMT === 'winner' && !winnerChoiceMT) {
+        setErrorsGeneral([{ type: 'missing', message: 'Choisis un vainqueur pour la mi-temps' }]);
         return;
+      }
+      if (betModeMT === 'score') {
+        const validation = validateBet({
+          betOnFT: false, betOnMT: true,
+          scoreDomFT: '', scoreExtFT: '', scoreDomMT, scoreExtMT,
+          stakeFT: '0', stakeMT,
+          userCredits, hasFT: true, hasMT: false
+        });
+        if (!validation.isValid) return;
       }
     }
 
@@ -291,23 +400,22 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
       // ── Pari FT ──
       if (betOnFT && !hasFT) {
-        // 🆕 v3 : si D2 + mode winner, on envoie WINNER_FT
-        if (isD2 && betModeD2 === 'winner') {
-          if (!winnerChoice) throw new Error('Choisis un vainqueur (1, N ou 2)');
+        if (betModeFT === 'winner') {
+          if (!winnerChoiceFT) throw new Error('Choisis un vainqueur (1, N ou 2)');
           let oddsWinner = 1.00;
-          if (winnerChoice === 'domicile') oddsWinner = match.cotes.cote_domicile;
-          else if (winnerChoice === 'exterieur') oddsWinner = match.cotes.cote_exterieur;
-          else if (winnerChoice === 'nul') oddsWinner = match.cotes.cote_nul;
+          if (winnerChoiceFT === 'domicile') oddsWinner = match.cotes.cote_domicile;
+          else if (winnerChoiceFT === 'exterieur') oddsWinner = match.cotes.cote_exterieur;
+          else if (winnerChoiceFT === 'nul') oddsWinner = match.cotes.cote_nul;
 
           await axios.post(endpointBet, {
             match_id: match.match_id,
             bet_type: 'WINNER_FT',
-            winner_predit: winnerChoice,
+            winner_predit: winnerChoiceFT,
             stake: stakeFTNum,
             odds: oddsWinner
           }, { headers: { 'x-user-id': user.id } });
         } else {
-          // Mode score classique (Top 14 + D2 si betModeD2='score')
+          // Mode score classique
           let oddsFT = 1.00;
           if (match.cotes) {
             if (dFT > eFT) oddsFT = match.cotes.cote_domicile;
@@ -328,23 +436,38 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
       // ── Pari MT (uniquement Top 14) ──
       if (!isD2 && betOnMT && !hasMT) {
-        const dom = toInt(scoreDomMT);
-        const ext = toInt(scoreExtMT);
-        let oddsMT = 1.00;
-        if (match.cotes) {
-          if (dom > ext) oddsMT = match.cotes.cote_mt_domicile;
-          else if (ext > dom) oddsMT = match.cotes.cote_mt_exterieur;
-          else oddsMT = match.cotes.cote_mt_nul;
-        }
+        if (betModeMT === 'winner') {
+          if (!winnerChoiceMT) throw new Error('Choisis un vainqueur MT (1, N ou 2)');
+          let oddsWinnerMT = 1.00;
+          if (winnerChoiceMT === 'domicile') oddsWinnerMT = match.cotes.cote_mt_domicile;
+          else if (winnerChoiceMT === 'exterieur') oddsWinnerMT = match.cotes.cote_mt_exterieur;
+          else if (winnerChoiceMT === 'nul') oddsWinnerMT = match.cotes.cote_mt_nul;
 
-        await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
-          match_id: match.match_id,
-          bet_type: 'MT',
-          score_domicile: dMT,
-          score_exterieur: eMT,
-          stake: stakeMTNum,
-          odds: oddsMT
-        }, { headers: { 'x-user-id': user.id } });
+          await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
+            match_id: match.match_id,
+            bet_type: 'WINNER_MT',
+            winner_predit: winnerChoiceMT,
+            stake: stakeMTNum,
+            odds: oddsWinnerMT
+          }, { headers: { 'x-user-id': user.id } });
+        } else {
+          // Mode score classique MT
+          let oddsMT = 1.00;
+          if (match.cotes) {
+            if (dMT > eMT) oddsMT = match.cotes.cote_mt_domicile;
+            else if (eMT > dMT) oddsMT = match.cotes.cote_mt_exterieur;
+            else oddsMT = match.cotes.cote_mt_nul;
+          }
+
+          await axios.post(`${import.meta.env.VITE_API_URL}/bets`, {
+            match_id: match.match_id,
+            bet_type: 'MT',
+            score_domicile: dMT,
+            score_exterieur: eMT,
+            stake: stakeMTNum,
+            odds: oddsMT
+          }, { headers: { 'x-user-id': user.id } });
+        }
       }
 
       onSuccess();
@@ -359,19 +482,37 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     }
   };
 
-  const blockingErrors = validationErrors.filter(e => e.type !== 'warning');
-  const canSave = blockingErrors.length === 0 && totalStake >= 10 && totalStake <= userCredits;
-
-  // 🆕 v3 : canSave dédié au mode winner D2 (logique simple, ne dépend pas de validateBet)
+  // ============================================
+  // Calcul de canSave (dépend du mode actif)
+  // ============================================
   const stakeFTNum = toInt(stakeFT) || 0;
-  const canSaveD2Winner = isD2 && betModeD2 === 'winner' 
-    && betOnFT 
-    && !!winnerChoice 
-    && stakeFTNum >= 10 
-    && stakeFTNum <= userCredits;
-  
-  // Le bouton est cliquable si on est en mode winner D2 valide, OU en mode classique valide
-  const finalCanSave = (isD2 && betModeD2 === 'winner') ? canSaveD2Winner : canSave;
+  const stakeMTNum = toInt(stakeMT) || 0;
+
+  // Au moins un pari actif
+  const atLeastOneActive = (betOnFT && !hasFT) || (!isD2 && betOnMT && !hasMT);
+
+  // FT valide ?
+  const ftValid = !betOnFT || hasFT || (
+    stakeFTNum >= 10 &&
+    (
+      (betModeFT === 'winner' && !!winnerChoiceFT) ||
+      (betModeFT === 'score' && !!scoreDomFT && !!scoreExtFT)
+    )
+  );
+
+  // MT valide ?
+  const mtValid = isD2 || !betOnMT || hasMT || (
+    stakeMTNum >= 10 &&
+    (
+      (betModeMT === 'winner' && !!winnerChoiceMT) ||
+      (betModeMT === 'score' && !!scoreDomMT && !!scoreExtMT)
+    )
+  );
+
+  // Crédits suffisants
+  const creditsOk = totalStake <= userCredits && totalStake >= 10;
+
+  const finalCanSave = atLeastOneActive && ftValid && mtValid && creditsOk;
 
   // ============================================
   // Couleurs selon le championnat
@@ -387,6 +528,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     ? 'bg-[#00174D] text-white hover:bg-[#97C1FE]'
     : 'bg-rugby-gold text-white hover:bg-rugby-bronze';
   const inputFocusRing = isD2 ? 'focus:ring-[#97C1FE] focus:border-[#97C1FE]' : 'focus:ring-rugby-gold focus:border-rugby-gold';
+  const toggleActiveBg = isD2 ? 'bg-[#00174D]' : 'bg-rugby-gold';
 
   return (
     <>
@@ -458,7 +600,9 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
               </div>
             </div>
 
-            {/* Section TEMPS PLEIN */}
+            {/* ═══════════════════════════════════════════
+                Section TEMPS PLEIN
+                ═══════════════════════════════════════════ */}
             <div className={`border-2 rounded-lg p-2 transition-colors ${
               betOnFT ? `${sectionBorderOn} bg-white` : 'border-gray-300 bg-gray-50'
             }`}>
@@ -477,15 +621,15 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 </label>
               </div>
 
-              {/* 🆕 v3 : TOGGLE Score / Vainqueur (D2 uniquement) */}
-              {isD2 && betOnFT && !hasFT && (
+              {/* 🆕 TOGGLE Score / Vainqueur — D2 ET Top 14 */}
+              {betOnFT && !hasFT && (
                 <div className="flex gap-1 mb-2 bg-gray-100 rounded-lg p-1">
                   <button
                     type="button"
-                    onClick={() => setBetModeD2('winner')}
+                    onClick={() => setBetModeFT('winner')}
                     className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      betModeD2 === 'winner'
-                        ? 'bg-[#00174D] text-white shadow-sm'
+                      betModeFT === 'winner'
+                        ? `${toggleActiveBg} text-white shadow-sm`
                         : 'bg-transparent text-gray-600 hover:bg-white/50'
                     }`}
                   >
@@ -494,10 +638,10 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                   </button>
                   <button
                     type="button"
-                    onClick={() => setBetModeD2('score')}
+                    onClick={() => setBetModeFT('score')}
                     className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      betModeD2 === 'score'
-                        ? 'bg-[#00174D] text-white shadow-sm'
+                      betModeFT === 'score'
+                        ? `${toggleActiveBg} text-white shadow-sm`
                         : 'bg-transparent text-gray-600 hover:bg-white/50'
                     }`}
                   >
@@ -518,16 +662,16 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 </div>
               )}
 
-              {/* 🆕 v3 : Mode VAINQUEUR D2 — boutons 1/N/2 + mise */}
-              {isD2 && betModeD2 === 'winner' && betOnFT && !hasFT ? (
+              {/* Mode VAINQUEUR FT — boutons 1/N/2 + mise */}
+              {betModeFT === 'winner' && betOnFT && !hasFT ? (
                 <>
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {/* Bouton DOMICILE (1) */}
                     <button
                       type="button"
-                      onClick={() => setWinnerChoice('domicile')}
+                      onClick={() => setWinnerChoiceFT('domicile')}
                       className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
-                        winnerChoice === 'domicile'
+                        winnerChoiceFT === 'domicile'
                           ? 'border-blue-500 bg-blue-50 shadow-md scale-105'
                           : 'border-gray-300 bg-white hover:border-gray-400'
                       }`}
@@ -546,9 +690,9 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     {/* Bouton NUL (N) */}
                     <button
                       type="button"
-                      onClick={() => setWinnerChoice('nul')}
+                      onClick={() => setWinnerChoiceFT('nul')}
                       className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
-                        winnerChoice === 'nul'
+                        winnerChoiceFT === 'nul'
                           ? 'border-gray-700 bg-gray-100 shadow-md scale-105'
                           : 'border-gray-300 bg-white hover:border-gray-400'
                       }`}
@@ -564,9 +708,9 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     {/* Bouton EXTÉRIEUR (2) */}
                     <button
                       type="button"
-                      onClick={() => setWinnerChoice('exterieur')}
+                      onClick={() => setWinnerChoiceFT('exterieur')}
                       className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
-                        winnerChoice === 'exterieur'
+                        winnerChoiceFT === 'exterieur'
                           ? 'border-red-500 bg-red-50 shadow-md scale-105'
                           : 'border-gray-300 bg-white hover:border-gray-400'
                       }`}
@@ -583,7 +727,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     </button>
                   </div>
 
-                  {/* Mise */}
+                  {/* Mise FT (mode winner) */}
                   <div className="flex items-center justify-center gap-3 mb-1">
                     <span className="text-xs font-semibold text-gray-700">Mise :</span>
                     <div className={`w-24 h-12 flex flex-col items-center justify-start border-2 border-rugby-gray rounded-lg focus-within:ring-2 ${inputFocusRing}`}>
@@ -603,6 +747,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 </>
               ) : (
               <>
+              {/* Mode SCORE FT — saisie scores */}
               <div className="grid grid-cols-3 gap-2 items-start mb-1">
                 <div>
                   <label className="block text-[10px] font-semibold text-gray-700 mb-1 text-center truncate">
@@ -730,6 +875,36 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                   </label>
                 </div>
 
+                {/* 🆕 TOGGLE Score / Vainqueur MT */}
+                {betOnMT && !hasMT && (
+                  <div className="flex gap-1 mb-2 bg-gray-100 rounded-lg p-1">
+                    <button
+                      type="button"
+                      onClick={() => setBetModeMT('winner')}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                        betModeMT === 'winner'
+                          ? `${toggleActiveBg} text-white shadow-sm`
+                          : 'bg-transparent text-gray-600 hover:bg-white/50'
+                      }`}
+                    >
+                      <Target className="w-3.5 h-3.5" />
+                      Vainqueur
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBetModeMT('score')}
+                      className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                        betModeMT === 'score'
+                          ? `${toggleActiveBg} text-white shadow-sm`
+                          : 'bg-transparent text-gray-600 hover:bg-white/50'
+                      }`}
+                    >
+                      <Hash className="w-3.5 h-3.5" />
+                      Score exact
+                    </button>
+                  </div>
+                )}
+
                 {errorsMT.length > 0 && (
                   <div className="bg-red-50 border-l-4 border-red-500 rounded p-2 mb-2 space-y-1">
                     {errorsMT.map((err, idx) => (
@@ -741,6 +916,92 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                   </div>
                 )}
 
+                {/* Mode VAINQUEUR MT — boutons 1/N/2 + mise */}
+                {betModeMT === 'winner' && betOnMT && !hasMT ? (
+                  <>
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      {/* Bouton DOMICILE (1) MT */}
+                      <button
+                        type="button"
+                        onClick={() => setWinnerChoiceMT('domicile')}
+                        className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                          winnerChoiceMT === 'domicile'
+                            ? 'border-blue-500 bg-blue-50 shadow-md scale-105'
+                            : 'border-gray-300 bg-white hover:border-gray-400'
+                        }`}
+                      >
+                        <span className="text-[10px] font-bold text-gray-500">1 (Domicile)</span>
+                        <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <span className="text-[10px] font-semibold text-gray-700 truncate max-w-full">
+                          {teamDom.name}
+                        </span>
+                        <span className="text-base font-bold text-blue-700">
+                          {match.cotes?.cote_mt_domicile?.toFixed(2)}
+                        </span>
+                      </button>
+
+                      {/* Bouton NUL (N) MT */}
+                      <button
+                        type="button"
+                        onClick={() => setWinnerChoiceMT('nul')}
+                        className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                          winnerChoiceMT === 'nul'
+                            ? 'border-gray-700 bg-gray-100 shadow-md scale-105'
+                            : 'border-gray-300 bg-white hover:border-gray-400'
+                        }`}
+                      >
+                        <span className="text-[10px] font-bold text-gray-500">N (Nul)</span>
+                        <span className="text-2xl">🤝</span>
+                        <span className="text-[10px] font-semibold text-gray-700">Match nul</span>
+                        <span className="text-base font-bold text-gray-800">
+                          {match.cotes?.cote_mt_nul?.toFixed(2)}
+                        </span>
+                      </button>
+
+                      {/* Bouton EXTÉRIEUR (2) MT */}
+                      <button
+                        type="button"
+                        onClick={() => setWinnerChoiceMT('exterieur')}
+                        className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                          winnerChoiceMT === 'exterieur'
+                            ? 'border-red-500 bg-red-50 shadow-md scale-105'
+                            : 'border-gray-300 bg-white hover:border-gray-400'
+                        }`}
+                      >
+                        <span className="text-[10px] font-bold text-gray-500">2 (Extérieur)</span>
+                        <img src={teamExt.logo} alt={teamExt.name} className="w-7 h-7 object-contain"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <span className="text-[10px] font-semibold text-gray-700 truncate max-w-full">
+                          {teamExt.name}
+                        </span>
+                        <span className="text-base font-bold text-red-700">
+                          {match.cotes?.cote_mt_exterieur?.toFixed(2)}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Mise MT (mode winner) */}
+                    <div className="flex items-center justify-center gap-3 mb-1">
+                      <span className="text-xs font-semibold text-gray-700">Mise :</span>
+                      <div className={`w-24 h-12 flex flex-col items-center justify-start border-2 border-rugby-gray rounded-lg focus-within:ring-2 ${inputFocusRing}`}>
+                        <span className="text-[10px] font-semibold text-gray-700">Jetons</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={stakeMT}
+                          onChange={(e) => setStakeMT(e.target.value)}
+                          onFocus={(e) => e.target.select()}
+                          disabled={hasMT || !betOnMT}
+                          className="w-full text-center text-sm font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                <>
+                {/* Mode SCORE MT — saisie scores */}
                 <div className="grid grid-cols-3 gap-2 items-start mb-1">
                   <div>
                     <label className="block text-[10px] font-semibold text-gray-700 mb-1 text-center truncate">
@@ -832,6 +1093,8 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     </div>
                   </div>
                 </div>
+                </>
+                )}
 
                 {betOnMT && coteMT && (
                   <div className="bg-green-50 rounded p-2 text-xs">
@@ -874,7 +1137,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                     : validBtnBg
                 }`}
               >
-                {saving ? "Validation..." : `Valider (${totalStake || stakeFTNum} jetons)`}
+                {saving ? "Validation..." : `Valider (${totalStake} jetons)`}
               </button>
             </div>
 
