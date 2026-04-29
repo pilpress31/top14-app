@@ -42,7 +42,9 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const pronoFT = existingProno?.find(p => 
     (p.bet_type === 'FT' || p.bet_type === 'WINNER_FT') && p.status !== 'cancelled'
   );
-  const pronoMT = isD2 ? null : existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
+  const pronoMT = isD2 ? null : existingProno?.find(p => 
+    (p.bet_type === 'MT' || p.bet_type === 'WINNER_MT') && p.status !== 'cancelled'
+  );
   
   // 🆕 v3 : flag pour différencier l'affichage
   const isWinnerBet = pronoFT?.bet_type === 'WINNER_FT';
@@ -109,9 +111,16 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               : 'Match nul'}
           </span>
         )}
-        {pronoMT && (
+        {pronoMT && pronoMT.bet_type !== 'WINNER_MT' && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
             MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
+          </span>
+        )}
+        {pronoMT && pronoMT.bet_type === 'WINNER_MT' && (
+          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
+            🎯 MT : {pronoMT.winner_predit === 'domicile' ? teamDom.name 
+              : pronoMT.winner_predit === 'exterieur' ? teamExt.name 
+              : 'Match nul'}
           </span>
         )}
       </div>
@@ -169,11 +178,12 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
               const ftClickable = bettingAllowed && !hasFT && jouable;
-              // 🆕 v3 : si D2, on transmet le vainqueur cliqué pour pré-sélection dans BettingModal
               const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
+              // 🆕 D2 : string legacy. Top 14 : objet avec type FT
+              const preselect = isD2 ? winnerForClick : { type: 'FT', choice: winnerForClick };
               return (
                 <div key={i}
-                  onClick={() => ftClickable && onBetClick(match, isD2 ? winnerForClick : null)}
+                  onClick={() => ftClickable && onBetClick(match, preselect)}
                   className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${ftClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
                 >
                   {cote?.toFixed(2)}
@@ -188,9 +198,12 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
               {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => {
                 const mtClickable = bettingAllowed && !hasMT && jouable;
+                const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
+                // 🆕 Top 14 : objet avec type MT
+                const preselect = { type: 'MT', choice: winnerForClick };
                 return (
                   <div key={i}
-                    onClick={() => mtClickable && onBetClick(match)}
+                    onClick={() => mtClickable && onBetClick(match, preselect)}
                     className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${mtClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
                   >
                     {cote?.toFixed(2)}

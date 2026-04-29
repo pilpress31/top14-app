@@ -221,6 +221,9 @@ export default function MesPronosTab({ goToMesParis }) {
     }
   };
 
+  // 🆕 clickedWinner peut être :
+  //   - une string : 'domicile'|'nul'|'exterieur' (legacy D2 → applique à FT)
+  //   - un objet : { type: 'FT'|'MT', choice: 'domicile'|'nul'|'exterieur' } (Top 14)
   const ouvrirModal = (match, clickedWinner = null) => {
     if (!parisOuverts) return;
 
@@ -232,18 +235,18 @@ export default function MesPronosTab({ goToMesParis }) {
     const dejaPronos = mesPronos.filter(p =>
       p.match_id === match.match_id && p.status !== 'cancelled'
     );
-    // 🆕 Détection : un pari FT OU WINNER_FT bloque tout autre pari sur ce match
+    // 🆕 Détection : FT/WINNER_FT pour le slot FT, MT/WINNER_MT pour le slot MT
     const hasFT = dejaPronos.some(p => p.bet_type === 'FT' || p.bet_type === 'WINNER_FT');
-    const hasMT = !isD2 && dejaPronos.some(p => p.bet_type === 'MT');
+    const hasMT = !isD2 && dejaPronos.some(p => p.bet_type === 'MT' || p.bet_type === 'WINNER_MT');
 
-    // En D2 : si un pari (FT ou WINNER_FT) déjà pris, on ouvre Mes Paris
-    // En Top14 : si FT + MT pris, on ouvre Mes Paris
+    // En D2 : si un pari FT/WINNER_FT déjà pris, on ouvre Mes Paris
+    // En Top14 : si FT ET MT pris, on ouvre Mes Paris
     if (isD2 ? hasFT : (hasFT && hasMT)) {
       goToMesParis?.();
       return;
     }
 
-    // 🆕 v3 : stocker le vainqueur cliqué pour pré-sélection (D2 only)
+    // 🆕 stocker la pré-sélection (string en D2 = legacy, objet en Top 14)
     setPreselectedWinner(clickedWinner);
     setSelectedMatch(match);
     setShowModal(true);
