@@ -102,7 +102,6 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // pour qu'il soit prêt si l'user bascule sur "Vainqueur"
   useEffect(() => {
     if (isD2 && preselectedWinner) {
-      console.log('🎯 [BettingModal] Pré-sélection vainqueur:', preselectedWinner);
       setWinnerChoice(preselectedWinner);
     }
   }, [isD2, preselectedWinner]);
