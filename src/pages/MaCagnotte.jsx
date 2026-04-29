@@ -430,20 +430,27 @@ export default function MaCagnotte() {
     nbDistributions: 0
   });
 
-  // ✅ Realtime avec debounce 500ms pour éviter les boucles infinies
+  // ✅ Realtime avec debounce 1000ms pour éviter les boucles infinies
   // Les events Realtime peuvent arriver en rafale (multi-tables qui changent ensemble)
-  // → on regroupe les déclenchements dans un seul appel à loadData après 500ms
+  // → on regroupe les déclenchements dans un seul appel à loadData après 1s
   const realtimeDebounceRef = useRef(null);
+  const lastLoadAtRef = useRef(0);
   const debouncedLoadData = (userId) => {
+    if (!userId) return;
     if (realtimeDebounceRef.current) {
       clearTimeout(realtimeDebounceRef.current);
     }
     realtimeDebounceRef.current = setTimeout(() => {
-      if (userId && !loadingRef.current) {
-        loadData(userId);
+      // Skip si chargement déjà en cours OU si dernier load < 2s
+      const now = Date.now();
+      if (loadingRef.current || (now - lastLoadAtRef.current < 2000)) {
+        realtimeDebounceRef.current = null;
+        return;
       }
+      lastLoadAtRef.current = now;
+      loadData(userId);
       realtimeDebounceRef.current = null;
-    }, 500);
+    }, 1000);
   };
 
   useRealtimeSync([

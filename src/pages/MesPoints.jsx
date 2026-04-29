@@ -227,30 +227,42 @@ export default function MesPoints() {
     [filteredBets]
   );
 
-  // ─── Récupérer les infos d'un match selon le championnat ───
+  // ─── Récupérer les infos d'un match ───
+  // PRIORITÉ aux colonnes dénormalisées du pari (toujours présentes)
+  // Fallback sur matchs_results / match_cotes_d2 pour enrichir (scores, date)
   const getMatchInfo = (bet) => {
-    if (bet.championnat === 'prod2') {
-      return matchCotesD2[bet.match_id];
-    }
-    return matchsResults[bet.match_id];
+    const mrInfo = bet.championnat === 'prod2'
+      ? matchCotesD2[bet.match_id]
+      : matchsResults[bet.match_id];
+
+    return {
+      equipe_domicile: bet.equipe_domicile || mrInfo?.equipe_domicile || null,
+      equipe_exterieure: bet.equipe_exterieure || mrInfo?.equipe_exterieure || null,
+      journee: mrInfo?.journee ?? bet.journee ?? null,
+      saison: mrInfo?.saison ?? bet.saison ?? null,
+      date_match: mrInfo?.date_match ?? null,
+      // Données scores (depuis matchs_results uniquement)
+      _mr: mrInfo,
+    };
   };
 
   // ─── Récupérer le score selon le championnat ───
   const getScores = (bet, matchInfo) => {
-    if (!matchInfo) return null;
+    const mr = matchInfo?._mr;
+    if (!mr) return null;
     if (bet.championnat === 'prod2') {
       return {
-        dom: matchInfo.score_reel_dom,
-        ext: matchInfo.score_reel_ext,
+        dom: mr.score_reel_dom,
+        ext: mr.score_reel_ext,
         ht_dom: null,
         ht_ext: null,
       };
     }
     return {
-      dom: matchInfo.score_domicile,
-      ext: matchInfo.score_exterieur,
-      ht_dom: matchInfo.score_ht_domicile,
-      ht_ext: matchInfo.score_ht_exterieur,
+      dom: mr.score_domicile,
+      ext: mr.score_exterieur,
+      ht_dom: mr.score_ht_domicile,
+      ht_ext: mr.score_ht_exterieur,
     };
   };
 
@@ -355,16 +367,18 @@ export default function MesPoints() {
         {!loading && betsWithCumul.map((bet) => {
           const matchInfo = getMatchInfo(bet);
           const scores = getScores(bet, matchInfo);
-          const teamDom = matchInfo ? getTeamData(matchInfo.equipe_domicile) : null;
-          const teamExt = matchInfo ? getTeamData(matchInfo.equipe_exterieure) : null;
-          const journee = matchInfo?.journee
+          // 🆕 equipe_domicile/exterieure proviennent en priorité du pari (toujours dénormalisé)
+          const teamDom = matchInfo.equipe_domicile ? getTeamData(matchInfo.equipe_domicile) : null;
+          const teamExt = matchInfo.equipe_exterieure ? getTeamData(matchInfo.equipe_exterieure) : null;
+          const journee = matchInfo.journee
             ? (typeof matchInfo.journee === 'number' ? `J${matchInfo.journee}` : matchInfo.journee)
             : extractJournee(bet.match_id);
-          const saison = matchInfo?.saison || extractSaison(bet.match_id);
-          const dateMatch = matchInfo?.date_match || bet.result_at || bet.resolved_at;
+          const saison = matchInfo.saison || extractSaison(bet.match_id);
+          const dateMatch = matchInfo.date_match || bet.result_at || bet.resolved_at;
           const badge = getBadgeForBet(bet);
           const BadgeIcon = badge.icon;
           const isMT = bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT';
+          const hasTeams = !!(matchInfo.equipe_domicile && matchInfo.equipe_exterieure);
 
           return (
             <div
@@ -394,7 +408,7 @@ export default function MesPoints() {
               {/* Corps : match + score + badge */}
               <div className="p-3">
                 {/* Équipes */}
-                {matchInfo ? (
+                {hasTeams ? (
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                       {teamDom?.logo && (
