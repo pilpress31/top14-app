@@ -380,9 +380,9 @@ export default function MesParisTab() {
                       </span>
                     )}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
-                      {bet.bet_type === 'FT' ? '🏉 Temps plein' 
+                      {bet.bet_type === 'MT' ? '⏱️ Mi-temps' 
                         : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur' 
-                        : '⏱️ Mi-temps'}
+                        : '🏉 Temps plein'}
                     </span>
                   </div>
                 </div>
@@ -425,9 +425,8 @@ export default function MesParisTab() {
                           {bet.bet_type === 'WINNER_FT' ? (
                             <p className="text-base font-bold text-blue-900 text-center">
                               🎯 {bet.winner_predit === 'domicile' ? (teamDom?.name || 'Domicile')
-                                  : bet.winner_predit === 'exterieur' ? (teamExt?.name || 'Extérieur')
-                                  : bet.winner_predit === 'nul' ? 'Match nul'
-                                  : '?'}
+                                : bet.winner_predit === 'exterieur' ? (teamExt?.name || 'Extérieur')
+                                : 'Match nul'}
                             </p>
                           ) : (
                             <p className="text-xl font-bold text-blue-900 text-center">
@@ -456,14 +455,34 @@ export default function MesParisTab() {
                           }
                           
                           if (realHome == null || realAway == null) return null;
+                          
+                          // 🆕 v3 : pour les paris WINNER_FT, calculer et afficher aussi le vrai vainqueur
+                          let realWinnerName = null;
+                          if (bet.bet_type === 'WINNER_FT') {
+                            if (realHome > realAway) realWinnerName = teamDom?.name || 'Domicile';
+                            else if (realAway > realHome) realWinnerName = teamExt?.name || 'Extérieur';
+                            else realWinnerName = 'Match nul';
+                          }
+                          
                           return (
                             <div className={`rounded-lg py-2 px-3 border ${isWon ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                               <p className={`text-[10px] font-semibold mb-1 ${isWon ? 'text-green-700' : 'text-red-700'}`}>
-                                Score réel
+                                {bet.bet_type === 'WINNER_FT' ? 'Résultat' : 'Score réel'}
                               </p>
-                              <p className={`text-xl font-bold text-center ${isWon ? 'text-green-900' : 'text-red-900'}`}>
-                                {realHome} - {realAway}
-                              </p>
+                              {realWinnerName ? (
+                                <>
+                                  <p className={`text-base font-bold text-center ${isWon ? 'text-green-900' : 'text-red-900'}`}>
+                                    {isWon ? '🎉' : '❌'} {realWinnerName}
+                                  </p>
+                                  <p className={`text-xs text-center ${isWon ? 'text-green-700' : 'text-red-700'}`}>
+                                    ({realHome} - {realAway})
+                                  </p>
+                                </>
+                              ) : (
+                                <p className={`text-xl font-bold text-center ${isWon ? 'text-green-900' : 'text-red-900'}`}>
+                                  {realHome} - {realAway}
+                                </p>
+                              )}
                             </div>
                           );
                         })()}
