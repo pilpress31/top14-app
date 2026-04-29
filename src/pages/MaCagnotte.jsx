@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, ChevronRight, Check } from "lucide-react";
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getSaisonCourante } from '../utils/season';
@@ -925,28 +925,36 @@ export default function MaCagnotte() {
           <button
             type="button"
             onClick={() => setActiveTab("transactions")}
-            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-left"
+            className="group bg-white/20 backdrop-blur-sm rounded-lg p-3 border-2 border-white/40 hover:bg-white/30 hover:border-white/60 hover:shadow-lg active:scale-95 transition-all text-left cursor-pointer"
             aria-label="Voir l'historique des transactions"
           >
-            <div className="flex items-center gap-2 mb-1">
-              <Coins className="w-4 h-4 text-white" />
-              <p className="text-xs text-white/90 font-semibold">Jetons</p>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-white" />
+                <p className="text-xs text-white/90 font-semibold">Jetons</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
             </div>
             <p className="text-2xl font-bold text-white">{userCredits || 0}</p>
+            <p className="text-[10px] text-white/80 mt-0.5">Voir l'historique →</p>
           </button>
 
           {/* 🆕 Clic sur Points → ouvre la page dédiée /mes-points */}
           <button
             type="button"
             onClick={() => navigate('/mes-points')}
-            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-left"
+            className="group bg-white/20 backdrop-blur-sm rounded-lg p-3 border-2 border-white/40 hover:bg-white/30 hover:border-white/60 hover:shadow-lg active:scale-95 transition-all text-left cursor-pointer"
             aria-label="Voir l'historique des points"
           >
-            <div className="flex items-center gap-2 mb-1">
-              <Trophy className="w-4 h-4 text-white" />
-              <p className="text-xs text-white/90 font-semibold">Points</p>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-white" />
+                <p className="text-xs text-white/90 font-semibold">Points</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
             </div>
             <p className="text-2xl font-bold text-white">{userPoints}</p>
+            <p className="text-[10px] text-white/80 mt-0.5">Voir le détail →</p>
           </button>
         </div>
       </div>
