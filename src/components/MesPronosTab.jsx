@@ -157,6 +157,10 @@ export default function MesPronosTab({ goToMesParis }) {
             score_ext_pronos: b.score_exterieur,
             score_domicile: b.score_domicile,
             score_exterieur: b.score_exterieur,
+            winner_predit: b.winner_predit,  // 🆕 pour pari WINNER_FT
+            odds: b.odds,                     // 🆕 utile pour affichage
+            stake: b.stake,                   // 🆕 utile pour affichage
+            potential_win: b.potential_win,   // 🆕 utile pour affichage
           }));
           setMesPronos(pronosD2);
         } catch (e) {
@@ -226,10 +230,11 @@ export default function MesPronosTab({ goToMesParis }) {
     const dejaPronos = mesPronos.filter(p =>
       p.match_id === match.match_id && p.status !== 'cancelled'
     );
-    const hasFT = dejaPronos.some(p => p.bet_type === 'FT');
+    // 🆕 Détection : un pari FT OU WINNER_FT bloque tout autre pari sur ce match
+    const hasFT = dejaPronos.some(p => p.bet_type === 'FT' || p.bet_type === 'WINNER_FT');
     const hasMT = !isD2 && dejaPronos.some(p => p.bet_type === 'MT');
 
-    // En D2 : si FT déjà pris, on ouvre Mes Paris
+    // En D2 : si un pari (FT ou WINNER_FT) déjà pris, on ouvre Mes Paris
     // En Top14 : si FT + MT pris, on ouvre Mes Paris
     if (isD2 ? hasFT : (hasFT && hasMT)) {
       goToMesParis?.();

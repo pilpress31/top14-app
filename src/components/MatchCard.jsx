@@ -38,8 +38,14 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const [teamPopup, setTeamPopup] = useState(null);
 
   // ✅ En Pro D2, pas de paris MT du tout
-  const pronoFT = existingProno?.find(p => p.bet_type === 'FT' && p.status !== 'cancelled');
+  // 🆕 v3 : pronoFT détecte aussi WINNER_FT (paris vainqueur D2)
+  const pronoFT = existingProno?.find(p => 
+    (p.bet_type === 'FT' || p.bet_type === 'WINNER_FT') && p.status !== 'cancelled'
+  );
   const pronoMT = isD2 ? null : existingProno?.find(p => p.bet_type === 'MT' && p.status !== 'cancelled');
+  
+  // 🆕 v3 : flag pour différencier l'affichage
+  const isWinnerBet = pronoFT?.bet_type === 'WINNER_FT';
   const hasFT = !!pronoFT;
   const hasMT = !!pronoMT;
   const pariComplet = isD2 ? hasFT : (hasFT && hasMT);
@@ -91,9 +97,16 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <CheckCircle className="w-3 h-3 text-green-600" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
         </div>
-        {pronoFT && (
+        {pronoFT && !isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
             FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
+          </span>
+        )}
+        {pronoFT && isWinnerBet && (
+          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
+            🎯 {pronoFT.winner_predit === 'domicile' ? teamDom.name 
+              : pronoFT.winner_predit === 'exterieur' ? teamExt.name 
+              : 'Match nul'}
           </span>
         )}
         {pronoMT && (
