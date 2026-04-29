@@ -380,7 +380,9 @@ export default function MesParisTab() {
                       </span>
                     )}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
-                      {bet.bet_type === 'FT' ? '🏉 Temps plein' : '⏱️ Mi-temps'}
+                      {bet.bet_type === 'FT' ? '🏉 Temps plein' 
+                        : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur' 
+                        : '⏱️ Mi-temps'}
                     </span>
                   </div>
                 </div>
@@ -420,9 +422,18 @@ export default function MesParisTab() {
                           <p className="text-[10px] text-blue-700 font-semibold mb-1 flex items-center gap-1">
                             <Target className="w-3 h-3" /> Ton pronostic
                           </p>
-                          <p className="text-xl font-bold text-blue-900 text-center">
-                            {bet.score_domicile} - {bet.score_exterieur}
-                          </p>
+                          {bet.bet_type === 'WINNER_FT' ? (
+                            <p className="text-base font-bold text-blue-900 text-center">
+                              🎯 {bet.winner_predit === 'domicile' ? (teamDom?.name || 'Domicile')
+                                  : bet.winner_predit === 'exterieur' ? (teamExt?.name || 'Extérieur')
+                                  : bet.winner_predit === 'nul' ? 'Match nul'
+                                  : '?'}
+                            </p>
+                          ) : (
+                            <p className="text-xl font-bold text-blue-900 text-center">
+                              {bet.score_domicile} - {bet.score_exterieur}
+                            </p>
+                          )}
                         </div>
                         {/* Score réel - uniquement pour paris résolus */}
                         {!isPending && (() => {
