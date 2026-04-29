@@ -24,6 +24,8 @@ export default function MesPronosTab({ goToMesParis }) {
   const [showModal, setShowModal] = useState(false);
   const [showReglementModal, setShowReglementModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  // 🆕 v3 : valeur préselectionnée pour le mode vainqueur (D2 only)
+  const [preselectedWinner, setPreselectedWinner] = useState(null);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   const [headerVisible, setHeaderVisible] = useState(true);
   const [parisOuverts, setParisOuverts] = useState(true);
@@ -219,7 +221,7 @@ export default function MesPronosTab({ goToMesParis }) {
     }
   };
 
-  const ouvrirModal = (match) => {
+  const ouvrirModal = (match, clickedWinner = null) => {
     if (!parisOuverts) return;
 
     const journeesSorted = [...new Set(matchsDisponibles.map(m => m.journee))]
@@ -241,6 +243,8 @@ export default function MesPronosTab({ goToMesParis }) {
       return;
     }
 
+    // 🆕 v3 : stocker le vainqueur cliqué pour pré-sélection (D2 only)
+    setPreselectedWinner(clickedWinner);
     setSelectedMatch(match);
     setShowModal(true);
   };
@@ -248,6 +252,7 @@ export default function MesPronosTab({ goToMesParis }) {
   const fermerModal = () => {
     setShowModal(false);
     setSelectedMatch(null);
+    setPreselectedWinner(null);
   };
 
   const toggleJournee = (journee) => {
@@ -403,6 +408,7 @@ export default function MesPronosTab({ goToMesParis }) {
         <BettingModal
           match={selectedMatch}
           existingProno={mesPronos.filter(p => p.match_id === selectedMatch.match_id)}
+          preselectedWinner={preselectedWinner}
           userCredits={userCredits?.credits || 0}
           isD2={isD2}
           onClose={fermerModal}

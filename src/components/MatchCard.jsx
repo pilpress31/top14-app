@@ -169,9 +169,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
               const ftClickable = bettingAllowed && !hasFT && jouable;
+              // 🆕 v3 : si D2, on transmet le vainqueur cliqué pour pré-sélection dans BettingModal
+              const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
               return (
                 <div key={i}
-                  onClick={() => ftClickable && onBetClick(match)}
+                  onClick={() => ftClickable && onBetClick(match, isD2 ? winnerForClick : null)}
                   className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${ftClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
                 >
                   {cote?.toFixed(2)}

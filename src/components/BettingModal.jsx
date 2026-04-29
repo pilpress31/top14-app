@@ -98,7 +98,9 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   }, [betModeD2, isD2]);
 
   // 🆕 v3 : Si l'user change de mode, on reset les inputs de l'autre mode
-  // pour éviter d'envoyer des données incohérentes
+  // pour éviter d'envoyer des données incohérentes.
+  // EXCEPTION : si preselectedWinner est fourni (clic depuis cote), on conserve le choix
+  // pour qu'il soit prêt si l'user bascule plus tard sur 'Vainqueur'.
   useEffect(() => {
     if (!isD2) return;
     if (betModeD2 === 'winner') {
@@ -106,10 +108,12 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
       setScoreDomFT('');
       setScoreExtFT('');
     } else {
-      // En mode score : reset du choix vainqueur
-      setWinnerChoice(null);
+      // En mode score : on ne reset le choix vainqueur QUE si pas de pré-sélection venue d'un clic
+      if (!preselectedWinner) {
+        setWinnerChoice(null);
+      }
     }
-  }, [betModeD2, isD2]);
+  }, [betModeD2, isD2, preselectedWinner]);
 
   // ============================================
   // Validation en temps réel
@@ -241,19 +245,12 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // Sauvegarde : appel API avec endpoint adapté
   // ============================================
   const handleSave = async () => {
-    console.log('🎯 handleSave appelé', { 
-      isD2, betModeD2, winnerChoice, betOnFT, hasFT,
-      stakeFT, scoreDomFT, scoreExtFT 
-    });
-    
     // 🆕 v3 : en mode winner D2, on bypass validateBet (qui attend des scores)
     if (isD2 && betModeD2 === 'winner') {
       if (!winnerChoice) {
-        console.warn('❌ Pas de winnerChoice');
         setErrorsGeneral([{ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2)' }]);
         return;
       }
-      console.log('✅ Validation winner OK, on passe à l\'envoi');
     } else {
       const validation = validateBet({
         betOnFT,
@@ -262,7 +259,6 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
         stakeFT, stakeMT, userCredits, hasFT, hasMT
       });
       if (!validation.isValid) {
-        console.warn('❌ Validation échouée', validation.allMessages);
         return;
       }
     }
@@ -294,21 +290,13 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
           else if (winnerChoice === 'exterieur') oddsWinner = match.cotes.cote_exterieur;
           else if (winnerChoice === 'nul') oddsWinner = match.cotes.cote_nul;
 
-          console.log('📡 POST WINNER_FT', {
-            url: endpointBet,
-            match_id: match.match_id,
-            winner_predit: winnerChoice,
-            stake: stakeFTNum,
-            odds: oddsWinner
-          });
-          const resp = await axios.post(endpointBet, {
+          await axios.post(endpointBet, {
             match_id: match.match_id,
             bet_type: 'WINNER_FT',
             winner_predit: winnerChoice,
             stake: stakeFTNum,
             odds: oddsWinner
           }, { headers: { 'x-user-id': user.id } });
-          console.log('✅ Réponse backend:', resp.data);
         } else {
           // Mode score classique (Top 14 + D2 si betModeD2='score')
           let oddsFT = 1.00;
@@ -372,14 +360,6 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     && !!winnerChoice 
     && stakeFTNum >= 10 
     && stakeFTNum <= userCredits;
-  
-  // Log debug temporaire (à retirer après validation)
-  if (isD2 && betModeD2 === 'winner') {
-    console.log('🔍 canSaveD2Winner:', canSaveD2Winner, {
-      betOnFT, winnerChoice, stakeFTNum, userCredits,
-      hasFT, validationErrors
-    });
-  }
   
   // Le bouton est cliquable si on est en mode winner D2 valide, OU en mode classique valide
   const finalCanSave = (isD2 && betModeD2 === 'winner') ? canSaveD2Winner : canSave;
