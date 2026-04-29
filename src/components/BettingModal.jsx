@@ -621,8 +621,8 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 </label>
               </div>
 
-              {/* 🆕 TOGGLE Score / Vainqueur — D2 ET Top 14 */}
-              {betOnFT && !hasFT && (
+              {/* 🆕 TOGGLE Score / Vainqueur — D2 ET Top 14 — toujours visible si pas de pari FT existant */}
+              {!hasFT && (
                 <div className="flex gap-1 mb-2 bg-gray-100 rounded-lg p-1">
                   <button
                     type="button"
@@ -663,7 +663,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
               )}
 
               {/* Mode VAINQUEUR FT — boutons 1/N/2 + mise */}
-              {betModeFT === 'winner' && betOnFT && !hasFT ? (
+              {betModeFT === 'winner' && !hasFT ? (
                 <>
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {/* Bouton DOMICILE (1) */}
@@ -875,8 +875,8 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                   </label>
                 </div>
 
-                {/* 🆕 TOGGLE Score / Vainqueur MT */}
-                {betOnMT && !hasMT && (
+                {/* 🆕 TOGGLE Score / Vainqueur MT — toujours visible si pas de pari MT existant */}
+                {!hasMT && (
                   <div className="flex gap-1 mb-2 bg-gray-100 rounded-lg p-1">
                     <button
                       type="button"
@@ -917,7 +917,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 )}
 
                 {/* Mode VAINQUEUR MT — boutons 1/N/2 + mise */}
-                {betModeMT === 'winner' && betOnMT && !hasMT ? (
+                {betModeMT === 'winner' && !hasMT ? (
                   <>
                     <div className="grid grid-cols-3 gap-2 mb-2">
                       {/* Bouton DOMICILE (1) MT */}
