@@ -29,19 +29,20 @@ export default function PronosPage() {
     }
   }, [activeTab]);
 
-  // 🆕 Lecture initiale de location.state.activeTab + nettoyage immédiat
-  // pour éviter une re-bascule à chaque re-render du composant.
+  // 🆕 N'applique location.state.activeTab QU'UNE seule fois par navigation.
+  // Utilise location.key (id unique de chaque entrée historique) avec une ref
+  // pour ignorer les re-renders qui ne sont pas des navigations.
+  // ⚠️ NE PAS effacer location.state ici — MesParisTab a besoin de scrollToMatchId
+  //    et le nettoie lui-même après usage.
+  const lastHandledKey = useRef(null);
   useEffect(() => {
+    if (location.key === lastHandledKey.current) return;
+    lastHandledKey.current = location.key;
+
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
-      // Nettoyer le state de navigation pour qu'il ne soit pas ré-appliqué
-      window.history.replaceState({}, document.title);
     }
-    // ⚠️ Volontairement sans 'location' dans les deps :
-    //    on ne veut consommer le state QUE au montage initial.
-    //    Toute navigation ultérieure passera par setActiveTab directement.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.key, location.state]);
 
   useEffect(() => {
     const handleScroll = () => {
