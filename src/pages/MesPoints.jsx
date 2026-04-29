@@ -10,6 +10,7 @@ import { ArrowLeft, Trophy, ArrowDownUp, Filter, Award, Target, ThumbsUp, CheckC
 import { supabase } from '../lib/supabaseClient';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { getSaisonCourante } from '../utils/season';
 
 // ─── Helper : déterminer le badge selon les points et le bet_type ───
 const getBadgeForBet = (bet) => {
@@ -80,8 +81,9 @@ export default function MesPoints() {
   const [matchsResultsD2, setMatchsResultsD2] = useState({});
   const [matchCotesD2, setMatchCotesD2] = useState({});
   const [loading, setLoading] = useState(true);
-  const [sortMode, setSortMode] = useState('asc'); // ASC = chronologique (vieux → récent)
+  const [sortMode, setSortMode] = useState('desc'); // 🆕 DESC par défaut = plus récent → cumul direct visible
   const [championnatFilter, setChampionnatFilter] = useState('all'); // all | top14 | prod2
+  const [saisonFilter, setSaisonFilter] = useState(getSaisonCourante()); // 🆕 saison courante par défaut
   const loadingRef = useRef(false);
 
   // ─── Realtime avec debounce (calque MaCagnotte) ───
@@ -192,11 +194,28 @@ export default function MesPoints() {
     }
   };
 
-  // ─── Filtrer par championnat ───
+  // ─── Helper : récupérer la saison d'un pari ───
+  const getBetSaison = (bet) => {
+    return bet.saison || extractSaison(bet.match_id) || getSaisonCourante();
+  };
+
+  // ─── Liste des saisons disponibles dans les paris du user (pour le dropdown) ───
+  const availableSaisons = useMemo(() => {
+    const saisons = new Set(bets.map(getBetSaison).filter(Boolean));
+    // Toujours inclure la saison courante (au cas où l'user n'a aucun pari encore)
+    saisons.add(getSaisonCourante());
+    // Tri DESC : saison la plus récente en premier
+    return [...saisons].sort().reverse();
+  }, [bets]);
+
+  // ─── Filtrer par championnat ET saison ───
   const filteredBets = useMemo(() => {
-    if (championnatFilter === 'all') return bets;
-    return bets.filter(b => b.championnat === championnatFilter);
-  }, [bets, championnatFilter]);
+    return bets.filter(b => {
+      if (championnatFilter !== 'all' && b.championnat !== championnatFilter) return false;
+      if (saisonFilter !== 'all' && getBetSaison(b) !== saisonFilter) return false;
+      return true;
+    });
+  }, [bets, championnatFilter, saisonFilter]);
 
   // ─── Calculer le cumul (TOUJOURS chronologique ASC) ───
   // puis appliquer le tri d'affichage demandé
@@ -287,10 +306,18 @@ export default function MesPoints() {
 
         <div className="max-w-md mx-auto px-4 pb-4">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-            <p className="text-xs text-white/90 font-semibold mb-1">
-              Total points
-              {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : 'Pro D2'}`}
-            </p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-white/90 font-semibold">
+                Total points
+                {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : 'Pro D2'}`}
+              </p>
+              {saisonFilter !== 'all' && (
+                <span className="text-[10px] text-white/80 bg-white/15 px-2 py-0.5 rounded-full font-semibold">
+                  {saisonFilter}
+                  {saisonFilter === getSaisonCourante() && ' · en cours'}
+                </span>
+              )}
+            </div>
             <p className="text-3xl font-bold text-white">{totalPoints}</p>
             <p className="text-xs text-white/80 mt-1">
               {filteredBets.length} pari{filteredBets.length > 1 ? 's' : ''} gagné{filteredBets.length > 1 ? 's' : ''}
@@ -300,7 +327,7 @@ export default function MesPoints() {
       </div>
 
       {/* Filtres */}
-      <div className="max-w-md mx-auto px-4 py-3 sticky top-[140px] z-30 bg-gray-50 border-b border-gray-200">
+      <div className="max-w-md mx-auto px-4 py-3 sticky top-[140px] z-30 bg-gray-50 border-b border-gray-200 space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
           {/* Filtre championnat */}
           <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -346,6 +373,26 @@ export default function MesPoints() {
             {sortMode === 'asc' ? 'Plus ancien' : 'Plus récent'}
           </button>
         </div>
+
+        {/* 🆕 Dropdown saison */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="saison-select" className="text-xs font-semibold text-gray-600">
+            Saison :
+          </label>
+          <select
+            id="saison-select"
+            value={saisonFilter}
+            onChange={(e) => setSaisonFilter(e.target.value)}
+            className="flex-1 px-2 py-1.5 bg-white rounded-lg shadow-sm border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-rugby-gold cursor-pointer"
+          >
+            <option value="all">Toutes les saisons</option>
+            {availableSaisons.map(s => (
+              <option key={s} value={s}>
+                {s}{s === getSaisonCourante() ? ' — Saison en cours' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Liste des paris gagnés */}
@@ -359,8 +406,18 @@ export default function MesPoints() {
         {!loading && betsWithCumul.length === 0 && (
           <div className="bg-white rounded-lg p-8 text-center text-gray-500 shadow-sm">
             <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-            <p className="font-semibold">Aucun pari gagné pour l'instant</p>
-            <p className="text-sm mt-1">Vos points apparaîtront ici dès vos premiers paris gagnés.</p>
+            <p className="font-semibold">
+              {saisonFilter === getSaisonCourante() && bets.length === 0
+                ? "Aucun pari gagné pour l'instant"
+                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : 'Pro D2'})` : ''}`
+              }
+            </p>
+            <p className="text-sm mt-1">
+              {saisonFilter === getSaisonCourante() && bets.length === 0
+                ? 'Vos points apparaîtront ici dès vos premiers paris gagnés.'
+                : 'Essayez de modifier les filtres ci-dessus.'
+              }
+            </p>
           </div>
         )}
 
