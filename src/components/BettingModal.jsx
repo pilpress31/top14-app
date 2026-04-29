@@ -97,6 +97,16 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     }
   }, [betModeD2, isD2]);
 
+  // 🆕 v3 : pré-sélectionner le vainqueur si l'user a cliqué sur une cote depuis MesPronosTab
+  // On respecte le mode mémorisé (pas d'auto-bascule), mais on stocke quand même le winnerChoice
+  // pour qu'il soit prêt si l'user bascule sur "Vainqueur"
+  useEffect(() => {
+    if (isD2 && preselectedWinner) {
+      console.log('🎯 [BettingModal] Pré-sélection vainqueur:', preselectedWinner);
+      setWinnerChoice(preselectedWinner);
+    }
+  }, [isD2, preselectedWinner]);
+
   // 🆕 v3 : Si l'user change de mode, on reset les inputs de l'autre mode
   // pour éviter d'envoyer des données incohérentes.
   // EXCEPTION : si preselectedWinner est fourni (clic depuis cote), on conserve le choix
