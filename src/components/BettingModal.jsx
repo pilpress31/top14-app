@@ -12,7 +12,7 @@ import { validateBet, validateScoreInput, toInt } from '../utils/validationUtils
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-export default function BettingModal({ match, existingProno, userCredits, isD2 = false, onClose, onSuccess }) {
+export default function BettingModal({ match, existingProno, userCredits, isD2 = false, preselectedWinner = null, onClose, onSuccess }) {
   // 🆕 v3 : Mode de pari D2 — 'score' (saisie scores) ou 'winner' (1/N/2)
   // Mémorisé en localStorage (uniquement utile en D2, ignoré en Top 14)
   const [betModeD2, setBetModeD2] = useState(() => {
