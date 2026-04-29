@@ -241,15 +241,30 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // Sauvegarde : appel API avec endpoint adapté
   // ============================================
   const handleSave = async () => {
-    const validation = validateBet({
-      betOnFT,
-      betOnMT: isD2 ? false : betOnMT,
-      scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT,
-      stakeFT, stakeMT, userCredits, hasFT, hasMT
+    console.log('🎯 handleSave appelé', { 
+      isD2, betModeD2, winnerChoice, betOnFT, hasFT,
+      stakeFT, scoreDomFT, scoreExtFT 
     });
-
-    if (!validation.isValid) {
-      return;
+    
+    // 🆕 v3 : en mode winner D2, on bypass validateBet (qui attend des scores)
+    if (isD2 && betModeD2 === 'winner') {
+      if (!winnerChoice) {
+        console.warn('❌ Pas de winnerChoice');
+        setErrorsGeneral([{ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2)' }]);
+        return;
+      }
+      console.log('✅ Validation winner OK, on passe à l\'envoi');
+    } else {
+      const validation = validateBet({
+        betOnFT,
+        betOnMT: isD2 ? false : betOnMT,
+        scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT,
+        stakeFT, stakeMT, userCredits, hasFT, hasMT
+      });
+      if (!validation.isValid) {
+        console.warn('❌ Validation échouée', validation.allMessages);
+        return;
+      }
     }
 
     try {
@@ -279,13 +294,21 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
           else if (winnerChoice === 'exterieur') oddsWinner = match.cotes.cote_exterieur;
           else if (winnerChoice === 'nul') oddsWinner = match.cotes.cote_nul;
 
-          await axios.post(endpointBet, {
+          console.log('📡 POST WINNER_FT', {
+            url: endpointBet,
+            match_id: match.match_id,
+            winner_predit: winnerChoice,
+            stake: stakeFTNum,
+            odds: oddsWinner
+          });
+          const resp = await axios.post(endpointBet, {
             match_id: match.match_id,
             bet_type: 'WINNER_FT',
             winner_predit: winnerChoice,
             stake: stakeFTNum,
             odds: oddsWinner
           }, { headers: { 'x-user-id': user.id } });
+          console.log('✅ Réponse backend:', resp.data);
         } else {
           // Mode score classique (Top 14 + D2 si betModeD2='score')
           let oddsFT = 1.00;
@@ -341,6 +364,25 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
   const blockingErrors = validationErrors.filter(e => e.type !== 'warning');
   const canSave = blockingErrors.length === 0 && totalStake >= 10 && totalStake <= userCredits;
+
+  // 🆕 v3 : canSave dédié au mode winner D2 (logique simple, ne dépend pas de validateBet)
+  const stakeFTNum = toInt(stakeFT) || 0;
+  const canSaveD2Winner = isD2 && betModeD2 === 'winner' 
+    && betOnFT 
+    && !!winnerChoice 
+    && stakeFTNum >= 10 
+    && stakeFTNum <= userCredits;
+  
+  // Log debug temporaire (à retirer après validation)
+  if (isD2 && betModeD2 === 'winner') {
+    console.log('🔍 canSaveD2Winner:', canSaveD2Winner, {
+      betOnFT, winnerChoice, stakeFTNum, userCredits,
+      hasFT, validationErrors
+    });
+  }
+  
+  // Le bouton est cliquable si on est en mode winner D2 valide, OU en mode classique valide
+  const finalCanSave = (isD2 && betModeD2 === 'winner') ? canSaveD2Winner : canSave;
 
   // ============================================
   // Couleurs selon le championnat
@@ -836,14 +878,14 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
               <button
                 onClick={handleSave}
-                disabled={saving || !canSave}
+                disabled={saving || !finalCanSave}
                 className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm shadow-md transition-colors ${
-                  saving || !canSave
+                  saving || !finalCanSave
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : validBtnBg
                 }`}
               >
-                {saving ? "Validation..." : `Valider (${totalStake} jetons)`}
+                {saving ? "Validation..." : `Valider (${totalStake || stakeFTNum} jetons)`}
               </button>
             </div>
 
