@@ -914,21 +914,33 @@ export default function MaCagnotte() {
         </div>
 
         <div className="max-w-md mx-auto px-4 pb-4 grid grid-cols-2 gap-3">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+          {/* 🆕 Clic sur Jetons → bascule sur l'onglet Historique des transactions */}
+          <button
+            type="button"
+            onClick={() => setActiveTab("transactions")}
+            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-left"
+            aria-label="Voir l'historique des transactions"
+          >
             <div className="flex items-center gap-2 mb-1">
               <Coins className="w-4 h-4 text-white" />
               <p className="text-xs text-white/90 font-semibold">Jetons</p>
             </div>
             <p className="text-2xl font-bold text-white">{userCredits || 0}</p>
-          </div>
+          </button>
 
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+          {/* 🆕 Clic sur Points → ouvre la page dédiée /mes-points */}
+          <button
+            type="button"
+            onClick={() => navigate('/mes-points')}
+            className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-left"
+            aria-label="Voir l'historique des points"
+          >
             <div className="flex items-center gap-2 mb-1">
               <Trophy className="w-4 h-4 text-white" />
               <p className="text-xs text-white/90 font-semibold">Points</p>
             </div>
             <p className="text-2xl font-bold text-white">{userPoints}</p>
-          </div>
+          </button>
         </div>
       </div>
 
