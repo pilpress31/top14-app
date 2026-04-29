@@ -111,11 +111,16 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
     : null;
   const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
-  // ✅ Calculer isFT/isMT depuis toutes les sources disponibles
+  // ✅ Calculer isFT/isMT/isWinnerFT depuis toutes les sources disponibles
   const betType = fullBet?.bet_type || trans.bets?.bet_type;
-  const isFT = betType === 'FT' || trans.description?.includes('FT');
+  // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
+  const isWinnerFT = betType === 'WINNER_FT' || trans.description?.includes('Pari vainqueur');
+  const isFT = !isWinnerFT && (betType === 'FT' || trans.description?.includes('FT'));
   const isMT = betType === 'MT' || trans.description?.includes('MT');
-  const periodLabel = isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
+  const periodLabel = isWinnerFT ? 'Vainqueur' : isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
+  
+  // 🆕 v3 : récupérer winner_predit pour les paris WINNER_FT
+  const winnerPredit = fullBet?.winner_predit ?? trans.bets?.winner_predit;
 
   // ✅ Le match peut venir du pari trouvé OU directement de trans.bets
   const match = fullBet?.matches || trans.bets?.matches;
@@ -307,30 +312,65 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
             {/* Ton pronostic */}
             <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
               <p className="text-[10px] text-blue-700 font-semibold mb-1">Ton pronostic</p>
-              <p className="text-lg font-bold text-blue-900 text-center">
-                {pronoHome} - {pronoAway}
-              </p>
+              {/* 🆕 v3 : pari vainqueur → nom de l'équipe choisie */}
+              {isWinnerFT ? (
+                <p className="text-base font-bold text-blue-900 text-center">
+                  🎯 {winnerPredit === 'domicile' ? homeTeam
+                    : winnerPredit === 'exterieur' ? awayTeam
+                    : winnerPredit === 'nul' ? 'Match nul'
+                    : '-'}
+                </p>
+              ) : (
+                <p className="text-lg font-bold text-blue-900 text-center">
+                  {pronoHome} - {pronoAway}
+                </p>
+              )}
             </div>
 
-            {/* Score réel */}
-            {hasRealScore && (
-              <div className={`rounded-lg p-2 border ${
-                trans.type === 'bet_won' 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'bg-red-50 border-red-200'
-              }`}>
-                <p className={`text-[10px] font-semibold mb-1 ${
-                  trans.type === 'bet_won' ? 'text-green-700' : 'text-red-700'
+            {/* Score réel / Résultat */}
+            {hasRealScore && (() => {
+              // 🆕 v3 : calculer le vrai vainqueur pour les paris WINNER_FT
+              let realWinnerName = null;
+              if (isWinnerFT) {
+                if (realHome > realAway) realWinnerName = homeTeam;
+                else if (realAway > realHome) realWinnerName = awayTeam;
+                else realWinnerName = 'Match nul';
+              }
+              const isWon = trans.type === 'bet_won';
+              return (
+                <div className={`rounded-lg p-2 border ${
+                  isWon 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-red-50 border-red-200'
                 }`}>
-                  Score réel
-                </p>
-                <p className={`text-lg font-bold text-center ${
-                  trans.type === 'bet_won' ? 'text-green-900' : 'text-red-900'
-                }`}>
-                  {realHome} - {realAway}
-                </p>
-              </div>
-            )}
+                  <p className={`text-[10px] font-semibold mb-1 ${
+                    isWon ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    {isWinnerFT ? 'Résultat' : 'Score réel'}
+                  </p>
+                  {realWinnerName ? (
+                    <>
+                      <p className={`text-base font-bold text-center ${
+                        isWon ? 'text-green-900' : 'text-red-900'
+                      }`}>
+                        {isWon ? '🎉' : '❌'} {realWinnerName}
+                      </p>
+                      <p className={`text-xs text-center ${
+                        isWon ? 'text-green-700' : 'text-red-700'
+                      }`}>
+                        ({realHome} - {realAway})
+                      </p>
+                    </>
+                  ) : (
+                    <p className={`text-lg font-bold text-center ${
+                      isWon ? 'text-green-900' : 'text-red-900'
+                    }`}>
+                      {realHome} - {realAway}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
