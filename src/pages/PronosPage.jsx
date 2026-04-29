@@ -29,11 +29,19 @@ export default function PronosPage() {
     }
   }, [activeTab]);
 
+  // 🆕 Lecture initiale de location.state.activeTab + nettoyage immédiat
+  // pour éviter une re-bascule à chaque re-render du composant.
   useEffect(() => {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
+      // Nettoyer le state de navigation pour qu'il ne soit pas ré-appliqué
+      window.history.replaceState({}, document.title);
     }
-  }, [location]);
+    // ⚠️ Volontairement sans 'location' dans les deps :
+    //    on ne veut consommer le state QUE au montage initial.
+    //    Toute navigation ultérieure passera par setActiveTab directement.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
