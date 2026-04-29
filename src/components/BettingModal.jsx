@@ -4,7 +4,7 @@
 // ============================================
 
 import { useState, useRef, useEffect } from 'react';
-import { Trophy, X, Coins } from 'lucide-react';
+import { Trophy, X, Coins, Target, Hash } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
@@ -13,6 +13,15 @@ import { validateBet, validateScoreInput, toInt } from '../utils/validationUtils
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
 export default function BettingModal({ match, existingProno, userCredits, isD2 = false, onClose, onSuccess }) {
+  // 🆕 v3 : Mode de pari D2 — 'score' (saisie scores) ou 'winner' (1/N/2)
+  // Mémorisé en localStorage (uniquement utile en D2, ignoré en Top 14)
+  const [betModeD2, setBetModeD2] = useState(() => {
+    if (typeof window === 'undefined') return 'winner';
+    return localStorage.getItem('betModeD2') || 'winner';
+  });
+  // 🆕 v3 : choix vainqueur ('domicile' | 'nul' | 'exterieur') quand mode='winner'
+  const [winnerChoice, setWinnerChoice] = useState(null);
+
   // États des scores
   const [scoreDomFT, setScoreDomFT] = useState('');
   const [scoreExtFT, setScoreExtFT] = useState('');
@@ -81,10 +90,52 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     }
   }, [existingFT, existingMT, isD2]);
 
+  // 🆕 v3 : persister le mode D2 en localStorage à chaque changement
+  useEffect(() => {
+    if (isD2) {
+      localStorage.setItem('betModeD2', betModeD2);
+    }
+  }, [betModeD2, isD2]);
+
+  // 🆕 v3 : Si l'user change de mode, on reset les inputs de l'autre mode
+  // pour éviter d'envoyer des données incohérentes
+  useEffect(() => {
+    if (!isD2) return;
+    if (betModeD2 === 'winner') {
+      // En mode winner : reset des scores FT (mais pas du stake)
+      setScoreDomFT('');
+      setScoreExtFT('');
+    } else {
+      // En mode score : reset du choix vainqueur
+      setWinnerChoice(null);
+    }
+  }, [betModeD2, isD2]);
+
   // ============================================
   // Validation en temps réel
   // ============================================
   useEffect(() => {
+    // 🆕 v3 : en mode winner D2, on n'utilise pas validateBet (qui attend des scores)
+    // → on construit notre propre validation
+    if (isD2 && betModeD2 === 'winner') {
+      const errs = [];
+      if (betOnFT && !winnerChoice) {
+        errs.push({ type: 'missing', message: 'Choisis un vainqueur (1, N ou 2)' });
+      }
+      const stakeFTNum = toInt(stakeFT) || 0;
+      if (betOnFT && stakeFTNum < 10) {
+        errs.push({ type: 'stake', message: 'Mise minimum 10 jetons' });
+      }
+      if (betOnFT && stakeFTNum > userCredits) {
+        errs.push({ type: 'credits', message: 'Jetons insuffisants' });
+      }
+      setValidationErrors(errs);
+      setErrorsFT(errs.filter(e => e.type !== 'credits' && e.type !== 'stake'));
+      setErrorsMT([]);
+      setErrorsGeneral(errs.filter(e => e.type === 'credits' || e.type === 'stake'));
+      return;
+    }
+    // Mode score : validation classique
     const validation = validateBet({
       betOnFT,
       betOnMT: isD2 ? false : betOnMT,  // ✅ force false en D2
@@ -133,7 +184,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     setErrorsMT(mtErrors);
     setErrorsGeneral(generalErrors);
 
-  }, [betOnFT, betOnMT, scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT, stakeFT, stakeMT, userCredits, hasFT, hasMT, isD2]);
+  }, [betOnFT, betOnMT, scoreDomFT, scoreExtFT, scoreDomMT, scoreExtMT, stakeFT, stakeMT, userCredits, hasFT, hasMT, isD2, betModeD2, winnerChoice]);
 
   const handleScoreBlur = (score, field, refToFocus) => {
     const error = validateScoreInput(score, field);
@@ -146,6 +197,15 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // Calcul des cotes dynamiques selon le score saisi
   // ============================================
   const getCoteFT = () => {
+    // 🆕 v3 : Mode winner D2 — la cote dépend de winnerChoice
+    if (isD2 && betModeD2 === 'winner') {
+      if (!winnerChoice || !match.cotes) return null;
+      if (winnerChoice === 'domicile') return match.cotes.cote_domicile;
+      if (winnerChoice === 'exterieur') return match.cotes.cote_exterieur;
+      if (winnerChoice === 'nul') return match.cotes.cote_nul;
+      return null;
+    }
+    // Mode score (FT classique)
     if (!scoreDomFT || !scoreExtFT || !match.cotes) return null;
     const dom = toInt(scoreDomFT);
     const ext = toInt(scoreExtFT);
@@ -211,23 +271,39 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
       // ── Pari FT ──
       if (betOnFT && !hasFT) {
-        const dom = toInt(scoreDomFT);
-        const ext = toInt(scoreExtFT);
-        let oddsFT = 1.00;
-        if (match.cotes) {
-          if (dom > ext) oddsFT = match.cotes.cote_domicile;
-          else if (ext > dom) oddsFT = match.cotes.cote_exterieur;
-          else oddsFT = match.cotes.cote_nul;
-        }
+        // 🆕 v3 : si D2 + mode winner, on envoie WINNER_FT
+        if (isD2 && betModeD2 === 'winner') {
+          if (!winnerChoice) throw new Error('Choisis un vainqueur (1, N ou 2)');
+          let oddsWinner = 1.00;
+          if (winnerChoice === 'domicile') oddsWinner = match.cotes.cote_domicile;
+          else if (winnerChoice === 'exterieur') oddsWinner = match.cotes.cote_exterieur;
+          else if (winnerChoice === 'nul') oddsWinner = match.cotes.cote_nul;
 
-        await axios.post(endpointBet, {
-          match_id: match.match_id,
-          bet_type: 'FT',
-          score_domicile: dFT,
-          score_exterieur: eFT,
-          stake: stakeFTNum,
-          odds: oddsFT
-        }, { headers: { 'x-user-id': user.id } });
+          await axios.post(endpointBet, {
+            match_id: match.match_id,
+            bet_type: 'WINNER_FT',
+            winner_predit: winnerChoice,
+            stake: stakeFTNum,
+            odds: oddsWinner
+          }, { headers: { 'x-user-id': user.id } });
+        } else {
+          // Mode score classique (Top 14 + D2 si betModeD2='score')
+          let oddsFT = 1.00;
+          if (match.cotes) {
+            if (dFT > eFT) oddsFT = match.cotes.cote_domicile;
+            else if (eFT > dFT) oddsFT = match.cotes.cote_exterieur;
+            else oddsFT = match.cotes.cote_nul;
+          }
+
+          await axios.post(endpointBet, {
+            match_id: match.match_id,
+            bet_type: 'FT',
+            score_domicile: dFT,
+            score_exterieur: eFT,
+            stake: stakeFTNum,
+            odds: oddsFT
+          }, { headers: { 'x-user-id': user.id } });
+        }
       }
 
       // ── Pari MT (uniquement Top 14) ──
@@ -370,6 +446,36 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 </label>
               </div>
 
+              {/* 🆕 v3 : TOGGLE Score / Vainqueur (D2 uniquement) */}
+              {isD2 && betOnFT && !hasFT && (
+                <div className="flex gap-1 mb-2 bg-gray-100 rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setBetModeD2('winner')}
+                    className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      betModeD2 === 'winner'
+                        ? 'bg-[#00174D] text-white shadow-sm'
+                        : 'bg-transparent text-gray-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <Target className="w-3.5 h-3.5" />
+                    Vainqueur
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBetModeD2('score')}
+                    className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      betModeD2 === 'score'
+                        ? 'bg-[#00174D] text-white shadow-sm'
+                        : 'bg-transparent text-gray-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <Hash className="w-3.5 h-3.5" />
+                    Score exact
+                  </button>
+                </div>
+              )}
+
               {errorsFT.length > 0 && (
                 <div className="bg-red-50 border-l-4 border-red-500 rounded p-2 mb-2 space-y-1">
                   {errorsFT.map((err, idx) => (
@@ -381,6 +487,91 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                 </div>
               )}
 
+              {/* 🆕 v3 : Mode VAINQUEUR D2 — boutons 1/N/2 + mise */}
+              {isD2 && betModeD2 === 'winner' && betOnFT && !hasFT ? (
+                <>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {/* Bouton DOMICILE (1) */}
+                    <button
+                      type="button"
+                      onClick={() => setWinnerChoice('domicile')}
+                      className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                        winnerChoice === 'domicile'
+                          ? 'border-blue-500 bg-blue-50 shadow-md scale-105'
+                          : 'border-gray-300 bg-white hover:border-gray-400'
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold text-gray-500">1 (Domicile)</span>
+                      <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <span className="text-[10px] font-semibold text-gray-700 truncate max-w-full">
+                        {teamDom.name}
+                      </span>
+                      <span className="text-base font-bold text-blue-700">
+                        {match.cotes?.cote_domicile?.toFixed(2)}
+                      </span>
+                    </button>
+
+                    {/* Bouton NUL (N) */}
+                    <button
+                      type="button"
+                      onClick={() => setWinnerChoice('nul')}
+                      className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                        winnerChoice === 'nul'
+                          ? 'border-gray-700 bg-gray-100 shadow-md scale-105'
+                          : 'border-gray-300 bg-white hover:border-gray-400'
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold text-gray-500">N (Nul)</span>
+                      <span className="text-2xl">🤝</span>
+                      <span className="text-[10px] font-semibold text-gray-700">Match nul</span>
+                      <span className="text-base font-bold text-gray-800">
+                        {match.cotes?.cote_nul?.toFixed(2)}
+                      </span>
+                    </button>
+
+                    {/* Bouton EXTÉRIEUR (2) */}
+                    <button
+                      type="button"
+                      onClick={() => setWinnerChoice('exterieur')}
+                      className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                        winnerChoice === 'exterieur'
+                          ? 'border-red-500 bg-red-50 shadow-md scale-105'
+                          : 'border-gray-300 bg-white hover:border-gray-400'
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold text-gray-500">2 (Extérieur)</span>
+                      <img src={teamExt.logo} alt={teamExt.name} className="w-7 h-7 object-contain"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <span className="text-[10px] font-semibold text-gray-700 truncate max-w-full">
+                        {teamExt.name}
+                      </span>
+                      <span className="text-base font-bold text-red-700">
+                        {match.cotes?.cote_exterieur?.toFixed(2)}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Mise */}
+                  <div className="flex items-center justify-center gap-3 mb-1">
+                    <span className="text-xs font-semibold text-gray-700">Mise :</span>
+                    <div className={`w-24 h-12 flex flex-col items-center justify-start border-2 border-rugby-gray rounded-lg focus-within:ring-2 ${inputFocusRing}`}>
+                      <span className="text-[10px] font-semibold text-gray-700">Jetons</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={stakeFT}
+                        onChange={(e) => setStakeFT(e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        disabled={hasFT || !betOnFT}
+                        className="w-full text-center text-sm font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+              <>
               <div className="grid grid-cols-3 gap-2 items-start mb-1">
                 <div>
                   <label className="block text-[10px] font-semibold text-gray-700 mb-1 text-center truncate">
@@ -472,6 +663,9 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                   </div>
                 </div>
               </div>
+
+              </>
+              )}
 
               {betOnFT && coteFT && (
                 <div className="bg-green-50 rounded p-2 text-xs">
