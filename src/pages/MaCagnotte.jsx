@@ -430,13 +430,37 @@ export default function MaCagnotte() {
     nbDistributions: 0
   });
 
-  // ✅ Realtime — inclut aussi user_bets_d2 pour les paris Pro D2
+  // ✅ Realtime avec debounce 500ms pour éviter les boucles infinies
+  // Les events Realtime peuvent arriver en rafale (multi-tables qui changent ensemble)
+  // → on regroupe les déclenchements dans un seul appel à loadData après 500ms
+  const realtimeDebounceRef = useRef(null);
+  const debouncedLoadData = (userId) => {
+    if (realtimeDebounceRef.current) {
+      clearTimeout(realtimeDebounceRef.current);
+    }
+    realtimeDebounceRef.current = setTimeout(() => {
+      if (userId && !loadingRef.current) {
+        loadData(userId);
+      }
+      realtimeDebounceRef.current = null;
+    }, 500);
+  };
+
   useRealtimeSync([
-    { table: 'user_credits', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
-    { table: 'user_bets', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
-    { table: 'user_bets_d2', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
-    { table: 'credit_transactions', onUpdate: () => { if (user?.id && !loadingRef.current) loadData(user.id); } },
+    { table: 'user_credits', onUpdate: () => debouncedLoadData(user?.id) },
+    { table: 'user_bets', onUpdate: () => debouncedLoadData(user?.id) },
+    { table: 'user_bets_d2', onUpdate: () => debouncedLoadData(user?.id) },
+    { table: 'credit_transactions', onUpdate: () => debouncedLoadData(user?.id) },
   ]);
+
+  // 🔧 Cleanup du timeout de debounce au démontage du composant
+  useEffect(() => {
+    return () => {
+      if (realtimeDebounceRef.current) {
+        clearTimeout(realtimeDebounceRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -646,19 +670,15 @@ export default function MaCagnotte() {
 
             if (matchingBet) {
               linkedBetIds.add(matchingBet.id);
-              console.log('✅ Orpheline enrichie:', trans.id, '→', matchingBet.id, matchingBet.bet_type);
+              
               return {
                 ...trans,
                 bet_id: matchingBet.id,
                 bets: { ...matchingBet, matches: matchingBet.matches }
               };
             } else {
-              console.warn('⚠️ Orpheline non résolue:', trans.id, 
-                '| desc:', trans.description, 
-                '| date:', trans.created_at, 
-                '| amount:', trans.amount,
-                '| paris MT won disponibles:', enrichedBets.filter(b => b.status==='won' && b.bet_type==='MT' && !linkedBetIds.has(b.id)).map(b => ({id:b.id.slice(0,8), result_at:b.result_at}))
-              );
+              // 🔧 console.warn retiré pour éviter de polluer la console en cas de boucle
+              // (les orphelines non résolues sont gérées silencieusement par le code en aval)
             }
           }
           return trans;
@@ -695,15 +715,14 @@ export default function MaCagnotte() {
           .map(t => t.bet_id)
       );
 
+      // ✅ Reconstruire les transactions bet_won manquantes pour les paris won orphelins
+      // (legacy : certaines anciennes résolutions n'ont pas créé de credit_transaction)
+      // 🔧 Sans console.log pour éviter de polluer la console en cas de boucle
       const wonBetsInBets = enrichedBets.filter(b => b.status === 'won');
       
       wonBetsInBets.forEach(bet => {
-        if (coveredWonBetIds.has(bet.id)) {
-          // Déjà couvert → pas de doublon
-          return;
-        }
+        if (coveredWonBetIds.has(bet.id)) return;
         
-        console.log('⚠️ Transaction bet_won manquante pour pari:', bet.id, bet.bet_type);
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
         
@@ -720,9 +739,7 @@ export default function MaCagnotte() {
           }
         });
       });
-
-      console.log('🔍 DEBUG - Transactions après ajout lost:', transactionsFiltered.length);
-      console.log('🔍 DEBUG - Types après ajout:', [...new Set(transactionsFiltered.map(t => t.type))]);
+      // 🔧 console.log retirés pour éviter de polluer la console
 
       setTransactions(transactionsFiltered);
       setBets(enrichedBets);
