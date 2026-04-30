@@ -304,6 +304,25 @@ export default function ReglementPage() {
                 </div>
               </div>
             </div>
+
+            {/* 🆕 Remise à zéro à chaque nouvelle saison */}
+            <div className="bg-amber-50 rounded-lg p-4 border border-amber-300">
+              <p className="font-bold text-amber-900 mb-2 text-sm flex items-center gap-2">
+                🔄 Remise à zéro chaque nouvelle saison
+              </p>
+              <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                Chaque saison de rugby débute le <strong>1er août</strong> et s'achève le <strong>31 juillet</strong> de l'année suivante.
+              </p>
+              <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                À la bascule du <strong>1er août</strong>, le compteur de <strong>points de classement</strong> de tous les utilisateurs revient automatiquement à <strong>zéro</strong>. Chaque saison repart ainsi sur une base équitable pour tous.
+              </p>
+              <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                En revanche, votre <strong>solde de jetons</strong> est conservé d'une saison à l'autre — il reflète votre cagnotte personnelle et n'est pas remis à zéro.
+              </p>
+              <p className="text-xs text-gray-600 leading-relaxed italic">
+                💡 L'historique de vos points par saison reste consultable dans <strong>Ma Cagnotte → Mes Points</strong>, avec un sélecteur de saison pour revoir vos performances passées.
+              </p>
+            </div>
           </div>
 
           {/* Récompenses futures */}
