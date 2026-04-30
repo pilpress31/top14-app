@@ -88,8 +88,8 @@ export default function PaymentSuccessPage() {
           <p className="text-gray-600 mb-4">{error}</p>
           <p className="text-sm text-gray-500 mb-6">
             Votre paiement a peut-être été effectué. Contactez-nous à{' '}
-            <a href="mailto:pilpress31@gmail.com" className="text-rugby-gold underline">
-              pilpress31@gmail.com
+            <a href="mailto:contact@top14pronos.fr" className="text-rugby-gold underline">
+              contact@top14pronos.fr
             </a>
           </p>
           <button

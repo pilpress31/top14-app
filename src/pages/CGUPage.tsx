@@ -61,8 +61,8 @@ export default function CGUPage() {
           </p>
           <p className="text-gray-700 text-sm">
             Pour obtenir un code, contactez :{' '}
-            <a href="mailto:pilpress31@gmail.com" className="text-blue-600 underline">
-              pilpress31@gmail.com
+            <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">
+              contact@top14pronos.fr
             </a>
           </p>
         </section>
@@ -82,8 +82,8 @@ export default function CGUPage() {
               </p>
               <p>
                 <strong>Contact :</strong>{' '}
-                <a href="mailto:pilpress31@gmail.com" className="text-blue-600 underline">
-                  pilpress31@gmail.com
+                <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">
+                  contact@top14pronos.fr
                 </a>
               </p>
               <p className="mt-2">L'application est hébergée par :</p>
@@ -372,8 +372,8 @@ export default function CGUPage() {
               <p>
                 Le responsable du traitement des données est <strong>Bernard PILLORE</strong>,
                 joignable à{' '}
-                <a href="mailto:pilpress31@gmail.com" className="text-blue-600 underline">
-                  pilpress31@gmail.com
+                <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">
+                  contact@top14pronos.fr
                 </a>.
               </p>
 
@@ -495,8 +495,8 @@ export default function CGUPage() {
             </p>
             <p>
               <strong>Email :</strong>{' '}
-              <a href="mailto:pilpress31@gmail.com" className="text-blue-600 underline">
-                pilpress31@gmail.com
+              <a href="mailto:contact@top14pronos.fr" className="text-blue-600 underline">
+                contact@top14pronos.fr
               </a>
             </p>
             <p>

@@ -170,7 +170,7 @@ export default function PaywallPage({ tarif, onPaymentSuccess }) {
                 Paiement sécurisé — Accès immédiat après confirmation
               </p>
               <a
-                href="mailto:pilpress31@gmail.com"
+                href="mailto:contact@top14pronos.fr"
                 className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-rugby-gold transition-colors"
               >
                 <Mail className="h-3 w-3" />

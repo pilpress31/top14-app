@@ -253,7 +253,7 @@ function RegisterPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
                 <p className="text-xs text-green-800">
                   🎟️ <strong>Phase bêta</strong> — Un code d'invitation est requis pour s'inscrire.
-                  Contactez <a href="mailto:pilpress31@gmail.com" className="underline">pilpress31@gmail.com</a> pour en obtenir un.
+                  Contactez <a href="mailto:contact@top14pronos.fr" className="underline">contact@top14pronos.fr</a> pour en obtenir un.
                 </p>
               </div>
 
