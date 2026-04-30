@@ -68,7 +68,7 @@ Merci de votre aide.
     `.trim()
 
     // Ouvrir l'application email du téléphone
-    window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.location.href = `mailto:contact@top14pronos.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
   return (

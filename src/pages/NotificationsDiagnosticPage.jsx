@@ -89,7 +89,7 @@ Description du problème :
 Merci de votre aide.
     `.trim()
 
-    window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.location.href = `mailto:contact@top14pronos.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
   const hasErrors = diagnosticRun && (

@@ -57,7 +57,7 @@ Informations système (à compléter si nécessaire) :
 
 Merci.
     `.trim()
-    window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.location.href = `mailto:contact@top14pronos.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
   const runDiagnostic = async () => {
@@ -140,7 +140,7 @@ Résultats du diagnostic :
     `.trim();
     const subject = 'Problème notifications push - Top 14 Pronos';
     const body = `Bonjour,\n\nJe rencontre un problème avec les notifications push.\n\n${resultsText}\n\n[Décrivez votre problème ici]\n\nMerci.`.trim();
-    window.location.href = `mailto:support@top14pronos.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:contact@top14pronos.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
