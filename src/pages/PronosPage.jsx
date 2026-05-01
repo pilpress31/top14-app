@@ -40,7 +40,7 @@ const CHAMPIONNATS = [
   },
   {
     id: 'hcup',
-    label: 'CHAMP. CUP',
+    label: 'C.CUP',
     emoji: '⭐',
     bg: '#003E7E',           // bleu EPCR
     text: '#FFC72C',         // accent or
@@ -187,7 +187,7 @@ export default function PronosPage() {
             {/* ============================================================ */}
             {/* 🆕 CARROUSEL 3 RECTANGLES — TOP 14 / PRO D2 / CHAMP. CUP     */}
             {/* ============================================================ */}
-            <div className="self-center flex gap-1 mx-1">
+            <div className="self-center flex gap-0.5 mx-1">
               {CHAMPIONNATS.map(champ => {
                 const isActive = champ.id === championnat;
                 return (
@@ -199,8 +199,8 @@ export default function PronosPage() {
                     className="rounded-lg font-bold uppercase tracking-wider transition-all duration-300 active:scale-95 flex flex-col items-center justify-center gap-0.5 leading-none"
                     style={{
                       // Largeur fixe pour les 3, un peu plus large quand actif via scale
-                      width: '64px',
-                      padding: '8px 4px',
+                      width: '52px',
+                      padding: '6px 3px',
                       backgroundColor: champ.bg,
                       color: champ.text,
                       // ✨ Actif = scale + ombre + bord doré
@@ -214,8 +214,8 @@ export default function PronosPage() {
                         : '2px solid transparent',
                     }}
                   >
-                    <span className="text-base">{champ.emoji}</span>
-                    <span className="text-[9px] whitespace-nowrap">{champ.label}</span>
+                    <span className="text-sm">{champ.emoji}</span>
+                    <span className="text-[8px] whitespace-nowrap">{champ.label}</span>
                   </button>
                 );
               })}
