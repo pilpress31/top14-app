@@ -5,7 +5,6 @@
   xmlns="http://www.w3.org/2000/svg"
 >
   <defs>
-    <!-- Hexagone -->
     <clipPath id="sua-hex-clip">
       <polygon points="
         100,10
@@ -17,19 +16,16 @@
       " />
     </clipPath>
 
-    <!-- Dégradé bleu/blanc SUA -->
     <linearGradient id="sua-blue-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1A4DA1" /> <!-- bleu Agen -->
-      <stop offset="100%" stop-color="#FFFFFF" /> <!-- blanc -->
+      <stop offset="0%" stop-color="#1A4DA1" />
+      <stop offset="100%" stop-color="#FFFFFF" />
     </linearGradient>
   </defs>
 
-  <!-- Fond bleu -->
   <g clip-path="url(#sua-hex-clip)">
     <rect width="200" height="200" fill="#1A4DA1" />
   </g>
 
-  <!-- Contour extérieur -->
   <polygon
     points="100,10 175,50 175,150 100,190 25,150 25,50"
     fill="none"
@@ -37,7 +33,6 @@
     stroke-width="8"
   />
 
-  <!-- Liseré intérieur blanc -->
   <polygon
     points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
     fill="none"
@@ -45,12 +40,12 @@
     stroke-width="4"
   />
 
-  <!-- Abréviation SUA en dégradé -->
+  <!-- Texte SUA parfaitement centré -->
   <text
     x="50%"
-    y="112"
+    y="115"
     text-anchor="middle"
-    dominant-baseline="central"
+    dominant-baseline="middle"
     fill="url(#sua-blue-grad)"
     stroke="#FFFFFF"
     stroke-width="6"
