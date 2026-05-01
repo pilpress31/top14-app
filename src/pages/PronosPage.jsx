@@ -5,7 +5,7 @@ import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MainHeader from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderD2';
-// 🆕 HCup : header dédié (à créer si pas encore fait — sinon utilise un fallback)
+// 🆕 HCup : header dédié (à créer si pas encore fait — fallback ci-dessous)
 // import MainHeaderHcup from '../components/MainHeaderHcup';
 // 🆕 HCup : tabs dédiées (à créer)
 // import MesPronosHcupTab from '../components/MesPronosHcupTab';
@@ -15,44 +15,44 @@ import { useChampionnat } from '../contexts/ChampionnatContext';
 const HEADER_HEIGHT = 120;
 
 // ============================================================
-// Configuration des championnats — facile à étendre
+// 🆕 Configuration des championnats — facile à étendre
 // ============================================================
-const CHAMPIONNAT_CONFIG = {
-  top14: {
+const CHAMPIONNATS = [
+  {
+    id: 'top14',
     label: 'TOP 14',
     emoji: '🏆',
-    bgClass: 'bg-rugby-gold hover:bg-rugby-bronze',
-    textClass: 'text-white',
-    activeTabClass: 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5',
-    inactiveTabClass: 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20',
-    dotActiveClass: 'bg-rugby-gold',
+    bg: '#D4A017',           // or
+    text: '#FFFFFF',
+    shadowRgba: '212, 160, 23',
+    activeTab: 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5',
+    inactiveTab: 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20',
   },
-  prod2: {
+  {
+    id: 'prod2',
     label: 'PRO D2',
     emoji: '🥈',
-    bgClass: 'bg-[#00174D] hover:bg-[#001a5c]',
-    textClass: 'text-[#97C1FE]',
-    activeTabClass: 'text-[#00174D] border-b-4 border-[#00174D] bg-[#97C1FE]/10',
-    inactiveTabClass: 'text-gray-500 hover:text-[#00174D] hover:bg-[#97C1FE]/10',
-    dotActiveClass: 'bg-[#00174D]',
+    bg: '#00174D',           // bleu marine
+    text: '#97C1FE',
+    shadowRgba: '0, 23, 77',
+    activeTab: 'text-[#00174D] border-b-4 border-[#00174D] bg-[#97C1FE]/10',
+    inactiveTab: 'text-gray-500 hover:text-[#00174D] hover:bg-[#97C1FE]/10',
   },
-  hcup: {
+  {
+    id: 'hcup',
     label: 'CHAMP. CUP',
     emoji: '⭐',
-    bgClass: 'bg-[#003E7E] hover:bg-[#002a5c]',
-    textClass: 'text-[#FFC72C]',
-    activeTabClass: 'text-[#003E7E] border-b-4 border-[#FFC72C] bg-[#003E7E]/5',
-    inactiveTabClass: 'text-gray-500 hover:text-[#003E7E] hover:bg-[#FFC72C]/10',
-    dotActiveClass: 'bg-[#003E7E]',
+    bg: '#003E7E',           // bleu EPCR
+    text: '#FFC72C',         // accent or
+    shadowRgba: '0, 62, 126',
+    activeTab: 'text-[#003E7E] border-b-4 border-[#FFC72C] bg-[#003E7E]/5',
+    inactiveTab: 'text-gray-500 hover:text-[#003E7E] hover:bg-[#FFC72C]/10',
   },
-};
-
-// Ordre des dots (doit matcher l'ordre du carrousel dans ChampionnatContext)
-const DOT_ORDER = ['top14', 'prod2', 'hcup'];
+];
 
 export default function PronosPage() {
   const location = useLocation();
-  const { championnat, isD2, isHcup, nextChampionnat } = useChampionnat();
+  const { championnat, isD2, isHcup, setChampionnat } = useChampionnat();
   const [activeTab, setActiveTab] = useState('a-parier');
   const [headerVisible, setHeaderVisible] = useState(true);
 
@@ -108,9 +108,9 @@ export default function PronosPage() {
   // ============================================================
   // 🎨 Couleurs dynamiques : récupération depuis la config
   // ============================================================
-  const config = CHAMPIONNAT_CONFIG[championnat] || CHAMPIONNAT_CONFIG.top14;
-  const activeTabColor = config.activeTabClass;
-  const inactiveTabColor = config.inactiveTabClass;
+  const currentConfig = CHAMPIONNATS.find(c => c.id === championnat) || CHAMPIONNATS[0];
+  const activeTabColor = currentConfig.activeTab;
+  const inactiveTabColor = currentConfig.inactiveTab;
 
   // ============================================================
   // 🎯 Choix du Header selon championnat
@@ -118,7 +118,6 @@ export default function PronosPage() {
   const renderHeader = () => {
     if (isHcup) {
       // TODO: remplacer par <MainHeaderHcup /> une fois créé
-      // Pour l'instant on réutilise MainHeaderD2 comme fallback (couleurs proches)
       return <MainHeaderD2 />;
     }
     if (isD2) return <MainHeaderD2 />;
@@ -126,7 +125,7 @@ export default function PronosPage() {
   };
 
   // ============================================================
-  // 🎯 Choix du contenu selon championnat (à compléter pour HCup)
+  // 🎯 Choix du contenu selon championnat
   // ============================================================
   const renderContent = () => {
     if (isHcup) {
@@ -142,11 +141,11 @@ export default function PronosPage() {
             La page de paris HCup arrive très prochainement.
           </p>
           <div className="bg-[#003E7E]/5 border border-[#FFC72C] rounded-xl p-4 max-w-md">
-            <p className="text-sm text-[#003E7E] font-semibold mb-2">📅 Prochains matchs</p>
+            <p className="text-sm text-[#003E7E] font-semibold mb-2">📅 Prochaines demi-finales</p>
             <p className="text-xs text-gray-700">
-              🔵 Sam 02/05 — LEINSTER vs TOULON (Demi-finale)
+              🏉 Sam 02/05 — LEINSTER vs TOULON
               <br />
-              🔴 Dim 03/05 — BORDEAUX vs BATH (Demi-finale)
+              🏉 Dim 03/05 — BORDEAUX vs BATH
             </p>
           </div>
         </div>
@@ -163,7 +162,7 @@ export default function PronosPage() {
     <div className="min-h-screen bg-rugby-white pb-24">
       {renderHeader()}
 
-      {/* Zone sticky : onglets + bouton central de bascule championnat */}
+      {/* Zone sticky : onglets + carrousel central de bascule championnat */}
       <div
         className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
@@ -186,31 +185,41 @@ export default function PronosPage() {
             </button>
 
             {/* ============================================================ */}
-            {/* 🆕 BOUTON CARROUSEL 3 ÉTATS : TOP 14 → PRO D2 → CHAMP. CUP   */}
+            {/* 🆕 CARROUSEL 3 RECTANGLES — TOP 14 / PRO D2 / CHAMP. CUP     */}
             {/* ============================================================ */}
-            <button
-              onClick={nextChampionnat}
-              aria-label={`Championnat actuel : ${config.label}. Cliquer pour changer.`}
-              className={`self-center mx-1 px-3 py-2 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition-all active:scale-95 ${config.bgClass} ${config.textClass}`}
-            >
-              <div className="flex flex-col items-center gap-0.5 leading-none">
-                <span className="text-base">{config.emoji}</span>
-                <span className="text-[10px] whitespace-nowrap">{config.label}</span>
-                {/* 🆕 Indicateur de position (3 dots) */}
-                <div className="flex gap-1 mt-1">
-                  {DOT_ORDER.map(c => (
-                    <span
-                      key={c}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${
-                        c === championnat
-                          ? 'bg-current scale-110'
-                          : 'bg-current/30'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </button>
+            <div className="self-center flex gap-1 mx-1">
+              {CHAMPIONNATS.map(champ => {
+                const isActive = champ.id === championnat;
+                return (
+                  <button
+                    key={champ.id}
+                    onClick={() => setChampionnat(champ.id)}
+                    aria-label={`Basculer vers ${champ.label}`}
+                    aria-pressed={isActive}
+                    className="rounded-lg font-bold uppercase tracking-wider transition-all duration-300 active:scale-95 flex flex-col items-center justify-center gap-0.5 leading-none"
+                    style={{
+                      // Largeur fixe pour les 3, un peu plus large quand actif via scale
+                      width: '64px',
+                      padding: '8px 4px',
+                      backgroundColor: champ.bg,
+                      color: champ.text,
+                      // ✨ Actif = scale + ombre + bord doré
+                      transform: isActive ? 'scale(1.08)' : 'scale(0.92)',
+                      opacity: isActive ? 1 : 0.55,
+                      boxShadow: isActive
+                        ? `0 4px 12px rgba(${champ.shadowRgba}, 0.5)`
+                        : 'none',
+                      border: isActive
+                        ? `2px solid #FFC72C`   // bordure or sur l'actif
+                        : '2px solid transparent',
+                    }}
+                  >
+                    <span className="text-base">{champ.emoji}</span>
+                    <span className="text-[9px] whitespace-nowrap">{champ.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Onglet Mes paris */}
             <button
