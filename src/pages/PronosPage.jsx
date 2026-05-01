@@ -5,6 +5,7 @@ import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MainHeader from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderD2';
+import MainHeaderHcup from '../components/MainHeaderHcup';
 // 🆕 HCup : header dédié (à créer si pas encore fait — fallback ci-dessous)
 // import MainHeaderHcup from '../components/MainHeaderHcup';
 // 🆕 HCup : tabs dédiées (à créer)
@@ -118,7 +119,7 @@ export default function PronosPage() {
   const renderHeader = () => {
     if (isHcup) {
       // TODO: remplacer par <MainHeaderHcup /> une fois créé
-      return <MainHeaderD2 />;
+      return <MainHeaderHcup />;
     }
     if (isD2) return <MainHeaderD2 />;
     return <MainHeader />;

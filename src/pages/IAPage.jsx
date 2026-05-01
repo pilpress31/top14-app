@@ -7,22 +7,21 @@ import { getConfig, getStats } from "../lib/api";
 import MainHeader from '../components/MainHeader';
 import MainHeaderFull from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderD2';
-// 🆕 HCup : header dédié (à créer si pas encore fait — fallback ci-dessous)
-// import MainHeaderHcup from '../components/MainHeaderHcup';
+import MainHeaderHcup from '../components/MainHeaderHcup';
 import { useResetOnActive } from "../hooks/useResetOnActive";
 import { useNavigate } from "react-router-dom";
 
 const HEADER_HEIGHT = 120;
 
 // ============================================================
-// 🆕 Configuration des championnats — facile à étendre
+// 🆕 Configuration des championnats
 // ============================================================
 const CHAMPIONNATS = [
   {
     id: 'top14',
     label: 'TOP 14',
     emoji: '🏆',
-    bg: '#D4A017',           // or
+    bg: '#D4A017',
     text: '#FFFFFF',
     shadowRgba: '212, 160, 23',
   },
@@ -30,7 +29,7 @@ const CHAMPIONNATS = [
     id: 'prod2',
     label: 'PRO D2',
     emoji: '🥈',
-    bg: '#00174D',           // bleu marine
+    bg: '#00174D',
     text: '#97C1FE',
     shadowRgba: '0, 23, 77',
   },
@@ -38,8 +37,8 @@ const CHAMPIONNATS = [
     id: 'hcup',
     label: 'C.CUP',
     emoji: '⭐',
-    bg: '#003E7E',           // bleu EPCR
-    text: '#FFC72C',         // accent or
+    bg: '#003E7E',
+    text: '#FFC72C',
     shadowRgba: '0, 62, 126',
   },
 ];
@@ -59,7 +58,6 @@ export default function IAPage() {
   });
   const [headerVisible, setHeaderVisible] = useState(true);
 
-  // ✅ useRef au lieu de useState pour lastScrollY (évite les re-renders)
   const lastScrollY = useRef(0);
 
   const handleMatchClick = (matchInfo) => {
@@ -83,7 +81,6 @@ export default function IAPage() {
     loadStats();
   }, []);
 
-  // ✅ Scroll stable avec useRef
   useEffect(() => {
     const handleScroll = () => {
       const current = window.scrollY;
@@ -103,60 +100,67 @@ export default function IAPage() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // ✅ tableau vide — stable
+  }, []);
 
-  // Position sticky des onglets selon visibilité du header
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
-  // Padding top du contenu = onglets seuls (le header fixed est hors flux)
   const contentPadding = 125;
 
   // ============================================================
-  // 🎨 Couleurs dynamiques de la barre d'onglets selon championnat
+  // 🎨 Couleurs dynamiques des onglets selon championnat
+  // (depuis que les headers D2/HCup sont blancs, on s'aligne sur le pattern Top14)
   // ============================================================
-  const stickyBarStyle = (() => {
-    if (isHcup) {
-      return { top: `${tabsTop}px`, backgroundColor: '#003E7E', borderBottom: '2px solid #FFC72C' };
-    }
-    if (isD2) {
-      return { top: `${tabsTop}px`, backgroundColor: '#00174D', borderBottom: '2px solid #C0C0C0' };
-    }
-    return { top: `${tabsTop}px`, backgroundColor: '#FFFFFF', borderBottom: '2px solid #e5e7eb' };
-  })();
+  const championnatColors = {
+    top14: {
+      activeColor: '#D4A017',
+      activeBg: 'rgba(212, 160, 23, 0.05)',
+      inactiveColor: '#9ca3af',
+    },
+    prod2: {
+      activeColor: '#00174D',
+      activeBg: 'rgba(0, 23, 77, 0.05)',
+      inactiveColor: '#9ca3af',
+    },
+    hcup: {
+      activeColor: '#003E7E',
+      activeBg: 'rgba(0, 62, 126, 0.05)',
+      inactiveColor: '#9ca3af',
+    },
+  };
 
-  // Style des onglets (Algorithme / Historique) selon championnat
-  const tabActiveStyle = (() => {
-    if (isHcup) return { color: '#FFFFFF', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.12)', fontWeight: 700 };
-    if (isD2)   return { color: '#FFFFFF', borderBottom: '4px solid #C0C0C0', backgroundColor: 'rgba(255,255,255,0.12)', fontWeight: 700 };
-    return null; // Top14 utilise les classes Tailwind
-  })();
+  const colors = championnatColors[championnat] || championnatColors.top14;
 
-  const tabInactiveStyle = (() => {
-    if (isHcup) return { color: '#FFC72C' };
-    if (isD2)   return { color: '#97C1FE' };
-    return null;
-  })();
+  // Style barre d'onglets : maintenant TOUJOURS blanc (cohérent avec headers blancs)
+  const stickyBarStyle = {
+    top: `${tabsTop}px`,
+    backgroundColor: '#FFFFFF',
+    borderBottom: '2px solid #e5e7eb',
+  };
 
-  const subtitleStyle = (() => {
-    if (isHcup) return { color: 'rgba(255,199,44,0.8)' };
-    if (isD2)   return { color: 'rgba(192,192,192,0.8)' };
-    return { color: '#9ca3af' };
-  })();
+  const tabActiveStyle = {
+    color: colors.activeColor,
+    borderBottom: `4px solid ${colors.activeColor}`,
+    backgroundColor: colors.activeBg,
+    fontWeight: 700,
+  };
 
-  const dividerStyle = (() => {
-    if (isHcup) return { borderColor: 'rgba(255,199,44,0.3)' };
-    if (isD2)   return { borderColor: 'rgba(192,192,192,0.3)' };
-    return { borderColor: 'rgba(156,163,175,0.3)' };
-  })();
+  const tabInactiveStyle = {
+    color: colors.inactiveColor,
+  };
+
+  const subtitleStyle = {
+    color: '#9ca3af',
+  };
+
+  const dividerStyle = {
+    borderColor: 'rgba(156,163,175,0.3)',
+  };
 
   // ============================================================
   // 🎯 Choix du Header selon championnat
   // ============================================================
   const renderHeader = () => {
-    if (isHcup) {
-      // TODO: remplacer par <MainHeaderHcup /> une fois créé
-      return <MainHeaderD2 />;
-    }
-    if (isD2) return <MainHeaderD2 />;
+    if (isHcup) return <MainHeaderHcup />;
+    if (isD2)   return <MainHeaderD2 />;
     return <MainHeader />;
   };
 
@@ -165,7 +169,6 @@ export default function IAPage() {
   // ============================================================
   const renderContent = () => {
     if (isHcup) {
-      // TODO : composants HCup spécifiques pour Algorithme + Historique
       return (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="text-6xl mb-4">⭐</div>
@@ -187,7 +190,6 @@ export default function IAPage() {
       );
     }
 
-    // Top14 + D2 (le composant gère isD2 en interne)
     if (activeTab === 'algorithme') return <AlgoPronosTab onMatchClick={handleMatchClick} isD2={isD2} />;
     return <HistoriqueTab headerVisible={headerVisible} isD2={isD2} />;
   };
@@ -207,22 +209,14 @@ export default function IAPage() {
             {/* Onglet Algorithme */}
             <button
               onClick={() => setActiveTab('algorithme')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
-                activeTab === 'algorithme'
-                  ? (isD2 || isHcup ? '' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
-                  : (isD2 || isHcup ? '' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
-              }`}
-              style={
-                (isD2 || isHcup)
-                  ? (activeTab === 'algorithme' ? tabActiveStyle : tabInactiveStyle)
-                  : {}
-              }
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors"
+              style={activeTab === 'algorithme' ? tabActiveStyle : tabInactiveStyle}
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5" />
                 <span className="font-bold">Algorithme</span>
               </div>
-              <span className="text-xs font-normal" style={(isD2 || isHcup) ? subtitleStyle : { color: '#9ca3af' }}>
+              <span className="text-xs font-normal" style={subtitleStyle}>
                 Prédictions des prochains matchs
               </span>
             </button>
@@ -246,14 +240,13 @@ export default function IAPage() {
                         padding: '6px 3px',
                         backgroundColor: champ.bg,
                         color: champ.text,
-                        // ✨ Actif = scale + ombre + bord doré
                         transform: isActive ? 'scale(1.08)' : 'scale(0.92)',
                         opacity: isActive ? 1 : 0.55,
                         boxShadow: isActive
                           ? `0 4px 12px rgba(${champ.shadowRgba}, 0.5)`
                           : 'none',
                         border: isActive
-                          ? `2px solid #FFC72C`   // bordure or sur l'actif
+                          ? `2px solid #FFC72C`
                           : '2px solid transparent',
                       }}
                     >
@@ -268,22 +261,14 @@ export default function IAPage() {
             {/* Onglet Historique */}
             <button
               onClick={() => setActiveTab('historique')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
-                activeTab === 'historique'
-                  ? (isD2 || isHcup ? '' : 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5')
-                  : (isD2 || isHcup ? '' : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20')
-              }`}
-              style={
-                (isD2 || isHcup)
-                  ? (activeTab === 'historique' ? tabActiveStyle : tabInactiveStyle)
-                  : {}
-              }
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors"
+              style={activeTab === 'historique' ? tabActiveStyle : tabInactiveStyle}
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 <span className="font-bold">Historique</span>
               </div>
-              <span className="text-xs font-normal" style={(isD2 || isHcup) ? subtitleStyle : { color: '#9ca3af' }}>
+              <span className="text-xs font-normal" style={subtitleStyle}>
                 Matchs déjà joués
               </span>
             </button>
@@ -291,7 +276,7 @@ export default function IAPage() {
         </div>
       </div>
 
-      {/* Contenu - padding-top dynamique = header + onglets */}
+      {/* Contenu */}
       <div
         className="container mx-auto px-4 py-6"
         style={{ paddingTop: `${contentPadding}px` }}
