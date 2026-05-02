@@ -1,0 +1,85 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="bath-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <linearGradient id="bath-blue-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#033275" />
+      <stop offset="100%" stop-color="#FFFFFF" />
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#bath-hex-clip)">
+    <rect width="200" height="200" fill="#033275" />
+  </g>
+
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#FFD100"
+    stroke-width="2"
+  />
+
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="#FFFFFF"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="38"
+    textLength="108"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    BATH
+  </text>
+
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="#FFFFFF"
+    stroke="#FFD100"
+    stroke-width="2"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="38"
+    textLength="108"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    BATH
+  </text>
+</svg>
