@@ -94,7 +94,7 @@ export default function IAPage() {
             {/* Onglet Algorithme */}
             <button
               onClick={() => setActiveTab('algorithme')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors min-h-[80px]"
               style={activeTab === 'algorithme'
                 ? isHcup
                   ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
@@ -143,7 +143,7 @@ export default function IAPage() {
             {/* Onglet Historique */}
             <button
               onClick={() => setActiveTab('historique')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors min-h-[80px]"
               style={activeTab === 'historique'
                 ? isHcup
                   ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
