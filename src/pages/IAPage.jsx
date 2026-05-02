@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 import { Brain, Clock } from 'lucide-react';
 import AlgoPronosTab from '../components/AlgoPronosTab';
@@ -32,10 +32,6 @@ export default function IAPage() {
   const [headerVisible, setHeaderVisible] = useState(true);
 
   const lastScrollY = useRef(0);
-
-  // 🆕 Ref + state pour mesurer dynamiquement la hauteur de la barre d'onglets
-  const tabsBarRef = useRef(null);
-  const [tabsHeight, setTabsHeight] = useState(65);
 
   const handleMatchClick = (matchInfo) => {
     navigate("/pronos", {
@@ -87,53 +83,29 @@ export default function IAPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🆕 Mesure la hauteur réelle de la barre d'onglets (carrousel inclus)
-  useLayoutEffect(() => {
-    if (!tabsBarRef.current) return;
-
-    const updateHeight = () => {
-      const h = tabsBarRef.current?.offsetHeight;
-      if (h && h !== tabsHeight) setTabsHeight(h);
-    };
-
-    updateHeight();
-
-    const ro = new ResizeObserver(updateHeight);
-    ro.observe(tabsBarRef.current);
-
-    return () => ro.disconnect();
-  }, [championnat, tabsHeight]);
-
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
-  // Padding = header + barre onglets (mesurée dynamiquement)
-  const contentPadding = HEADER_HEIGHT + tabsHeight;
+  // Padding fixe = identique à l'original (125)
+  const contentPadding = 125;
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
 
-  // Choisir le header (comme l'original : MainHeader pour algo, MainHeaderFull pour historique)
-  let HeaderComponent;
-  if (isHcup) {
-    HeaderComponent = MainHeaderHcup;
-  } else if (isD2) {
-    HeaderComponent = MainHeaderD2;
-  } else {
+  // Choisir le header (comme l'original : MainHeader pour algo, MainHeaderFull pour historique en Top14)
+  const renderHeader = () => {
+    if (isHcup) return <MainHeaderHcup />;
+    if (isD2) return <MainHeaderD2 />;
     // Top 14 : switch entre MainHeader et MainHeaderFull selon onglet
-    HeaderComponent = activeTab === 'algorithme' ? MainHeader : MainHeaderFull;
-  }
+    return activeTab === 'algorithme'
+      ? <MainHeader />
+      : <MainHeaderFull total={stats.nombre_matchs_historique} />;
+  };
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      {/* Header dynamique */}
-      {(!isHcup && !isD2 && activeTab === 'historique') ? (
-        <MainHeaderFull total={stats.nombre_matchs_historique} />
-      ) : (
-        <HeaderComponent />
-      )}
+      {renderHeader()}
 
-      {/* Onglets - STICKY avec mesure dynamique */}
+      {/* Onglets - STICKY */}
       <div
-        ref={tabsBarRef}
         className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
@@ -161,7 +133,7 @@ export default function IAPage() {
               </span>
             </button>
 
-            {/* CARROUSEL : 3 championnats */}
+            {/* CARROUSEL : 3 championnats - compact */}
             <div className="flex items-center justify-center gap-1 px-1 self-center">
               {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
                 const isActive = championnat === key;
@@ -170,19 +142,20 @@ export default function IAPage() {
                     key={key}
                     onClick={() => setChampionnat(key)}
                     aria-label={`Passer à ${conf.label}`}
-                    className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold text-[10px] uppercase tracking-wider transition-all duration-200"
+                    className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold uppercase tracking-wider transition-all duration-200"
                     style={{
-                      width: '52px',
-                      padding: '6px 4px',
+                      width: '46px',
+                      padding: '4px 3px',
+                      fontSize: '9px',
                       backgroundColor: conf.bg,
                       borderColor: isActive ? conf.borderActive : conf.accent,
                       color: conf.accent,
-                      transform: isActive ? 'scale(1.08)' : 'scale(0.92)',
+                      transform: isActive ? 'scale(1.05)' : 'scale(0.92)',
                       opacity: isActive ? 1 : 0.55,
-                      boxShadow: isActive ? `0 4px 12px ${conf.accent}40` : '0 1px 3px rgba(0,0,0,0.1)',
+                      boxShadow: isActive ? `0 2px 6px ${conf.accent}40` : '0 1px 2px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <span style={{ fontSize: '14px', lineHeight: 1 }}>{conf.emoji}</span>
+                    <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
                     <span className="leading-none">{conf.label}</span>
                   </button>
                 );
@@ -213,7 +186,7 @@ export default function IAPage() {
         </div>
       </div>
 
-      {/* Contenu : padding-top = header + barre d'onglets (mesurée) */}
+      {/* Contenu - padding-top identique à l'original (125) */}
       <div
         className="container mx-auto px-4 py-6"
         style={{ paddingTop: `${contentPadding}px` }}

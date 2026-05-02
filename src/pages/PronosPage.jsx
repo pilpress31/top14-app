@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
@@ -26,10 +26,6 @@ export default function PronosPage() {
   const [headerVisible, setHeaderVisible] = useState(true);
 
   const lastScrollY = useRef(0);
-
-  // 🆕 Ref + state pour mesurer dynamiquement la hauteur de la barre d'onglets
-  const tabsBarRef = useRef(null);
-  const [tabsHeight, setTabsHeight] = useState(65);
 
   const goToMesParis = () => { setActiveTab("mes-paris"); };
 
@@ -78,26 +74,11 @@ export default function PronosPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🆕 Mesure la hauteur réelle de la barre d'onglets (carrousel inclus)
-  useLayoutEffect(() => {
-    if (!tabsBarRef.current) return;
-
-    const updateHeight = () => {
-      const h = tabsBarRef.current?.offsetHeight;
-      if (h && h !== tabsHeight) setTabsHeight(h);
-    };
-
-    updateHeight();
-
-    const ro = new ResizeObserver(updateHeight);
-    ro.observe(tabsBarRef.current);
-
-    return () => ro.disconnect();
-  }, [championnat, tabsHeight]);
-
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
-  // Padding = header + barre onglets (mesurée dynamiquement)
-  const contentPaddingTop = HEADER_HEIGHT + tabsHeight;
+
+  // Padding fixe (identique à l'original = 120)
+  // La hauteur des onglets reste ~65px car le carrousel est compact
+  const contentPaddingTop = 120;
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
@@ -127,7 +108,6 @@ export default function PronosPage() {
 
       {/* Zone sticky : onglets + carrousel championnat */}
       <div
-        ref={tabsBarRef}
         className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
@@ -151,7 +131,7 @@ export default function PronosPage() {
               <span className="text-xs font-normal">Prochains matchs disponibles</span>
             </button>
 
-            {/* CARROUSEL : 3 championnats */}
+            {/* CARROUSEL : 3 championnats - compact et centré verticalement */}
             <div className="flex items-center justify-center gap-1 px-1 self-center">
               {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
                 const isActive = championnat === key;
@@ -160,19 +140,20 @@ export default function PronosPage() {
                     key={key}
                     onClick={() => setChampionnat(key)}
                     aria-label={`Passer à ${conf.label}`}
-                    className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold text-[10px] uppercase tracking-wider transition-all duration-200"
+                    className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold uppercase tracking-wider transition-all duration-200"
                     style={{
-                      width: '52px',
-                      padding: '6px 4px',
+                      width: '46px',
+                      padding: '4px 3px',
+                      fontSize: '9px',
                       backgroundColor: conf.bg,
                       borderColor: isActive ? conf.borderActive : conf.accent,
                       color: conf.accent,
-                      transform: isActive ? 'scale(1.08)' : 'scale(0.92)',
+                      transform: isActive ? 'scale(1.05)' : 'scale(0.92)',
                       opacity: isActive ? 1 : 0.55,
-                      boxShadow: isActive ? `0 4px 12px ${conf.accent}40` : '0 1px 3px rgba(0,0,0,0.1)',
+                      boxShadow: isActive ? `0 2px 6px ${conf.accent}40` : '0 1px 2px rgba(0,0,0,0.1)',
                     }}
                   >
-                    <span style={{ fontSize: '14px', lineHeight: 1 }}>{conf.emoji}</span>
+                    <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
                     <span className="leading-none">{conf.label}</span>
                   </button>
                 );
@@ -200,7 +181,7 @@ export default function PronosPage() {
         </div>
       </div>
 
-      {/* Contenu : padding-top = header + barre d'onglets (mesurée) */}
+      {/* Contenu - padding-top identique à l'original */}
       <div
         className="container mx-auto px-4 pb-4"
         style={{ paddingTop: `${contentPaddingTop}px` }}
