@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
@@ -26,6 +26,10 @@ export default function PronosPage() {
   const [headerVisible, setHeaderVisible] = useState(true);
 
   const lastScrollY = useRef(0);
+
+  // 🆕 Ref + state pour mesurer dynamiquement la hauteur de la barre d'onglets
+  const tabsBarRef = useRef(null);
+  const [tabsHeight, setTabsHeight] = useState(65);
 
   const goToMesParis = () => { setActiveTab("mes-paris"); };
 
@@ -74,8 +78,26 @@ export default function PronosPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 🆕 Mesure la hauteur réelle de la barre d'onglets (carrousel inclus)
+  useLayoutEffect(() => {
+    if (!tabsBarRef.current) return;
+
+    const updateHeight = () => {
+      const h = tabsBarRef.current?.offsetHeight;
+      if (h && h !== tabsHeight) setTabsHeight(h);
+    };
+
+    updateHeight();
+
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(tabsBarRef.current);
+
+    return () => ro.disconnect();
+  }, [championnat, tabsHeight]);
+
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
-  const contentPaddingTop = 120;
+  // Padding = header + barre onglets (mesurée dynamiquement)
+  const contentPaddingTop = HEADER_HEIGHT + tabsHeight;
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
@@ -97,7 +119,6 @@ export default function PronosPage() {
       ? 'text-gray-500 hover:text-[#00174D] hover:bg-[#97C1FE]/10'
       : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20';
 
-  // Choisir le header en fonction du championnat
   const HeaderComponent = isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;
 
   return (
@@ -106,6 +127,7 @@ export default function PronosPage() {
 
       {/* Zone sticky : onglets + carrousel championnat */}
       <div
+        ref={tabsBarRef}
         className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
@@ -115,7 +137,7 @@ export default function PronosPage() {
             {/* Onglet À parier */}
             <button
               onClick={() => setActiveTab('a-parier')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors ${
                 activeTab === 'a-parier'
                   ? activeTabClassName
                   : inactiveTabClassName
@@ -130,7 +152,7 @@ export default function PronosPage() {
             </button>
 
             {/* CARROUSEL : 3 championnats */}
-            <div className="flex items-center justify-center gap-1 px-2">
+            <div className="flex items-center justify-center gap-1 px-1 self-center">
               {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
                 const isActive = championnat === key;
                 return (
@@ -144,7 +166,7 @@ export default function PronosPage() {
                       padding: '6px 4px',
                       backgroundColor: conf.bg,
                       borderColor: isActive ? conf.borderActive : conf.accent,
-                      color: conf.bg === '#FFFFFF' ? conf.accent : conf.accent,
+                      color: conf.accent,
                       transform: isActive ? 'scale(1.08)' : 'scale(0.92)',
                       opacity: isActive ? 1 : 0.55,
                       boxShadow: isActive ? `0 4px 12px ${conf.accent}40` : '0 1px 3px rgba(0,0,0,0.1)',
@@ -160,7 +182,7 @@ export default function PronosPage() {
             {/* Onglet Mes paris */}
             <button
               onClick={() => setActiveTab('mes-paris')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors ${
                 activeTab === 'mes-paris'
                   ? activeTabClassName
                   : inactiveTabClassName
@@ -178,7 +200,7 @@ export default function PronosPage() {
         </div>
       </div>
 
-      {/* Contenu : dispatch sur le bon composant */}
+      {/* Contenu : padding-top = header + barre d'onglets (mesurée) */}
       <div
         className="container mx-auto px-4 pb-4"
         style={{ paddingTop: `${contentPaddingTop}px` }}

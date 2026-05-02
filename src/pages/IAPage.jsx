@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 import { Brain, Clock } from 'lucide-react';
 import AlgoPronosTab from '../components/AlgoPronosTab';
@@ -6,8 +6,10 @@ import HistoriqueTab from '../components/HistoriqueTab';
 import AlgoPronosHcupTab from '../components/AlgoPronosHcupTab';
 import HistoriqueHcupTab from '../components/HistoriqueHcupTab';
 import MainHeader from '../components/MainHeader';
+import MainHeaderFull from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderD2';
 import MainHeaderHcup from '../components/MainHeaderHcup';
+import { getStats } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 
 const HEADER_HEIGHT = 120;
@@ -23,9 +25,17 @@ export default function IAPage() {
   const navigate = useNavigate();
   const { championnat, setChampionnat } = useChampionnat();
   const [activeTab, setActiveTab] = useState('algorithme');
+  const [stats, setStats] = useState({
+    nombre_matchs_historique: 3651,
+    precision: { ft: { pourcentage: 0 } }
+  });
   const [headerVisible, setHeaderVisible] = useState(true);
 
   const lastScrollY = useRef(0);
+
+  // 🆕 Ref + state pour mesurer dynamiquement la hauteur de la barre d'onglets
+  const tabsBarRef = useRef(null);
+  const [tabsHeight, setTabsHeight] = useState(65);
 
   const handleMatchClick = (matchInfo) => {
     navigate("/pronos", {
@@ -40,10 +50,21 @@ export default function IAPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Réinitialiser scroll quand on change de championnat
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [championnat]);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const data = await getStats();
+        setStats(data);
+      } catch (e) {
+        console.error("Erreur chargement stats:", e);
+      }
+    }
+    loadStats();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,27 +87,55 @@ export default function IAPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // 🆕 Mesure la hauteur réelle de la barre d'onglets (carrousel inclus)
+  useLayoutEffect(() => {
+    if (!tabsBarRef.current) return;
+
+    const updateHeight = () => {
+      const h = tabsBarRef.current?.offsetHeight;
+      if (h && h !== tabsHeight) setTabsHeight(h);
+    };
+
+    updateHeight();
+
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(tabsBarRef.current);
+
+    return () => ro.disconnect();
+  }, [championnat, tabsHeight]);
+
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
-  const contentPadding = 200;
+  // Padding = header + barre onglets (mesurée dynamiquement)
+  const contentPadding = HEADER_HEIGHT + tabsHeight;
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
 
-  // Choisir le header
-  const HeaderComponent = isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;
+  // Choisir le header (comme l'original : MainHeader pour algo, MainHeaderFull pour historique)
+  let HeaderComponent;
+  if (isHcup) {
+    HeaderComponent = MainHeaderHcup;
+  } else if (isD2) {
+    HeaderComponent = MainHeaderD2;
+  } else {
+    // Top 14 : switch entre MainHeader et MainHeaderFull selon onglet
+    HeaderComponent = activeTab === 'algorithme' ? MainHeader : MainHeaderFull;
+  }
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      <HeaderComponent />
+      {/* Header dynamique */}
+      {(!isHcup && !isD2 && activeTab === 'historique') ? (
+        <MainHeaderFull total={stats.nombre_matchs_historique} />
+      ) : (
+        <HeaderComponent />
+      )}
 
-      {/* Onglets - sticky */}
+      {/* Onglets - STICKY avec mesure dynamique */}
       <div
-        className="sticky z-40 shadow-sm transition-all duration-300"
-        style={{
-          top: `${tabsTop}px`,
-          backgroundColor: '#FFFFFF',
-          borderBottom: '2px solid #e5e7eb'
-        }}
+        ref={tabsBarRef}
+        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
           <div className="flex items-stretch">
@@ -94,7 +143,7 @@ export default function IAPage() {
             {/* Onglet Algorithme */}
             <button
               onClick={() => setActiveTab('algorithme')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors min-h-[80px]"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors"
               style={activeTab === 'algorithme'
                 ? isHcup
                   ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
@@ -113,7 +162,7 @@ export default function IAPage() {
             </button>
 
             {/* CARROUSEL : 3 championnats */}
-            <div className="flex items-center justify-center gap-1 px-2">
+            <div className="flex items-center justify-center gap-1 px-1 self-center">
               {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
                 const isActive = championnat === key;
                 return (
@@ -143,7 +192,7 @@ export default function IAPage() {
             {/* Onglet Historique */}
             <button
               onClick={() => setActiveTab('historique')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors min-h-[80px]"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors"
               style={activeTab === 'historique'
                 ? isHcup
                   ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
@@ -164,7 +213,7 @@ export default function IAPage() {
         </div>
       </div>
 
-      {/* Contenu : dispatch sur le bon composant */}
+      {/* Contenu : padding-top = header + barre d'onglets (mesurée) */}
       <div
         className="container mx-auto px-4 py-6"
         style={{ paddingTop: `${contentPadding}px` }}
