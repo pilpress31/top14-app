@@ -234,19 +234,7 @@ export default function MesPronosHcupTab({ goToMesParis }) {
         </div>
       </div>
 
-      {/* Badge mode HCup */}
-      <div
-        className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg w-fit mx-auto"
-        style={{ backgroundColor: HCUP_BLUE }}
-      >
-        <Trophy className="w-4 h-4" style={{ color: HCUP_GOLD }} />
-        <span
-          className="text-xs font-bold uppercase tracking-wide"
-          style={{ color: HCUP_GOLD }}
-        >
-          Mode Champions Cup • Score exact ou Vainqueur
-        </span>
-      </div>
+      
 
       {/* Liste des rounds */}
       {rounds.length === 0 ? (
