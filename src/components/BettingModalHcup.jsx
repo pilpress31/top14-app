@@ -180,6 +180,10 @@ export default function BettingModalHcup({ match, existingProno, userCredits, pr
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
 
+  // ── Phase finale ? (pour le texte d'avertissement prolongation) ──
+  const isPhaseFinale = match.phase === 'Phase finale'
+    || (match.round && !match.round.startsWith('Poule'));
+
   // ── Validité ──
   const canSave = !hasBet && validateBet().length === 0 && cote != null;
 
@@ -297,12 +301,19 @@ export default function BettingModalHcup({ match, existingProno, userCredits, pr
               className="border-2 rounded-lg p-3 transition-colors"
               style={{ borderColor: HCUP_BLUE, backgroundColor: 'white' }}
             >
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-1">
                 <Trophy className="w-4 h-4" style={{ color: HCUP_BLUE }} />
                 <span className="font-bold text-sm" style={{ color: HCUP_BLUE }}>
                   🏉 RÉSULTAT FINAL
                 </span>
               </div>
+
+              {/* 🆕 Précision : pari basé sur score à 80 min (important pour phases finales) */}
+              <p className="text-[10px] text-gray-500 italic mb-3">
+                {isPhaseFinale
+                  ? 'Pari basé sur le score à 80 min, hors prolongation'
+                  : 'Pari basé sur le score à 80 min de jeu'}
+              </p>
 
               {/* Toggle Score / Vainqueur */}
               <div className="flex gap-1 mb-3 bg-gray-100 rounded-lg p-1">

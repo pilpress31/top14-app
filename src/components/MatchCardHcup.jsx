@@ -209,7 +209,6 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
               const ftClickable = bettingAllowed && !hasFT && jouable;
               const winnerForClick = i === 0 ? 'DOM' : i === 1 ? 'NUL' : 'EXT';
-              // 🆕 HCup : objet avec type FT (comme Top14)
               const preselect = { type: 'FT', choice: winnerForClick };
               const noOdds = cote == null;
               return (
@@ -230,6 +229,13 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
               );
             })}
           </div>
+
+          {/* 🆕 Précision phase finale : pari basé sur score à 80 min */}
+          {isPhaseFinale && (
+            <p className="text-[9px] text-gray-500 italic mt-0.5 text-center">
+              Pari basé sur le score à <strong>80 min</strong> (hors prolongation)
+            </p>
+          )}
         </div>
       )}
 
