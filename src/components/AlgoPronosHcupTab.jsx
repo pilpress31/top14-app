@@ -1,19 +1,17 @@
 // ============================================
 // ALGO PRONOS - CHAMPIONS CUP
-// Affiche les pronostics de l'algo XGBoost V3
-// pour les matchs HCup à venir, groupés par round
+// Source : GET /api/hcup/matchs/a-venir
 // Couleurs : bleu EPCR #003E7E + or #FFC72C
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Globe, Trophy } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-// Couleurs Champions Cup
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';
 
@@ -40,9 +38,8 @@ export default function AlgoPronosHcupTab() {
   const roundRefs = useRef({});
   const isFirstLoad = useRef(true);
 
-  // Realtime : refresh quand les cotes ou les matchs changent
   useRealtimeSync([
-    { table: 'cotes_hcup', onUpdate: () => loadPronos() },
+    { table: 'match_cotes_hcup', onUpdate: () => loadPronos() },
     { table: 'matchs_hcup', onUpdate: () => loadPronos() },
   ]);
 
@@ -57,44 +54,30 @@ export default function AlgoPronosHcupTab() {
 
   const loadPronos = async () => {
     try {
-      // L'endpoint /api/hcup/matchs/a-venir retourne les matchs avec leurs cotes
       const response = await axios.get(`${API_BASE}/api/hcup/matchs/a-venir`);
-      const raw = response.data.matchs || response.data || [];
+      const raw = response.data.matchs || [];
 
-      // Normaliser : on a besoin de equipe_domicile, equipe_exterieure, score_predit, confiance
-      const pronosData = raw.map(m => ({
-        id: m.match_id || m.id,
-        match_id: m.match_id || m.id,
-        equipe_domicile: m.equipe_domicile,
-        equipe_exterieure: m.equipe_exterieure,
-        round: m.round,
-        date: m.date_match,
-        score_predit_dom: m.score_dom_predit ?? m.score_predit_dom ?? 0,
-        score_predit_ext: m.score_ext_predit ?? m.score_predit_ext ?? 0,
-        confiance_algo: typeof m.confiance_pct === 'number' ? m.confiance_pct
-          : typeof m.confiance_algo === 'number' ? (m.confiance_algo > 1 ? m.confiance_algo : m.confiance_algo * 100)
-          : 0,
-        cote_domicile: m.cote_domicile ?? m.cote_dom ?? null,
-        cote_nul: m.cote_nul ?? null,
-        cote_exterieure: m.cote_exterieure ?? m.cote_ext ?? null,
-        proba_domicile: m.proba_domicile ?? null,
-        proba_nul: m.proba_nul ?? null,
-        proba_exterieure: m.proba_exterieure ?? null,
-        winner_predit: m.winner_predit ?? null,
-        prolongation: m.prolongation ?? false,
-      }));
+      // Normaliser : calculer winner_predit côté frontend si pas envoyé
+      const pronosData = raw.map(m => {
+        let winner_predit = m.winner_predit ?? null;
+        if (!winner_predit && m.score_predit_dom != null && m.score_predit_ext != null) {
+          winner_predit = m.score_predit_dom > m.score_predit_ext ? 'DOM'
+                        : m.score_predit_dom < m.score_predit_ext ? 'EXT' : 'NUL';
+        }
+        return { ...m, winner_predit };
+      });
 
-      // Tri par round puis par date
+      // Tri : round → date
       pronosData.sort((a, b) => {
         const orderA = ROUND_ORDER[a.round] ?? 99;
         const orderB = ROUND_ORDER[b.round] ?? 99;
         if (orderA !== orderB) return orderA - orderB;
-        return new Date(a.date) - new Date(b.date);
+        return new Date(a.date_match) - new Date(b.date_match);
       });
 
       setPronos(pronosData);
 
-      // Au 1er chargement : ouvrir le 1er round disponible
+      // Au 1er chargement : ouvrir le 1er round
       if (isFirstLoad.current && pronosData.length > 0) {
         const firstRound = pronosData[0].round;
         if (firstRound) setExpandedRounds(new Set([firstRound]));
@@ -131,7 +114,6 @@ export default function AlgoPronosHcupTab() {
     });
   };
 
-  // Liste des rounds présents, triés
   const rounds = pronos.length > 0
     ? [...new Set(pronos.map(p => p.round))].sort((a, b) =>
         (ROUND_ORDER[a] ?? 99) - (ROUND_ORDER[b] ?? 99)
@@ -219,10 +201,9 @@ export default function AlgoPronosHcupTab() {
             {isExpanded && (
               <div className="p-3 space-y-4">
                 {pronosRound.map(prono => (
-                  <PronoCardHcup key={prono.id} match={prono} />
+                  <PronoCardHcup key={prono.match_id} match={prono} />
                 ))}
 
-                {/* Mention prolongation pour phase finale */}
                 {isPhaseFinale && (
                   <p className="text-[11px] italic text-gray-500 text-center pt-2 border-t border-gray-100">
                     Pari basé sur le score à 80 min, hors prolongation
@@ -239,15 +220,17 @@ export default function AlgoPronosHcupTab() {
 
 // ============================================
 // COMPOSANT : PronoCardHcup
-// Carte de pronostic d'un match HCup
 // ============================================
 function PronoCardHcup({ match }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
+  // Champs réels du backend : score_predit_dom, score_predit_ext, confiance_algo
+  // Note : le backend retourne cote_exterieur (sans e) pas cote_exterieure
   const scoreDom = match.score_predit_dom ?? 0;
   const scoreExt = match.score_predit_ext ?? 0;
 
+  // confiance_algo est en % (50 à 100 selon contrainte SQL)
   const confidencePct = Math.round(match.confiance_algo ?? 0);
   const [animatedWidth, setAnimatedWidth] = useState(0);
   useEffect(() => {
@@ -258,9 +241,9 @@ function PronoCardHcup({ match }) {
   // Format date
   let dateFormatted = 'À VENIR';
   let heureFormatted = '';
-  if (match.date) {
+  if (match.date_match) {
     try {
-      const matchDate = new Date(match.date);
+      const matchDate = new Date(match.date_match);
       dateFormatted = matchDate.toLocaleDateString('fr-FR', {
         weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
       }).toUpperCase();
@@ -277,7 +260,6 @@ function PronoCardHcup({ match }) {
   const teamDomData = getTeamData(equipeDom);
   const teamExtData = getTeamData(equipeExt);
 
-  // Vainqueur prédit (DOM/EXT/NUL)
   const winnerLabel = match.winner_predit === 'DOM' ? equipeDom
     : match.winner_predit === 'EXT' ? equipeExt
     : match.winner_predit === 'NUL' ? 'Match nul'
@@ -296,7 +278,6 @@ function PronoCardHcup({ match }) {
 
       {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-4 mb-2">
-        {/* Équipe domicile */}
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -311,14 +292,12 @@ function PronoCardHcup({ match }) {
           </div>
         </div>
 
-        {/* Score prédit */}
         <div className="flex flex-col items-center justify-center gap-1">
           <div className="text-xs font-medium mb-1" style={{ color: '#9a7d3a' }}>Score prédit</div>
           <div className="flex items-center gap-2 text-[1.65rem] font-bold" style={{ color: HCUP_OR }}>
             {scoreDom} - {scoreExt}
           </div>
 
-          {/* Vainqueur prédit */}
           {winnerLabel && (
             <div className="text-[10px] mt-1 px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: HCUP_BLEU, color: HCUP_OR }}>
               🎯 {winnerLabel}
@@ -326,7 +305,6 @@ function PronoCardHcup({ match }) {
           )}
         </div>
 
-        {/* Équipe extérieure */}
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -365,12 +343,11 @@ function PronoCardHcup({ match }) {
         </div>
       </div>
 
-      {/* Cotes 1-N-2 (si disponibles) */}
-      {(match.cote_domicile || match.cote_nul || match.cote_exterieure) && (
+      {/* Cotes 1-N-2 (note : backend retourne cote_exterieur sans 'e') */}
+      {(match.cote_domicile || match.cote_nul || match.cote_exterieur) && (
         <div className="mt-6 px-4">
           <div className="text-xs font-semibold mb-2" style={{ color: '#9a7d3a' }}>Cotes</div>
           <div className="grid grid-cols-3 gap-2">
-            {/* Cote domicile */}
             <div className="bg-white rounded-lg p-2 border border-gray-200 text-center">
               <p className="text-[10px] text-gray-500 mb-0.5">Domicile</p>
               <p className="text-sm font-bold" style={{ color: HCUP_BLEU }}>
@@ -383,7 +360,6 @@ function PronoCardHcup({ match }) {
               )}
             </div>
 
-            {/* Cote nul */}
             <div className="bg-white rounded-lg p-2 border border-gray-200 text-center">
               <p className="text-[10px] text-gray-500 mb-0.5">Nul</p>
               <p className="text-sm font-bold" style={{ color: HCUP_BLEU }}>
@@ -396,11 +372,10 @@ function PronoCardHcup({ match }) {
               )}
             </div>
 
-            {/* Cote extérieure */}
             <div className="bg-white rounded-lg p-2 border border-gray-200 text-center">
               <p className="text-[10px] text-gray-500 mb-0.5">Extérieur</p>
               <p className="text-sm font-bold" style={{ color: HCUP_BLEU }}>
-                ×{match.cote_exterieure?.toFixed(2) || '-'}
+                ×{match.cote_exterieur?.toFixed(2) || '-'}
               </p>
               {match.proba_exterieure != null && (
                 <p className="text-[9px] text-gray-400">

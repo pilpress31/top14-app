@@ -1,7 +1,6 @@
 // ============================================
 // HISTORIQUE - CHAMPIONS CUP
-// Affiche l'historique complet des matchs HCup depuis 2014
-// avec filtres par saison et round
+// Source : GET /api/hcup/historique?saison=&round=&phase=
 // Couleurs : bleu EPCR #003E7E + or #FFC72C
 // ============================================
 
@@ -12,11 +11,9 @@ import { getTeamData } from '../utils/teams';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-// Couleurs Champions Cup
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';
 
-// Ordre des rounds pour le tri
 const ROUND_ORDER = {
   'Poule J1': 1,
   'Poule J2': 2,
@@ -41,6 +38,12 @@ const ROUND_OPTIONS = [
   'Finale',
 ];
 
+// Liste des saisons (12 saisons, 2014→2026)
+const SAISONS_OPTIONS = [
+  '2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021',
+  '2019-2020', '2018-2019', '2017-2018', '2016-2017', '2015-2016', '2014-2015',
+];
+
 export default function HistoriqueHcupTab() {
   const [matchs, setMatchs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,14 +54,14 @@ export default function HistoriqueHcupTab() {
 
   useEffect(() => {
     loadHistorique();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtreSaison, filtreRound]);
 
   const loadHistorique = async () => {
     try {
       setLoading(true);
 
-      // Construire les params de l'endpoint
-      const params = {};
+      const params = { limit: 1000 };
       if (filtreSaison !== 'toutes') params.saison = filtreSaison;
       if (filtreRound !== 'Tous') {
         if (filtreRound === 'Poules') params.phase = 'Poules';
@@ -66,7 +69,7 @@ export default function HistoriqueHcupTab() {
       }
 
       const response = await axios.get(`${API_BASE}/api/hcup/historique`, { params });
-      const matchsData = response.data.matchs || response.data || [];
+      const matchsData = response.data.matchs || [];
 
       // Tri : saison desc, puis round, puis date
       matchsData.sort((a, b) => {
@@ -92,12 +95,6 @@ export default function HistoriqueHcupTab() {
     }
   };
 
-  // Liste des saisons disponibles (pour filtre)
-  const saisons = useMemo(() => {
-    const set = new Set(matchs.map(m => m.saison));
-    return [...set].sort().reverse();
-  }, [matchs]);
-
   // Groupement par saison pour affichage
   const matchsParSaison = useMemo(() => {
     return matchs.reduce((acc, m) => {
@@ -107,14 +104,14 @@ export default function HistoriqueHcupTab() {
     }, {});
   }, [matchs]);
 
-  // Stats globales
+  // Stats globales (sur les matchs filtrés)
   const stats = useMemo(() => {
     const total = matchs.length;
     let okCount = 0;
     let nbPredictions = 0;
 
     matchs.forEach(m => {
-      // Une prédiction est OK si winner_predit == vainqueur réel sur score 80'
+      // Une prédiction est OK si winner_predit (calculé backend) == vainqueur réel sur 80'
       if (m.score_domicile != null && m.score_exterieur != null && m.winner_predit) {
         nbPredictions++;
         const realWinner = m.score_domicile > m.score_exterieur ? 'DOM'
@@ -154,7 +151,7 @@ export default function HistoriqueHcupTab() {
 
   return (
     <div className="space-y-3">
-      {/* Badge HCup + stats compactes */}
+      {/* Header HCup avec stats */}
       <div className="rounded-lg shadow-md p-3" style={{ background: `linear-gradient(135deg, ${HCUP_BLEU} 0%, #002857 100%)` }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -166,7 +163,6 @@ export default function HistoriqueHcupTab() {
           <History className="w-5 h-5" style={{ color: HCUP_OR, opacity: 0.7 }} />
         </div>
 
-        {/* Stats inline */}
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1.5">
             <p className="text-[10px] text-white/70">Matchs</p>
@@ -220,7 +216,7 @@ export default function HistoriqueHcupTab() {
                 style={{ '--tw-ring-color': HCUP_BLEU }}
               >
                 <option value="toutes">Toutes les saisons</option>
-                {saisons.map(s => (
+                {SAISONS_OPTIONS.map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
@@ -254,14 +250,14 @@ export default function HistoriqueHcupTab() {
         )}
       </div>
 
-      {/* Loading overlay si rechargement */}
+      {/* Loading overlay */}
       {loading && matchs.length > 0 && (
         <div className="text-center py-2">
           <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: HCUP_BLEU }}></div>
         </div>
       )}
 
-      {/* Liste des matchs groupés par saison */}
+      {/* Liste des matchs */}
       {matchs.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
           <p className="text-gray-500">Aucun match trouvé pour ces filtres</p>
@@ -303,7 +299,7 @@ export default function HistoriqueHcupTab() {
                 {isExpanded && (
                   <div className="p-2 space-y-2">
                     {matchsList.map(match => (
-                      <MatchHistoriqueCard key={match.match_id || match.id} match={match} />
+                      <MatchHistoriqueCard key={match.match_id} match={match} />
                     ))}
                   </div>
                 )}
@@ -318,7 +314,6 @@ export default function HistoriqueHcupTab() {
 
 // ============================================
 // COMPOSANT : MatchHistoriqueCard
-// Affichage compact d'un match historique
 // ============================================
 function MatchHistoriqueCard({ match }) {
   const teamDom = getTeamData(match.equipe_domicile || '');
@@ -335,9 +330,9 @@ function MatchHistoriqueCard({ match }) {
   const scoreFinalDom = match.score_final_domicile ?? scoreDom80;
   const scoreFinalExt = match.score_final_exterieur ?? scoreExt80;
 
-  // Scores prédits
-  const scorePreditDom = match.score_dom_predit ?? match.score_predit_dom;
-  const scorePreditExt = match.score_ext_predit ?? match.score_predit_ext;
+  // Scores prédits (champs réels du backend)
+  const scorePreditDom = match.score_predit_dom;
+  const scorePreditExt = match.score_predit_ext;
 
   // Prédiction OK/KO sur le score 80'
   let predictionOK = null;
@@ -348,7 +343,6 @@ function MatchHistoriqueCard({ match }) {
     predictionOK = realWinner === match.winner_predit;
   }
 
-  // Format date
   let dateFormatted = '';
   if (match.date_match) {
     try {
@@ -387,7 +381,6 @@ function MatchHistoriqueCard({ match }) {
 
       {/* Match : équipes + scores */}
       <div className="grid grid-cols-3 items-center gap-2">
-        {/* Domicile */}
         <div className="flex items-center gap-2">
           <img
             src={teamDom.logo}
@@ -400,21 +393,19 @@ function MatchHistoriqueCard({ match }) {
           </span>
         </div>
 
-        {/* Score (centré) */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 text-base font-bold" style={{ color: HCUP_BLEU }}>
             <span>{scoreDom80 ?? '-'}</span>
             <span className="text-gray-400">-</span>
             <span>{scoreExt80 ?? '-'}</span>
           </div>
-          {hasProlongation && (
+          {hasProlongation && (scoreFinalDom !== scoreDom80 || scoreFinalExt !== scoreExt80) && (
             <p className="text-[9px] italic text-gray-500 mt-0.5">
               Final : {scoreFinalDom}-{scoreFinalExt} (a.p.)
             </p>
           )}
         </div>
 
-        {/* Extérieur */}
         <div className="flex items-center gap-2 justify-end">
           <span className="text-xs font-semibold truncate text-gray-800 text-right">
             {match.equipe_exterieure}
@@ -428,12 +419,12 @@ function MatchHistoriqueCard({ match }) {
         </div>
       </div>
 
-      {/* Prédiction algo (si disponible) */}
+      {/* Prédiction algo */}
       {scorePreditDom != null && scorePreditExt != null && (
         <div className="mt-2 pt-2 border-t border-gray-200 flex items-center justify-between text-[10px] text-gray-500">
           <span>Algo : {scorePreditDom}-{scorePreditExt}</span>
-          {match.confiance_pct != null && (
-            <span>Confiance : {Math.round(match.confiance_pct)}%</span>
+          {match.confiance_algo != null && (
+            <span>Confiance : {Math.round(match.confiance_algo)}%</span>
           )}
         </div>
       )}

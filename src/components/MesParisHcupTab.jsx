@@ -1,6 +1,7 @@
 // ============================================
 // MES PARIS - CHAMPIONS CUP
-// Affiche l'historique des paris HCup du user
+// Source : GET /api/hcup/user/bets/detailed
+// Vue Supabase : v_user_bets_hcup_detailed
 // Couleurs : bleu EPCR #003E7E + or #FFC72C
 // ============================================
 
@@ -15,9 +16,10 @@ import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-// Couleurs Champions Cup
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';
+
+const PHASE_FINALE_ROUNDS = ['8e de finale', 'Quart de finale', 'Demi-finale', 'Finale'];
 
 export default function MesParisHcupTab() {
   const location = useLocation();
@@ -30,7 +32,7 @@ export default function MesParisHcupTab() {
   const [targetMatchId, setTargetMatchId] = useState(null);
   const betRefs = useRef({});
 
-  // Realtime : refresh sur user_bets_hcup et user_credits
+  // Realtime
   useRealtimeSync([
     { table: 'user_bets_hcup', onUpdate: () => loadData() },
     { table: 'user_credits', onUpdate: () => loadData() },
@@ -40,7 +42,7 @@ export default function MesParisHcupTab() {
     loadData();
   }, []);
 
-  // Scroll vers un pari spécifique (depuis notification ou redirection)
+  // Scroll vers un pari spécifique
   useEffect(() => {
     const matchIdFromState = location.state?.scrollToMatchId;
     const urlParams = new URLSearchParams(window.location.search);
@@ -105,7 +107,7 @@ export default function MesParisHcupTab() {
         setUserCredits({ credits: 1000, total_earned: 0, total_spent: 0, totalWonFromBets: 0 });
       }
 
-      // Paris HCup
+      // Paris HCup (source : v_user_bets_hcup_detailed)
       try {
         const parisResponse = await axios.get(`${API_BASE}/api/hcup/user/bets/detailed`, {
           headers: { 'x-user-id': user.id }
@@ -141,7 +143,6 @@ export default function MesParisHcupTab() {
   const parisWon = paris.filter(p => p.status === 'won').length;
   const parisLost = paris.filter(p => p.status === 'lost').length;
 
-  // Bandeau cagnotte : dégradé bleu EPCR → or
   const bandeauStyle = {
     background: `linear-gradient(to right, ${HCUP_BLEU}, ${HCUP_OR})`
   };
@@ -253,7 +254,7 @@ export default function MesParisHcupTab() {
       ) : (
         <div className="space-y-3">
           {parisFiltered.map(bet => {
-            // Récupérer les équipes depuis bet (vue detailed les expose directement)
+            // Champs exposés par v_user_bets_hcup_detailed
             const teamDom = bet.equipe_domicile ? getTeamData(bet.equipe_domicile) : null;
             const teamExt = bet.equipe_exterieure ? getTeamData(bet.equipe_exterieure) : null;
 
@@ -262,8 +263,7 @@ export default function MesParisHcupTab() {
             const isPending = bet.status === 'pending';
             const isLost = bet.status === 'lost';
 
-            // Détection phase finale (pour afficher info prolongation)
-            const isPhaseFinale = ['8e de finale', 'Quart de finale', 'Demi-finale', 'Finale'].includes(bet.round);
+            const isPhaseFinale = PHASE_FINALE_ROUNDS.includes(bet.round);
             const hasProlongation = bet.prolongation === true;
 
             return (
@@ -300,14 +300,12 @@ export default function MesParisHcupTab() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Badge HCup */}
                     <span
                       className="px-2 py-1 rounded-full text-[10px] font-bold"
                       style={{ backgroundColor: HCUP_BLEU, color: HCUP_OR }}
                     >
                       ⭐ C.CUP
                     </span>
-                    {/* Badge round si phase finale */}
                     {isPhaseFinale && (
                       <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">
                         {bet.round}
@@ -372,17 +370,15 @@ export default function MesParisHcupTab() {
 
                         {/* Score réel - uniquement pour paris résolus */}
                         {!isPending && (() => {
-                          // Score à 80' (utilisé pour résoudre les paris)
-                          const realHome = bet.score_reel_dom ?? bet.score_dom_80min;
-                          const realAway = bet.score_reel_ext ?? bet.score_ext_80min;
+                          // La vue expose score_reel_dom/ext (= score à 80')
+                          const realHome = bet.score_reel_dom;
+                          const realAway = bet.score_reel_ext;
 
-                          // Score final (incluant prolongation)
                           const finalHome = bet.score_final_domicile;
                           const finalAway = bet.score_final_exterieur;
 
                           if (realHome == null || realAway == null) return null;
 
-                          // Calculer le vainqueur réel pour WINNER_FT
                           let realWinnerName = null;
                           if (bet.bet_type === 'WINNER_FT') {
                             if (realHome > realAway) realWinnerName = teamDom?.name || 'Domicile';
@@ -410,8 +406,9 @@ export default function MesParisHcupTab() {
                                 </p>
                               )}
 
-                              {/* Mention prolongation si applicable */}
-                              {hasProlongation && finalHome != null && finalAway != null && (
+                              {/* Mention prolongation */}
+                              {hasProlongation && finalHome != null && finalAway != null &&
+                                (finalHome !== realHome || finalAway !== realAway) && (
                                 <p className="text-[9px] text-center italic text-gray-500 mt-1">
                                   Score final : {finalHome} - {finalAway} (a.p.)
                                 </p>
@@ -473,13 +470,13 @@ export default function MesParisHcupTab() {
 
                   {/* Date */}
                   <p className="text-xs text-gray-400 mt-3 text-center">
-                    {new Date(bet.placed_at || bet.created_at).toLocaleDateString('fr-FR', {
+                    {new Date(bet.created_at).toLocaleDateString('fr-FR', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric'
                     })}
                     {' à '}
-                    {new Date(bet.placed_at || bet.created_at).toLocaleTimeString('fr-FR', {
+                    {new Date(bet.created_at).toLocaleTimeString('fr-FR', {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
