@@ -1,0 +1,133 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="northampton-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone de sécurité pour éviter que les bandes touchent les bordures -->
+    <clipPath id="northampton-safe-clip">
+      <polygon points="
+        100,38
+        148,64
+        148,136
+        100,162
+        52,136
+        52,64
+      " />
+    </clipPath>
+
+    <linearGradient id="northampton-green-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E7A3A" />
+      <stop offset="100%" stop-color="#0B3D22" />
+    </linearGradient>
+
+    <linearGradient id="northampton-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#D6B04A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#northampton-hex-clip)">
+    <rect width="200" height="200" fill="url(#northampton-green-grad)" />
+  </g>
+
+  <!-- Décor intérieur uniquement, sans toucher les bordures -->
+  <g clip-path="url(#northampton-safe-clip)">
+    <!-- Bande noire centrale -->
+    <rect x="75" y="35" width="50" height="130" fill="#000000" opacity="0.9" />
+
+    <!-- Bandes dorées -->
+    <rect x="63" y="35" width="7" height="130" fill="#D6B04A" />
+    <rect x="130" y="35" width="7" height="130" fill="#D6B04A" />
+
+    <!-- Décor diagonal discret -->
+    <path
+      d="M52 136 L148 64"
+      stroke="#D6B04A"
+      stroke-width="5"
+      opacity="0.22"
+    />
+
+    <path
+      d="M52 64 L148 136"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.12"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure dorée -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#D6B04A"
+    stroke-width="2"
+  />
+
+  <!-- Texte SAINTS avec contour noir -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#northampton-text-grad)"
+    stroke="#000000"
+    stroke-width="5"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="31"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    SAINTS
+  </text>
+
+  <!-- Texte SAINTS avec contour doré fin -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#northampton-text-grad)"
+    stroke="#D6B04A"
+    stroke-width="2"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="31"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    SAINTS
+  </text>
+</svg>

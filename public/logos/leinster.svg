@@ -1,0 +1,112 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="leinster-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <linearGradient id="leinster-blue-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0055A4" />
+      <stop offset="100%" stop-color="#002B5C" />
+    </linearGradient>
+
+    <linearGradient id="leinster-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#D6B04A" />
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#leinster-hex-clip)">
+    <rect width="200" height="200" fill="url(#leinster-blue-grad)" />
+
+    <!-- Lignes décoratives dorées inspirées des couleurs de Leinster -->
+    <path
+      d="M55 70 C85 50, 115 50, 145 70"
+      fill="none"
+      stroke="#D6B04A"
+      stroke-width="3"
+      opacity="0.55"
+    />
+
+    <path
+      d="M50 135 C82 155, 118 155, 150 135"
+      fill="none"
+      stroke="#D6B04A"
+      stroke-width="3"
+      opacity="0.55"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure dorée -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#D6B04A"
+    stroke-width="2"
+  />
+
+  <!-- Texte LEIN avec contour noir -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#leinster-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="104"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    LEIN
+  </text>
+
+  <!-- Texte LEIN avec contour doré plus fin -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#leinster-text-grad)"
+    stroke="#D6B04A"
+    stroke-width="2"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="104"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    LEIN
+  </text>
+</svg>

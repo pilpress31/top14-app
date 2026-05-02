@@ -1,0 +1,138 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="harlequins-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="harlequins-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="harlequins-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1B365D" />
+      <stop offset="100%" stop-color="#111111" />
+    </linearGradient>
+
+    <linearGradient id="harlequins-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#D9D9D6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#harlequins-hex-clip)">
+    <rect width="200" height="200" fill="url(#harlequins-bg-grad)" />
+  </g>
+
+  <!-- Motif intérieur type Harlequins, sans toucher les bordures -->
+  <g clip-path="url(#harlequins-safe-clip)">
+    <!-- Quatre quartiers colorés -->
+    <rect x="50" y="36" width="50" height="64" fill="#78C6E7" />
+    <rect x="100" y="36" width="50" height="64" fill="#8A1538" />
+    <rect x="50" y="100" width="50" height="64" fill="#4B2E2A" />
+    <rect x="100" y="100" width="50" height="64" fill="#D9D9D6" />
+
+    <!-- Croix centrale discrète -->
+    <rect x="96" y="36" width="8" height="128" fill="#000000" opacity="0.35" />
+    <rect x="50" y="96" width="100" height="8" fill="#000000" opacity="0.35" />
+
+    <!-- Losange décoratif central -->
+    <polygon
+      points="100,62 132,100 100,138 68,100"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="3"
+      opacity="0.45"
+    />
+
+    <polygon
+      points="100,72 122,100 100,128 78,100"
+      fill="none"
+      stroke="#000000"
+      stroke-width="3"
+      opacity="0.35"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure magenta -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#8A1538"
+    stroke-width="2"
+  />
+
+  <!-- Texte QUINS avec contour noir -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#harlequins-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="34"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    QUINS
+  </text>
+
+  <!-- Texte QUINS avec contour bleu clair fin -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#harlequins-text-grad)"
+    stroke="#78C6E7"
+    stroke-width="2"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="34"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    QUINS
+  </text>
+</svg>
