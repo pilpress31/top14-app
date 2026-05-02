@@ -67,7 +67,7 @@ export default function IAPage() {
   }, []);
 
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
-  const contentPadding = 125;
+  const contentPadding = 200;
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
