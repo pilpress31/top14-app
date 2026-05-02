@@ -146,16 +146,7 @@ export default function AlgoPronosHcupTab() {
 
   return (
     <div className="space-y-2">
-      {/* Badge HCup */}
-      <div
-        className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg w-fit mx-auto mb-3"
-        style={{ backgroundColor: HCUP_BLEU }}
-      >
-        <Globe className="w-4 h-4" style={{ color: HCUP_OR }} />
-        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: HCUP_OR }}>
-          Pronostics Champions Cup
-        </span>
-      </div>
+      
 
       {rounds.map(round => {
         const isExpanded = expandedRounds.has(round);
