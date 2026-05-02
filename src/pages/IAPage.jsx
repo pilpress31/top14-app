@@ -101,12 +101,13 @@ export default function IAPage() {
   };
 
   return (
-    <div className="min-h-screen bg-rugby-white pb-24">
+    // pb-32 (au lieu de pb-24) pour que le contenu ne passe pas sous la BottomNav
+    <div className="min-h-screen bg-rugby-white pb-32">
       {renderHeader()}
 
-      {/* Onglets - STICKY */}
+      {/* Onglets - STICKY - z-50 (au-dessus du header qui pourrait remonter) */}
       <div
-        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-50 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
