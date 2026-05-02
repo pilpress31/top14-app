@@ -3,14 +3,11 @@ import { useLocation } from 'react-router-dom';
 import { Target, Trophy } from 'lucide-react';
 import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
+import MesPronosHcupTab from '../components/MesPronosHcupTab';
+// import MesParisHcupTab from '../components/MesParisHcupTab';  // TODO Step 2
 import MainHeader from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderD2';
 import MainHeaderHcup from '../components/MainHeaderHcup';
-// 🆕 HCup : header dédié (à créer si pas encore fait — fallback ci-dessous)
-// import MainHeaderHcup from '../components/MainHeaderHcup';
-// 🆕 HCup : tabs dédiées (à créer)
-// import MesPronosHcupTab from '../components/MesPronosHcupTab';
-// import MesParisHcupTab from '../components/MesParisHcupTab';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const HEADER_HEIGHT = 120;
@@ -117,11 +114,8 @@ export default function PronosPage() {
   // 🎯 Choix du Header selon championnat
   // ============================================================
   const renderHeader = () => {
-    if (isHcup) {
-      // TODO: remplacer par <MainHeaderHcup /> une fois créé
-      return <MainHeaderHcup />;
-    }
-    if (isD2) return <MainHeaderD2 />;
+    if (isHcup) return <MainHeaderHcup />;
+    if (isD2)   return <MainHeaderD2 />;
     return <MainHeader />;
   };
 
@@ -130,27 +124,21 @@ export default function PronosPage() {
   // ============================================================
   const renderContent = () => {
     if (isHcup) {
-      // TODO : créer MesPronosHcupTab et MesParisHcupTab
-      // Pour l'instant on affiche un placeholder
-      return (
+      // ✅ Onglet "À parier" pour HCup
+      if (activeTab === 'a-parier') return <MesPronosHcupTab goToMesParis={goToMesParis} />;
+      // TODO Step 2 : MesParisHcupTab
+      if (activeTab === 'mes-paris') return (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="text-6xl mb-4">⭐</div>
-          <h2 className="text-2xl font-bold text-[#003E7E] mb-2">Champions Cup</h2>
-          <p className="text-gray-600 mb-6">
-            Bientôt disponible !
+          <div className="text-6xl mb-4">🏆</div>
+          <h2 className="text-xl font-bold text-[#003E7E] mb-2">Mes paris HCup</h2>
+          <p className="text-gray-600 text-sm">
+            Onglet en cours de développement.
             <br />
-            La page de paris HCup arrive très prochainement.
+            Tes paris HCup apparaîtront ici après le lancement complet.
           </p>
-          <div className="bg-[#003E7E]/5 border border-[#FFC72C] rounded-xl p-4 max-w-md">
-            <p className="text-sm text-[#003E7E] font-semibold mb-2">📅 Prochaines demi-finales</p>
-            <p className="text-xs text-gray-700">
-              🏉 Sam 02/05 — LEINSTER vs TOULON
-              <br />
-              🏉 Dim 03/05 — BORDEAUX vs BATH
-            </p>
-          </div>
         </div>
       );
+      return null;
     }
 
     // Top 14 + D2 : composants existants (gèrent déjà isD2 en interne via le context)
