@@ -14,17 +14,19 @@ const API_BASE = 'https://top14-api-production.up.railway.app';
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';
 
+// Ordre d'affichage : phase finale EN HAUT, poules en bas
+// (ordre inverse pour voir d'abord les matchs les plus prestigieux)
 const ROUND_ORDER = {
-  'Poule J1': 1,
-  'Poule J2': 2,
-  'Poule J3': 3,
-  'Poule J4': 4,
-  'Poule J5': 5,
-  'Poule J6': 6,
-  '8e de finale': 10,
-  'Quart de finale': 11,
-  'Demi-finale': 12,
-  'Finale': 13,
+  'Finale': 1,
+  'Demi-finale': 2,
+  'Quart de finale': 3,
+  '8e de finale': 4,
+  'Poule J6': 10,
+  'Poule J5': 11,
+  'Poule J4': 12,
+  'Poule J3': 13,
+  'Poule J2': 14,
+  'Poule J1': 15,
 };
 
 const PHASE_FINALE_ROUNDS = ['8e de finale', 'Quart de finale', 'Demi-finale', 'Finale'];
@@ -51,6 +53,8 @@ export default function HistoriqueHcupTab() {
   const [filtreRound, setFiltreRound] = useState('Tous');
   const [showFilters, setShowFilters] = useState(false);
   const [expandedSaisons, setExpandedSaisons] = useState(new Set());
+  // 🆕 Groupes (round ou poule) ouverts/fermés. Clé = "saison|groupKey"
+  const [expandedGroupes, setExpandedGroupes] = useState(new Set());
 
   useEffect(() => {
     loadHistorique();
@@ -95,13 +99,69 @@ export default function HistoriqueHcupTab() {
     }
   };
 
-  // Groupement par saison pour affichage
+  // 🆕 Groupement par saison ET sous-groupes (phases finales + poules)
+  // Structure : { saison: { groupes: [{ key, label, type, matchs }], total } }
   const matchsParSaison = useMemo(() => {
-    return matchs.reduce((acc, m) => {
-      if (!acc[m.saison]) acc[m.saison] = [];
-      acc[m.saison].push(m);
-      return acc;
-    }, {});
+    const result = {};
+
+    matchs.forEach(m => {
+      if (!result[m.saison]) {
+        result[m.saison] = { _byGroup: {}, _order: [], total: 0 };
+      }
+      const seasonData = result[m.saison];
+      seasonData.total++;
+
+      const isPhaseFinale = PHASE_FINALE_ROUNDS.includes(m.round);
+      let groupKey, groupLabel, groupOrder, groupType;
+
+      if (isPhaseFinale) {
+        // Phase finale : 1 groupe par round (Finale, Demi, Quart, 8e)
+        groupKey = `phase:${m.round}`;
+        groupLabel = m.round;
+        groupOrder = ROUND_ORDER[m.round] ?? 99;
+        groupType = 'phase';
+      } else if (m.poule) {
+        // Phase de poule avec poule renseignée → groupe par poule
+        groupKey = `poule:${m.poule}`;
+        groupLabel = `Poule ${m.poule}`;
+        // Ordre : poule 1 avant poule 2 (mais après phase finale)
+        groupOrder = 100 + parseInt(m.poule, 10);
+        groupType = 'poule';
+      } else {
+        // Phase de poule sans poule renseignée → fallback par round (J1, J2…)
+        groupKey = `round:${m.round}`;
+        groupLabel = m.round;
+        groupOrder = ROUND_ORDER[m.round] ?? 99;
+        groupType = 'round';
+      }
+
+      if (!seasonData._byGroup[groupKey]) {
+        seasonData._byGroup[groupKey] = {
+          key: groupKey,
+          label: groupLabel,
+          type: groupType,
+          order: groupOrder,
+          matchs: [],
+        };
+        seasonData._order.push(groupKey);
+      }
+      seasonData._byGroup[groupKey].matchs.push(m);
+    });
+
+    // Convertir en tableau ordonné de groupes par saison
+    Object.keys(result).forEach(saison => {
+      const groupes = Object.values(result[saison]._byGroup)
+        .sort((a, b) => a.order - b.order);
+
+      // Trier les matchs au sein d'un groupe par date
+      groupes.forEach(g => {
+        g.matchs.sort((a, b) => new Date(a.date_match) - new Date(b.date_match));
+      });
+
+      result[saison] = { groupes, total: result[saison].total };
+    });
+
+    return result;
   }, [matchs]);
 
   // Stats globales (sur les matchs filtrés)
@@ -130,6 +190,17 @@ export default function HistoriqueHcupTab() {
       const newSet = new Set(prev);
       if (newSet.has(saison)) newSet.delete(saison);
       else newSet.add(saison);
+      return newSet;
+    });
+  };
+
+  // 🆕 Toggle d'un sous-groupe (phase finale ou poule)
+  const toggleGroupe = (saison, groupKey) => {
+    const fullKey = `${saison}|${groupKey}`;
+    setExpandedGroupes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(fullKey)) newSet.delete(fullKey);
+      else newSet.add(fullKey);
       return newSet;
     });
   };
@@ -264,14 +335,16 @@ export default function HistoriqueHcupTab() {
         </div>
       ) : (
         <div className="space-y-2">
-          {Object.entries(matchsParSaison).map(([saison, matchsList]) => {
+          {Object.entries(matchsParSaison).map(([saison, seasonData]) => {
             const isExpanded = expandedSaisons.has(saison);
+            const { groupes, total } = seasonData;
 
             return (
               <div
                 key={saison}
                 className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden"
               >
+                {/* En-tête saison */}
                 <button
                   onClick={() => toggleSaison(saison)}
                   className="w-full px-3 py-2 border-b transition-colors"
@@ -285,7 +358,7 @@ export default function HistoriqueHcupTab() {
                       <Calendar className="w-4 h-4" style={{ color: HCUP_OR }} />
                       <span className="font-bold text-sm" style={{ color: HCUP_BLEU }}>Saison {saison}</span>
                       <span className="text-xs text-gray-500">
-                        ({matchsList.length} {matchsList.length > 1 ? 'matchs' : 'match'})
+                        ({total} {total > 1 ? 'matchs' : 'match'})
                       </span>
                     </div>
                     {isExpanded ? (
@@ -296,11 +369,70 @@ export default function HistoriqueHcupTab() {
                   </div>
                 </button>
 
+                {/* Sous-groupes : phases finales puis poules */}
                 {isExpanded && (
-                  <div className="p-2 space-y-2">
-                    {matchsList.map(match => (
-                      <MatchHistoriqueCard key={match.match_id} match={match} />
-                    ))}
+                  <div className="p-2 space-y-1.5">
+                    {groupes.map(groupe => {
+                      const groupFullKey = `${saison}|${groupe.key}`;
+                      const isGroupExpanded = expandedGroupes.has(groupFullKey);
+                      const isPhase = groupe.type === 'phase';
+
+                      return (
+                        <div
+                          key={groupe.key}
+                          className="rounded-md overflow-hidden border"
+                          style={{
+                            borderColor: isPhase ? 'rgba(255,199,44,0.4)' : 'rgba(0,62,126,0.15)',
+                          }}
+                        >
+                          {/* Bouton du sous-groupe */}
+                          <button
+                            onClick={() => toggleGroupe(saison, groupe.key)}
+                            className="w-full px-3 py-1.5 transition-colors flex items-center justify-between"
+                            style={{
+                              backgroundColor: isPhase
+                                ? 'rgba(255,199,44,0.12)'
+                                : 'rgba(0,62,126,0.05)',
+                            }}
+                          >
+                            <div className="flex items-center gap-2">
+                              {isPhase
+                                ? <Trophy className="w-3.5 h-3.5" style={{ color: HCUP_OR }} />
+                                : <span
+                                    className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                                    style={{ backgroundColor: HCUP_BLEU, color: HCUP_OR }}
+                                  >
+                                    {groupe.label.replace('Poule ', '')}
+                                  </span>
+                              }
+                              <span
+                                className="font-semibold text-xs"
+                                style={{ color: isPhase ? HCUP_BLEU : HCUP_BLEU }}
+                              >
+                                {groupe.label}
+                              </span>
+                              <span className="text-[10px] text-gray-500">
+                                ({groupe.matchs.length})
+                              </span>
+                            </div>
+                            {isGroupExpanded ? (
+                              <ChevronUp className="w-3.5 h-3.5" style={{ color: HCUP_OR }} />
+                            ) : (
+                              <ChevronDown className="w-3.5 h-3.5" style={{ color: HCUP_OR }} />
+                            )}
+                          </button>
+
+                          {/* Matchs du sous-groupe */}
+                          {isGroupExpanded && (
+                            <div className="p-2 space-y-2 bg-white">
+                              {groupe.matchs.map(match => (
+                                <MatchHistoriqueCard key={match.match_id} match={match} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
