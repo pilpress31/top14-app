@@ -270,7 +270,11 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 {match?.round && (
                   <>
-                    <span className="font-semibold text-rugby-gold">J{match.round}</span>
+                    {/* 🆕 v4 : préfixe "J" uniquement si round est un nombre (Top14/D2)
+                         Pour HCup, le round est déjà textuel (ex: "Demi-finale") */}
+                    <span className="font-semibold text-rugby-gold">
+                      {/^\d+$/.test(String(match.round)) ? `J${match.round}` : match.round}
+                    </span>
                     <span>•</span>
                   </>
                 )}
@@ -313,11 +317,12 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
             <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
               <p className="text-[10px] text-blue-700 font-semibold mb-1">Ton pronostic</p>
               {/* 🆕 v3 : pari vainqueur → nom de l'équipe choisie */}
+              {/* 🆕 v4 : supporter aussi DOM/EXT/NUL (HCup) en plus de domicile/exterieur/nul (Top14/D2) */}
               {isWinnerFT ? (
                 <p className="text-base font-bold text-blue-900 text-center">
-                  🎯 {winnerPredit === 'domicile' ? homeTeam
-                    : winnerPredit === 'exterieur' ? awayTeam
-                    : winnerPredit === 'nul' ? 'Match nul'
+                  🎯 {(winnerPredit === 'domicile' || winnerPredit === 'DOM') ? homeTeam
+                    : (winnerPredit === 'exterieur' || winnerPredit === 'EXT') ? awayTeam
+                    : (winnerPredit === 'nul' || winnerPredit === 'NUL') ? 'Match nul'
                     : '-'}
                 </p>
               ) : (
