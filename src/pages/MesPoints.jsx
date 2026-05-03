@@ -12,11 +12,19 @@ import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getSaisonCourante } from '../utils/season';
 
+// ─── Helper : calculer les points d'un pari selon le championnat ───
+const computeBetPoints = (bet) => {
+  // HCup : utilise classement_points (1 par pari gagné, pas de points_ft/points_mt)
+  if (bet.championnat === 'hcup') {
+    return bet.classement_points || 0;
+  }
+  // Top14/D2 : utilise points_ft + points_mt
+  return (bet.points_ft || 0) + (bet.points_mt || 0);
+};
+
 // ─── Helper : déterminer le badge selon les points et le bet_type ───
 const getBadgeForBet = (bet) => {
-  // HCup : utilise classement_points (toujours +1 si gagné)
-  // Top14/D2 : utilise points_ft + points_mt
-  const points = (bet.points_ft || 0) + (bet.points_mt || 0) + (bet.classement_points || 0);
+  const points = computeBetPoints(bet);
   const isWinnerBet = bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT';
 
   if (isWinnerBet) {
@@ -208,7 +216,7 @@ export default function MesPoints() {
           // Normaliser : HCup utilise resolved_at au lieu de result_at
           result_at: b.resolved_at || b.result_at,
         })),
-      ].filter(b => ((b.points_ft || 0) + (b.points_mt || 0) + (b.classement_points || 0)) > 0);
+      ].filter(b => computeBetPoints(b) > 0);
 
       // Tri ASC par défaut (date de résolution)
       allBets.sort((a, b) => {
@@ -261,9 +269,7 @@ export default function MesPoints() {
 
     let runningTotal = 0;
     const withCumul = sortedAsc.map(bet => {
-      // HCup : classement_points (1 par pari gagné)
-      // Top14/D2 : points_ft + points_mt
-      const points = (bet.points_ft || 0) + (bet.points_mt || 0) + (bet.classement_points || 0);
+      const points = computeBetPoints(bet);
       runningTotal += points;
       return { ...bet, _points: points, _cumul: runningTotal };
     });
@@ -276,7 +282,7 @@ export default function MesPoints() {
   }, [filteredBets, sortMode]);
 
   const totalPoints = useMemo(
-    () => filteredBets.reduce((sum, b) => sum + ((b.points_ft || 0) + (b.points_mt || 0) + (b.classement_points || 0)), 0),
+    () => filteredBets.reduce((sum, b) => sum + computeBetPoints(b), 0),
     [filteredBets]
   );
 
