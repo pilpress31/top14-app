@@ -530,7 +530,19 @@ export default function MaCagnotte() {
         ).catch(() => ({ data: { bets: [] } })),
       ]);
 
-      const txs = historyResponse.data.transactions || [];
+      const txs = (historyResponse.data.transactions || []).map(t => {
+        // 🆕 Normaliser les types HCup pour qu'ils soient traités comme des paris standards
+        // (la fonction trigger SQL HCup utilise 'gain_pari_hcup' au lieu de 'bet_won')
+        if (t.type === 'gain_pari_hcup') {
+          return { ...t, type: 'bet_won', _championnat: 'hcup' };
+        }
+        if (t.type === 'perte_pari_hcup' || t.type === 'mise_pari_hcup') {
+          // mise_pari_hcup : équivalent du bet_placed (sera filtré ensuite)
+          // perte_pari_hcup : équivalent du bet_lost
+          return { ...t, type: t.type === 'mise_pari_hcup' ? 'bet_placed' : 'bet_lost', _championnat: 'hcup' };
+        }
+        return t;
+      });
       const betsTop14 = historyResponse.data.bets || [];
 
       // ✅ Normaliser les paris D2 au format attendu par le reste du composant
@@ -751,10 +763,12 @@ export default function MaCagnotte() {
 
       // ✅ AJOUTER les paris gagnés UNIQUEMENT s'ils n'ont pas déjà une transaction
       // Construire un Set complet des bet_ids déjà couverts (après enrichissement des orphelines)
+      // 🆕 v4 : on regarde aussi reference_id (utilisé par les transactions HCup)
       const coveredWonBetIds = new Set(
         transactionsFiltered
-          .filter(t => t.type === 'bet_won' && t.bet_id)
-          .map(t => t.bet_id)
+          .filter(t => t.type === 'bet_won')
+          .map(t => t.bet_id || t.reference_id)
+          .filter(Boolean)
       );
 
       // ✅ Reconstruire les transactions bet_won manquantes pour les paris won orphelins
@@ -855,14 +869,25 @@ export default function MaCagnotte() {
     });
 
     // ✅ Dédoublonner : une seule transaction par (match_id + bet_type + user)
+    // 🆕 v4 : si on a un bet_id (ou reference_id), on l'utilise en priorité comme clé
+    //         (plus fiable que match_id + bet_type, surtout pour HCup où bet_type peut être absent)
     // Garder celle avec le balance_after le plus élevé (la plus récente en cas de doublon)
     const seen = new Map();
     const deduped = filtered.filter(tx => {
+      const txBetId = tx.bet_id || tx.reference_id;
       const matchId = tx.bets?.match_id || tx.bet_id;
       const betType = tx.bets?.bet_type || (tx.description?.includes('MT') ? 'MT' : tx.description?.includes('FT') ? 'FT' : null);
+
       // Pas un pari → toujours garder
-      if (!matchId || tx.type === 'monthly_distribution' || tx.type === 'initial_capital' || tx.type === 'system_adjustment') return true;
-      const key = `${matchId}_${betType}_${tx.type}`;
+      if (tx.type === 'monthly_distribution' || tx.type === 'initial_capital' || tx.type === 'system_adjustment') return true;
+
+      // 🆕 Pour les paris : clé = (bet_id si dispo) ou (match_id + bet_type + type)
+      const key = txBetId
+        ? `bet_${txBetId}_${tx.type}`
+        : (matchId ? `${matchId}_${betType}_${tx.type}` : null);
+
+      if (!key) return true; // pas de clé → on garde
+
       if (seen.has(key)) {
         // Garder celui avec le balance_after le plus grand, ou le plus récent
         const prev = seen.get(key);
