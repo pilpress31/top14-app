@@ -407,7 +407,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
 // ---------------------------------------------------------
 export default function MaCagnotte() {
   const navigate = useNavigate();
-  const { isD2, toggle } = useChampionnat();
+  const { championnat, setChampionnat } = useChampionnat();
+  const isD2 = championnat === 'prod2';
+  const isHcup = championnat === 'hcup';
   const [user, setUser] = useState(null);
   const [userCredits, setUserCredits] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
@@ -457,6 +459,7 @@ export default function MaCagnotte() {
     { table: 'user_credits', onUpdate: () => debouncedLoadData(user?.id) },
     { table: 'user_bets', onUpdate: () => debouncedLoadData(user?.id) },
     { table: 'user_bets_d2', onUpdate: () => debouncedLoadData(user?.id) },
+    { table: 'user_bets_hcup', onUpdate: () => debouncedLoadData(user?.id) },
     { table: 'credit_transactions', onUpdate: () => debouncedLoadData(user?.id) },
   ]);
 
@@ -509,15 +512,20 @@ export default function MaCagnotte() {
       }
 
       const API_BASE_D2 = 'https://top14-api-production.up.railway.app';
+      const API_BASE_HCUP = 'https://top14-api-production.up.railway.app';
 
-      // ✅ Charger paris Top 14 + Pro D2 en parallèle
-      const [historyResponse, betsD2Response] = await Promise.all([
+      // ✅ Charger paris Top 14 + Pro D2 + HCup en parallèle
+      const [historyResponse, betsD2Response, betsHcupResponse] = await Promise.all([
         axios.get(
           `${import.meta.env.VITE_API_URL}/user/bets/detailed`,
           { headers: { "x-user-id": userId } }
         ),
         axios.get(
           `${API_BASE_D2}/api/d2/user/bets/detailed`,
+          { headers: { "x-user-id": userId } }
+        ).catch(() => ({ data: { bets: [] } })),
+        axios.get(
+          `${API_BASE_HCUP}/api/hcup/user/bets/detailed`,
           { headers: { "x-user-id": userId } }
         ).catch(() => ({ data: { bets: [] } })),
       ]);
@@ -546,10 +554,37 @@ export default function MaCagnotte() {
         }
       }));
 
-      // ✅ Fusion Top 14 + Pro D2
+      // ✅ Normaliser les paris HCup au format attendu par le reste du composant
+      const betsHcup = (betsHcupResponse.data.bets || []).map(b => ({
+        ...b,
+        championnat: 'hcup',
+        placed_at: b.placed_at || b.created_at,
+        result_at: b.result_at || b.resolved_at,
+        matches: {
+          id: b.match_id,
+          home_team: b.equipe_domicile,
+          away_team: b.equipe_exterieure,
+          match_date: b.date_match,
+          round: b.round,
+          // Utiliser le score à 80' pour la résolution des paris (cohérent avec la convention HCup)
+          score_domicile: b.score_reel_dom ?? b.score_dom_80min,
+          score_exterieur: b.score_reel_ext ?? b.score_ext_80min,
+          score_home: b.score_reel_dom ?? b.score_dom_80min,
+          score_away: b.score_reel_ext ?? b.score_ext_80min,
+          // Score final officiel (pour info, en cas de prolongation)
+          score_final_domicile: b.score_final_domicile,
+          score_final_exterieur: b.score_final_exterieur,
+          prolongation: b.prolongation,
+          score_ht_domicile: null,
+          score_ht_exterieur: null,
+        }
+      }));
+
+      // ✅ Fusion Top 14 + Pro D2 + HCup
       const allBets = [
         ...betsTop14.map(b => ({ ...b, championnat: b.championnat || 'top14' })),
-        ...betsD2
+        ...betsD2,
+        ...betsHcup,
       ];
 
       // ✅ Charger les match_results pour avoir les scores MT (score_ht_domicile / score_ht_exterieur)
@@ -793,9 +828,9 @@ export default function MaCagnotte() {
     const filterStatus = trans.type === 'bet_lost' ? 'lost' : 'won';
 
     // ✅ Détecter le championnat du pari et basculer si nécessaire
-    const targetIsD2 = trans.bets?.championnat === 'prod2';
-    if (targetIsD2 !== isD2) {
-      toggle();
+    const targetChampionnat = trans.bets?.championnat || 'top14';
+    if (targetChampionnat !== championnat) {
+      setChampionnat(targetChampionnat);
     }
 
     navigate(`/pronos?scrollToMatchId=${matchId}`, {
@@ -1150,24 +1185,25 @@ export default function MaCagnotte() {
 
             {/* ✅ BANDEAUX PARIS EN COURS — séparés par championnat */}
             {(() => {
-              const pendingTop14 = bets.filter(b => b.status === 'pending' && b.championnat !== 'prod2');
+              const pendingTop14 = bets.filter(b => b.status === 'pending' && (!b.championnat || b.championnat === 'top14'));
               const pendingD2    = bets.filter(b => b.status === 'pending' && b.championnat === 'prod2');
+              const pendingHcup  = bets.filter(b => b.status === 'pending' && b.championnat === 'hcup');
 
               const stakeTop14 = pendingTop14.reduce((sum, b) => sum + (b.stake || 0), 0);
               const stakeD2    = pendingD2.reduce((sum, b) => sum + (b.stake || 0), 0);
+              const stakeHcup  = pendingHcup.reduce((sum, b) => sum + (b.stake || 0), 0);
 
               // Handler pour aller vers l'onglet Mes paris d'un championnat précis
-              const goToMesParis = (targetIsD2) => {
-                // Si on doit changer de championnat, toggle avant de naviguer
-                if (targetIsD2 !== isD2) {
-                  toggle();
+              const goToMesParis = (targetChampionnat) => {
+                if (targetChampionnat !== championnat) {
+                  setChampionnat(targetChampionnat);
                 }
                 navigate('/pronos', {
                   state: { activeTab: 'mes-paris', filterStatus: 'pending' }
                 });
               };
 
-              if (pendingTop14.length === 0 && pendingD2.length === 0) return null;
+              if (pendingTop14.length === 0 && pendingD2.length === 0 && pendingHcup.length === 0) return null;
 
               return (
                 <div className="space-y-2 mb-4">
@@ -1187,7 +1223,7 @@ export default function MaCagnotte() {
                           </div>
                         </div>
                         <button
-                          onClick={() => goToMesParis(false)}
+                          onClick={() => goToMesParis('top14')}
                           className="px-3 py-1.5 bg-orange-500 text-white text-xs font-semibold rounded-lg hover:bg-orange-600 transition"
                         >
                           Voir
@@ -1215,11 +1251,42 @@ export default function MaCagnotte() {
                           </div>
                         </div>
                         <button
-                          onClick={() => goToMesParis(true)}
+                          onClick={() => goToMesParis('prod2')}
                           className="px-3 py-1.5 text-white text-xs font-semibold rounded-lg transition"
                           style={{ backgroundColor: '#00174D' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#002D6B'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00174D'}
+                        >
+                          Voir
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bandeau Champions Cup */}
+                  {pendingHcup.length > 0 && (
+                    <div
+                      className="border-l-4 rounded-lg p-3"
+                      style={{ backgroundColor: '#FFC72C1A', borderColor: '#003E7E' }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5" style={{ color: '#003E7E' }} />
+                          <div>
+                            <p className="text-sm font-semibold" style={{ color: '#003E7E' }}>
+                              ⭐ Champions Cup — {pendingHcup.length} pari{pendingHcup.length > 1 ? 's' : ''} en cours
+                            </p>
+                            <p className="text-xs" style={{ color: '#002857' }}>
+                              Mise totale : {stakeHcup} jetons
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => goToMesParis('hcup')}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+                          style={{ backgroundColor: '#003E7E', color: '#FFC72C' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#002857'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#003E7E'}
                         >
                           Voir
                         </button>
