@@ -164,13 +164,27 @@ export default function HistoriqueHcupTab() {
     return result;
   }, [matchs]);
 
-  // Stats globales (sur les matchs filtrés)
+  // Stats globales :
+  //   - "total" : nombre de matchs AFFICHÉS (peut être filtré par saison)
+  //   - "okCount/nbPredictions/precision" : calculés UNIQUEMENT sur la SAISON COURANTE
+  //     (= test set du modèle XGBoost, hors-échantillon).
+  //   Calculer sur tout l'historique gonflerait artificiellement la précision car
+  //   le modèle a été entraîné sur 2014-2024 (data leakage).
   const stats = useMemo(() => {
     const total = matchs.length;
+
+    // Détecter dynamiquement la saison courante = la saison max présente dans les matchs
+    // (alphabétiquement, "2025-2026" > "2024-2025" donc OK)
+    const saisonCourante = matchs.length > 0
+      ? matchs.map(m => m.saison).sort().reverse()[0]
+      : null;
+
     let okCount = 0;
     let nbPredictions = 0;
 
     matchs.forEach(m => {
+      // On ne compte que les matchs de la saison courante (test set du modèle)
+      if (m.saison !== saisonCourante) return;
       // Une prédiction est OK si winner_predit (calculé backend) == vainqueur réel sur 80'
       if (m.score_domicile != null && m.score_exterieur != null && m.winner_predit) {
         nbPredictions++;
@@ -182,7 +196,7 @@ export default function HistoriqueHcupTab() {
     });
 
     const precision = nbPredictions > 0 ? Math.round((okCount / nbPredictions) * 100) : 0;
-    return { total, okCount, nbPredictions, precision };
+    return { total, okCount, nbPredictions, precision, saisonCourante };
   }, [matchs]);
 
   const toggleSaison = (saison) => {
