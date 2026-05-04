@@ -402,6 +402,64 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
 
 
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">🌍 Notif Champions Cup (sélection manuelle)</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.5">
+          En HCup les matchs ne sont pas tous chargés à l'avance (poules par vagues + phases finales).<br>
+          <strong>Choisis les matchs</strong> à inclure dans la notification, puis personnalise le texte.
+        </p>
+
+        <!-- Bouton de chargement de la liste -->
+        <div style="margin-bottom:12px;">
+          <button class="btn" id="hcupLoadMatchsBtn" onclick="loadHcupMatchsForNotif()" style="background:#003D6B;color:#fff;border:none;">
+            <div class="spinner"></div>
+            <span class="btn-text">📥 Charger les matchs à venir</span>
+          </button>
+        </div>
+
+        <!-- Liste des matchs (cachée tant que pas chargée) -->
+        <div id="hcupMatchsListWrap" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+            <div id="hcupMatchsCount" style="font-size:12px;color:var(--muted);">—</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn" onclick="toggleAllHcupMatchs(true)" style="padding:4px 10px;font-size:12px;">Tout cocher</button>
+              <button class="btn" onclick="toggleAllHcupMatchs(false)" style="padding:4px 10px;font-size:12px;">Tout décocher</button>
+            </div>
+          </div>
+
+          <!-- Conteneur des matchs groupés par phase -->
+          <div id="hcupMatchsList" style="max-height:340px;overflow-y:auto;background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <!-- Rempli dynamiquement -->
+          </div>
+
+          <!-- Personnalisation du texte de la notif -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Texte de la notification</div>
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Titre</label>
+            <input type="text" id="hcupNotifTitle" placeholder="Ex: 🌍 Champions Cup — Nouveaux matchs"
+                  style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Corps</label>
+            <textarea id="hcupNotifBody" rows="2" placeholder="Ex: Leinster-Bordeaux, Toulouse-Leicester… faites vos pronostics !"
+                      style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">URL cible</label>
+            <input type="text" id="hcupNotifUrl" value="https://app.top14pronos.fr/hcup"
+                  style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+          </div>
+
+          <!-- Bouton d'envoi -->
+          <div style="margin-top:14px;">
+            <button class="btn btn-gold" id="hcupSendNotifBtn" onclick="sendHcupNewMatchesNotif()" style="width:100%;">
+              <div class="spinner"></div>
+              <span class="btn-text">📣 Envoyer la notification HCup</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="result" id="hcupNmResult"></div>
+      </div>
+
 
 
 
@@ -1421,6 +1479,179 @@ async function sendNewMatchesNotif(champ) {
     setLoading(btn, false);
   }
 }
+
+
+// ============================================================
+//  HCUP — NOTIF "NOUVEAUX MATCHS" (sélection manuelle)
+// ============================================================
+
+// Cache des matchs chargés (pour pouvoir cocher/décocher sans recharger)
+let _hcupMatchsCache = [];
+
+// ── Charger les matchs HCup à venir ──────────────────────────
+async function loadHcupMatchsForNotif() {
+  const btn = document.getElementById('hcupLoadMatchsBtn');
+  const wrap = document.getElementById('hcupMatchsListWrap');
+  const list = document.getElementById('hcupMatchsList');
+  const countEl = document.getElementById('hcupMatchsCount');
+
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/hcup/matchs/a-venir');
+    const matchs = (data && Array.isArray(data.matchs)) ? data.matchs : [];
+
+    _hcupMatchsCache = matchs;
+
+    if (matchs.length === 0) {
+      wrap.style.display = 'block';
+      list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px;">Aucun match à venir en Champions Cup</div>';
+      countEl.textContent = '0 match disponible';
+      // Reset des champs et du bouton d'envoi
+      document.getElementById('hcupSendNotifBtn').disabled = true;
+      return;
+    }
+
+    document.getElementById('hcupSendNotifBtn').disabled = false;
+
+    // Grouper par phase (Phase finale en premier, puis Poules)
+    const groupes = { 'Phase finale': [], 'Poules': [] };
+    matchs.forEach(m => {
+      const phase = m.phase || 'Poules';
+      if (!groupes[phase]) groupes[phase] = [];
+      groupes[phase].push(m);
+    });
+
+    // Rendu : Phase finale d'abord (plus rare et plus important), puis Poules
+    const ordrePhases = ['Phase finale', 'Poules'];
+    let html = '';
+    ordrePhases.forEach(phase => {
+      const liste = groupes[phase];
+      if (!liste || liste.length === 0) return;
+
+      const icone = phase === 'Phase finale' ? '🏆' : '🥇';
+      const titre = phase === 'Phase finale'
+        ? `${icone} Phase finale (${liste.length} match${liste.length > 1 ? 's' : ''})`
+        : `${icone} Phase de poules (${liste.length} match${liste.length > 1 ? 's' : ''})`;
+
+      html += `<div style="font-size:11px;color:var(--gold-light);text-transform:uppercase;letter-spacing:0.5px;margin:${html ? '14px' : '0'} 0 8px;">${titre}</div>`;
+
+      liste.forEach(m => {
+        const dateFr = m.date_match
+          ? new Date(m.date_match).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+          : '—';
+        const round = m.round || '';
+        const poule = m.poule ? ` P${m.poule}` : '';
+        html += `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+            <input type="checkbox" class="hcup-match-cb" value="${m.match_id}" onchange="updateHcupSelectionCount()" style="cursor:pointer;width:16px;height:16px;accent-color:var(--gold);">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;color:var(--text);font-weight:500;">${m.equipe_domicile} <span style="color:var(--muted)">vs</span> ${m.equipe_exterieure}</div>
+              <div style="font-size:11px;color:var(--muted2);margin-top:2px;">${dateFr} · ${round}${poule}</div>
+            </div>
+          </label>
+        `;
+      });
+    });
+
+    list.innerHTML = html;
+    wrap.style.display = 'block';
+    updateHcupSelectionCount();
+
+    // Pré-remplir le titre/body si vides (utilisateur peut éditer)
+    const titleInput = document.getElementById('hcupNotifTitle');
+    const bodyInput = document.getElementById('hcupNotifBody');
+    if (!titleInput.value) {
+      titleInput.value = '🌍 Champions Cup — Nouveaux matchs';
+    }
+    if (!bodyInput.value) {
+      // Aperçu des 2-3 premières affiches
+      const apercu = matchs.slice(0, 3)
+        .map(m => `${m.equipe_domicile}-${m.equipe_exterieure}`)
+        .join(', ');
+      const suite = matchs.length > 3 ? '… ' : ' — ';
+      bodyInput.value = `${apercu}${suite}faites vos pronostics avant le coup d'envoi !`;
+    }
+
+  } catch (e) {
+    showResult('hcupNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── Cocher / décocher tous les matchs ────────────────────────
+function toggleAllHcupMatchs(checked) {
+  document.querySelectorAll('.hcup-match-cb').forEach(cb => { cb.checked = checked; });
+  updateHcupSelectionCount();
+}
+
+// ── Mettre à jour le compteur de sélection ───────────────────
+function updateHcupSelectionCount() {
+  const total = document.querySelectorAll('.hcup-match-cb').length;
+  const checked = document.querySelectorAll('.hcup-match-cb:checked').length;
+  const countEl = document.getElementById('hcupMatchsCount');
+  if (countEl) {
+    countEl.textContent = `${checked} / ${total} match${total > 1 ? 's' : ''} sélectionné${checked > 1 ? 's' : ''}`;
+    countEl.style.color = checked > 0 ? 'var(--gold-light)' : 'var(--muted)';
+  }
+}
+
+// ── Envoyer la notification HCup ─────────────────────────────
+async function sendHcupNewMatchesNotif() {
+  const checkedIds = Array.from(document.querySelectorAll('.hcup-match-cb:checked')).map(cb => cb.value);
+
+  if (checkedIds.length === 0) {
+    showResult('hcupNmResult', 'err', '❌ Sélectionnez au moins un match');
+    return;
+  }
+
+  const title = document.getElementById('hcupNotifTitle').value.trim();
+  const body = document.getElementById('hcupNotifBody').value.trim();
+  const url = document.getElementById('hcupNotifUrl').value.trim();
+
+  if (!title || !body) {
+    showResult('hcupNmResult', 'err', '❌ Titre et corps de la notification requis');
+    return;
+  }
+
+  if (!confirm(`Envoyer la notification "${title}" pour ${checkedIds.length} match(s) à TOUS les utilisateurs ?`)) {
+    return;
+  }
+
+  const btn = document.getElementById('hcupSendNotifBtn');
+  setLoading(btn, true);
+
+  try {
+    const data = await api('/api/hcup/notifications/new-matches', {
+      method: 'POST',
+      body: JSON.stringify({
+        match_ids: checkedIds,
+        title,
+        body,
+        url: url || 'https://app.top14pronos.fr/hcup',
+      }),
+    });
+
+    if (data.success) {
+      const ignored = data.ignored_matchs > 0 ? ` (${data.ignored_matchs} ignorés car déjà joués)` : '';
+      // Cas : matchs détectés mais personne n'est abonné aux push
+      if (data.sent === 0 && data.inAppCreated === 0 && data.count > 0) {
+        showResult('hcupNmResult', 'warn',
+          `⚠️ ${data.count} match(s) HCup sélectionnés mais aucun utilisateur abonné aux push${ignored}`);
+      } else {
+        showResult('hcupNmResult', 'ok',
+          `✅ ${data.count} match(s) HCup : ${data.sent} push + ${data.inAppCreated} in-app envoyées${ignored}`);
+      }
+    } else {
+      showResult('hcupNmResult', 'err', `❌ ${data.error || data.message || 'Erreur inconnue'}`);
+    }
+  } catch (e) {
+    showResult('hcupNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
 
 
 
