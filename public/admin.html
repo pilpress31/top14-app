@@ -1159,6 +1159,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="spinner"></div>
             <span class="btn-text">🤖 Synthèse Pro D2</span>
           </button>
+          <button class="btn" id="synthBtnHcup" onclick="generateSynthese('hcup')" style="background:#003D6B;color:#fff">
+            <div class="spinner"></div>
+            <span class="btn-text">🤖 Synthèse HCup</span>
+          </button>
           <span id="synthStatus" style="color:var(--muted);font-size:12px;align-self:center"></span>
         </div>
         <div class="result" id="synthResult" style="margin-top:10px"></div>
@@ -1168,6 +1172,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="btn-row" style="flex-wrap:wrap">
           <button class="btn" onclick="applyMailTemplate('top14')" style="background:#D4A017;color:#fff">🏆 Top 14 ce soir</button>
           <button class="btn" onclick="applyMailTemplate('prod2')" style="background:#00174D;color:#fff">🥈 Pro D2 ce soir</button>
+          <button class="btn" onclick="applyMailTemplate('hcup')" style="background:#003D6B;color:#fff">🌍 HCup ce soir</button>
+          <button class="btn" onclick="applyMailTemplate('hcup_finale')" style="background:#003D6B;color:#fff;border:1px solid #C0C0C0">🏆 La finale ce soir</button>
           <button class="btn" onclick="applyMailTemplate('nouveautes')">✨ Nouveautés</button>
           <button class="btn" onclick="applyMailTemplate('reset')">🗑 Effacer</button>
         </div>
@@ -2532,6 +2538,36 @@ const MAIL_TEMPLATES = {
 <p>Bonne chance !</p>
 <p>— Top14 Pronos</p>`
   },
+  hcup: {
+    subject: '🌍 Champions Cup ce soir — viens parier !',
+    html: `<p>{salutation},</p>
+<p>C'est l'heure de la <strong>Champions Cup</strong> ! 🏉</p>
+<p>L'élite du rugby européen entre en scène. Pose tes pronostics avant le coup d'envoi pour gagner des jetons et grimper au classement HCup.</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="https://app.top14pronos.fr/hcup" style="display:inline-block;background:#003D6B;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+    👉 Parier sur la Champions Cup
+  </a>
+</p>
+<p>Bons pronos et bon match !</p>
+<p>— Top14 Pronos</p>`
+  },
+  hcup_finale: {
+    subject: '🏆 La finale Champions Cup ce soir — un seul match, tout à jouer',
+    html: `<p>{salutation},</p>
+<p>C'est <strong>LA finale</strong> de la Champions Cup ce soir ! 🌍</p>
+<p>Une saison entière pour en arriver là, et un seul match qui désigne le champion d'Europe. Quelle équipe soulèvera le trophée ?</p>
+<p style="background:#f4f4f4;border-left:4px solid #003D6B;padding:12px 16px;margin:16px 0">
+  <strong>💡 Le saviez-vous ?</strong> En phase finale, les paris se résolvent sur le score à <strong>80 minutes</strong> (avant prolongation éventuelle).
+</p>
+<p>Pose ton pronostic avant le coup d'envoi pour tenter de remporter le maximum de jetons sur cette affiche unique.</p>
+<p style="text-align:center;margin:24px 0">
+  <a href="https://app.top14pronos.fr/hcup" style="display:inline-block;background:#003D6B;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;border:2px solid #C0C0C0">
+    🏆 Parier sur la finale
+  </a>
+</p>
+<p>Bon match à tous, que le meilleur gagne !</p>
+<p>— Top14 Pronos</p>`
+  },
   nouveautes: {
     subject: '✨ Du nouveau sur Top14 Pronos',
     html: `<p>{salutation},</p>
@@ -2564,64 +2600,70 @@ function applyMailTemplate(key) {
 
 // ── GÉNÉRATION SYNTHÈSE IA ─────────────────────────────────────────────
 async function generateSynthese(championnat) {
-  const btnId = championnat === 'prod2' ? 'synthBtnProD2' : 'synthBtnTop14';
-  const btn = document.getElementById(btnId);
+  // Mapping championnat → bouton et label
+  const champConfig = {
+    top14: { btnId: 'synthBtnTop14', label: 'Top 14' },
+    prod2: { btnId: 'synthBtnProD2', label: 'Pro D2' },
+    hcup:  { btnId: 'synthBtnHcup',  label: 'Champions Cup' },
+  };
+  const cfg = champConfig[championnat] || champConfig.top14;
+  const btn = document.getElementById(cfg.btnId);
   const status = document.getElementById('synthStatus');
   const resultEl = document.getElementById('synthResult');
-  const champLabel = championnat === 'prod2' ? 'Pro D2' : 'Top 14';
-  
+  const champLabel = cfg.label;
+
   // Confirmer si du contenu existe déjà
   const currentSubject = document.getElementById('mailSubject').value.trim();
   const currentHtml = document.getElementById('mailHtml').value.trim();
   if ((currentSubject || currentHtml) && !confirm(`Une synthèse va être générée et remplacera le contenu actuel. Continuer ?`)) {
     return;
   }
-  
-  // Désactiver les 2 boutons pendant la génération
-  const btnTop14 = document.getElementById('synthBtnTop14');
-  const btnProD2 = document.getElementById('synthBtnProD2');
-  btnTop14.disabled = true;
-  btnProD2.disabled = true;
+
+  // Désactiver les 3 boutons pendant la génération
+  const allBtns = ['synthBtnTop14', 'synthBtnProD2', 'synthBtnHcup']
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+  allBtns.forEach(b => { b.disabled = true; });
   btn.classList.add('loading');
   status.textContent = '';
   resultEl.className = 'result';
   resultEl.textContent = '';
-  
+
   // Timer pour afficher la durée
   const startTime = Date.now();
   let timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     status.textContent = `⏳ Génération en cours… ${elapsed}s (jusqu'à 2 min avec Gemini Pro)`;
   }, 1000);
-  
+
   try {
     const data = await api('/api/admin/emails/generate-synthesis', {
       method: 'POST',
       body: JSON.stringify({ championnat })
     });
-    
+
     clearInterval(timerInterval);
-    
+
     if (data.success && data.subject && data.html) {
       // Injecter dans les champs
       document.getElementById('mailSubject').value = data.subject;
       document.getElementById('mailHtml').value = data.html;
       updateMailPreview();
-      
+
       const duree = Math.floor((Date.now() - startTime) / 1000);
       const meta = data.meta || {};
       status.textContent = '';
-      
+
       // Message selon si le web search a marché ou pas
       const modelLabel = meta.model_used || 'IA';
-      const webLabel = meta.web_search_used 
-        ? '🌐 avec web search' 
+      const webLabel = meta.web_search_used
+        ? '🌐 avec web search'
         : '⚠️ sans web search (actualité peut être limitée)';
-      
+
       const msg = `✅ Synthèse ${champLabel} générée en ${duree}s par ${modelLabel} ${webLabel}. ` +
         `${meta.nb_matchs_recents || 0} résultats et ${meta.nb_matchs_a_venir || 0} matchs à venir analysés. ` +
         `🔍 RELIS attentivement avant d'envoyer !`;
-      
+
       showResult('synthResult', meta.web_search_used ? 'ok' : 'warn', msg);
     } else {
       showResult('synthResult', 'err', `❌ ${data.error || 'Réponse invalide'}`);
@@ -2632,8 +2674,7 @@ async function generateSynthese(championnat) {
     showResult('synthResult', 'err', `❌ Erreur : ${e.message}`);
   } finally {
     btn.classList.remove('loading');
-    btnTop14.disabled = false;
-    btnProD2.disabled = false;
+    allBtns.forEach(b => { b.disabled = false; });
   }
 }
 
