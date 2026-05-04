@@ -779,6 +779,30 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <button class="btn" onclick="loadParis()">↻ Actualiser</button>
           </div>
         </div>
+
+        <!-- Badges compteurs -->
+        <div id="parisCounters" style="display:none;margin:0 0 12px 0;padding:10px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;">
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span style="color:var(--muted)">🏆 Top 14</span>
+            <span id="parisCountTop14" style="background:rgba(201,168,76,0.18);color:var(--gold-light);padding:2px 8px;border-radius:4px;font-weight:700">0</span>
+          </span>
+          <span style="color:var(--border2)">·</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span style="color:var(--muted)">🥈 Pro D2</span>
+            <span id="parisCountProD2" style="background:rgba(0,23,77,0.45);color:#9DB7E8;padding:2px 8px;border-radius:4px;font-weight:700">0</span>
+          </span>
+          <span style="color:var(--border2)">·</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span style="color:var(--muted)">🌍 Champions Cup</span>
+            <span id="parisCountHcup" style="background:rgba(0,61,107,0.45);color:#7FC4F0;padding:2px 8px;border-radius:4px;font-weight:700">0</span>
+          </span>
+          <span style="color:var(--border2);margin-left:auto">·</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span style="color:var(--muted2);font-weight:600">Total</span>
+            <span id="parisCountTotal" style="background:var(--gold-dim);color:var(--gold-light);padding:2px 10px;border-radius:4px;font-weight:700">0</span>
+          </span>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead id="parisThead"><tr><th>User</th><th>Champ.</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th></tr></thead>
@@ -2009,11 +2033,34 @@ async function loadParis() {
   const tbody = document.getElementById('parisBody');
   tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>`;
 
-  try {
-    const data = await api('/api/admin/paris-pending?competition=' + champ);
+  // Masquer les compteurs pendant le chargement (évite l'effet "cassé")
+  document.getElementById('parisCounters').style.display = 'none';
 
-    if (!Array.isArray(data) || !data.length) {
-      tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--muted);text-align:center;padding:24px">Aucun pari en attente</td></tr>`;
+  try {
+    // Toujours charger TOUS les paris (1 seul appel réseau) — on filtre ensuite côté client
+    const all = await api('/api/admin/paris-pending?competition=tous');
+
+    if (!Array.isArray(all)) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--red);text-align:center;padding:24px">❌ Réponse invalide</td></tr>`;
+      return;
+    }
+
+    // ─── Compteurs par championnat ──────────────────────────
+    const counts = { top14: 0, prod2: 0, hcup: 0 };
+    all.forEach(b => { if (counts[b.championnat] != null) counts[b.championnat]++; });
+    const total = all.length;
+
+    document.getElementById('parisCountTop14').textContent = counts.top14;
+    document.getElementById('parisCountProD2').textContent = counts.prod2;
+    document.getElementById('parisCountHcup').textContent = counts.hcup;
+    document.getElementById('parisCountTotal').textContent = total;
+    document.getElementById('parisCounters').style.display = 'flex';
+
+    // ─── Filtrage selon le championnat sélectionné ──────────
+    const data = (champ === 'tous') ? all : all.filter(b => b.championnat === champ);
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--muted);text-align:center;padding:24px">Aucun pari en attente${champ !== 'tous' ? ' pour ce championnat' : ''}</td></tr>`;
       return;
     }
 
