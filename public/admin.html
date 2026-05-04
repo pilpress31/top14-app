@@ -664,7 +664,14 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="card" style="margin-top:16px">
         <div class="card-header">
           <div class="card-title">📊 Notification Algo — Résultats journée</div>
-          <button class="btn" onclick="chargerStatsAlgo()">↻ Calculer</button>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="algoChampionnat" onchange="chargerStatsAlgo()"
+                    style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px">
+              <option value="top14">🏆 Top 14</option>
+              <option value="prod2">🥈 Pro D2</option>
+            </select>
+            <button class="btn" onclick="chargerStatsAlgo()">↻ Calculer</button>
+          </div>
         </div>
         <div id="algoStatsPreview" style="display:none;padding:12px 0">
           <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
@@ -676,7 +683,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
               <div style="font-size:11px;color:var(--muted);margin-bottom:4px">% FT</div>
               <div id="algoPctFT" style="font-size:20px;font-weight:700;color:var(--green)">—</div>
             </div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
+            <div id="algoPctMTWrap" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
               <div style="font-size:11px;color:var(--muted);margin-bottom:4px">% MT</div>
               <div id="algoPctMT" style="font-size:20px;font-weight:700;color:var(--blue)">—</div>
             </div>
@@ -691,7 +698,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
               <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
                 <input type="checkbox" id="algoSendFT" checked style="cursor:pointer"> % Temps Plein (FT)
               </label>
-              <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <label id="algoSendMTWrap" style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
                 <input type="checkbox" id="algoSendMT" checked style="cursor:pointer"> % Mi-Temps (MT)
               </label>
             </div>
@@ -1766,44 +1773,73 @@ async function loadClassement() {
 
 // ── NOTIF ALGO ──
 async function chargerStatsAlgo() {
+  const champ = document.getElementById('algoChampionnat').value;  // 'top14' | 'prod2'
+  const champLabel = champ === 'prod2' ? 'Pro D2' : 'Top 14';
+  const isProD2 = champ === 'prod2';
+
+  // ─── Adapter l'UI selon le championnat ──────────────────────
+  // Pro D2 n'a pas de mi-temps : on masque le KPI MT et la checkbox MT
+  const mtWrap = document.getElementById('algoPctMTWrap');
+  const mtCheckWrap = document.getElementById('algoSendMTWrap');
+  if (mtWrap) mtWrap.style.display = isProD2 ? 'none' : '';
+  if (mtCheckWrap) mtCheckWrap.style.display = isProD2 ? 'none' : '';
+
+  // En Pro D2, force la checkbox MT à false (ne pas l'inclure dans le message)
+  if (isProD2) {
+    const cbMT = document.getElementById('algoSendMT');
+    if (cbMT) cbMT.checked = false;
+  }
+
   document.getElementById('algoStatsLoading').style.display = 'block';
   document.getElementById('algoStatsPreview').style.display = 'none';
   document.getElementById('algoResult').innerHTML = '';
 
   try {
-    const data = await api('/api/admin/stats-algo-journee');
+    const endpoint = isProD2
+      ? '/api/d2/admin/stats-algo-journee'
+      : '/api/admin/stats-algo-journee';
+    const data = await api(endpoint);
+
     if (!data || data.error) {
-      document.getElementById('algoResult').innerHTML = '<span style="color:var(--red)">❌ ' + (data?.error || 'Erreur') + '</span>';
+      document.getElementById('algoResult').innerHTML =
+        '<span style="color:var(--red)">❌ ' + (data?.error || 'Erreur') + '</span>';
       return;
     }
 
     document.getElementById('algoJournee').textContent = 'J' + data.journee;
-    document.getElementById('algoPctFT').textContent = data.pct_ft + '%';
-    document.getElementById('algoPctMT').textContent = data.pct_mt !== null ? data.pct_mt + '%' : '—';
+    document.getElementById('algoPctFT').textContent = (data.pct_ft != null ? data.pct_ft : '—') + '%';
+    document.getElementById('algoPctMT').textContent = (data.pct_mt != null ? data.pct_mt + '%' : '—');
     document.getElementById('algoNbMatchs').textContent = data.nb_matchs;
 
-    // Mettre à jour l'aperçu du message
     majApercuAlgo();
-
     document.getElementById('algoStatsPreview').style.display = 'block';
   } catch(e) {
-    document.getElementById('algoResult').innerHTML = '<span style="color:var(--red)">❌ ' + e.message + '</span>';
+    document.getElementById('algoResult').innerHTML =
+      '<span style="color:var(--red)">❌ ' + e.message + '</span>';
   } finally {
     document.getElementById('algoStatsLoading').style.display = 'none';
   }
 }
 
 function majApercuAlgo() {
+  const champ = document.getElementById('algoChampionnat').value;
+  const champLabel = champ === 'prod2' ? 'Pro D2' : 'Top 14';
+  const champEmoji = champ === 'prod2' ? '🥈' : '🏉';
+
   const journee = document.getElementById('algoJournee').textContent;
   const pctFT = document.getElementById('algoPctFT').textContent;
   const pctMT = document.getElementById('algoPctMT').textContent;
   const sendFT = document.getElementById('algoSendFT').checked;
   const sendMT = document.getElementById('algoSendMT').checked;
+  const isProD2 = champ === 'prod2';
 
-  const title = '🏉 Résultats algo ' + journee;
+  // Titre adapté au championnat
+  const title = `${champEmoji} Résultats algo ${journee} ${champLabel}`;
+
+  // Corps : FT toujours dispo, MT seulement en Top 14
   const parts = [];
   if (sendFT) parts.push('Temps plein ' + pctFT);
-  if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
+  if (!isProD2 && sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
   const body = parts.length
     ? parts.join(' • ') + ' de réussite sur les pronostics !'
     : '(rien sélectionné)';
@@ -1812,54 +1848,92 @@ function majApercuAlgo() {
   document.getElementById('algoMsgPreview').textContent = body;
 }
 
-// Mettre à jour l'aperçu quand on coche/décoche
+
+// Listener pour mettre à jour l'aperçu quand on coche/décoche FT ou MT
 document.addEventListener('change', function(e) {
   if (e.target.id === 'algoSendFT' || e.target.id === 'algoSendMT') majApercuAlgo();
 });
 
+
 async function envoyerNotifAlgo() {
+  const champ = document.getElementById('algoChampionnat').value;
+  const isProD2 = champ === 'prod2';
+  const champLabel = champ === 'prod2' ? 'Pro D2' : 'Top 14';
+
   const sendFT = document.getElementById('algoSendFT').checked;
   const sendMT = document.getElementById('algoSendMT').checked;
-  if (!sendFT && !sendMT) {
-    showResult('algoResult', 'err', '❌ Sélectionnez au moins FT ou MT');
-    return;
+
+  // Validation : en Pro D2 il n'y a que FT, en Top14 il faut au moins un des deux
+  if (isProD2) {
+    if (!sendFT) {
+      showResult('algoResult', 'err', '❌ En Pro D2, le % FT doit être sélectionné');
+      return;
+    }
+  } else {
+    if (!sendFT && !sendMT) {
+      showResult('algoResult', 'err', '❌ Sélectionnez au moins FT ou MT');
+      return;
+    }
   }
 
-  const journee = document.getElementById('algoJournee').textContent;
-  const pctFT = document.getElementById('algoPctFT').textContent;
-  const pctMT = document.getElementById('algoPctMT').textContent;
-
-  const parts = [];
-  if (sendFT) parts.push('Temps plein ' + pctFT);
-  if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
-
-  const title = '🏉 Résultats algo ' + journee;
-  const body = parts.join(' • ') + ' de réussite sur les pronostics !';
+  const journeeRaw = document.getElementById('algoJournee').textContent; // ex "J27"
+  const journeeNum = String(journeeRaw).replace('J', '');
+  const pctFTraw = document.getElementById('algoPctFT').textContent;     // ex "71%"
+  const pctFTnum = parseInt(String(pctFTraw).replace('%', ''), 10);
 
   const btn = document.getElementById('algoSendBtn');
   setLoading(btn, true);
 
   try {
-    // 1. Notif in-app pour tous les users
-    await api('/api/admin/notif-algo-all', {
-      method: 'POST',
-      body: JSON.stringify({ title, body, journee })
-    });
+    if (isProD2) {
+      // ─── Pro D2 : un seul endpoint qui fait push + in-app ──
+      const data = await api('/api/d2/admin/notif-algo-all', {
+        method: 'POST',
+        body: JSON.stringify({
+          journee: journeeNum,
+          pctFT: pctFTnum,
+          includeFT: sendFT,
+        }),
+      });
 
-    // 2. Push pour les abonnés
-    const data = await api('/api/notifications/send-to-all', {
-      method: 'POST',
-      body: JSON.stringify({ title, body, url: '/pronos' })
-    });
+      if (data.success) {
+        showResult('algoResult', 'ok',
+          `✅ ${champLabel} J${journeeNum} : ${data.sent || 0} push + ${data.inAppCreated || 0} in-app envoyées`);
+      } else {
+        showResult('algoResult', 'err', `❌ ${data.error || 'Erreur'}`);
+      }
+    } else {
+      // ─── Top 14 : pattern existant inchangé ────────────────
+      const pctMT = document.getElementById('algoPctMT').textContent;
+      const parts = [];
+      if (sendFT) parts.push('Temps plein ' + pctFTraw);
+      if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
 
-    showResult('algoResult', 'ok',
-      '✅ Notif in-app envoyée à tous + push envoyé à ' + (data.sent || 0) + ' abonnés');
+      const title = '🏉 Résultats algo ' + journeeRaw;
+      const body = parts.join(' • ') + ' de réussite sur les pronostics !';
+
+      // 1. Notif in-app pour tous les users
+      await api('/api/admin/notif-algo-all', {
+        method: 'POST',
+        body: JSON.stringify({ title, body, journee: journeeRaw }),
+      });
+
+      // 2. Push pour les abonnés
+      const data = await api('/api/notifications/send-to-all', {
+        method: 'POST',
+        body: JSON.stringify({ title, body, url: '/pronos' }),
+      });
+
+      showResult('algoResult', 'ok',
+        '✅ Notif in-app envoyée à tous + push envoyé à ' + (data.sent || 0) + ' abonnés');
+    }
   } catch(e) {
     showResult('algoResult', 'err', '❌ ' + e.message);
   } finally {
     setLoading(btn, false);
   }
 }
+
 
 // ── JETONS ──
 async function crediterJetons() {
