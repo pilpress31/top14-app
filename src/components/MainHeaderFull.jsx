@@ -1,8 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getStats } from "../lib/api";
 import axios from 'axios';
 
-export default function MainHeaderFull({ total }) {
+/**
+ * MainHeaderFull (Top 14 - version paris virtuels)
+ * @param {number}  total     - Nombre total de matchs analysés (passé par la page parente).
+ * @param {boolean} isVisible - Contrôlé depuis la page parente (IAPage / PronosPage).
+ *                              Par défaut true.
+ */
+export default function MainHeaderFull({ total, isVisible = true }) {
   const [stats, setStats] = useState({
     nombre_matchs_historique: 0,
     precision: { ft: { pourcentage: 0 } }
@@ -12,9 +18,6 @@ export default function MainHeaderFull({ total }) {
     paris_corrects: 0,
     taux_reussite: 0
   });
-
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     async function loadStats() {
@@ -33,28 +36,6 @@ export default function MainHeaderFull({ total }) {
       }
     }
     loadStats();
-  }, []);
-
-  // Scroll stable, sans clignotement
-  useEffect(() => {
-    const handleScroll = () => {
-      const current = window.scrollY;
-      const previous = lastScrollY.current;
-      const threshold = 5;
-
-      if (current < 10) {
-        setIsVisible(true);
-      } else if (previous - current > threshold) {
-        setIsVisible(true);
-      } else if (current - previous > threshold && current > 120) {
-        setIsVisible(false);
-      }
-
-      lastScrollY.current = current;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (

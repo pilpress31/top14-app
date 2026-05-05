@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getConfig, getStats } from "../lib/api";
 
-function MainHeader() {
+/**
+ * MainHeader (Top 14)
+ * @param {boolean} isVisible - Contrôlé depuis la page parente (IAPage, etc.) pour synchro
+ *                              avec une éventuelle barre d'onglets sticky.
+ *                              Par défaut true (utile si on importe le header sans contrôle externe).
+ */
+function MainHeader({ isVisible = true }) {
   const [config, setConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [stats, setStats] = useState({
     nombre_matchs_historique: 3651,
     precision: { ft: { pourcentage: 0 } }
   });
-
-  const [isVisible, setIsVisible] = useState(true);
-
-  // 🔥 Correction : useRef au lieu de state
-  const lastScrollY = useRef(0);
 
   // Chargement config
   useEffect(() => {
@@ -44,42 +45,15 @@ function MainHeader() {
     loadStats();
   }, []);
 
-  // 🔥 Scroll stable, sans clignotement
-  useEffect(() => {
-    const handleScroll = () => {
-      const current = window.scrollY;
-      const previous = lastScrollY.current;
-      const threshold = 5; // évite les micro-oscillations
-
-      // Toujours visible tout en haut
-      if (current < 10) {
-        setIsVisible(true);
-      }
-      // Scroll vers le haut → montrer
-      else if (previous - current > threshold) {
-        setIsVisible(true);
-      }
-      // Scroll vers le bas → cacher
-      else if (current - previous > threshold && current > 120) {
-        setIsVisible(false);
-      }
-
-      lastScrollY.current = current;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []); // 👈 IMPORTANT : tableau vide
-
   return (
-    <header 
-      className={`fixed top-0 w-full h-[120px] z-50 text-white shadow-md 
-                  bg-gradient-to-r from-black via-gray-900 to-rugby-gold/80 
+    <header
+      className={`fixed top-0 w-full h-[120px] z-50 text-white shadow-md
+                  bg-gradient-to-r from-black via-gray-900 to-rugby-gold/80
                   transition-transform duration-300
                   ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
-        
+
         {/* Bloc titre */}
         <div className="text-center">
           <h1 className="text-lg font-bold flex items-center justify-center gap-2 text-rugby-gold uppercase tracking-widest">

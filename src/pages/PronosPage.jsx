@@ -104,7 +104,7 @@ export default function PronosPage() {
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
-      <HeaderComponent />
+      <HeaderComponent isVisible={headerVisible} />
 
       {/* Zone sticky : onglets + carrousel championnat */}
       <div

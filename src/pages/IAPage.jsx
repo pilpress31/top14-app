@@ -92,12 +92,12 @@ export default function IAPage() {
 
   // Choisir le header (comme l'original : MainHeader pour algo, MainHeaderFull pour historique en Top14)
   const renderHeader = () => {
-    if (isHcup) return <MainHeaderHcup />;
-    if (isD2) return <MainHeaderD2 />;
+    if (isHcup) return <MainHeaderHcup isVisible={headerVisible} />;
+    if (isD2) return <MainHeaderD2 isVisible={headerVisible} />;
     // Top 14 : switch entre MainHeader et MainHeaderFull selon onglet
     return activeTab === 'algorithme'
-      ? <MainHeader />
-      : <MainHeaderFull total={stats.nombre_matchs_historique} />;
+      ? <MainHeader isVisible={headerVisible} />
+      : <MainHeaderFull total={stats.nombre_matchs_historique} isVisible={headerVisible} />;
   };
 
   return (

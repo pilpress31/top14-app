@@ -1,12 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
 
-export default function MainHeaderD2() {
+/**
+ * MainHeaderD2 (Pro D2)
+ * @param {boolean} isVisible - Contrôlé depuis la page parente (IAPage / PronosPage).
+ *                              Par défaut true.
+ */
+export default function MainHeaderD2({ isVisible = true }) {
   const [stats, setStats] = useState({ precision: 0, total: 0 });
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     async function loadStats() {
@@ -21,20 +24,6 @@ export default function MainHeaderD2() {
       }
     }
     loadStats();
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const current = window.scrollY;
-      const previous = lastScrollY.current;
-      const threshold = 5;
-      if (current < 10)                                        setIsVisible(true);
-      else if (previous - current > threshold)                 setIsVisible(true);
-      else if (current - previous > threshold && current > 120) setIsVisible(false);
-      lastScrollY.current = current;
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
