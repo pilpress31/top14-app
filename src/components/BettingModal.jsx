@@ -5,6 +5,7 @@
 // ============================================
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Trophy, X, Coins, Target, Hash } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -530,9 +531,11 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   const inputFocusRing = isD2 ? 'focus:ring-[#97C1FE] focus:border-[#97C1FE]' : 'focus:ring-rugby-gold focus:border-rugby-gold';
   const toggleActiveBg = isD2 ? 'bg-[#00174D]' : 'bg-rugby-gold';
 
-  return (
-    <>
-      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-60 p-4 overflow-y-auto">
+  return createPortal(
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 overflow-y-auto"
+      style={{ zIndex: 9999 }}
+    >
         <div className={`bg-white rounded-xl max-w-lg w-full shadow-2xl border-2 ${borderColor} my-8`}>
 
           {/* Header */}
@@ -1147,7 +1150,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
 
           </div>
         </div>
-      </div>
-    </>
+      </div>,
+    document.body
   );
 }
