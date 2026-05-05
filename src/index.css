@@ -3,12 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --bottom-nav-height: 4rem; /* hauteur par défaut du BottomNav */
+  /* ✅ Hauteur visible du BottomNav (icône + label + padding) */
+  --bottom-nav-height: 4.5rem; /* 72px au lieu de 64px : libère assez de place pour les labels */
+
+  /* ✅ Hauteur totale réservée pour le BottomNav, en incluant la safe-area Android/iOS */
+  /* Cette variable doit être utilisée par les pages pour le padding-bottom du contenu */
+  --bottom-nav-total: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
 }
 
+html, body {
+  /* ✅ S'assurer que la viewport mobile est gérée correctement */
+  margin: 0;
+  padding: 0;
+  /* Empêche le scroll horizontal involontaire */
+  overflow-x: hidden;
+}
 
 body {
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;

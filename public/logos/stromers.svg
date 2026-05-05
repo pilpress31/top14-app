@@ -1,0 +1,196 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="stormers-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="stormers-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="stormers-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#003A70" />
+      <stop offset="100%" stop-color="#001F3F" />
+    </linearGradient>
+
+    <linearGradient id="stormers-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#6EC6F2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#stormers-hex-clip)">
+    <rect width="200" height="200" fill="url(#stormers-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Stormers, sans toucher les bordures -->
+  <g clip-path="url(#stormers-safe-clip)">
+    <!-- Bande centrale bleu ciel -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="#6EC6F2"
+      opacity="0.85"
+    />
+
+    <!-- Bande bleu marine centrale pour garder le texte lisible -->
+    <rect
+      x="58"
+      y="91"
+      width="84"
+      height="18"
+      fill="#001F3F"
+      opacity="0.9"
+    />
+
+    <!-- Bandes blanches fines, loin du texte -->
+    <rect
+      x="58"
+      y="66"
+      width="84"
+      height="5"
+      fill="#FFFFFF"
+      opacity="0.8"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="5"
+      fill="#FFFFFF"
+      opacity="0.8"
+    />
+
+    <!-- Motif tempête / tourbillon stylisé, discret -->
+    <path
+      d="M58 78 C78 58, 112 58, 136 78"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.25"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M64 122 C86 144, 118 144, 142 122"
+      fill="none"
+      stroke="#6EC6F2"
+      stroke-width="5"
+      opacity="0.38"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M62 100 C82 82, 112 82, 138 100 C118 118, 86 118, 62 100"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.18"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits diagonaux dynamiques -->
+    <path
+      d="M56 136 L144 64"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.14"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M56 64 L144 136"
+      stroke="#6EC6F2"
+      stroke-width="4"
+      opacity="0.2"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure bleu ciel -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#6EC6F2"
+    stroke-width="2"
+  />
+
+  <!-- Texte STO avec contour noir -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#stormers-text-grad)"
+    stroke="#000000"
+    stroke-width="7"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="50"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    STO
+  </text>
+
+  <!-- Texte STO avec contour bleu ciel fin -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#stormers-text-grad)"
+    stroke="#6EC6F2"
+    stroke-width="2"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="50"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    STO
+  </text>
+</svg>

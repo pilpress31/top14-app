@@ -44,14 +44,20 @@ export default {
           '@apply bg-rugby-white rounded-lg shadow-md p-6 border border-rugby-gray': {},
         },
 
-        // ✅ BottomNav container avec variable CSS
+        // ✅ BottomNav container
+        // Hauteur visible = --bottom-nav-height (72px)
+        // Padding-bottom = safe-area Android/iOS pour ne pas être sous la barre système
+        // Hauteur totale = 72px + safe-area (typiquement 16px sur Android gesture)
         '.nav-container': {
           '@apply fixed bottom-0 left-0 w-full bg-rugby-black border-t border-rugby-gray shadow-md z-50': {},
-          height: 'var(--bottom-nav-height)', // utilise la variable CSS
+          height: 'var(--bottom-nav-total)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          boxSizing: 'border-box',
         },
-        // ✅ Items wrapper
+        // ✅ Items wrapper - prend la hauteur visible (sans la safe-area)
         '.nav-items': {
           '@apply flex justify-around items-center py-2 text-xs': {},
+          height: 'var(--bottom-nav-height)',
         },
         // ✅ Bouton générique
         '.nav-button': {
@@ -65,8 +71,14 @@ export default {
         '.nav-inactive': {
           '@apply text-rugby-gray hover:text-rugby-bronze transition-colors': {},
         },
+
+        // ✅ Helper : padding-bottom à utiliser sur les pages
+        // pour que le contenu ne soit pas masqué par la BottomNav
+        // Usage : <div className="pb-bottom-nav">
+        '.pb-bottom-nav': {
+          paddingBottom: 'var(--bottom-nav-total)',
+        },
       });
     },
   ],
 }
-
