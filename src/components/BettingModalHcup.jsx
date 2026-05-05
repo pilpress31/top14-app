@@ -188,7 +188,10 @@ export default function BettingModalHcup({ match, existingProno, userCredits, pr
   const canSave = !hasBet && validateBet().length === 0 && cote != null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4 overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 overflow-y-auto"
+      style={{ zIndex: 100 }}
+    >
       <div
         className="bg-white rounded-xl max-w-lg w-full shadow-2xl border-2 my-8"
         style={{ borderColor: HCUP_BLUE }}
