@@ -305,7 +305,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
       {teamPopup && (
         <TeamPopup
           equipeNom={teamPopup}
-          isD2={false}  // HCup utilise les équipes Top14/D2/Internationales
+          isHcup={true}
           onClose={() => setTeamPopup(null)}
         />
       )}
