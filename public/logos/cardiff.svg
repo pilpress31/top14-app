@@ -1,0 +1,207 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="cardiff-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="cardiff-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="cardiff-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0057B8" />
+      <stop offset="100%" stop-color="#001F3F" />
+    </linearGradient>
+
+    <linearGradient id="cardiff-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#6EC6F2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#cardiff-hex-clip)">
+    <rect width="200" height="200" fill="url(#cardiff-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Cardiff, sans toucher les bordures -->
+  <g clip-path="url(#cardiff-safe-clip)">
+    <!-- Bande noire centrale -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="#000000"
+      opacity="0.9"
+    />
+
+    <!-- Bande bleue centrale pour garder l'identité Blue and Blacks -->
+    <rect
+      x="56"
+      y="91"
+      width="88"
+      height="18"
+      fill="#0057B8"
+      opacity="0.9"
+    />
+
+    <!-- Bandes blanches fines éloignées du texte -->
+    <rect
+      x="58"
+      y="66"
+      width="84"
+      height="5"
+      fill="#FFFFFF"
+      opacity="0.8"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="5"
+      fill="#FFFFFF"
+      opacity="0.8"
+    />
+
+    <!-- Chevrons bleus/noirs stylisés, sans reprendre le logo officiel -->
+    <path
+      d="M64 78 L100 58 L136 78"
+      fill="none"
+      stroke="#6EC6F2"
+      stroke-width="5"
+      opacity="0.45"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <path
+      d="M64 122 L100 142 L136 122"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.25"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits diagonaux dynamiques -->
+    <path
+      d="M56 136 L144 64"
+      stroke="#000000"
+      stroke-width="5"
+      opacity="0.28"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M56 64 L144 136"
+      stroke="#6EC6F2"
+      stroke-width="4"
+      opacity="0.18"
+      stroke-linecap="round"
+    />
+
+    <!-- Petit motif abstrait gallois / héraldique, discret -->
+    <path
+      d="M82 100 C90 82, 110 82, 118 100 C110 94, 90 94, 82 100"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.18"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M82 100 C92 118, 108 118, 118 100"
+      fill="none"
+      stroke="#000000"
+      stroke-width="4"
+      opacity="0.25"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure bleu clair -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#6EC6F2"
+    stroke-width="2"
+  />
+
+  <!-- Texte CAR avec contour noir -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#cardiff-text-grad)"
+    stroke="#000000"
+    stroke-width="7"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="50"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    CAR
+  </text>
+
+  <!-- Texte CAR avec contour bleu clair fin -->
+  <text
+    x="50%"
+    y="112"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#cardiff-text-grad)"
+    stroke="#6EC6F2"
+    stroke-width="2"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="50"
+    textLength="106"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    CAR
+  </text>
+</svg>
