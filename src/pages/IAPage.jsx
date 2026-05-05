@@ -105,9 +105,9 @@ export default function IAPage() {
     <div className="min-h-screen bg-rugby-white pb-32">
       {renderHeader()}
 
-      {/* Onglets - STICKY - z-50 (au-dessus du header qui pourrait remonter) */}
+      {/* Onglets - STICKY - z-40 (sous le header en z-50, comme PronosPage) */}
       <div
-        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-50 shadow-sm transition-all duration-300"
+        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
