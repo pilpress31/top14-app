@@ -3,6 +3,7 @@
 // Réutilisable depuis AlgoPronosTab et MatchCard
 // 
 // V2 : support Pro D2 (désactive les stats historiques Top14 non disponibles)
+// V3 : support HCup (charte EPCR + endpoint dédié)
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
@@ -11,14 +12,19 @@ import { getTeamData } from '../utils/teams';
 
 const API_URL = 'https://top14-api-production.up.railway.app/api';
 
+// Couleurs HCup (charte EPCR)
+const HCUP_BLEU = '#003E7E';
+const HCUP_OR = '#FFC72C';
+
 interface TeamPopupProps {
   equipeNom: string;
   equipeStats?: any; // stats saison en cours (optionnel, depuis classement)
-  isD2?: boolean;    // ✅ NOUVEAU : contextualise le popup (couleurs + endpoints)
+  isD2?: boolean;    // contextualise le popup (couleurs + endpoints)
+  isHcup?: boolean;  // 🆕 contextualise le popup pour la Champions Cup
   onClose: () => void;
 }
 
-export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD2 = false, onClose }: TeamPopupProps) {
+export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD2 = false, isHcup = false, onClose }: TeamPopupProps) {
   const [statsDetaillees, setStatsDetaillees] = useState<any>(null);
   const [equipeStats, setEquipeStats] = useState<any>(equipeStatsProp || null);
   const [loading, setLoading] = useState(true);
@@ -27,10 +33,21 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
   const teamData = getTeamData(equipeNom);
 
   // Couleurs dynamiques selon championnat
-  const primaryColor = isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
-  const primaryBorder = isD2 ? 'border-b-2 border-[#00174D]' : 'border-b-2 border-rugby-gold';
-  const accentColor = isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
-  const spinnerColor = isD2 ? 'border-[#00174D]' : 'border-rugby-gold';
+  // HCup prend priorité sur D2 si jamais les deux flags étaient passés ensemble
+  const primaryColor = isHcup
+    ? `text-[${HCUP_BLEU}]`
+    : isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
+  const accentColor = isHcup
+    ? `text-[${HCUP_OR}]`
+    : isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
+  const spinnerColor = isHcup
+    ? `border-[${HCUP_BLEU}]`
+    : isD2 ? 'border-[#00174D]' : 'border-rugby-gold';
+
+  // Style inline pour les couleurs HCup (Tailwind ne génère pas les classes dynamiques)
+  const hcupTextStyle = isHcup ? { color: HCUP_BLEU } : undefined;
+  const hcupAccentStyle = isHcup ? { color: HCUP_OR } : undefined;
+  const hcupBorderStyle = isHcup ? { borderColor: HCUP_BLEU } : undefined;
 
   // Charger les stats selon le championnat
   useEffect(() => {
@@ -38,8 +55,35 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
       try {
         setLoading(true);
 
-        if (isD2) {
-          // ─── PRO D2 : on charge seulement le classement D2 (stats historiques non disponibles) ───
+        if (isHcup) {
+          // ─── HCUP : endpoint dédié /api/hcup/equipes/:nom/stats ───
+          const response = await fetch(`${API_URL}/hcup/equipes/${encodeURIComponent(equipeNom)}/stats`);
+          if (response.ok) {
+            const data = await response.json();
+            // Adapter le format au format attendu par le popup
+            setEquipeStats({
+              equipe: data.equipe,
+              points_pour: data.points_pour,
+              points_contre: data.points_contre,
+              points_moy_pour: data.points_moy_pour,
+              points_moy_contre: data.points_moy_contre,
+              victoires: data.victoires,
+              nuls: data.nuls,
+              defaites: data.defaites,
+              taux_victoires: data.taux_victoires,
+              differentiel: data.differentiel,
+              pct_victoires_domicile: data.pct_victoires_domicile,
+              pct_victoires_exterieur: data.pct_victoires_exterieur,
+              forme: data.forme,
+              phase_actuelle: data.phase_actuelle,
+              matchs_joues: data.matchs_joues,
+              saison_courante: data.saison_courante,
+            });
+          }
+          // Pas de stats détaillées historiques pour HCup
+          setStatsDetaillees(null);
+        } else if (isD2) {
+          // ─── PRO D2 : on charge seulement le classement D2 ───
           if (!equipeStatsProp) {
             const response = await fetch(`${API_URL}/d2/classement-officiel`);
             const data = await response.json();
@@ -49,14 +93,12 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
               e.slug?.toLowerCase() === equipeNom.toLowerCase()
             );
             if (found) {
-              // Adapter le format au format EquipeStats attendu par le popup
               setEquipeStats({
                 ...found,
-                differentiel: found.difference, // le champ s'appelle "difference" en D2
+                differentiel: found.difference,
               });
             }
           }
-          // Pas de stats détaillées en Pro D2
           setStatsDetaillees(null);
         } else {
           // ─── TOP 14 : comportement actuel inchangé ───
@@ -87,7 +129,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
       }
     }
     loadStats();
-  }, [equipeNom, isD2, equipeStatsProp]);
+  }, [equipeNom, isD2, isHcup, equipeStatsProp]);
 
   // Fermer au clic en dehors
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -106,6 +148,9 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, []);
+
+  // Label championnat à afficher en sous-titre
+  const championnatLabel = isHcup ? 'Champions Cup' : isD2 ? 'Pro D2' : null;
 
   return (
     <div
@@ -127,11 +172,22 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
               />
             </div>
             <div>
-              <h3 className={`text-base font-bold ${primaryColor} leading-tight`}>
+              <h3
+                className={`text-base font-bold leading-tight ${!isHcup ? primaryColor : ''}`}
+                style={hcupTextStyle}
+              >
                 {teamData.name}
-                {isD2 && <span className="text-[10px] font-normal text-gray-400 ml-2">Pro D2</span>}
+                {championnatLabel && (
+                  <span className="text-[10px] font-normal text-gray-400 ml-2">{championnatLabel}</span>
+                )}
               </h3>
-              {equipeStats && (
+              {/* Sous-titre adapté au contexte */}
+              {isHcup && equipeStats?.phase_actuelle && (
+                <p className="text-xs text-gray-500">
+                  {equipeStats.phase_actuelle} • Saison {equipeStats.saison_courante}
+                </p>
+              )}
+              {!isHcup && equipeStats && (
                 <p className="text-xs text-gray-500">
                   #{equipeStats.rang} • {equipeStats.points_classement} pts
                 </p>
@@ -151,38 +207,64 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
 
           {loading && (
             <div className="flex justify-center py-8">
-              <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${spinnerColor}`} />
+              <div
+                className={`animate-spin rounded-full h-8 w-8 border-b-2 ${!isHcup ? spinnerColor : ''}`}
+                style={isHcup ? { borderColor: HCUP_BLEU, borderTopColor: 'transparent' } : undefined}
+              />
             </div>
           )}
 
           {!loading && (
             <>
+              {/* Cas spécial HCup : aucune donnée saison ou 0 matchs joués */}
+              {isHcup && (!equipeStats || equipeStats.matchs_joues === 0) && (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 text-sm">
+                    Pas de matchs joués cette saison pour {teamData.name}.
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Les stats apparaîtront après le premier match.
+                  </p>
+                </div>
+              )}
+
               {/* Stats saison en cours */}
-              {equipeStats && (
+              {equipeStats && (!isHcup || equipeStats.matchs_joues > 0) && (
                 <div className="mb-4">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Saison en cours</h4>
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                    {isHcup ? `Saison HCup ${equipeStats.saison_courante || ''} (${equipeStats.matchs_joues || 0} matchs joués)` : 'Saison en cours'}
+                  </h4>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
                       <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Points marqués</p>
-                      <p className={`text-xl font-bold ${accentColor}`}>{equipeStats.points_pour}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">Moy: {equipeStats.points_moy_pour?.toFixed(1)}/match</p>
+                      <p
+                        className={`text-xl font-bold ${!isHcup ? accentColor : ''}`}
+                        style={hcupAccentStyle}
+                      >
+                        {equipeStats.points_pour ?? 0}
+                      </p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">
+                        Moy: {equipeStats.points_moy_pour?.toFixed(1) ?? '-'}/match
+                      </p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
                       <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Points encaissés</p>
-                      <p className="text-xl font-bold text-gray-700">{equipeStats.points_contre}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">Moy: {equipeStats.points_moy_contre?.toFixed(1)}/match</p>
+                      <p className="text-xl font-bold text-gray-700">{equipeStats.points_contre ?? 0}</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">
+                        Moy: {equipeStats.points_moy_contre?.toFixed(1) ?? '-'}/match
+                      </p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
                       <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Bilan</p>
                       <p className="text-sm font-semibold">
-                        <span className="text-green-600">{equipeStats.victoires}V</span>
+                        <span className="text-green-600">{equipeStats.victoires ?? 0}V</span>
                         <span className="text-gray-400"> - </span>
-                        <span className="text-gray-500">{equipeStats.nuls}N</span>
+                        <span className="text-gray-500">{equipeStats.nuls ?? 0}N</span>
                         <span className="text-gray-400"> - </span>
-                        <span className="text-red-600">{equipeStats.defaites}D</span>
+                        <span className="text-red-600">{equipeStats.defaites ?? 0}D</span>
                       </p>
                       <p className="text-[10px] text-gray-500 mt-0.5">
-                        Taux: {equipeStats.taux_victoires ? `${(equipeStats.taux_victoires * 100).toFixed(0)}%` : '-'}
+                        Taux: {equipeStats.taux_victoires != null ? `${(equipeStats.taux_victoires * 100).toFixed(0)}%` : '-'}
                       </p>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
@@ -193,8 +275,12 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                       }`}>
                         {(equipeStats.differentiel || 0) > 0 ? '+' : ''}{equipeStats.differentiel || 0}
                       </p>
-                      {/* En D2 : afficher le bonus (données dispo) / En Top14 : série en cours */}
-                      {isD2 ? (
+                      {/* En D2 : afficher le bonus / En Top14 : série / En HCup : phase */}
+                      {isHcup ? (
+                        <p className="text-[10px] text-gray-500 mt-0.5">
+                          {equipeStats.phase_actuelle || '-'}
+                        </p>
+                      ) : isD2 ? (
                         <p className="text-[10px] text-gray-500 mt-0.5">
                           Bonus : {equipeStats.bonus || 0}
                         </p>
@@ -205,7 +291,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                       )}
                     </div>
 
-                    {/* Dom / Ext — UNIQUEMENT EN TOP 14 (données non dispo en D2) */}
+                    {/* Dom / Ext — affiché en TOP 14 et en HCUP (les deux ont la donnée) */}
                     {!isD2 && (
                       <div className="bg-gray-50 rounded-lg p-2 text-center col-span-2">
                         <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Performance domicile / extérieur</p>
@@ -213,13 +299,13 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                           <div>
                             <p className="text-[10px] text-gray-500">Domicile</p>
                             <p className="text-base font-bold text-green-600">
-                              {equipeStats.pct_victoires_domicile ? `${(equipeStats.pct_victoires_domicile * 100).toFixed(0)}%` : '-'}
+                              {equipeStats.pct_victoires_domicile != null ? `${(equipeStats.pct_victoires_domicile * 100).toFixed(0)}%` : '-'}
                             </p>
                           </div>
                           <div>
                             <p className="text-[10px] text-gray-500">Extérieur</p>
                             <p className="text-base font-bold text-blue-600">
-                              {equipeStats.pct_victoires_exterieur ? `${(equipeStats.pct_victoires_exterieur * 100).toFixed(0)}%` : '-'}
+                              {equipeStats.pct_victoires_exterieur != null ? `${(equipeStats.pct_victoires_exterieur * 100).toFixed(0)}%` : '-'}
                             </p>
                           </div>
                         </div>
@@ -229,7 +315,9 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                     {/* Forme */}
                     {equipeStats.forme && equipeStats.forme.length > 0 && (
                       <div className="bg-gray-50 rounded-lg p-2 col-span-2">
-                        <p className="text-[10px] text-gray-500 uppercase mb-2 font-semibold">Forme récente</p>
+                        <p className="text-[10px] text-gray-500 uppercase mb-2 font-semibold">
+                          Forme récente {isHcup ? '(HCup)' : ''} — du plus récent au plus ancien
+                        </p>
                         <div className="flex justify-center gap-1.5">
                           {equipeStats.forme.map((r: string, i: number) => (
                             <div key={i} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white ${
@@ -245,8 +333,8 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                 </div>
               )}
 
-              {/* Analyse de régularité — UNIQUEMENT EN TOP 14 (pas de données historiques D2) */}
-              {!isD2 && statsDetaillees && (
+              {/* Analyse de régularité — UNIQUEMENT EN TOP 14 (pas pertinent en D2 / HCup) */}
+              {!isD2 && !isHcup && statsDetaillees && (
                 <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-xl p-3 border border-blue-100">
                   <h4 className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1">
                     <span>📊</span> Analyse de régularité (historique)
@@ -284,7 +372,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                 </div>
               )}
 
-              {!statsDetaillees && !equipeStats && !loading && (
+              {!statsDetaillees && !equipeStats && !loading && !isHcup && (
                 <p className="text-center text-gray-400 text-sm py-4">Aucune donnée disponible</p>
               )}
             </>
