@@ -1,5 +1,5 @@
 // ============================================
-// ALGO PRONOS - CHAMPIONS CUP (v2)
+// ALGO PRONOS - CHAMPIONS CUP (v3)
 // Source : GET /api/hcup/matchs/a-venir
 //          GET /api/hcup/insights?equipe_dom=&equipe_ext=
 //          GET /api/hcup/historique?limit=&offset=&equipe=
@@ -8,6 +8,8 @@
 // Pattern aligné sur Pro D2 :
 //   - Indice favori (à la place de "Confiance algo")
 //   - Dropdown "Statistiques du duel" (h2h + forme récente)
+//     → Si nb_matchs === 0 (aucune confrontation directe) :
+//       affiche un PALMARES narratif des 2 équipes en HCup
 //   - Dropdown "Historique des confrontations"
 //   - PAS de bloc cotes (les cotes sont sur la page Paris uniquement)
 // ============================================
@@ -22,8 +24,8 @@ const API_BASE = 'https://top14-api-production.up.railway.app';
 
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';
-const HCUP_BLEU_SOFT = '#EEF5FF';   // Fond pour les dropdowns
-const HCUP_BLEU_BORDER = '#B0CFE8'; // Bordure pour les dropdowns
+const HCUP_BLEU_SOFT = '#EEF5FF';
+const HCUP_BLEU_BORDER = '#B0CFE8';
 
 // Ordre des rounds pour le tri
 const ROUND_ORDER = {
@@ -41,11 +43,30 @@ const ROUND_ORDER = {
 
 const PHASE_FINALE_ROUNDS = ['8e de finale', 'Quart de finale', 'Demi-finale', 'Finale'];
 
+// Helper : libellé d'un round pour le palmarès
+function libelleRound(round) {
+  const map = {
+    '8e de finale': '8e de finale',
+    'Quart de finale': 'Quart de finale',
+    'Demi-finale': 'Demi-finale',
+    'Finale': 'Finale',
+  };
+  return map[round] || 'Phase de poules';
+}
+
+// Helper : formate une saison "2024-2025" -> "2024-25"
+function saisonShort(saison) {
+  if (!saison) return '';
+  const parts = saison.split('-');
+  if (parts.length !== 2) return saison;
+  return `${parts[0]}-${parts[1].slice(2)}`;
+}
+
 export default function AlgoPronosHcupTab() {
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedRounds, setExpandedRounds] = useState(new Set());
-  const [activePanel, setActivePanel] = useState(null); // { matchId, panel }
+  const [activePanel, setActivePanel] = useState(null);
   const roundRefs = useRef({});
   const isFirstLoad = useRef(true);
 
@@ -68,7 +89,6 @@ export default function AlgoPronosHcupTab() {
       const response = await axios.get(`${API_BASE}/api/hcup/matchs/a-venir`);
       const raw = response.data.matchs || [];
 
-      // Normaliser : calculer winner_predit côté frontend si pas envoyé
       const pronosData = raw.map(m => {
         let winner_predit = m.winner_predit ?? null;
         if (!winner_predit && m.score_predit_dom != null && m.score_predit_ext != null) {
@@ -78,7 +98,6 @@ export default function AlgoPronosHcupTab() {
         return { ...m, winner_predit };
       });
 
-      // Tri : round → date
       pronosData.sort((a, b) => {
         const orderA = ROUND_ORDER[a.round] ?? 99;
         const orderB = ROUND_ORDER[b.round] ?? 99;
@@ -88,7 +107,6 @@ export default function AlgoPronosHcupTab() {
 
       setPronos(pronosData);
 
-      // Au 1er chargement : ouvrir le 1er round
       if (isFirstLoad.current && pronosData.length > 0) {
         const firstRound = pronosData[0].round;
         if (firstRound) setExpandedRounds(new Set([firstRound]));
@@ -128,9 +146,9 @@ export default function AlgoPronosHcupTab() {
   const handleTogglePanel = (matchId, panel) => {
     setActivePanel(prev => {
       if (prev?.matchId === matchId && prev.panel === panel) {
-        return null; // ferme le panel courant
+        return null;
       }
-      return { matchId, panel }; // ouvre un nouveau panel (ferme l'autre auto)
+      return { matchId, panel };
     });
   };
 
@@ -331,6 +349,128 @@ function InfoConfiance() {
 }
 
 // ============================================
+// COMPOSANT : PalmaresEquipe
+// Affiche le palmarès narratif d'une équipe en HCup
+// ============================================
+function PalmaresEquipe({ palmares, isDom }) {
+  if (!palmares) return null;
+
+  const {
+    equipe,
+    nb_participations,
+    nb_titres,
+    saisons_titres,
+    nb_finales,
+    dernier_titre,
+    derniere_finale,
+    meilleur_round,
+    est_tenant_du_titre,
+    est_premiere_finale,
+    finale_courante,
+  } = palmares;
+
+  // Choisir l'icône / titre selon le profil de l'équipe
+  let titreEquipe = null;
+  if (nb_titres >= 3) titreEquipe = 'Géant historique de la HCup';
+  else if (nb_titres >= 1) titreEquipe = `Champion d'Europe`;
+  else if (nb_finales >= 1) titreEquipe = 'Habituée des phases finales';
+  else if (nb_participations >= 5) titreEquipe = 'Régulier de la compétition';
+  else titreEquipe = 'Outsider de la compétition';
+
+  // Helper formater liste de saisons (max 5 affichées)
+  const formatSaisons = (saisons) => {
+    if (!saisons || saisons.length === 0) return '';
+    const courtes = saisons.map(saisonShort);
+    if (courtes.length <= 5) return courtes.join(', ');
+    return courtes.slice(0, 4).join(', ') + ` + ${courtes.length - 4} autres`;
+  };
+
+  return (
+    <div className="rounded-lg p-3" style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+      {/* En-tête équipe */}
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-base">🏆</span>
+        <div className="flex-1">
+          <p className="text-sm font-bold uppercase tracking-wide" style={{ color: HCUP_BLEU }}>
+            {equipe}
+          </p>
+          <p className="text-[10px] italic" style={{ color: HCUP_BLEU, opacity: 0.7 }}>
+            {titreEquipe}
+          </p>
+        </div>
+        {est_tenant_du_titre && (
+          <span className="text-[9px] px-2 py-1 rounded-full font-bold" style={{ backgroundColor: HCUP_OR, color: HCUP_BLEU }}>
+            🏆 Tenant du titre
+          </span>
+        )}
+      </div>
+
+      {/* Stats clés sous forme de bullets */}
+      <ul className="space-y-1 ml-1">
+        <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
+          • <span className="font-semibold">{nb_participations}</span>
+          {nb_participations <= 1 ? 'ère' : 'e'} participation à la Champions Cup
+          <span className="text-gray-500 ml-1">(données depuis 2014-2015)</span>
+        </li>
+
+        {nb_titres > 0 ? (
+          <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
+            • <span className="font-semibold">{nb_titres}</span> titre{nb_titres > 1 ? 's' : ''} remporté{nb_titres > 1 ? 's' : ''}
+            {saisons_titres.length > 0 && (
+              <span className="text-gray-600 ml-1">({formatSaisons(saisons_titres)})</span>
+            )}
+          </li>
+        ) : (
+          <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
+            • Aucun titre remporté
+          </li>
+        )}
+
+        {nb_finales > 0 ? (
+          <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
+            • <span className="font-semibold">{nb_finales}</span> finale{nb_finales > 1 ? 's' : ''} jouée{nb_finales > 1 ? 's' : ''}
+          </li>
+        ) : null}
+
+        {/* Dernière finale */}
+        {derniere_finale && (
+          <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
+            • Dernière finale : <span className="font-semibold">{saisonShort(derniere_finale.saison)}</span>{' '}
+            <span className={derniere_finale.gagne ? 'text-green-700 font-semibold' : 'text-red-600'}>
+              ({derniere_finale.gagne ? 'victoire' : 'défaite'} {derniere_finale.score})
+            </span>
+            {derniere_finale.prolongation && (
+              <span className="text-gray-500 ml-1">après prolongation</span>
+            )}
+            <span className="text-gray-500 ml-1">vs {derniere_finale.adversaire}</span>
+          </li>
+        )}
+
+        {/* Cas spéciaux */}
+        {est_premiere_finale && finale_courante && (
+          <li className="text-[12px] font-semibold mt-1" style={{ color: HCUP_OR }}>
+            🔥 Première finale historique en Champions Cup !
+          </li>
+        )}
+
+        {!est_premiere_finale && finale_courante && (
+          <li className="text-[11px] font-semibold mt-1" style={{ color: HCUP_OR }}>
+            🎯 En finale cette saison !
+          </li>
+        )}
+
+        {/* Meilleur résultat si pas de finale */}
+        {nb_finales === 0 && !finale_courante && meilleur_round && meilleur_round !== 'Phase de poules' && (
+          <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
+            • Meilleur résultat : <span className="font-semibold">{libelleRound(meilleur_round)}</span>
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+// ============================================
 // COMPOSANT : InsightsHcup (Statistiques du duel)
 // Source : GET /api/hcup/insights?equipe_dom=&equipe_ext=
 // ============================================
@@ -380,6 +520,8 @@ function InsightsHcup({ match, isOpen, onToggle }) {
     );
   };
 
+  const nb_h2h = data?.h2h?.nb_matchs ?? 0;
+
   return (
     <div className="mt-3 border-t pt-3" style={{ borderColor: HCUP_BLEU_BORDER }}>
       <button
@@ -392,12 +534,12 @@ function InsightsHcup({ match, isOpen, onToggle }) {
           <span className="text-xs font-semibold" style={{ color: HCUP_BLEU, fontWeight: 700 }}>
             Statistiques du duel
           </span>
-          {data && (
+          {data && nb_h2h > 0 && (
             <span
               className="text-[10px] px-2 py-0.5 rounded-full"
               style={{ backgroundColor: HCUP_OR, color: HCUP_BLEU, fontWeight: 700 }}
             >
-              {data.h2h.nb_matchs} confrontations
+              {nb_h2h} confrontations
             </span>
           )}
         </div>
@@ -421,11 +563,11 @@ function InsightsHcup({ match, isOpen, onToggle }) {
 
           {data && !loading && (
             <>
-              {/* ── Head-to-Head ── */}
-              {data.h2h.nb_matchs > 0 ? (
+              {/* ── Cas 1 : confrontations directes existent → Head-to-Head ── */}
+              {nb_h2h > 0 ? (
                 <div className="rounded-lg p-3" style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}>
                   <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: HCUP_BLEU }}>
-                    ⚔️ Face-à-face — {data.h2h.nb_matchs} matchs
+                    ⚔️ Face-à-face — {nb_h2h} matchs
                   </p>
 
                   {/* Barre victoires */}
@@ -437,75 +579,57 @@ function InsightsHcup({ match, isOpen, onToggle }) {
                     </div>
                     <div className="flex h-2 rounded-full overflow-hidden">
                       <div style={{
-                        width: `${data.h2h.pct_victoires_dom ?? Math.round((data.h2h.victoires_dom / data.h2h.nb_matchs) * 100)}%`,
+                        width: `${Math.round((data.h2h.victoires_dom / nb_h2h) * 100)}%`,
                         backgroundColor: HCUP_BLEU,
                       }} />
                       <div style={{
-                        width: `${Math.round((data.h2h.nuls / data.h2h.nb_matchs) * 100)}%`,
+                        width: `${Math.round((data.h2h.nuls / nb_h2h) * 100)}%`,
                         backgroundColor: '#9CA3AF',
                       }} />
                       <div style={{
-                        width: `${data.h2h.pct_victoires_ext ?? Math.round((data.h2h.victoires_ext / data.h2h.nb_matchs) * 100)}%`,
+                        width: `${Math.round((data.h2h.victoires_ext / nb_h2h) * 100)}%`,
                         backgroundColor: HCUP_OR,
                       }} />
                     </div>
                     <div className="flex justify-between text-[10px] mt-0.5 font-bold">
                       <span style={{ color: HCUP_BLEU }}>
-                        {data.h2h.pct_victoires_dom ?? Math.round((data.h2h.victoires_dom / data.h2h.nb_matchs) * 100)}%
+                        {Math.round((data.h2h.victoires_dom / nb_h2h) * 100)}%
                       </span>
                       <span style={{ color: HCUP_OR }}>
-                        {data.h2h.pct_victoires_ext ?? Math.round((data.h2h.victoires_ext / data.h2h.nb_matchs) * 100)}%
+                        {Math.round((data.h2h.victoires_ext / nb_h2h) * 100)}%
                       </span>
                     </div>
                   </div>
 
-                  {/* Stats clés */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {data.h2h.moyenne_pts_dom != null && (
-                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
-                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>
-                          {data.h2h.moyenne_pts_dom} - {data.h2h.moyenne_pts_ext}
-                        </p>
-                        <p className="text-[9px] text-gray-500">Score moyen</p>
-                      </div>
-                    )}
-                    {data.h2h.moy_points_match != null && (
-                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
-                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>
-                          {data.h2h.moy_points_match} pts
-                        </p>
-                        <p className="text-[9px] text-gray-500">Moy. points/match</p>
-                      </div>
-                    )}
-                    {data.h2h.pct_plus_50_pts != null && (
-                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
-                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>{data.h2h.pct_plus_50_pts}%</p>
-                        <p className="text-[9px] text-gray-500">Matchs +50 pts</p>
-                      </div>
-                    )}
-                    {data.h2h.pct_matchs_serrés != null && (
-                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
-                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>{data.h2h.pct_matchs_serrés}%</p>
-                        <p className="text-[9px] text-gray-500">Matchs serrés (&lt;10 pts)</p>
-                      </div>
-                    )}
-                    {data.h2h.fiabilite_algo != null && (
-                      <div className="col-span-2 rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
-                        <p className="text-[12px] font-bold" style={{ color: HCUP_BLEU }}>
-                          {data.h2h.fiabilite_algo}% des duels bien prédits
-                        </p>
-                        <p className="text-[9px] text-gray-500">🎯 L&apos;algo a trouvé le bon vainqueur</p>
-                      </div>
-                    )}
-                  </div>
+                  {/* Score moyen */}
+                  {data.h2h.moyenne_pts_dom != null && (
+                    <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                      <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>
+                        {data.h2h.moyenne_pts_dom} - {data.h2h.moyenne_pts_ext}
+                      </p>
+                      <p className="text-[9px] text-gray-500">Score moyen sur les confrontations</p>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <p className="text-xs text-center italic py-2" style={{ color: HCUP_BLEU }}>
-                  Aucune confrontation directe dans l&apos;historique Champions Cup
-                </p>
+                /* ── Cas 2 : aucune confrontation → afficher les PALMARÈS ── */
+                <>
+                  <p className="text-[11px] italic text-center py-1" style={{ color: HCUP_BLEU }}>
+                    Aucune confrontation directe entre ces 2 équipes en Champions Cup.
+                  </p>
+                  <p className="text-[10px] italic text-center text-gray-500 -mt-1 mb-1">
+                    Voici le palmarès Champions Cup de chaque équipe :
+                  </p>
+                  {data.palmares_dom && (
+                    <PalmaresEquipe palmares={data.palmares_dom} isDom={true} />
+                  )}
+                  {data.palmares_ext && (
+                    <PalmaresEquipe palmares={data.palmares_ext} isDom={false} />
+                  )}
+                </>
               )}
 
-              {/* ── Forme récente ── */}
+              {/* ── Forme récente (toujours affichée) ── */}
               {[
                 { label: match.equipe_domicile.split(' ')[0], forme: data.forme_dom },
                 { label: match.equipe_exterieure.split(' ')[0], forme: data.forme_ext },
@@ -531,7 +655,6 @@ function InsightsHcup({ match, isOpen, onToggle }) {
 
 // ============================================
 // COMPOSANT : HistoriqueConfrontationsHcup
-// Source : GET /api/hcup/historique?limit=&offset=&equipe=
 // ============================================
 function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
   const [confrontations, setConfrontations] = useState(null);
@@ -549,8 +672,6 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
         const seen = new Set();
         const found = [];
 
-        // Pour chaque équipe, on requête la liste de ses matchs et on filtre
-        // les confrontations directes contre l'autre équipe (paginé)
         for (const equipe of [equipeA, equipeB]) {
           let offset = 0;
           const limit = 100;
@@ -572,7 +693,6 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
                 seen.add(key);
                 found.push({
                   ...m,
-                  // Tolérance sur les noms de colonnes (score_reel_dom vs score_domicile)
                   score_domicile: m.score_domicile ?? m.score_reel_dom ?? 0,
                   score_exterieur: m.score_exterieur ?? m.score_reel_ext ?? 0,
                 });
@@ -586,7 +706,6 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
           if (found.length >= 10) break;
         }
 
-        // Tri du plus récent au plus ancien
         found.sort((a, b) => {
           const dateA = a.date_match ? new Date(a.date_match).getTime() : 0;
           const dateB = b.date_match ? new Date(b.date_match).getTime() : 0;
@@ -642,7 +761,6 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
           )}
           {confrontations && !loading && confrontations.length > 0 && (
             <div className="rounded-lg overflow-hidden" style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}>
-              {/* Header */}
               <div
                 className="grid grid-cols-4 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide text-center"
                 style={{ backgroundColor: 'rgba(0,62,126,0.12)', color: HCUP_BLEU }}
@@ -654,7 +772,7 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
               </div>
 
               {confrontations.map((m, i) => {
-                const saisonCourt = (m.saison || '').replace('20', '').replace('-20', '-');
+                const saisonCourt = saisonShort(m.saison || '');
                 const round = m.round || `J${m.journee ?? ''}`;
                 const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
                 const winnerIsDom = m.score_domicile > m.score_exterieur;
@@ -696,11 +814,9 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
-  // Score prédit
   const scoreDom = match.score_predit_dom ?? 0;
   const scoreExt = match.score_predit_ext ?? 0;
 
-  // Indice favori (50 à 100 % selon contrainte SQL)
   const confidencePct = Math.round(match.confiance_algo ?? 0);
   const [animatedWidth, setAnimatedWidth] = useState(0);
   useEffect(() => {
@@ -708,7 +824,6 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
     return () => clearTimeout(timer);
   }, [confidencePct]);
 
-  // Format date
   let dateFormatted = 'À VENIR';
   let heureFormatted = '';
   if (match.date_match) {
@@ -738,7 +853,6 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
   return (
     <div className="w-full bg-gray-50 rounded-lg py-4 border border-gray-200">
 
-      {/* Date + Heure */}
       <div className="flex justify-between items-center px-4 mb-3">
         <div className="text-xs font-semibold" style={{ color: '#9a7d3a' }}>{dateFormatted}</div>
         {heureFormatted && (
@@ -746,7 +860,6 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
         )}
       </div>
 
-      {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-4 mb-2">
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
@@ -790,7 +903,6 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
         </div>
       </div>
 
-      {/* Indice favori (ex Confiance algo) */}
       <div className="mt-4 px-4">
         <div className="flex justify-between text-xs mb-2" style={{ color: '#9a7d3a' }}>
           <div className="flex items-center gap-1.5">
@@ -816,7 +928,6 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
         </div>
       </div>
 
-      {/* Dropdowns Insights + Historique */}
       <div className="px-4">
         <InsightsHcup
           match={match}
