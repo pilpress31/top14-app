@@ -6,8 +6,8 @@ import MesParisTab from '../components/MesParisTab';
 import MesPronosHcupTab from '../components/MesPronosHcupTab';
 import MesParisHcupTab from '../components/MesParisHcupTab';
 import MainHeader from '../components/MainHeaderFull';
-import MainHeaderD2 from '../components/MainHeaderD2';
-import MainHeaderHcup from '../components/MainHeaderHcup';
+import MainHeaderD2 from '../components/MainHeaderFullD2';
+import MainHeaderHcup from '../components/MainHeaderFullHcup';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const HEADER_HEIGHT = 120;
