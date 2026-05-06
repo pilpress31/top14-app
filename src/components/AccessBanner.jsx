@@ -18,7 +18,13 @@ export default function AccessBanner({ joursRestants, tarif }) {
   const montant = tarif?.prix ?? '—'
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 ${urgence ? 'bg-red-500' : 'bg-amber-500'} text-white px-4 py-2 flex items-center gap-3`}>
+    <div
+      className={`fixed left-0 right-0 z-50 ${urgence ? 'bg-red-500' : 'bg-amber-500'} text-white px-4 py-2 flex items-center gap-3`}
+      style={{
+        // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
+        top: 'var(--safe-area-top, 0px)',
+      }}
+    >
       <AlertTriangle className="h-4 w-4 flex-shrink-0" />
 
       <p className="text-xs flex-1 font-medium">

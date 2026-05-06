@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 :root {
+  /* ✅ Safe area iOS - PWA standalone (notch / Dynamic Island / barre de status) */
+  /* Retourne 0px sur Android et desktop, donc aucun impact sur ces plateformes */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+
   /* ✅ Hauteur visible du BottomNav (icône + label + padding) */
   --bottom-nav-height: 4.5rem; /* 72px au lieu de 64px : libère assez de place pour les labels */
 
@@ -25,4 +29,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ✅ Padding-top global pour respecter la safe area iOS PWA standalone */
+  /* Nécessaire car apple-mobile-web-app-status-bar-style=black-translucent dessine */
+  /* la barre de status PAR-DESSUS le contenu (sinon ~50-60px tronqués en haut) */
+  /* Aucun impact sur Android/desktop (env retourne 0px) */
+  padding-top: var(--safe-area-top);
 }

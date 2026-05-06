@@ -47,10 +47,14 @@ function MainHeader({ isVisible = true }) {
 
   return (
     <header
-      className={`fixed top-0 w-full h-[120px] z-50 text-white shadow-md
+      className={`fixed w-full h-[120px] z-50 text-white shadow-md
                   bg-gradient-to-r from-black via-gray-900 to-rugby-gold/80
                   transition-transform duration-300
                   ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+      style={{
+        // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
+        top: 'var(--safe-area-top, 0px)',
+      }}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
 

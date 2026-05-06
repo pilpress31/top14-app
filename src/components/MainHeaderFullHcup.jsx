@@ -1,6 +1,6 @@
 // ============================================================
 // MainHeaderFullHcup.jsx
-// Header Champions Cup dédié à la PAGE PARIS (/pronos quand championnat = hcup)
+// Header HCup dédié à la PAGE PARIS (/pronos quand championnat = hcup)
 // ============================================================
 // Différent de MainHeaderHcup (qui est utilisé sur la page IA /ia) :
 //   - Affiche les stats UTILISATEURS (paris gagnants/total) au lieu de l'algo
@@ -11,14 +11,10 @@
 //   - Bleu EPCR : #003E7E (couleur principale)
 //   - Or       : #FFC72C (accent)
 //
-// Note titre : "CHAMPIONS CUP PARIS VIRTUELS" est plus long que les autres titres,
-// donc on réduit text-lg → text-base et tracking-widest → tracking-wider pour
-// que le tout tienne sur une ligne en mobile.
-//
 // Stats : précision algo (toujours affichée) + paris gagnants OU CTA cold start
 // API   :
 //   - GET /api/hcup/stats/precision    (algo)
-//   - GET /api/hcup/stats/users-bets   (utilisateurs, à créer côté Railway)
+//   - GET /api/hcup/stats/users-bets   (utilisateurs)
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -27,10 +23,11 @@ import axios from "axios";
 const API_BASE = "https://top14-api-production.up.railway.app";
 
 // Seuil au-dessus duquel on bascule en "mode mature" (vraies stats users)
+// En dessous, on affiche un CTA "Sois parmi les 1ers à parier !"
 const SEUIL_PARIS_AFFICHAGE = 200;
 
 /**
- * MainHeaderFullHcup (Champions Cup - version paris virtuels)
+ * MainHeaderFullHcup (HCup - version paris virtuels)
  * @param {boolean} isVisible - Contrôlé depuis la page parente (PronosPage).
  *                              Par défaut true.
  */
@@ -63,21 +60,25 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
     loadStats();
   }, []);
 
+  // Détermine si on affiche les vraies stats utilisateurs (mode mature)
+  // ou le CTA "Sois parmi les 1ers à parier !" (mode cold start)
   const modeMature = userStats.total_paris >= SEUIL_PARIS_AFFICHAGE;
 
   return (
     <header
-      className={`fixed top-0 w-full h-[120px] z-50 shadow-md
+      className={`fixed w-full h-[120px] z-50 shadow-md
                   transition-transform duration-300
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
         background: "linear-gradient(to right, #FFFFFF, #FFFFFF, #FFF9E6, #FFC72C33)",
         borderBottom: "2px solid #003E7E",
+        // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
+        top: 'var(--safe-area-top, 0px)',
       }}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
 
-        {/* Titre — taille réduite pour que "CHAMPIONS CUP PARIS VIRTUELS" tienne sur 1 ligne */}
+        {/* Titre */}
         <div className="text-center">
           <h1 className="text-base font-bold flex items-center justify-center gap-2 uppercase tracking-wider whitespace-nowrap"
               style={{ color: "#003E7E" }}>
@@ -138,6 +139,9 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
   );
 }
 
+// ============================================================
+// Icônes : Trophy + Star (spécifiques HCup, compétition européenne)
+// ============================================================
 function TrophyIcon({ className, style }) {
   return (
     <svg className={className} style={style} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">

@@ -15,7 +15,7 @@
 // Stats : précision algo (toujours affichée) + paris gagnants OU CTA cold start
 // API   :
 //   - GET /api/d2/stats/precision    (algo)
-//   - GET /api/d2/stats/users-bets   (utilisateurs, à créer côté Railway)
+//   - GET /api/d2/stats/users-bets   (utilisateurs)
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -67,12 +67,14 @@ export default function MainHeaderFullD2({ isVisible = true }) {
 
   return (
     <header
-      className={`fixed top-0 w-full h-[120px] z-50 shadow-md
+      className={`fixed w-full h-[120px] z-50 shadow-md
                   transition-transform duration-300
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
         background: "linear-gradient(to right, #FFFFFF, #FFFFFF, #F0F4FA, #97C1FE33)",
         borderBottom: "2px solid #00174D",
+        // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
+        top: 'var(--safe-area-top, 0px)',
       }}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">

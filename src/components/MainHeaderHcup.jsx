@@ -40,13 +40,15 @@ export default function MainHeaderHcup({ isVisible = true }) {
 
   return (
     <header
-      className={`fixed top-0 w-full h-[120px] z-50 shadow-md
+      className={`fixed w-full h-[120px] z-50 shadow-md
                   transition-transform duration-300
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
         // 🎨 Fond blanc avec léger dégradé doré pour identifier la HCup
         background: "linear-gradient(to right, #FFFFFF, #FFFFFF, #FFF9E6, #FFC72C33)",
         borderBottom: "2px solid #003E7E",
+        // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
+        top: 'var(--safe-area-top, 0px)',
       }}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
