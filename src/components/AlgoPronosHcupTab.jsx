@@ -1,11 +1,19 @@
 // ============================================
-// ALGO PRONOS - CHAMPIONS CUP
+// ALGO PRONOS - CHAMPIONS CUP (v2)
 // Source : GET /api/hcup/matchs/a-venir
+//          GET /api/hcup/insights?equipe_dom=&equipe_ext=
+//          GET /api/hcup/historique?limit=&offset=&equipe=
 // Couleurs : bleu EPCR #003E7E + or #FFC72C
+//
+// Pattern aligné sur Pro D2 :
+//   - Indice favori (à la place de "Confiance algo")
+//   - Dropdown "Statistiques du duel" (h2h + forme récente)
+//   - Dropdown "Historique des confrontations"
+//   - PAS de bloc cotes (les cotes sont sur la page Paris uniquement)
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, Globe, Trophy } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
@@ -14,6 +22,8 @@ const API_BASE = 'https://top14-api-production.up.railway.app';
 
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';
+const HCUP_BLEU_SOFT = '#EEF5FF';   // Fond pour les dropdowns
+const HCUP_BLEU_BORDER = '#B0CFE8'; // Bordure pour les dropdowns
 
 // Ordre des rounds pour le tri
 const ROUND_ORDER = {
@@ -35,6 +45,7 @@ export default function AlgoPronosHcupTab() {
   const [pronos, setPronos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedRounds, setExpandedRounds] = useState(new Set());
+  const [activePanel, setActivePanel] = useState(null); // { matchId, panel }
   const roundRefs = useRef({});
   const isFirstLoad = useRef(true);
 
@@ -114,6 +125,15 @@ export default function AlgoPronosHcupTab() {
     });
   };
 
+  const handleTogglePanel = (matchId, panel) => {
+    setActivePanel(prev => {
+      if (prev?.matchId === matchId && prev.panel === panel) {
+        return null; // ferme le panel courant
+      }
+      return { matchId, panel }; // ouvre un nouveau panel (ferme l'autre auto)
+    });
+  };
+
   const rounds = pronos.length > 0
     ? [...new Set(pronos.map(p => p.round))].sort((a, b) =>
         (ROUND_ORDER[a] ?? 99) - (ROUND_ORDER[b] ?? 99)
@@ -146,8 +166,6 @@ export default function AlgoPronosHcupTab() {
 
   return (
     <div className="space-y-2">
-      
-
       {rounds.map(round => {
         const isExpanded = expandedRounds.has(round);
         const pronosRound = pronosParRound[round] || [];
@@ -192,7 +210,12 @@ export default function AlgoPronosHcupTab() {
             {isExpanded && (
               <div className="p-3 space-y-4">
                 {pronosRound.map(prono => (
-                  <PronoCardHcup key={prono.match_id} match={prono} />
+                  <PronoCardHcup
+                    key={prono.match_id}
+                    match={prono}
+                    openPanel={activePanel?.matchId === prono.match_id ? activePanel.panel : null}
+                    onTogglePanel={(panel) => handleTogglePanel(prono.match_id, panel)}
+                  />
                 ))}
 
                 {isPhaseFinale && (
@@ -210,18 +233,474 @@ export default function AlgoPronosHcupTab() {
 }
 
 // ============================================
-// COMPOSANT : PronoCardHcup
+// COMPOSANT : PulsingInfoButton (icône i / 💡 alternant)
 // ============================================
-function PronoCardHcup({ match }) {
+function PulsingInfoButton({ onClick, label }) {
+  const [showBulb, setShowBulb] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowBulb(prev => !prev);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      className="relative w-6 h-6 rounded-full flex items-center justify-center transition-all duration-700 focus:outline-none"
+      style={{
+        backgroundColor: showBulb ? '#fde68a' : '#e5e7eb',
+        boxShadow: showBulb ? '0 0 8px 2px rgba(251,191,36,0.5)' : 'none',
+      }}
+    >
+      <span
+        className="leading-none transition-all duration-700"
+        style={{
+          fontSize: showBulb ? '14px' : '11px',
+          transform: showBulb ? 'scale(1.1)' : 'scale(1)',
+        }}
+      >
+        {showBulb ? '💡' : <span className="font-bold text-gray-600 text-[11px]">i</span>}
+      </span>
+    </button>
+  );
+}
+
+// ============================================
+// COMPOSANT : InfoConfiance (popup explicative de l'indice favori)
+// ============================================
+function InfoConfiance() {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!visible) return;
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setVisible(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [visible]);
+
+  return (
+    <div ref={ref} className="relative flex items-center">
+      <PulsingInfoButton
+        onClick={(e) => { e.stopPropagation(); setVisible(v => !v); }}
+        label="Explication de l'indice favori"
+      />
+      {visible && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-4 text-left"
+          style={{ top: ref.current ? ref.current.getBoundingClientRect().bottom + 8 : 80 }}
+        >
+          <p className="text-[11px] font-bold text-gray-800 mb-2 uppercase tracking-wide">
+            Indice favori — Comment le lire ?
+          </p>
+          <p className="text-[11px] text-gray-600 leading-relaxed mb-3">
+            Ce pourcentage mesure la <span className="font-semibold">domination attendue du favori</span> sur cet adversaire, calculée à partir de l&apos;historique Elo, des statistiques des équipes et des scores prédits.
+          </p>
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-red-400 to-red-500 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-red-500">50–60%</span> — match très serré, les deux équipes sont proches</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-orange-400 to-yellow-400 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-yellow-500">60–70%</span> — une équipe est clairement favorite</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-yellow-400 to-green-500 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-green-500">70–80%</span> — une équipe est nettement favorite</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 flex-shrink-0" />
+              <p className="text-[11px] text-gray-600"><span className="font-semibold text-green-700">80%</span> — favori écrasant</p>
+            </div>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <p className="text-[11px] text-amber-700 leading-relaxed">
+              ⚠️ Ce n&apos;est <span className="font-semibold">pas</span> la probabilité que le score prédit soit exact — c&apos;est uniquement une mesure de la domination attendue du favori sur cet adversaire.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// COMPOSANT : InsightsHcup (Statistiques du duel)
+// Source : GET /api/hcup/insights?equipe_dom=&equipe_ext=
+// ============================================
+function InsightsHcup({ match, isOpen, onToggle }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleToggle = async () => {
+    onToggle();
+    if (!isOpen && !data && !loading) {
+      setLoading(true);
+      setError(null);
+      try {
+        const url = `${API_BASE}/api/hcup/insights?equipe_dom=${encodeURIComponent(match.equipe_domicile)}&equipe_ext=${encodeURIComponent(match.equipe_exterieure)}`;
+        const res = await axios.get(url);
+        setData(res.data);
+      } catch (e) {
+        setError('Impossible de charger les insights.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Bloc V/D/N (forme récente)
+  const SerieBlocs = ({ forme }) => {
+    if (!Array.isArray(forme) || forme.length === 0) {
+      return <span className="text-[10px] italic text-gray-400">Pas assez de matchs</span>;
+    }
+    return (
+      <div className="flex gap-1 flex-wrap">
+        {forme.map((res, i) => (
+          <span
+            key={i}
+            className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+            style={{
+              backgroundColor: res === 'V' ? 'rgba(34,197,94,0.15)' : res === 'D' ? 'rgba(239,68,68,0.15)' : 'rgba(156,163,175,0.15)',
+              color: res === 'V' ? '#16a34a' : res === 'D' ? '#dc2626' : '#6b7280',
+              border: `1px solid ${res === 'V' ? '#86efac' : res === 'D' ? '#fca5a5' : '#d1d5db'}`,
+            }}
+          >
+            {res}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="mt-3 border-t pt-3" style={{ borderColor: HCUP_BLEU_BORDER }}>
+      <button
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors group"
+        style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm">📊</span>
+          <span className="text-xs font-semibold" style={{ color: HCUP_BLEU, fontWeight: 700 }}>
+            Statistiques du duel
+          </span>
+          {data && (
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: HCUP_OR, color: HCUP_BLEU, fontWeight: 700 }}
+            >
+              {data.h2h.nb_matchs} confrontations
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: HCUP_OR }} />}
+          {isOpen
+            ? <ChevronUp className="w-4 h-4" style={{ color: HCUP_OR }} />
+            : <ChevronDown className="w-4 h-4" style={{ color: HCUP_OR }} />
+          }
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="mt-3 space-y-3">
+          {error && <p className="text-xs text-center py-2 italic" style={{ color: HCUP_BLEU }}>{error}</p>}
+          {loading && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: HCUP_OR }} />
+            </div>
+          )}
+
+          {data && !loading && (
+            <>
+              {/* ── Head-to-Head ── */}
+              {data.h2h.nb_matchs > 0 ? (
+                <div className="rounded-lg p-3" style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: HCUP_BLEU }}>
+                    ⚔️ Face-à-face — {data.h2h.nb_matchs} matchs
+                  </p>
+
+                  {/* Barre victoires */}
+                  <div className="mb-3">
+                    <div className="flex justify-between text-[10px] mb-1" style={{ color: HCUP_BLEU }}>
+                      <span className="font-bold">{match.equipe_domicile.split(' ')[0]}</span>
+                      <span className="text-gray-400">Nuls {data.h2h.nuls}</span>
+                      <span className="font-bold">{match.equipe_exterieure.split(' ')[0]}</span>
+                    </div>
+                    <div className="flex h-2 rounded-full overflow-hidden">
+                      <div style={{
+                        width: `${data.h2h.pct_victoires_dom ?? Math.round((data.h2h.victoires_dom / data.h2h.nb_matchs) * 100)}%`,
+                        backgroundColor: HCUP_BLEU,
+                      }} />
+                      <div style={{
+                        width: `${Math.round((data.h2h.nuls / data.h2h.nb_matchs) * 100)}%`,
+                        backgroundColor: '#9CA3AF',
+                      }} />
+                      <div style={{
+                        width: `${data.h2h.pct_victoires_ext ?? Math.round((data.h2h.victoires_ext / data.h2h.nb_matchs) * 100)}%`,
+                        backgroundColor: HCUP_OR,
+                      }} />
+                    </div>
+                    <div className="flex justify-between text-[10px] mt-0.5 font-bold">
+                      <span style={{ color: HCUP_BLEU }}>
+                        {data.h2h.pct_victoires_dom ?? Math.round((data.h2h.victoires_dom / data.h2h.nb_matchs) * 100)}%
+                      </span>
+                      <span style={{ color: HCUP_OR }}>
+                        {data.h2h.pct_victoires_ext ?? Math.round((data.h2h.victoires_ext / data.h2h.nb_matchs) * 100)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stats clés */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {data.h2h.moyenne_pts_dom != null && (
+                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>
+                          {data.h2h.moyenne_pts_dom} - {data.h2h.moyenne_pts_ext}
+                        </p>
+                        <p className="text-[9px] text-gray-500">Score moyen</p>
+                      </div>
+                    )}
+                    {data.h2h.moy_points_match != null && (
+                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>
+                          {data.h2h.moy_points_match} pts
+                        </p>
+                        <p className="text-[9px] text-gray-500">Moy. points/match</p>
+                      </div>
+                    )}
+                    {data.h2h.pct_plus_50_pts != null && (
+                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>{data.h2h.pct_plus_50_pts}%</p>
+                        <p className="text-[9px] text-gray-500">Matchs +50 pts</p>
+                      </div>
+                    )}
+                    {data.h2h.pct_matchs_serrés != null && (
+                      <div className="rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                        <p className="text-[11px] font-bold" style={{ color: HCUP_BLEU }}>{data.h2h.pct_matchs_serrés}%</p>
+                        <p className="text-[9px] text-gray-500">Matchs serrés (&lt;10 pts)</p>
+                      </div>
+                    )}
+                    {data.h2h.fiabilite_algo != null && (
+                      <div className="col-span-2 rounded p-2 text-center" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                        <p className="text-[12px] font-bold" style={{ color: HCUP_BLEU }}>
+                          {data.h2h.fiabilite_algo}% des duels bien prédits
+                        </p>
+                        <p className="text-[9px] text-gray-500">🎯 L&apos;algo a trouvé le bon vainqueur</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-center italic py-2" style={{ color: HCUP_BLEU }}>
+                  Aucune confrontation directe dans l&apos;historique Champions Cup
+                </p>
+              )}
+
+              {/* ── Forme récente ── */}
+              {[
+                { label: match.equipe_domicile.split(' ')[0], forme: data.forme_dom },
+                { label: match.equipe_exterieure.split(' ')[0], forme: data.forme_ext },
+              ].map((eq, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-lg p-3"
+                  style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: HCUP_BLEU }}>
+                    🏉 {eq.label} — 5 derniers matchs HCup
+                  </p>
+                  <SerieBlocs forme={eq.forme} />
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// COMPOSANT : HistoriqueConfrontationsHcup
+// Source : GET /api/hcup/historique?limit=&offset=&equipe=
+// ============================================
+function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
+  const [confrontations, setConfrontations] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleToggle = async () => {
+    onToggle();
+    if (!isOpen && !confrontations && !loading) {
+      setLoading(true);
+      setError(null);
+      try {
+        const equipeA = match.equipe_domicile?.toUpperCase();
+        const equipeB = match.equipe_exterieure?.toUpperCase();
+        const seen = new Set();
+        const found = [];
+
+        // Pour chaque équipe, on requête la liste de ses matchs et on filtre
+        // les confrontations directes contre l'autre équipe (paginé)
+        for (const equipe of [equipeA, equipeB]) {
+          let offset = 0;
+          const limit = 100;
+          while (true) {
+            const url = `${API_BASE}/api/hcup/historique?limit=${limit}&offset=${offset}&equipe=${encodeURIComponent(equipe)}`;
+            const res = await axios.get(url);
+            const data = res.data;
+            const matchs = data.matchs || [];
+            if (matchs.length === 0) break;
+
+            matchs.forEach(m => {
+              const dom = m.equipe_domicile?.toUpperCase();
+              const ext = m.equipe_exterieure?.toUpperCase();
+              const isConfrontation =
+                (dom === equipeA && ext === equipeB) ||
+                (dom === equipeB && ext === equipeA);
+              const key = m.match_id || m.id;
+              if (isConfrontation && !seen.has(key)) {
+                seen.add(key);
+                found.push({
+                  ...m,
+                  // Tolérance sur les noms de colonnes (score_reel_dom vs score_domicile)
+                  score_domicile: m.score_domicile ?? m.score_reel_dom ?? 0,
+                  score_exterieur: m.score_exterieur ?? m.score_reel_ext ?? 0,
+                });
+              }
+            });
+
+            if (found.length >= 10) break;
+            offset += limit;
+            if (offset >= (data.stats?.total ?? data.total ?? 9999)) break;
+          }
+          if (found.length >= 10) break;
+        }
+
+        // Tri du plus récent au plus ancien
+        found.sort((a, b) => {
+          const dateA = a.date_match ? new Date(a.date_match).getTime() : 0;
+          const dateB = b.date_match ? new Date(b.date_match).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        setConfrontations(found.slice(0, 10));
+      } catch (e) {
+        console.error('Erreur historique confrontations HCup:', e);
+        setError("Impossible de charger l'historique.");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm">⚔️</span>
+          <span className="text-xs font-semibold text-gray-700">Historique des confrontations</span>
+          {confrontations && (
+            <span className="text-[10px] text-gray-500 bg-gray-200 rounded-full px-2 py-0.5">
+              {confrontations.length} matchs
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: HCUP_OR }} />}
+          {isOpen
+            ? <ChevronUp className="w-4 h-4 text-gray-400" />
+            : <ChevronDown className="w-4 h-4 text-gray-400" />
+          }
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="mt-2">
+          {error && <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>}
+          {loading && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: HCUP_OR }} />
+            </div>
+          )}
+          {confrontations && !loading && confrontations.length === 0 && (
+            <p className="text-xs text-gray-400 text-center py-3 italic">
+              Aucune confrontation trouvée dans l&apos;historique
+            </p>
+          )}
+          {confrontations && !loading && confrontations.length > 0 && (
+            <div className="rounded-lg overflow-hidden" style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+              {/* Header */}
+              <div
+                className="grid grid-cols-4 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide text-center"
+                style={{ backgroundColor: 'rgba(0,62,126,0.12)', color: HCUP_BLEU }}
+              >
+                <div className="text-left">Saison/R.</div>
+                <div>DOM</div>
+                <div>FT</div>
+                <div>EXT</div>
+              </div>
+
+              {confrontations.map((m, i) => {
+                const saisonCourt = (m.saison || '').replace('20', '').replace('-20', '-');
+                const round = m.round || `J${m.journee ?? ''}`;
+                const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
+                const winnerIsDom = m.score_domicile > m.score_exterieur;
+                const winnerIsExt = m.score_exterieur > m.score_domicile;
+
+                return (
+                  <div
+                    key={i}
+                    className="grid grid-cols-4 px-2 py-1.5 text-[10px] text-center items-center border-t"
+                    style={{ borderColor: HCUP_BLEU_BORDER }}
+                  >
+                    <div className="text-left text-gray-500 truncate">
+                      {saisonCourt} • {round}
+                    </div>
+                    <div className={`truncate font-semibold ${winnerIsDom ? 'text-green-700' : 'text-gray-700'}`}>
+                      {(m.equipe_domicile || '').split(' ')[0]}
+                    </div>
+                    <div className="font-bold" style={{ color: HCUP_BLEU }}>
+                      {ftScore}
+                    </div>
+                    <div className={`truncate font-semibold ${winnerIsExt ? 'text-green-700' : 'text-gray-700'}`}>
+                      {(m.equipe_exterieure || '').split(' ')[0]}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// COMPOSANT : PronoCardHcup (carte d'un match HCup)
+// ============================================
+function PronoCardHcup({ match, openPanel, onTogglePanel }) {
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
-  // Champs réels du backend : score_predit_dom, score_predit_ext, confiance_algo
-  // Note : le backend retourne cote_exterieur (sans e) pas cote_exterieure
+  // Score prédit
   const scoreDom = match.score_predit_dom ?? 0;
   const scoreExt = match.score_predit_ext ?? 0;
 
-  // confiance_algo est en % (50 à 100 selon contrainte SQL)
+  // Indice favori (50 à 100 % selon contrainte SQL)
   const confidencePct = Math.round(match.confiance_algo ?? 0);
   const [animatedWidth, setAnimatedWidth] = useState(0);
   useEffect(() => {
@@ -311,10 +790,13 @@ function PronoCardHcup({ match }) {
         </div>
       </div>
 
-      {/* Barre confiance algo */}
+      {/* Indice favori (ex Confiance algo) */}
       <div className="mt-4 px-4">
         <div className="flex justify-between text-xs mb-2" style={{ color: '#9a7d3a' }}>
-          <span className="font-medium">Confiance algo</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-medium">Indice favori</span>
+            <InfoConfiance />
+          </div>
           <span className="font-bold" style={{ color: HCUP_OR }}>{confidencePct}%</span>
         </div>
         <div className="relative w-full bg-gray-200 rounded-full h-[7px]">
@@ -334,49 +816,19 @@ function PronoCardHcup({ match }) {
         </div>
       </div>
 
-      {/* Cotes 1-N-2 (note : backend retourne cote_exterieur sans 'e') */}
-      {(match.cote_domicile || match.cote_nul || match.cote_exterieur) && (
-        <div className="mt-6 px-4">
-          <div className="text-xs font-semibold mb-2" style={{ color: '#9a7d3a' }}>Cotes</div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-white rounded-lg p-2 border border-gray-200 text-center">
-              <p className="text-[10px] text-gray-500 mb-0.5">Domicile</p>
-              <p className="text-sm font-bold" style={{ color: HCUP_BLEU }}>
-                ×{match.cote_domicile?.toFixed(2) || '-'}
-              </p>
-              {match.proba_domicile != null && (
-                <p className="text-[9px] text-gray-400">
-                  {Math.round(match.proba_domicile * 100)}%
-                </p>
-              )}
-            </div>
-
-            <div className="bg-white rounded-lg p-2 border border-gray-200 text-center">
-              <p className="text-[10px] text-gray-500 mb-0.5">Nul</p>
-              <p className="text-sm font-bold" style={{ color: HCUP_BLEU }}>
-                ×{match.cote_nul?.toFixed(2) || '-'}
-              </p>
-              {match.proba_nul != null && (
-                <p className="text-[9px] text-gray-400">
-                  {Math.round(match.proba_nul * 100)}%
-                </p>
-              )}
-            </div>
-
-            <div className="bg-white rounded-lg p-2 border border-gray-200 text-center">
-              <p className="text-[10px] text-gray-500 mb-0.5">Extérieur</p>
-              <p className="text-sm font-bold" style={{ color: HCUP_BLEU }}>
-                ×{match.cote_exterieur?.toFixed(2) || '-'}
-              </p>
-              {match.proba_exterieure != null && (
-                <p className="text-[9px] text-gray-400">
-                  {Math.round(match.proba_exterieure * 100)}%
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Dropdowns Insights + Historique */}
+      <div className="px-4">
+        <InsightsHcup
+          match={match}
+          isOpen={openPanel === 'insights'}
+          onToggle={() => onTogglePanel('insights')}
+        />
+        <HistoriqueConfrontationsHcup
+          match={match}
+          isOpen={openPanel === 'confrontations'}
+          onToggle={() => onTogglePanel('confrontations')}
+        />
+      </div>
     </div>
   );
 }
