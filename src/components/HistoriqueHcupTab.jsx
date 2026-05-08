@@ -5,7 +5,7 @@
 // ============================================
 
 import { useState, useEffect, useMemo } from 'react';
-import { Globe, Trophy, Calendar, ChevronDown, ChevronUp, Filter, Check, X, History } from 'lucide-react';
+import { Trophy, Calendar, ChevronDown, ChevronUp, Filter, Check, X } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 
@@ -166,41 +166,6 @@ export default function HistoriqueHcupTab() {
     return result;
   }, [matchs]);
 
-  // Stats globales :
-  //   - "total" : nombre de matchs AFFICHÉS (peut être filtré par saison)
-  //   - "okCount/nbPredictions/precision" : calculés UNIQUEMENT sur la SAISON COURANTE
-  //     (= test set du modèle XGBoost, hors-échantillon).
-  //   Calculer sur tout l'historique gonflerait artificiellement la précision car
-  //   le modèle a été entraîné sur 2014-2024 (data leakage).
-  const stats = useMemo(() => {
-    const total = matchs.length;
-
-    // Détecter dynamiquement la saison courante = la saison max présente dans les matchs
-    // (alphabétiquement, "2025-2026" > "2024-2025" donc OK)
-    const saisonCourante = matchs.length > 0
-      ? matchs.map(m => m.saison).sort().reverse()[0]
-      : null;
-
-    let okCount = 0;
-    let nbPredictions = 0;
-
-    matchs.forEach(m => {
-      // On ne compte que les matchs de la saison courante (test set du modèle)
-      if (m.saison !== saisonCourante) return;
-      // Une prédiction est OK si winner_predit (calculé backend) == vainqueur réel sur 80'
-      if (m.score_domicile != null && m.score_exterieur != null && m.winner_predit) {
-        nbPredictions++;
-        const realWinner = m.score_domicile > m.score_exterieur ? 'DOM'
-          : m.score_exterieur > m.score_domicile ? 'EXT'
-          : 'NUL';
-        if (realWinner === m.winner_predit) okCount++;
-      }
-    });
-
-    const precision = nbPredictions > 0 ? Math.round((okCount / nbPredictions) * 100) : 0;
-    return { total, okCount, nbPredictions, precision, saisonCourante };
-  }, [matchs]);
-
   const toggleSaison = (saison) => {
     setExpandedSaisons(prev => {
       const newSet = new Set(prev);
@@ -238,34 +203,6 @@ export default function HistoriqueHcupTab() {
 
   return (
     <div className="space-y-3">
-      {/* Header HCup avec stats */}
-      <div className="rounded-lg shadow-md p-3" style={{ background: `linear-gradient(135deg, ${HCUP_BLEU} 0%, #002857 100%)` }}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5" style={{ color: HCUP_OR }} />
-            <span className="text-sm font-bold uppercase" style={{ color: HCUP_OR }}>
-              Historique Champions Cup
-            </span>
-          </div>
-          <History className="w-5 h-5" style={{ color: HCUP_OR, opacity: 0.7 }} />
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1.5">
-            <p className="text-[10px] text-white/70">Matchs</p>
-            <p className="text-lg font-bold" style={{ color: HCUP_OR }}>{stats.total}</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1.5">
-            <p className="text-[10px] text-white/70">Prédictions OK</p>
-            <p className="text-lg font-bold" style={{ color: HCUP_OR }}>{stats.okCount}/{stats.nbPredictions}</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1.5">
-            <p className="text-[10px] text-white/70">Précision</p>
-            <p className="text-lg font-bold" style={{ color: HCUP_OR }}>{stats.precision}%</p>
-          </div>
-        </div>
-      </div>
-
       {/* Filtres */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <button
