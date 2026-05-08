@@ -7,7 +7,7 @@
 //
 // Pattern aligné sur Pro D2 :
 //   - Indice favori (à la place de "Confiance algo")
-//   - Dropdown "Statistiques du duel" (h2h + forme récente)
+//   - Dropdown "Duel & Forme" (h2h + forme récente fusionnés)
 //     → Si nb_matchs === 0 (aucune confrontation directe) :
 //       affiche un PALMARES narratif des 2 équipes en HCup
 //   - Dropdown "Historique des confrontations"
@@ -470,7 +470,7 @@ function PalmaresEquipe({ palmares, isDom }) {
 }
 
 // ============================================
-// COMPOSANT : InsightsHcup (Statistiques du duel)
+// COMPOSANT : InsightsHcup (Duel & Forme)
 // Source : GET /api/hcup/insights?equipe_dom=&equipe_ext=
 // ============================================
 function InsightsHcup({ match, isOpen, onToggle }) {
@@ -495,26 +495,88 @@ function InsightsHcup({ match, isOpen, onToggle }) {
     }
   };
 
-  // Bloc V/D/N (forme récente)
+  // Résumé de forme synthétique :
+  // - Détecte la série en cours (X victoires/défaites consécutives à partir du dernier match)
+  // - Affiche un compteur V/N/D agrégé + un mini-bar visuel compact
+  // Beaucoup plus parlant que 5 lettres alignées (qui sont toutes V pour les finalistes).
   const SerieBlocs = ({ forme }) => {
     if (!Array.isArray(forme) || forme.length === 0) {
-      return <span className="text-[10px] italic text-gray-400">Pas assez de matchs</span>;
+      return <span className="text-[11px] italic text-gray-400">Pas assez de matchs HCup récents</span>;
     }
+
+    // Compter V / N / D
+    const counts = { V: 0, N: 0, D: 0 };
+    forme.forEach(r => { if (counts[r] !== undefined) counts[r]++; });
+
+    // Détecter la série en cours (à partir du DERNIER match = forme[forme.length-1])
+    // Le tableau forme est ordonné du plus ancien au plus récent (.reverse() côté backend)
+    const last = forme[forme.length - 1];
+    let streak = 1;
+    for (let i = forme.length - 2; i >= 0; i--) {
+      if (forme[i] === last) streak++;
+      else break;
+    }
+
+    // Texte accrocheur selon la série
+    let streakLabel = null;
+    let streakColor = '#6b7280';
+    if (streak >= 3 && last === 'V') {
+      streakLabel = `🔥 ${streak} victoires consécutives`;
+      streakColor = '#16a34a';
+    } else if (streak >= 3 && last === 'D') {
+      streakLabel = `❄️ ${streak} défaites consécutives`;
+      streakColor = '#dc2626';
+    } else if (last === 'V') {
+      streakLabel = `✓ Vient de gagner`;
+      streakColor = '#16a34a';
+    } else if (last === 'D') {
+      streakLabel = `✗ Vient de perdre`;
+      streakColor = '#dc2626';
+    } else {
+      streakLabel = `≈ Match nul récent`;
+    }
+
     return (
-      <div className="flex gap-1 flex-wrap">
-        {forme.map((res, i) => (
-          <span
-            key={i}
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-            style={{
-              backgroundColor: res === 'V' ? 'rgba(34,197,94,0.15)' : res === 'D' ? 'rgba(239,68,68,0.15)' : 'rgba(156,163,175,0.15)',
-              color: res === 'V' ? '#16a34a' : res === 'D' ? '#dc2626' : '#6b7280',
-              border: `1px solid ${res === 'V' ? '#86efac' : res === 'D' ? '#fca5a5' : '#d1d5db'}`,
-            }}
-          >
-            {res}
+      <div className="space-y-1.5">
+        {/* Bilan chiffré */}
+        <div className="flex items-center gap-3 text-[11px] flex-wrap">
+          {counts.V > 0 && (
+            <span className="font-semibold" style={{ color: '#16a34a' }}>
+              {counts.V}V
+            </span>
+          )}
+          {counts.N > 0 && (
+            <span className="font-semibold" style={{ color: '#6b7280' }}>
+              {counts.N}N
+            </span>
+          )}
+          {counts.D > 0 && (
+            <span className="font-semibold" style={{ color: '#dc2626' }}>
+              {counts.D}D
+            </span>
+          )}
+          <span className="text-gray-400 text-[10px]">
+            sur les {forme.length} derniers
           </span>
-        ))}
+        </div>
+
+        {/* Mini-bar visuel proportionnel V/N/D */}
+        <div className="flex h-1.5 rounded-full overflow-hidden bg-gray-100">
+          {counts.V > 0 && (
+            <div style={{ width: `${(counts.V / forme.length) * 100}%`, backgroundColor: '#22c55e' }} />
+          )}
+          {counts.N > 0 && (
+            <div style={{ width: `${(counts.N / forme.length) * 100}%`, backgroundColor: '#9ca3af' }} />
+          )}
+          {counts.D > 0 && (
+            <div style={{ width: `${(counts.D / forme.length) * 100}%`, backgroundColor: '#ef4444' }} />
+          )}
+        </div>
+
+        {/* Tendance / série en cours */}
+        <p className="text-[10px] font-semibold" style={{ color: streakColor }}>
+          {streakLabel}
+        </p>
       </div>
     );
   };
@@ -531,7 +593,7 @@ function InsightsHcup({ match, isOpen, onToggle }) {
         <div className="flex items-center gap-2">
           <span className="text-sm">📊</span>
           <span className="text-xs font-semibold" style={{ color: HCUP_BLEU, fontWeight: 700 }}>
-            Statistiques du duel
+            Duel & Forme
           </span>
           {data && nb_h2h > 0 && (
             <span
@@ -941,11 +1003,6 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
           match={match}
           isOpen={openPanel === 'insights'}
           onToggle={() => onTogglePanel('insights')}
-        />
-        <HistoriqueConfrontationsHcup
-          match={match}
-          isOpen={openPanel === 'confrontations'}
-          onToggle={() => onTogglePanel('confrontations')}
         />
       </div>
     </div>
