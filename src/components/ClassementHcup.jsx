@@ -91,10 +91,10 @@ export default function ClassementHcup() {
   return (
     <div className="space-y-4">
       {/* Titre + meta */}
-      <div className="text-center mb-2">
-        <h2 className="text-2xl font-bold whitespace-nowrap">
+      <div className="text-center mb-2 px-2">
+        <h2 className="text-xl sm:text-2xl font-bold leading-tight">
           <span style={{ color: HCUP_BLEU }}>Classement Champions Cup</span>
-          <span className="text-gray-600 text-sm ml-2">2025-2026</span>
+          <span className="text-gray-600 text-sm ml-2 whitespace-nowrap">2025-2026</span>
         </h2>
         {meta?.round != null && (
           <p className="text-xs text-gray-500 italic mt-1">
