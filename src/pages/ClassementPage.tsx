@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
+import ClassementHcup from "../components/ClassementHcup";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-type Championnat = 'top14' | 'prod2';
+type Championnat = 'top14' | 'prod2' | 'hcup';
 
 function ClassementPage() {
   const [championnat, setChampionnat] = useState<Championnat>('top14');
@@ -17,17 +18,26 @@ function ClassementPage() {
   const detailsHeaderRef = useRef<HTMLDivElement | null>(null);
 
   const isD2 = championnat === 'prod2';
+  const isHcup = championnat === 'hcup';
 
   // Couleurs adaptées selon championnat
   const themeColors = {
-    primary: isD2 ? 'text-[#00174D]' : 'text-rugby-gold',
-    primaryBg: isD2 ? 'bg-[#00174D]' : 'bg-rugby-gold',
-    primaryBgHover: isD2 ? 'hover:bg-[#002A7D]' : 'hover:bg-rugby-bronze',
-    secondaryText: isD2 ? 'text-[#002A7D]' : 'text-rugby-orange',
-    rowHover: isD2 ? 'hover:bg-[#00174D]/10' : 'hover:bg-rugby-orange/10',
+    primary: isHcup ? 'text-[#003E7E]' : isD2 ? 'text-[#00174D]' : 'text-rugby-gold',
+    primaryBg: isHcup ? 'bg-[#003E7E]' : isD2 ? 'bg-[#00174D]' : 'bg-rugby-gold',
+    primaryBgHover: isHcup ? 'hover:bg-[#002857]' : isD2 ? 'hover:bg-[#002A7D]' : 'hover:bg-rugby-bronze',
+    secondaryText: isHcup ? 'text-[#FFC72C]' : isD2 ? 'text-[#002A7D]' : 'text-rugby-orange',
+    rowHover: isHcup ? 'hover:bg-[#003E7E]/10' : isD2 ? 'hover:bg-[#00174D]/10' : 'hover:bg-rugby-orange/10',
   };
 
   const loadClassement = useCallback(async () => {
+    // 🆕 HCup : géré par le composant ClassementHcup (scraping RugbyPass)
+    // → on ne charge rien ici, on laisse le composant faire son fetch
+    if (championnat === 'hcup') {
+      setClassement([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       if (championnat === 'top14') {
@@ -125,13 +135,13 @@ function ClassementPage() {
   return (
     <div className="px-2 py-4 pb-24">
       {/* ═══════════════════════════════════════════════════════
-          TOGGLE Top 14 / Pro D2
+          TOGGLE Top 14 / Pro D2 / Champions Cup
           ═══════════════════════════════════════════════════════ */}
       <div className="flex justify-center mb-4">
         <div className="inline-flex rounded-lg shadow-md border-2 border-gray-200 overflow-hidden">
           <button
             onClick={() => setChampionnat('top14')}
-            className={`px-6 py-2 font-bold text-sm transition-colors ${
+            className={`px-4 py-2 font-bold text-sm transition-colors ${
               championnat === 'top14'
                 ? 'bg-rugby-gold text-white'
                 : 'bg-white text-rugby-gold hover:bg-rugby-gold/10'
@@ -141,7 +151,7 @@ function ClassementPage() {
           </button>
           <button
             onClick={() => setChampionnat('prod2')}
-            className={`px-6 py-2 font-bold text-sm transition-colors ${
+            className={`px-4 py-2 font-bold text-sm transition-colors ${
               championnat === 'prod2'
                 ? 'bg-[#00174D] text-white'
                 : 'bg-white text-[#00174D] hover:bg-[#00174D]/10'
@@ -149,10 +159,29 @@ function ClassementPage() {
           >
             🥈 PRO D2
           </button>
+          <button
+            onClick={() => setChampionnat('hcup')}
+            className={`px-4 py-2 font-bold text-sm transition-colors ${
+              championnat === 'hcup'
+                ? 'bg-[#003E7E] text-[#FFC72C]'
+                : 'bg-white text-[#003E7E] hover:bg-[#003E7E]/10'
+            }`}
+          >
+            ⭐ C.CUP
+          </button>
         </div>
       </div>
 
+      {/* ═══════════════════════════════════════════════════════
+          MODE C.CUP : on rend un composant dédié
+          (4 pools × 6 équipes, scraping RugbyPass via /api/hcup/classement-officiel)
+          → on s'arrête ici, le reste de la page (titre + tableau Top14/Pro D2)
+            n'est pas pertinent dans ce mode.
+          ═══════════════════════════════════════════════════════ */}
+      {isHcup && <ClassementHcup />}
+
       {/* Titre */}
+      {!isHcup && (
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2 whitespace-nowrap">
           <span className={themeColors.primary}>
@@ -166,8 +195,9 @@ function ClassementPage() {
           💡 Cliquez sur une équipe pour voir ses statistiques détaillées
         </p>
       </div>
+      )}
 
-      {loading ? (
+      {!isHcup && (loading ? (
         <div className="p-6 text-center text-gray-500">🔄 Chargement du classement…</div>
       ) : classement.length === 0 ? (
         <div className="p-6 text-center text-gray-500">
@@ -488,7 +518,7 @@ function ClassementPage() {
             </div>
           )}
         </>
-      )}
+      ))}
 
       {/* Bouton retour en haut */}
       {showScrollTop && (
