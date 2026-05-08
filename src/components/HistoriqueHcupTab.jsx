@@ -65,7 +65,9 @@ export default function HistoriqueHcupTab() {
     try {
       setLoading(true);
 
-      const params = { limit: 1000 };
+      // 🆕 limit 5000 pour couvrir les 2120 matchs actuels + marge.
+      // Avant : limit 1000 → tronquait à ~2010-2011 et affichait "1000 matchs"
+      const params = { limit: 5000 };
       if (filtreSaison !== 'toutes') params.saison = filtreSaison;
       if (filtreRound !== 'Tous') {
         if (filtreRound === 'Poules') params.phase = 'Poules';

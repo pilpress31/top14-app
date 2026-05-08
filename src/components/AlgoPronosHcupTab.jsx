@@ -410,7 +410,6 @@ function PalmaresEquipe({ palmares, isDom }) {
         <li className="text-[11px]" style={{ color: HCUP_BLEU }}>
           • <span className="font-semibold">{nb_participations}</span>
           {nb_participations <= 1 ? 'ère' : 'e'} participation à la Champions Cup
-          <span className="text-gray-500 ml-1">(données depuis 2014-2015)</span>
         </li>
 
         {nb_titres > 0 ? (
