@@ -563,8 +563,23 @@ function InsightsHcup({ match, isOpen, onToggle }) {
 
           {data && !loading && (
             <>
-              {/* ── Cas 1 : confrontations directes existent → Head-to-Head ── */}
-              {nb_h2h > 0 ? (
+              {/* ── 🆕 Texte joli du duel (toujours affiché si présent) ── */}
+              {data.duel_texte && (
+                <div
+                  className="rounded-lg p-3"
+                  style={{
+                    backgroundColor: HCUP_BLEU_SOFT,
+                    border: `1px solid ${HCUP_BLEU_BORDER}`,
+                  }}
+                >
+                  <p className="text-[11px] leading-relaxed" style={{ color: HCUP_BLEU }}>
+                    {data.duel_texte}
+                  </p>
+                </div>
+              )}
+
+              {/* ── Stats brutes (chiffres) — uniquement si ≥ 3 confrontations ── */}
+              {nb_h2h >= 3 ? (
                 <div className="rounded-lg p-3" style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}>
                   <p className="text-[10px] font-bold uppercase tracking-wide mb-2" style={{ color: HCUP_BLEU }}>
                     ⚔️ Face-à-face — {nb_h2h} matchs
@@ -612,14 +627,8 @@ function InsightsHcup({ match, isOpen, onToggle }) {
                   )}
                 </div>
               ) : (
-                /* ── Cas 2 : aucune confrontation → afficher les PALMARÈS ── */
+                /* ── 0, 1 ou 2 confrontations → afficher les PALMARÈS pour enrichir le contexte ── */
                 <>
-                  <p className="text-[11px] italic text-center py-1" style={{ color: HCUP_BLEU }}>
-                    Aucune confrontation directe entre ces 2 équipes en Champions Cup.
-                  </p>
-                  <p className="text-[10px] italic text-center text-gray-500 -mt-1 mb-1">
-                    Voici le palmarès Champions Cup de chaque équipe :
-                  </p>
                   {data.palmares_dom && (
                     <PalmaresEquipe palmares={data.palmares_dom} isDom={true} />
                   )}
