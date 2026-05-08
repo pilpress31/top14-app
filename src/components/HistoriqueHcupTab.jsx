@@ -34,16 +34,21 @@ const PHASE_FINALE_ROUNDS = ['8e de finale', 'Quart de finale', 'Demi-finale', '
 const ROUND_OPTIONS = [
   'Tous',
   'Poules',
+  'Barrage',         // 🆕 ajouté pour HCup 1997-1998
   '8e de finale',
   'Quart de finale',
   'Demi-finale',
   'Finale',
 ];
 
-// Liste des saisons (12 saisons, 2014→2026)
+// Liste des saisons (31 saisons, 1995→2026, ordre décroissant)
 const SAISONS_OPTIONS = [
   '2025-2026', '2024-2025', '2023-2024', '2022-2023', '2021-2022', '2020-2021',
   '2019-2020', '2018-2019', '2017-2018', '2016-2017', '2015-2016', '2014-2015',
+  '2013-2014', '2012-2013', '2011-2012', '2010-2011', '2009-2010', '2008-2009',
+  '2007-2008', '2006-2007', '2005-2006', '2004-2005', '2003-2004', '2002-2003',
+  '2001-2002', '2000-2001', '1999-2000', '1998-1999', '1997-1998', '1996-1997',
+  '1995-1996',
 ];
 
 export default function HistoriqueHcupTab() {
@@ -229,36 +234,58 @@ export default function HistoriqueHcupTab() {
         </button>
 
         {showFilters && (
-          <div className="p-4 border-t border-gray-100 space-y-3">
-            {/* Filtre Saison */}
+          <div className="p-4 border-t border-gray-100 space-y-4">
+            {/* Filtre Saison — chips cliquables */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Saison</label>
-              <select
-                value={filtreSaison}
-                onChange={(e) => setFiltreSaison(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2"
-                style={{ '--tw-ring-color': HCUP_BLEU }}
-              >
-                <option value="toutes">Toutes les saisons</option>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Saison</label>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => setFiltreSaison('toutes')}
+                  className="px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all"
+                  style={
+                    filtreSaison === 'toutes'
+                      ? { backgroundColor: HCUP_BLEU, borderColor: HCUP_BLEU, color: HCUP_OR }
+                      : { backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#374151' }
+                  }
+                >
+                  Toutes
+                </button>
                 {SAISONS_OPTIONS.map(s => (
-                  <option key={s} value={s}>{s}</option>
+                  <button
+                    key={s}
+                    onClick={() => setFiltreSaison(s)}
+                    className="px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all"
+                    style={
+                      filtreSaison === s
+                        ? { backgroundColor: HCUP_BLEU, borderColor: HCUP_BLEU, color: HCUP_OR }
+                        : { backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#374151' }
+                    }
+                  >
+                    {s}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
-            {/* Filtre Round */}
+            {/* Filtre Phase — chips cliquables */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Phase</label>
-              <select
-                value={filtreRound}
-                onChange={(e) => setFiltreRound(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2"
-                style={{ '--tw-ring-color': HCUP_BLEU }}
-              >
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Phase</label>
+              <div className="flex flex-wrap gap-1.5">
                 {ROUND_OPTIONS.map(r => (
-                  <option key={r} value={r}>{r}</option>
+                  <button
+                    key={r}
+                    onClick={() => setFiltreRound(r)}
+                    className="px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all"
+                    style={
+                      filtreRound === r
+                        ? { backgroundColor: HCUP_BLEU, borderColor: HCUP_BLEU, color: HCUP_OR }
+                        : { backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#374151' }
+                    }
+                  >
+                    {r}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
             {hasActiveFilters && (
