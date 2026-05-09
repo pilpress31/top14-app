@@ -6,7 +6,6 @@ import HistoriqueTab from '../components/HistoriqueTab';
 import AlgoPronosHcupTab from '../components/AlgoPronosHcupTab';
 import HistoriqueHcupTab from '../components/HistoriqueHcupTab';
 import MainHeader from '../components/MainHeader';
-import MainHeaderFull from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderD2';
 import MainHeaderHcup from '../components/MainHeaderHcup';
 import { getStats } from "../lib/api";
@@ -90,14 +89,13 @@ export default function IAPage() {
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
 
-  // Choisir le header (comme l'original : MainHeader pour algo, MainHeaderFull pour historique en Top14)
+  // Choisir le header selon le championnat actif (toujours le header "algo" sur la page IA)
+  // Note : MainHeaderFull et ses variants D2/Hcup sont réservés à la page Paris (/pronos),
+  // car ils affichent les stats users (paris gagnants), pas la précision algo.
   const renderHeader = () => {
     if (isHcup) return <MainHeaderHcup isVisible={headerVisible} />;
     if (isD2) return <MainHeaderD2 isVisible={headerVisible} />;
-    // Top 14 : switch entre MainHeader et MainHeaderFull selon onglet
-    return activeTab === 'algorithme'
-      ? <MainHeader isVisible={headerVisible} />
-      : <MainHeaderFull total={stats.nombre_matchs_historique} isVisible={headerVisible} />;
+    return <MainHeader isVisible={headerVisible} />;
   };
 
   return (
