@@ -391,8 +391,11 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
-      {/* ✅ Header - STICKY */}
-      <div className="sticky top-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg">
+      {/* ✅ Header - STICKY (top via --safe-area-top pour iOS PWA standalone) */}
+      <div
+        className="sticky z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg"
+        style={{ top: 'var(--safe-area-top, 0px)' }}
+      >
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
