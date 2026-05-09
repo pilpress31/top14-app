@@ -1,0 +1,256 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="parma-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="parma-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="parma-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#003A70" />
+      <stop offset="100%" stop-color="#001B3A" />
+    </linearGradient>
+
+    <linearGradient id="parma-yellow-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE066" />
+      <stop offset="55%" stop-color="#F2C230" />
+      <stop offset="100%" stop-color="#A97800" />
+    </linearGradient>
+
+    <linearGradient id="parma-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#FFE066" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#parma-hex-clip)">
+    <rect width="200" height="200" fill="url(#parma-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Parma -->
+  <g clip-path="url(#parma-safe-clip)">
+    <!-- Bande centrale jaune -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#parma-yellow-grad)"
+      opacity="0.92"
+    />
+
+    <!-- Bande bleue centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#001B3A"
+      opacity="0.93"
+    />
+
+    <!-- Bandes jaunes style maillot -->
+    <rect
+      x="58"
+      y="64"
+      width="84"
+      height="7"
+      fill="#FFE066"
+      opacity="0.9"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="7"
+      fill="#FFE066"
+      opacity="0.9"
+    />
+
+    <!-- Accents blancs -->
+    <rect
+      x="58"
+      y="74"
+      width="84"
+      height="4"
+      fill="#FFFFFF"
+      opacity="0.75"
+    />
+
+    <rect
+      x="58"
+      y="122"
+      width="84"
+      height="4"
+      fill="#FFFFFF"
+      opacity="0.75"
+    />
+
+    <!-- Motif bouclier / duché stylisé discret -->
+    <path
+      d="M100 58
+         C114 65, 127 66, 136 68
+         L132 101
+         C129 120, 115 133, 100 140
+         C85 133, 71 120, 68 101
+         L64 68
+         C73 66, 86 65, 100 58Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.22"
+      stroke-linejoin="round"
+    />
+
+    <!-- Croix / repère central discret -->
+    <path
+      d="M100 68 L100 132"
+      stroke="#FFE066"
+      stroke-width="5"
+      opacity="0.32"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M74 100 L126 100"
+      stroke="#FFE066"
+      stroke-width="5"
+      opacity="0.28"
+      stroke-linecap="round"
+    />
+
+    <!-- Ballon de rugby abstrait -->
+    <path
+      d="M64 121
+         C82 105, 118 105, 136 121
+         C116 136, 84 136, 64 121Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits dynamiques -->
+    <path
+      d="M58 136 L142 64"
+      stroke="#FFE066"
+      stroke-width="4"
+      opacity="0.24"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.13"
+      stroke-linecap="round"
+    />
+
+    <!-- Accent italien discret -->
+    <path
+      d="M62 100 L138 100"
+      stroke="#009246"
+      stroke-width="3"
+      opacity="0.18"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M62 105 L138 105"
+      stroke="#CE2B37"
+      stroke-width="3"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure jaune -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFE066"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure blanche -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="2"
+    opacity="0.9"
+  />
+
+  <!-- Texte PAR avec contour noir, sans débordement -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#parma-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="86"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    PAR
+  </text>
+
+  <!-- Contour jaune fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#parma-text-grad)"
+    stroke="#FFE066"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="86"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    PAR
+  </text>
+</svg>

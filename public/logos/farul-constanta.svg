@@ -1,0 +1,297 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="farul-constanta-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="farul-constanta-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="farul-constanta-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0057B8" />
+      <stop offset="100%" stop-color="#002B5C" />
+    </linearGradient>
+
+    <linearGradient id="farul-constanta-sea-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7FDBFF" />
+      <stop offset="55%" stop-color="#009FE3" />
+      <stop offset="100%" stop-color="#0057B8" />
+    </linearGradient>
+
+    <linearGradient id="farul-constanta-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#7FDBFF" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#farul-constanta-hex-clip)">
+    <rect width="200" height="200" fill="url(#farul-constanta-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Farul Constanța -->
+  <g clip-path="url(#farul-constanta-safe-clip)">
+    <!-- Bande centrale bleu mer -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#farul-constanta-sea-grad)"
+      opacity="0.9"
+    />
+
+    <!-- Bande bleu marine centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#002B5C"
+      opacity="0.93"
+    />
+
+    <!-- Bandes blanches style rugby -->
+    <rect
+      x="58"
+      y="64"
+      width="84"
+      height="7"
+      fill="#FFFFFF"
+      opacity="0.85"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="7"
+      fill="#FFFFFF"
+      opacity="0.85"
+    />
+
+    <!-- Accents bleu clair -->
+    <rect
+      x="58"
+      y="74"
+      width="84"
+      height="4"
+      fill="#7FDBFF"
+      opacity="0.85"
+    />
+
+    <rect
+      x="58"
+      y="122"
+      width="84"
+      height="4"
+      fill="#7FDBFF"
+      opacity="0.85"
+    />
+
+    <!-- Phare stylisé discret -->
+    <path
+      d="M92 128
+         L96 78
+         L104 78
+         L108 128Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.25"
+      stroke-linejoin="round"
+    />
+
+    <path
+      d="M88 78 L112 78"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.25"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M91 68 L109 68 L112 78 L88 78Z"
+      fill="none"
+      stroke="#7FDBFF"
+      stroke-width="4"
+      opacity="0.34"
+      stroke-linejoin="round"
+    />
+
+    <!-- Faisceaux du phare -->
+    <path
+      d="M92 78 C78 70, 67 69, 58 73"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M108 78 C122 70, 133 69, 142 73"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+
+    <!-- Vagues stylisées -->
+    <path
+      d="M58 121
+         C70 112, 82 112, 94 121
+         C106 130, 118 130, 142 118"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.24"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <path
+      d="M60 134
+         C74 124, 88 124, 102 134
+         C116 144, 130 142, 142 132"
+      fill="none"
+      stroke="#7FDBFF"
+      stroke-width="5"
+      opacity="0.38"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Ballon de rugby discret -->
+    <path
+      d="M64 121
+         C82 105, 118 105, 136 121
+         C116 136, 84 136, 64 121Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits dynamiques -->
+    <path
+      d="M58 136 L142 64"
+      stroke="#7FDBFF"
+      stroke-width="4"
+      opacity="0.24"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.12"
+      stroke-linecap="round"
+    />
+
+    <!-- Accent roumain discret -->
+    <path
+      d="M62 98 L138 98"
+      stroke="#FCD116"
+      stroke-width="3"
+      opacity="0.2"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M62 104 L138 104"
+      stroke="#CE1126"
+      stroke-width="3"
+      opacity="0.18"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure bleu clair -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#7FDBFF"
+    stroke-width="2"
+    opacity="0.95"
+  />
+
+  <!-- Texte FAR avec contour noir, sans débordement -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#farul-constanta-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="86"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    FAR
+  </text>
+
+  <!-- Contour bleu clair fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#farul-constanta-text-grad)"
+    stroke="#7FDBFF"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="86"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    FAR
+  </text>
+</svg>

@@ -1,0 +1,232 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="newcastle-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="newcastle-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="newcastle-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1A1A" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+
+    <linearGradient id="newcastle-green-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00A651" />
+      <stop offset="60%" stop-color="#007A3D" />
+      <stop offset="100%" stop-color="#004D28" />
+    </linearGradient>
+
+    <linearGradient id="newcastle-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BFEFD4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#newcastle-hex-clip)">
+    <rect width="200" height="200" fill="url(#newcastle-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Newcastle, sans toucher les bordures -->
+  <g clip-path="url(#newcastle-safe-clip)">
+    <!-- Bande centrale verte -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#newcastle-green-grad)"
+      opacity="0.9"
+    />
+
+    <!-- Bande noire centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#000000"
+      opacity="0.9"
+    />
+
+    <!-- Bandes blanches/noires style maillot -->
+    <rect
+      x="58"
+      y="64"
+      width="84"
+      height="7"
+      fill="#FFFFFF"
+      opacity="0.85"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="7"
+      fill="#FFFFFF"
+      opacity="0.85"
+    />
+
+    <!-- Accent vert fin -->
+    <rect
+      x="58"
+      y="74"
+      width="84"
+      height="4"
+      fill="#00A651"
+      opacity="0.8"
+    />
+
+    <rect
+      x="58"
+      y="122"
+      width="84"
+      height="4"
+      fill="#00A651"
+      opacity="0.8"
+    />
+
+    <!-- Faucon stylisé discret -->
+    <path
+      d="M61 119
+         C78 96, 98 86, 124 76
+         C132 73, 140 72, 146 74
+         C136 80, 128 86, 124 96
+         C113 94, 103 97, 94 106
+         C84 116, 73 122, 61 119Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.28"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Aile du faucon -->
+    <path
+      d="M70 86
+         C91 65, 120 58, 142 65
+         C122 70, 106 80, 94 96
+         C86 91, 78 88, 70 86Z"
+      fill="none"
+      stroke="#00A651"
+      stroke-width="5"
+      opacity="0.42"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits dynamiques -->
+    <path
+      d="M58 136 L142 64"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.14"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#00A651"
+      stroke-width="4"
+      opacity="0.22"
+      stroke-linecap="round"
+    />
+
+    <!-- Ligne centrale verte discrète -->
+    <path
+      d="M62 100 L138 100"
+      stroke="#BFEFD4"
+      stroke-width="3"
+      opacity="0.2"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure verte -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#00A651"
+    stroke-width="2"
+    opacity="0.95"
+  />
+
+  <!-- Texte NEW avec contour noir, réduit pour ne pas déborder -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#newcastle-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="90"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    NEW
+  </text>
+
+  <!-- Contour vert fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#newcastle-text-grad)"
+    stroke="#00A651"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="90"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    NEW
+  </text>
+</svg>

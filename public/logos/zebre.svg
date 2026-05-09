@@ -1,0 +1,227 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="zebre-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="zebre-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="zebre-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2A2A2A" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+
+    <linearGradient id="zebre-silver-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="55%" stop-color="#D9D9D9" />
+      <stop offset="100%" stop-color="#8C8C8C" />
+    </linearGradient>
+
+    <linearGradient id="zebre-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BFBFBF" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#zebre-hex-clip)">
+    <rect width="200" height="200" fill="url(#zebre-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Zebre, sans toucher les bordures -->
+  <g clip-path="url(#zebre-safe-clip)">
+    <!-- Bande centrale blanche/grise -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#zebre-silver-grad)"
+      opacity="0.9"
+    />
+
+    <!-- Bande noire centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#000000"
+      opacity="0.92"
+    />
+
+    <!-- Bandes zébrées supérieures -->
+    <path
+      d="M54 62
+         C70 70, 82 70, 96 62
+         C110 54, 126 54, 146 64
+         L146 73
+         C128 64, 112 65, 98 73
+         C83 81, 68 80, 54 72Z"
+      fill="#FFFFFF"
+      opacity="0.82"
+    />
+
+    <path
+      d="M58 76
+         C73 68, 88 69, 102 78
+         C116 87, 130 87, 142 78"
+      fill="none"
+      stroke="#000000"
+      stroke-width="5"
+      opacity="0.45"
+      stroke-linecap="round"
+    />
+
+    <!-- Bandes zébrées inférieures -->
+    <path
+      d="M54 128
+         C70 136, 84 136, 99 128
+         C114 120, 130 120, 146 130
+         L146 139
+         C128 130, 113 131, 99 139
+         C84 147, 68 146, 54 138Z"
+      fill="#FFFFFF"
+      opacity="0.78"
+    />
+
+    <path
+      d="M58 122
+         C72 130, 87 130, 102 121
+         C116 113, 132 113, 142 122"
+      fill="none"
+      stroke="#000000"
+      stroke-width="5"
+      opacity="0.48"
+      stroke-linecap="round"
+    />
+
+    <!-- Silhouette abstraite de tête de zèbre -->
+    <path
+      d="M76 118
+         C82 98, 94 83, 112 73
+         C120 69, 130 70, 137 76
+         C125 78, 119 84, 117 94
+         C126 96, 132 102, 136 111
+         C124 106, 114 108, 105 119
+         C96 131, 84 132, 76 118Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.28"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Rayures diagonales dynamiques -->
+    <path
+      d="M58 136 L142 64"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#AFAFAF"
+      stroke-width="4"
+      opacity="0.22"
+      stroke-linecap="round"
+    />
+
+    <!-- Petit accent bleu italien discret -->
+    <path
+      d="M62 100 L138 100"
+      stroke="#00A3E0"
+      stroke-width="3"
+      opacity="0.22"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche/grise -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure bleu clair -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#00A3E0"
+    stroke-width="2"
+    opacity="0.9"
+  />
+
+  <!-- Texte ZEB avec contour noir, réduit pour ne pas déborder -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#zebre-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="43"
+    textLength="88"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    ZEB
+  </text>
+
+  <!-- Contour bleu fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#zebre-text-grad)"
+    stroke="#00A3E0"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="43"
+    textLength="88"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    ZEB
+  </text>
+</svg>

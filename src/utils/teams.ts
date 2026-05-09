@@ -163,6 +163,10 @@ export const TEAMS_DATA = {
   'US MONTAUBAN': { logo: '/logos/montauban.svg', name: 'Montauban' },
 
   'NICE': { logo: '/logos/nice.svg', name: 'Nice' },
+  'STADE NIÇOIS': { logo: '/logos/nice.svg', name: 'Nice' },
+  'STADE NIÇOIS RUGBY': { logo: '/logos/nice.svg', name: 'Nice' },
+  'STADE NICOIS': { logo: '/logos/nice.svg', name: 'Nice' },        // sans cédille (au cas où)
+  'STADE NICOIS RUGBY': { logo: '/logos/nice.svg', name: 'Nice' },  // sans cédille (au cas où)
 
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — Premiership (Angleterre)
@@ -193,6 +197,20 @@ export const TEAMS_DATA = {
 
   'SARACENS': { logo: '/logos/saracens.svg', name: 'Saracens' },
 
+  // 🆕 Premiership historique (clubs disparus, relégués ou en faillite)
+  'WASPS': { logo: '/logos/wasps.svg', name: 'Wasps' },
+  'LONDON WASPS': { logo: '/logos/wasps.svg', name: 'Wasps' },
+  'WASPS RUGBY': { logo: '/logos/wasps.svg', name: 'Wasps' },
+
+  'NEWCASTLE': { logo: '/logos/newcastle.svg', name: 'Newcastle' },
+  'NEWCASTLE FALCONS': { logo: '/logos/newcastle.svg', name: 'Newcastle' },
+
+  'LEEDS': { logo: '/logos/leeds.svg', name: 'Leeds' },
+  'LEEDS TYKES': { logo: '/logos/leeds.svg', name: 'Leeds' },
+  'LEEDS CARNEGIE': { logo: '/logos/leeds.svg', name: 'Leeds' },
+
+  'LONDON IRISH': { logo: '/logos/london-irish.svg', name: 'London Irish' },
+
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — URC : Irlande, Pays de Galles, Écosse, Italie, Afrique du Sud
   // ════════════════════════════════════════════════════════════
@@ -219,6 +237,14 @@ export const TEAMS_DATA = {
 
   'SCARLETS': { logo: '/logos/scarlets.svg', name: 'Scarlets' },
 
+  // 🆕 Pays de Galles : franchises actuelles + historiques
+  'DRAGONS': { logo: '/logos/dragons.svg', name: 'Dragons' },
+  'DRAGONS RUGBY': { logo: '/logos/dragons.svg', name: 'Dragons' },
+  'NEWPORT GWENT DRAGONS': { logo: '/logos/dragons.svg', name: 'Dragons' },
+
+  'BRIDGEND': { logo: '/logos/bridgend.svg', name: 'Bridgend' },
+  'EBBW VALE': { logo: '/logos/ebbw-vale.svg', name: 'Ebbw Vale' },
+
   // Écosse
   'EDINBURGH': { logo: '/logos/edinburgh.svg', name: 'Edinburgh' },
   'EDINBURGH RUGBY': { logo: '/logos/edinburgh.svg', name: 'Edinburgh' },
@@ -226,10 +252,24 @@ export const TEAMS_DATA = {
   'GLASGOW': { logo: '/logos/glasgow.svg', name: 'Glasgow' },
   'GLASGOW WARRIORS': { logo: '/logos/glasgow.svg', name: 'Glasgow' },
 
+  // 🆕 Écosse historique
+  'BORDER REIVERS': { logo: '/logos/border-reivers.svg', name: 'Border Reivers' },
+
   // Italie
   'BENETTON': { logo: '/logos/benetton.svg', name: 'Benetton' },
   'BENETTON RUGBY': { logo: '/logos/benetton.svg', name: 'Benetton' },
   'BENETTON TREVISO': { logo: '/logos/benetton.svg', name: 'Benetton' },
+
+  // 🆕 Italie : franchise actuelle Zebre + clubs historiques
+  'ZEBRE': { logo: '/logos/zebre.svg', name: 'Zebre' },
+  'ZEBRE PARMA': { logo: '/logos/zebre.svg', name: 'Zebre' },
+
+  'CALVISANO': { logo: '/logos/calvisano.svg', name: 'Calvisano' },
+  "L'AQUILA": { logo: '/logos/laquila.svg', name: "L'Aquila" },
+  'MILAN': { logo: '/logos/milan.svg', name: 'Milan' },
+  'PARMA': { logo: '/logos/parma.svg', name: 'Parma' },
+  'PETRARCA': { logo: '/logos/petrarca.svg', name: 'Petrarca' },
+  'ROMA': { logo: '/logos/roma.svg', name: 'Roma' },
 
   // Afrique du Sud
   'BULLS': { logo: '/logos/bulls.svg', name: 'Bulls' },
@@ -240,6 +280,10 @@ export const TEAMS_DATA = {
 
   'STORMERS': { logo: '/logos/stormers.svg', name: 'Stormers' },
   'DHL STORMERS': { logo: '/logos/stormers.svg', name: 'Stormers' },
+
+  // 🆕 Roumanie
+  'FARUL CONSTANȚA': { logo: '/logos/farul-constanta.svg', name: 'Farul Constanța' },
+  'FARUL CONSTANTA': { logo: '/logos/farul-constanta.svg', name: 'Farul Constanța' }, // sans cédille
 };
 
 // ============================================================

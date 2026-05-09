@@ -1,0 +1,220 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="dragons-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="dragons-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="dragons-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C8102E" />
+      <stop offset="100%" stop-color="#5A0008" />
+    </linearGradient>
+
+    <linearGradient id="dragons-fire-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD35A" />
+      <stop offset="45%" stop-color="#F28C28" />
+      <stop offset="100%" stop-color="#C8102E" />
+    </linearGradient>
+
+    <linearGradient id="dragons-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#FFD35A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#dragons-hex-clip)">
+    <rect width="200" height="200" fill="url(#dragons-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Dragons, sans toucher les bordures -->
+  <g clip-path="url(#dragons-safe-clip)">
+    <!-- Bande centrale feu -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#dragons-fire-grad)"
+      opacity="0.9"
+    />
+
+    <!-- Bande noire centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#111111"
+      opacity="0.9"
+    />
+
+    <!-- Bandes rouges sombres -->
+    <rect
+      x="58"
+      y="64"
+      width="84"
+      height="7"
+      fill="#111111"
+      opacity="0.75"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="7"
+      fill="#111111"
+      opacity="0.75"
+    />
+
+    <!-- Flamme supérieure stylisée -->
+    <path
+      d="M100 55
+         C92 70, 108 72, 98 88
+         C116 80, 122 66, 112 52
+         C126 62, 137 76, 132 94
+         C121 82, 108 82, 100 100
+         C91 83, 78 82, 68 94
+         C63 76, 74 62, 88 52
+         C82 66, 86 80, 100 55Z"
+      fill="#FFD35A"
+      opacity="0.28"
+    />
+
+    <!-- Silhouette abstraite de dragon -->
+    <path
+      d="M61 122
+         C78 104, 94 113, 105 96
+         C111 86, 122 80, 137 82
+         C128 88, 124 94, 127 102
+         C116 98, 108 105, 100 115
+         C89 129, 74 134, 61 122Z"
+      fill="none"
+      stroke="#FFD35A"
+      stroke-width="5"
+      opacity="0.45"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Griffes / accents dynamiques -->
+    <path
+      d="M62 72 L94 104"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M138 72 L106 104"
+      stroke="#FFD35A"
+      stroke-width="4"
+      opacity="0.24"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 136 L142 64"
+      stroke="#FFD35A"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.1"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure rouge sombre -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#C8102E"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure or -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#FFD35A"
+    stroke-width="2"
+    opacity="0.95"
+  />
+
+  <!-- Texte DRA avec contour noir, réduit pour ne pas déborder -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#dragons-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="43"
+    textLength="88"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    DRA
+  </text>
+
+  <!-- Contour rouge/or fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#dragons-text-grad)"
+    stroke="#FFD35A"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="43"
+    textLength="88"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    DRA
+  </text>
+</svg>

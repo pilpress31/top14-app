@@ -1,0 +1,259 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="bridgend-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="bridgend-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="bridgend-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2A2A2A" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+
+    <linearGradient id="bridgend-blue-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8FD3FF" />
+      <stop offset="55%" stop-color="#3AA0D8" />
+      <stop offset="100%" stop-color="#005B8F" />
+    </linearGradient>
+
+    <linearGradient id="bridgend-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#8FD3FF" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#bridgend-hex-clip)">
+    <rect width="200" height="200" fill="url(#bridgend-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Bridgend -->
+  <g clip-path="url(#bridgend-safe-clip)">
+    <!-- Bande centrale bleu clair -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#bridgend-blue-grad)"
+      opacity="0.9"
+    />
+
+    <!-- Bande noire centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#000000"
+      opacity="0.93"
+    />
+
+    <!-- Bandes bleu/blanc style rugby -->
+    <rect
+      x="58"
+      y="64"
+      width="84"
+      height="7"
+      fill="#8FD3FF"
+      opacity="0.9"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="7"
+      fill="#8FD3FF"
+      opacity="0.9"
+    />
+
+    <rect
+      x="58"
+      y="74"
+      width="84"
+      height="4"
+      fill="#FFFFFF"
+      opacity="0.75"
+    />
+
+    <rect
+      x="58"
+      y="122"
+      width="84"
+      height="4"
+      fill="#FFFFFF"
+      opacity="0.75"
+    />
+
+    <!-- Corbeau / raven stylisé discret -->
+    <path
+      d="M58 84
+         C76 66, 95 66, 103 80
+         C114 66, 132 68, 144 84
+         C126 80, 114 86, 104 99
+         C102 102, 98 102, 96 99
+         C86 86, 74 80, 58 84Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Pont stylisé / Bridgend -->
+    <path
+      d="M62 122
+         C72 105, 88 98, 100 114
+         C112 98, 128 105, 138 122"
+      fill="none"
+      stroke="#8FD3FF"
+      stroke-width="5"
+      opacity="0.42"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <path
+      d="M66 126 L134 126"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.22"
+      stroke-linecap="round"
+    />
+
+    <!-- Ballon de rugby discret -->
+    <path
+      d="M64 121
+         C82 105, 118 105, 136 121
+         C116 136, 84 136, 64 121Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.16"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits dynamiques -->
+    <path
+      d="M58 136 L142 64"
+      stroke="#8FD3FF"
+      stroke-width="4"
+      opacity="0.24"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.12"
+      stroke-linecap="round"
+    />
+
+    <!-- Accent gallois discret -->
+    <path
+      d="M62 100 L138 100"
+      stroke="#D30731"
+      stroke-width="3"
+      opacity="0.18"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M62 105 L138 105"
+      stroke="#FFFFFF"
+      stroke-width="3"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure bleu clair -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#8FD3FF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure blanche -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="2"
+    opacity="0.9"
+  />
+
+  <!-- Texte BRI avec contour noir, sans débordement -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#bridgend-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="82"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    BRI
+  </text>
+
+  <!-- Contour bleu fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#bridgend-text-grad)"
+    stroke="#8FD3FF"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="82"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    BRI
+  </text>
+</svg>

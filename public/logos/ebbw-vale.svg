@@ -1,0 +1,264 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <clipPath id="ebbw-vale-hex-clip">
+      <polygon points="
+        100,10
+        175,50
+        175,150
+        100,190
+        25,150
+        25,50
+      " />
+    </clipPath>
+
+    <!-- Zone intérieure pour éviter que les décors touchent les bordures -->
+    <clipPath id="ebbw-vale-safe-clip">
+      <polygon points="
+        100,36
+        150,64
+        150,136
+        100,164
+        50,136
+        50,64
+      " />
+    </clipPath>
+
+    <linearGradient id="ebbw-vale-bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#007A3D" />
+      <stop offset="100%" stop-color="#003B1F" />
+    </linearGradient>
+
+    <linearGradient id="ebbw-vale-steel-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="55%" stop-color="#C9D1D9" />
+      <stop offset="100%" stop-color="#7A858E" />
+    </linearGradient>
+
+    <linearGradient id="ebbw-vale-text-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BFEFD4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fond principal -->
+  <g clip-path="url(#ebbw-vale-hex-clip)">
+    <rect width="200" height="200" fill="url(#ebbw-vale-bg-grad)" />
+  </g>
+
+  <!-- Décor intérieur Ebbw Vale -->
+  <g clip-path="url(#ebbw-vale-safe-clip)">
+    <!-- Bande centrale acier -->
+    <rect
+      x="50"
+      y="82"
+      width="100"
+      height="36"
+      fill="url(#ebbw-vale-steel-grad)"
+      opacity="0.9"
+    />
+
+    <!-- Bande verte centrale pour garder le texte lisible -->
+    <rect
+      x="52"
+      y="90"
+      width="96"
+      height="20"
+      fill="#003B1F"
+      opacity="0.93"
+    />
+
+    <!-- Bandes vert/blanc style rugby -->
+    <rect
+      x="58"
+      y="64"
+      width="84"
+      height="7"
+      fill="#FFFFFF"
+      opacity="0.85"
+    />
+
+    <rect
+      x="58"
+      y="129"
+      width="84"
+      height="7"
+      fill="#FFFFFF"
+      opacity="0.85"
+    />
+
+    <rect
+      x="58"
+      y="74"
+      width="84"
+      height="4"
+      fill="#D30731"
+      opacity="0.75"
+    />
+
+    <rect
+      x="58"
+      y="122"
+      width="84"
+      height="4"
+      fill="#D30731"
+      opacity="0.75"
+    />
+
+    <!-- Motif acier / Steelmen stylisé -->
+    <path
+      d="M64 78
+         L86 64
+         L100 78
+         L114 64
+         L136 78"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="5"
+      opacity="0.22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <path
+      d="M68 124
+         L88 110
+         L100 124
+         L112 110
+         L132 124"
+      fill="none"
+      stroke="#C9D1D9"
+      stroke-width="5"
+      opacity="0.38"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Vallée / montagnes stylisées -->
+    <path
+      d="M58 116
+         C73 98, 86 98, 100 116
+         C114 98, 127 98, 142 116"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.22"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Ballon de rugby discret -->
+    <path
+      d="M64 121
+         C82 105, 118 105, 136 121
+         C116 136, 84 136, 64 121Z"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.17"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Traits dynamiques -->
+    <path
+      d="M58 136 L142 64"
+      stroke="#FFFFFF"
+      stroke-width="4"
+      opacity="0.14"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M58 64 L142 136"
+      stroke="#D30731"
+      stroke-width="4"
+      opacity="0.2"
+      stroke-linecap="round"
+    />
+
+    <!-- Accent gallois discret -->
+    <path
+      d="M62 100 L138 100"
+      stroke="#D30731"
+      stroke-width="3"
+      opacity="0.2"
+      stroke-linecap="round"
+    />
+
+    <path
+      d="M62 105 L138 105"
+      stroke="#FFFFFF"
+      stroke-width="3"
+      opacity="0.16"
+      stroke-linecap="round"
+    />
+  </g>
+
+  <!-- Bordure extérieure noire -->
+  <polygon
+    points="100,10 175,50 175,150 100,190 25,150 25,50"
+    fill="none"
+    stroke="#000000"
+    stroke-width="8"
+  />
+
+  <!-- Bordure intérieure blanche -->
+  <polygon
+    points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="4"
+  />
+
+  <!-- Fine bordure rouge gallois -->
+  <polygon
+    points="100,30 156,58 156,142 100,170 44,142 44,58"
+    fill="none"
+    stroke="#D30731"
+    stroke-width="2"
+    opacity="0.95"
+  />
+
+  <!-- Texte EBB avec contour noir, sans débordement -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#ebbw-vale-text-grad)"
+    stroke="#000000"
+    stroke-width="6"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="84"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    EBB
+  </text>
+
+  <!-- Contour vert fin -->
+  <text
+    x="100"
+    y="111"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="url(#ebbw-vale-text-grad)"
+    stroke="#007A3D"
+    stroke-width="1.8"
+    paint-order="stroke"
+    font-family="Arial Black, Arial, sans-serif"
+    font-weight="900"
+    font-size="42"
+    textLength="84"
+    lengthAdjust="spacingAndGlyphs"
+  >
+    EBB
+  </text>
+</svg>
