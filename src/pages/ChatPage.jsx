@@ -391,9 +391,9 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-rugby-white" onClick={handleClickOutside}>
-      {/* ✅ Header - STICKY (top via --safe-area-top pour iOS PWA standalone) */}
+      {/* ✅ Header - FIXED (sticky cassé par overflow-x:hidden sur body, cf. index.css) */}
       <div
-        className="sticky z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg"
+        className="fixed left-0 right-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg"
         style={{ top: 'var(--safe-area-top, 0px)' }}
       >
         <div className="container mx-auto px-4 py-6">
@@ -468,8 +468,9 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* ✅ Zone messages - AVEC PADDING-TOP pour header sticky */}
-      <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-20">
+      {/* ✅ Zone messages - PADDING-TOP pour passer sous le header fixed (88px + safe-area) */}
+      <div className="container mx-auto px-4 py-4 space-y-3 pb-32 pt-28"
+           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 6rem)' }}>
         {/* Sentinel scroll infini - invisible, déclenche le chargement */}
         {loadingMore && (
           <div className="flex justify-center py-3">
