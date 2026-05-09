@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
-import ClassementHcup from "../components/ClassementHcup";
+import ClassementHcupTabs from "../components/ClassementHcupTabs";
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -178,7 +179,7 @@ function ClassementPage() {
           → on s'arrête ici, le reste de la page (titre + tableau Top14/Pro D2)
             n'est pas pertinent dans ce mode.
           ═══════════════════════════════════════════════════════ */}
-      {isHcup && <ClassementHcup />}
+      {isHcup && <ClassementHcupTabs />}
 
       {/* Titre */}
       {!isHcup && (
