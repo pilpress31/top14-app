@@ -3,11 +3,18 @@
 // ==========================================
 // Fichier : src/hooks/useNotifications.js
 //
-// v3.2 — version finale
+// v3.3 — fix Realtime replay au resubscribe (mai 2026)
+//   - Channel name UNIQUE par user + timestamp (évite la réutilisation côté Supabase)
+//   - Garde temporelle sur INSERT : ignore les events bufferisés antérieurs au mount
 //   - unreadCount dérivé localement de notifications via useMemo
 //   - Pas de polling périodique (Realtime suffit)
 //   - À utiliser via NotificationsContext (Provider) pour partager
 //     le state entre Badge et Center
+//
+// Bug corrigé :
+//   Au refresh d'une page (ex. Classement Pro D2), le hook se remontait
+//   et le channel 'notifications' (statique) pouvait rejouer les INSERT
+//   bufferisés côté Supabase, faisant réapparaître des notifs déjà supprimées.
 // ==========================================
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -141,15 +148,22 @@ export function useNotifications() {
   }, [loadNotifications]);
 
   // Realtime Supabase — INSERT, UPDATE, DELETE
+  // ⚠️ FIX v3.3 : channel name unique + garde temporelle anti-replay au resubscribe
   useEffect(() => {
     let channel;
+    const mountTime = new Date().toISOString();
 
     async function setupRealtime() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // 🆕 Channel name UNIQUE par user + par mount
+      // Empêche Supabase de retomber sur un channel existant côté serveur
+      // et de rejouer son backlog d'events bufferisés.
+      const channelName = `notifications-${user.id}-${Date.now()}`;
+
       channel = supabase
-        .channel('notifications')
+        .channel(channelName)
         .on(
           'postgres_changes',
           {
@@ -163,6 +177,14 @@ export function useNotifications() {
             // unreadCount est dérivé via useMemo, il se met à jour automatiquement.
 
             if (payload.eventType === 'INSERT') {
+              // 🛡️ Garde temporelle : ignorer les INSERTs antérieurs au mount du hook.
+              // Si une notif arrive via Realtime mais a été créée AVANT que le hook
+              // ne se monte, c'est forcément un replay de buffer Supabase → on l'ignore.
+              // Le fetch REST initial (loadNotifications) charge déjà les notifs préexistantes.
+              if (payload.new.created_at && payload.new.created_at < mountTime) {
+                console.log('[useNotifications] INSERT bufferisé ignoré:', payload.new.id);
+                return;
+              }
               setNotifications(prev => {
                 if (prev.some(n => n.id === payload.new.id)) return prev;
                 return [payload.new, ...prev];
