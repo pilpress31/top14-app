@@ -335,10 +335,18 @@ Résultats du diagnostic :
         </button>
         <button
           onClick={() => navigate('/cgu')}
-          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
         >
           <FileText className="h-5 w-5 text-gray-500" />
           <span className="flex-1 text-left text-gray-800">Conditions générales</span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+        </button>
+        <button
+          onClick={() => navigate('/confidentialite')}
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+        >
+          <Shield className="h-5 w-5 text-blue-600" />
+          <span className="flex-1 text-left text-gray-800">Politique de confidentialité</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
       </div>
