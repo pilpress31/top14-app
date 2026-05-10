@@ -367,7 +367,7 @@ Résultats du diagnostic :
       )}
 
       <div className="mt-8 text-center">
-        <p className="text-xs text-gray-400">Version 1.0.0</p>
+        <p className="text-xs text-gray-400">Version 2.0.0</p>
       </div>
 
       <AvisModal isOpen={showAvisModal} onClose={() => setShowAvisModal(false)} />
