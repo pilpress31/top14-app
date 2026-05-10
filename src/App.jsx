@@ -29,6 +29,7 @@ import NotificationsDiagnosticPage from './pages/NotificationsDiagnosticPage';
 import AProposPage from "./pages/AProposPage";
 import ReglementPage from "./pages/ReglementPage";
 import CGUPage from "./pages/CGUPage";
+import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 
 // Pages Auth
 import ParametresPage from './pages/ParametresPage';
@@ -81,7 +82,8 @@ function AppContent() {
     '/register',
     '/forgot-password',
     '/reset-password',
-    '/payment/success',  // ← IMPORTANT : ne jamais bloquer le retour PayPal
+    '/confidentialite',   // ← Politique de confidentialité publique (Google Play + RGPD)
+    '/payment/success',   // ← IMPORTANT : ne jamais bloquer le retour PayPal
     '/payment/cancel'
   ].includes(location.pathname);
 
@@ -100,6 +102,7 @@ function AppContent() {
     '/reglement',
     '/a-propos',
     '/cgu',
+    '/confidentialite',   // ← Page légale publique
     '/payment/success',
     '/payment/cancel'
   ].includes(location.pathname);
@@ -145,6 +148,9 @@ function AppContent() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* ✅ Politique de confidentialité — publique pour Google Play et conformité RGPD */}
+        <Route path="/confidentialite" element={<PolitiqueConfidentialitePage />} />
 
         {/* ✅ Route dédiée retour PayPal — séparée du PaywallPage */}
         <Route path="/payment/success" element={<PaymentSuccessPage />} />
