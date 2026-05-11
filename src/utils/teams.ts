@@ -202,21 +202,21 @@ export const TEAMS_DATA = {
 
   'NICE RUGBY':                    { logo: '/logos/nice.svg', name: 'Nice' },
 
-  'BAGNÈRES':                      { logo: '/logos/default.svg', name: 'Bagnères' },
-  'BAGNERES':                      { logo: '/logos/default.svg', name: 'Bagnères' },
-  'MAZAMET':                       { logo: '/logos/default.svg', name: 'Mazamet' },
-  'COGNAC':                        { logo: '/logos/default.svg', name: 'Cognac' },
+  'BAGNÈRES':                      { logo: '/logos/bagneres.svg', name: 'Bagnères' },
+  'BAGNERES':                      { logo: '/logos/bagneres.svg', name: 'Bagnères' },
+  'MAZAMET':                       { logo: '/logos/mazamet.svg', name: 'Mazamet' },
+  'COGNAC':                        { logo: '/logos/cognac.svg', name: 'Cognac' },
   'CARCASSONNE':                   { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'US CARCASSONNE':                { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
-  'FC LYON':                       { logo: '/logos/default.svg', name: 'FC Lyon' },
-  'SCUF':                          { logo: '/logos/default.svg', name: 'SCUF Paris' },
-  'LA VOULTE':                     { logo: '/logos/default.svg', name: 'La Voulte' },
-  'QUILLAN':                       { logo: '/logos/default.svg', name: 'Quillan' },
-  'LÉZIGNAN':                      { logo: '/logos/default.svg', name: 'Lézignan' },
-  'LEZIGNAN':                      { logo: '/logos/default.svg', name: 'Lézignan' },
-  'CARMAUX':                       { logo: '/logos/default.svg', name: 'Carmaux' },
-  'SC VIENNE':                     { logo: '/logos/default.svg', name: 'SC Vienne' },
-  'VIENNE':                        { logo: '/logos/default.svg', name: 'SC Vienne' },
+  'FC LYON':                       { logo: '/logos/fclyon.svg', name: 'FC Lyon' },  // pas de logo SVG dédié
+  'SCUF':                          { logo: '/logos/scuf.svg', name: 'SCUF Paris' },
+  'LA VOULTE':                     { logo: '/logos/lavoulte.svg', name: 'La Voulte' },
+  'QUILLAN':                       { logo: '/logos/quillan.svg', name: 'Quillan' },
+  'LÉZIGNAN':                      { logo: '/logos/lezignan.svg', name: 'Lézignan' },
+  'LEZIGNAN':                      { logo: '/logos/lezignan.svg', name: 'Lézignan' },
+  'CARMAUX':                       { logo: '/logos/carmaux.svg', name: 'Carmaux' },
+  'SC VIENNE':                     { logo: '/logos/scvienne.svg', name: 'SC Vienne' },
+  'VIENNE':                        { logo: '/logos/scvienne.svg', name: 'SC Vienne' },
 
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — Premiership (Angleterre)
