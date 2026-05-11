@@ -208,7 +208,8 @@ export const TEAMS_DATA = {
   'COGNAC':                        { logo: '/logos/cognac.svg', name: 'Cognac' },
   'CARCASSONNE':                   { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'US CARCASSONNE':                { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
-  'FC LYON':                       { logo: '/logos/fclyon.svg', name: 'FC Lyon' },  // pas de logo SVG dédié
+  'FC LYON':                       { logo: '/logos/fclyon.svg', name: 'FC Lyon' },
+  'STADE BORDELAIS':               { logo: '/logos/stadebordelais.svg', name: 'Stade Bordelais' },  // pas de logo SVG dédié
   'SCUF':                          { logo: '/logos/scuf.svg', name: 'SCUF Paris' },
   'LA VOULTE':                     { logo: '/logos/lavoulte.svg', name: 'La Voulte' },
   'QUILLAN':                       { logo: '/logos/quillan.svg', name: 'Quillan' },
