@@ -3,11 +3,12 @@ import { getClassement } from "../lib/api";
 import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
 import ClassementHcupTabs from "../components/ClassementHcupTabs";
+import PalmaresTop14 from "../components/PalmaresTop14";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-type Championnat = 'top14' | 'prod2' | 'hcup';
+type Championnat = 'top14' | 'prod2' | 'hcup' | 'palmares';
 
 function ClassementPage() {
   const [championnat, setChampionnat] = useState<Championnat>('top14');
@@ -20,6 +21,7 @@ function ClassementPage() {
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
+  const isPalmares = championnat === 'palmares';
 
   // Couleurs adaptées selon championnat
   const themeColors = {
@@ -31,9 +33,8 @@ function ClassementPage() {
   };
 
   const loadClassement = useCallback(async () => {
-    // 🆕 HCup : géré par le composant ClassementHcup (scraping RugbyPass)
-    // → on ne charge rien ici, on laisse le composant faire son fetch
-    if (championnat === 'hcup') {
+    // 🆕 HCup/Palmarès : gérés par leurs composants dédiés
+    if (championnat === 'hcup' || championnat === 'palmares') {
       setClassement([]);
       setLoading(false);
       return;
@@ -170,6 +171,16 @@ function ClassementPage() {
           >
             ⭐ C.CUP
           </button>
+          <button
+            onClick={() => setChampionnat('palmares')}
+            className={`px-4 py-2 font-bold text-sm transition-colors ${
+              championnat === 'palmares'
+                ? 'bg-rugby-gold text-white'
+                : 'bg-white text-rugby-gold hover:bg-rugby-gold/10'
+            }`}
+          >
+            🏆 Palmarès
+          </button>
         </div>
       </div>
 
@@ -180,9 +191,10 @@ function ClassementPage() {
             n'est pas pertinent dans ce mode.
           ═══════════════════════════════════════════════════════ */}
       {isHcup && <ClassementHcupTabs />}
+      {isPalmares && <PalmaresTop14 />}
 
       {/* Titre */}
-      {!isHcup && (
+      {!isHcup && !isPalmares && (
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2 whitespace-nowrap">
           <span className={themeColors.primary}>
@@ -198,7 +210,7 @@ function ClassementPage() {
       </div>
       )}
 
-      {!isHcup && (loading ? (
+      {!isHcup && !isPalmares && (loading ? (
         <div className="p-6 text-center text-gray-500">🔄 Chargement du classement…</div>
       ) : classement.length === 0 ? (
         <div className="p-6 text-center text-gray-500">
