@@ -9,6 +9,7 @@ interface MatchHistorique {
   date: string;
   saison: string;
   journee: number;
+  round?: string;  // 🆕 'Journée' | 'Barrage' | 'Demi' | 'Finale'
   equipe_domicile: string;
   equipe_exterieure: string;
   score_domicile: number;
@@ -45,12 +46,12 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const [totalTop14, setTotalTop14] = useState<number>(0);
   const [t14Page, setT14Page] = useState<number>(1);
   const [saisonsD2, setSaisonsD2] = useState<string[]>([]);
-  const [journeesD2, setJourneesD2] = useState<{journee: number, date_match: string}[]>([]);
+  const [journeesD2, setJourneesD2] = useState<{journee: number, date_match: string, round?: string, label?: string}[]>([]);
   const [equipesD2, setEquipesD2] = useState<string[]>([]);
   // ✅ NOUVEAU : états dédiés Top 14 pour les listes complètes
   const [saisonsT14, setSaisonsT14] = useState<string[]>([]);
   const [equipesT14, setEquipesT14] = useState<string[]>([]);
-  const [journeesT14, setJourneesT14] = useState<{journee: number, date_match: string}[]>([]);
+  const [journeesT14, setJourneesT14] = useState<{journee: number, date_match: string, round?: string, label?: string}[]>([]);
 
   // ✅ Garde-fou : empêche le Realtime d'écraser les filtres au premier montage
   const initialLoadDone = useRef(false);
@@ -204,13 +205,22 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
   const saisons = isD2 ? saisonsD2 : saisonsT14;
 
   const getJourneesForSaison = (saison: string) => {
-    // ✅ FIX : même logique pour les deux championnats (endpoints dédiés)
     const source = isD2 ? journeesD2 : journeesT14;
-    return source.map(({ journee, date_match }) => ({
-      journee,
-      date: date_match,
-      label: `J ${journee} - ${new Date(date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}`
-    }));
+    return source.map(({ journee, date_match, round, label }) => {
+      const isPhaseFinale = round && round !== 'Journée';
+      const dateFormatted = new Date(date_match).toLocaleDateString('fr-FR', {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+      });
+      return {
+        journee,
+        date: date_match,
+        round: round || 'Journée',
+        // 🆕 phases finales → label Round, journées normales → "J N - date"
+        label: isPhaseFinale
+          ? `${label || round} - ${dateFormatted}`
+          : `J ${journee} - ${dateFormatted}`
+      };
+    });
   };
 
   // Pagination serveur — les données arrivent déjà filtrées
@@ -315,7 +325,10 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                   ? "Toutes les saisons" 
                   : selectedJournee === "all"
                     ? `Saison ${selectedSaison}`
-                    : `${selectedSaison} - J${selectedJournee}`
+                    // 🆕 Si phase finale, afficher le label Round, sinon J{num}
+                    : ['Barrage', 'Demi', 'Finale'].includes(selectedJournee)
+                      ? `${selectedSaison} - ${selectedJournee}`
+                      : `${selectedSaison} - J${selectedJournee}`
                 }
               </span>
               <ChevronDown className={`w-4 h-4 transition-transform ${saisonDropdownOpen ? 'rotate-180' : ''}`} style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
@@ -386,26 +399,31 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         >
                           Toutes les journées
                         </button>
-                        {journeesOptions.map(({ journee, label }) => (
+                        {journeesOptions.map(({ journee, label, round }) => {
+                          // 🆕 Pour les phases finales, on filtre par round (texte), pas par numéro de journée
+                          const isPhaseFinale = round && round !== 'Journée';
+                          const filterValue = isPhaseFinale ? round! : String(journee);
+                          return (
                           <button
-                            key={journee}
+                            key={filterValue}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedJournee(String(journee));
+                              setSelectedJournee(filterValue);
                               setSaisonDropdownOpen(false);
                               setCurrentPage(1);
                               setD2Page(1);
                               setT14Page(1);
                               setLoading(true);
-                              loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, saison, String(journee));
+                              loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, saison, filterValue);
                             }}
                             className={`w-full text-left px-6 py-1.5 text-xs hover:bg-opacity-10 transition-colors ${
-                              selectedJournee === String(journee) ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
-                            }`}
+                              selectedJournee === filterValue ? (isD2 ? "font-semibold" : "bg-rugby-gold bg-opacity-30 font-semibold") : ""
+                            } ${isPhaseFinale ? "italic text-rugby-gold" : ""}`}
                           >
                             {label}
                           </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -464,7 +482,9 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
               {/* Header */}
               <div className="flex items-center justify-between mb-2">
                 <div className="text-[10px] font-bold uppercase tracking-wider" style={isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }}>
-                  Saison {m.saison} · J{m.journee}
+                  Saison {m.saison} · {m.round && m.round !== 'Journée' ? (
+                    <span style={{color: '#DC2626'}}>{m.round}</span>
+                  ) : `J${m.journee}`}
                 </div>
                 <div className="text-[10px] text-gray-400">
                   {new Date(m.date).toLocaleDateString("fr-FR", {
