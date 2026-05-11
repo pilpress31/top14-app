@@ -25,13 +25,19 @@ function anneeFinale(saison) {
 
 // Nom affiché : getTeamData si logo connu, sinon capitaliser joliment
 function displayName(club) {
+  if (!club) return "";
   const td = getTeamData(club);
-  // Si getTeamData a un vrai nom (pas juste club en majuscules), l'utiliser
+  // getTeamData retourne le vrai nom affiché si le club est connu
   if (td && td.name && td.name !== club) return td.name;
-  // Sinon : Title Case
+  // Fallback : Title Case en préservant les accents
   return club
     .split(" ")
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .map(w => {
+      if (w.length === 0) return w;
+      // Garder les acronymes en majuscules (FC, US, ASM, RC...)
+      if (w.length <= 3 && w === w.toUpperCase()) return w;
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    })
     .join(" ");
 }
 
@@ -199,7 +205,7 @@ export default function PalmaresTop14() {
                     />
                     <div className="flex-1 min-w-0">
                       {/* Fix point 2 : nom affiché via displayName */}
-                      <p className="text-sm font-semibold text-gray-800 truncate">
+                      <p className="text-sm font-semibold text-gray-800 leading-tight">
                         {displayName(club.club)}
                       </p>
                       <p className="text-xs text-gray-400">
@@ -306,7 +312,7 @@ export default function PalmaresTop14() {
                         />
                       </div>
                       {/* Fix point 5 : fond blanc + padding pour que les lettres soient visibles */}
-                      <p className="text-xs font-semibold text-center text-gray-800 leading-tight line-clamp-2 w-full">
+                      <p className="text-xs font-semibold text-center text-gray-800 leading-tight w-full">
                         {displayName(f.champion)}
                       </p>
                       <span className="text-xs text-rugby-gold font-bold mt-0.5">🏆 Champion</span>
@@ -333,7 +339,7 @@ export default function PalmaresTop14() {
                           onError={e => { e.currentTarget.style.display = "none"; }}
                         />
                       </div>
-                      <p className="text-xs font-semibold text-center text-gray-800 leading-tight line-clamp-2 w-full">
+                      <p className="text-xs font-semibold text-center text-gray-800 leading-tight w-full">
                         {displayName(f.finaliste)}
                       </p>
                       <span className="text-xs text-gray-400 font-bold mt-0.5">🥈 Finaliste</span>
