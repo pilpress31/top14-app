@@ -46,6 +46,7 @@ export default function PalmaresTop14() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
   const [expandedClub, setExpandedClub] = useState(null);
+  const [expandedPodium, setExpandedPodium] = useState(null);
   const [showAll, setShowAll]         = useState(false);
   const [viewMode, setViewMode]       = useState("palmares");
   const [filterClub, setFilterClub]   = useState("");
@@ -146,12 +147,17 @@ export default function PalmaresTop14() {
                     style={{ width: logoSize, height: logoSize }}
                     onError={e => { e.currentTarget.style.display = "none"; }}
                   />
-                  <p
-                    className="font-bold text-center text-gray-800 mb-1 leading-tight px-1"
-                    style={{ fontSize: nameSize }}
+                  {/* Nom cliquable */}
+                  <button
+                    className="w-full text-center leading-tight px-1 mb-1"
+                    style={{ fontSize: nameSize, fontWeight: 700, color: '#374151' }}
+                    onClick={() => setExpandedPodium(expandedPodium === club.club ? null : club.club)}
                   >
                     {displayName(club.club)}
-                  </p>
+                    <span className="ml-1 text-gray-400" style={{ fontSize: nameSize - 1 }}>
+                      {expandedPodium === club.club ? "▲" : "▼"}
+                    </span>
+                  </button>
                   {/* Socle podium */}
                   <div
                     className="w-full flex flex-col items-center justify-center rounded-t-lg"
@@ -179,6 +185,40 @@ export default function PalmaresTop14() {
               );
             })}
           </div>
+
+          {/* ── Accordéon podium ── */}
+          {expandedPodium && (() => {
+            const club = palmares.find(p => p.club === expandedPodium);
+            if (!club) return null;
+            const clubFinales = finales.filter(
+              f => f.champion === club.club || f.finaliste === club.club
+            );
+            return (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+                <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Finales jouées — {displayName(expandedPodium)}
+                  </p>
+                  <button onClick={() => setExpandedPodium(null)} className="text-gray-400 text-xs">✕</button>
+                </div>
+                <div className="px-3 py-2 space-y-1">
+                  {clubFinales.map(f => (
+                    <div key={f.saison + f.champion} className="flex items-center gap-2 text-xs">
+                      <span className="text-gray-400 w-10 flex-shrink-0">{anneeFinale(f.saison)}</span>
+                      <span className={f.champion === expandedPodium ? "text-rugby-gold flex-shrink-0" : "flex-shrink-0"}>
+                        {f.champion === expandedPodium ? "🏆" : "🥈"}
+                      </span>
+                      <span className="text-gray-700 truncate">
+                        {f.score_dom != null ? (f.score_dom + "-" + f.score_ext) : "?"}{" "}
+                        <span className="text-gray-400">vs</span>{" "}
+                        {displayName(f.champion === expandedPodium ? f.finaliste : f.champion)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── Liste rang 4+ ── */}
           <div className="space-y-2">
