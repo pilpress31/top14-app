@@ -111,13 +111,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
     : null;
   const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
-  // ✅ Calculer isFT/isMT/isWinnerFT depuis toutes les sources disponibles
+  // ✅ Calculer isFT/isMT/isWinnerFT/isWinnerMT depuis toutes les sources disponibles
   const betType = fullBet?.bet_type || trans.bets?.bet_type;
   // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
   const isWinnerFT = betType === 'WINNER_FT' || trans.description?.includes('Pari vainqueur');
-  const isFT = !isWinnerFT && (betType === 'FT' || trans.description?.includes('FT'));
-  const isMT = betType === 'MT' || trans.description?.includes('MT');
-  const periodLabel = isWinnerFT ? 'Vainqueur' : isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
+  const isWinnerMT = betType === 'WINNER_MT';
+  const isFT = !isWinnerFT && !isWinnerMT && (betType === 'FT' || trans.description?.includes('FT'));
+  const isMT = !isWinnerMT && (betType === 'MT' || trans.description?.includes('MT'));
+  const periodLabel = isWinnerFT ? 'Vainqueur FT' : isWinnerMT ? 'Vainqueur MT' : isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
   
   // 🆕 v3 : récupérer winner_predit pour les paris WINNER_FT
   const winnerPredit = fullBet?.winner_predit ?? trans.bets?.winner_predit;
@@ -318,12 +319,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
               <p className="text-[10px] text-blue-700 font-semibold mb-1">Ton pronostic</p>
               {/* 🆕 v3 : pari vainqueur → nom de l'équipe choisie */}
               {/* 🆕 v4 : supporter aussi DOM/EXT/NUL (HCup) en plus de domicile/exterieur/nul (Top14/D2) */}
-              {isWinnerFT ? (
+              {/* 🆕 v5 : WINNER_MT traité comme WINNER_FT pour l'affichage du nom d'équipe */}
+              {(isWinnerFT || isWinnerMT) ? (
                 <p className="text-base font-bold text-blue-900 text-center">
                   🎯 {(winnerPredit === 'domicile' || winnerPredit === 'DOM') ? homeTeam
                     : (winnerPredit === 'exterieur' || winnerPredit === 'EXT') ? awayTeam
                     : (winnerPredit === 'nul' || winnerPredit === 'NUL') ? 'Match nul'
                     : '-'}
+                  {isWinnerMT && <span className="block text-[10px] text-blue-600 font-normal mt-0.5">(mi-temps)</span>}
                 </p>
               ) : (
                 <p className="text-lg font-bold text-blue-900 text-center">
@@ -335,8 +338,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
             {/* Score réel / Résultat */}
             {hasRealScore && (() => {
               // 🆕 v3 : calculer le vrai vainqueur pour les paris WINNER_FT
+              // 🆕 v5 : idem pour WINNER_MT
               let realWinnerName = null;
-              if (isWinnerFT) {
+              if (isWinnerFT || isWinnerMT) {
                 if (realHome > realAway) realWinnerName = homeTeam;
                 else if (realAway > realHome) realWinnerName = awayTeam;
                 else realWinnerName = 'Match nul';
@@ -351,7 +355,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
                   <p className={`text-[10px] font-semibold mb-1 ${
                     isWon ? 'text-green-700' : 'text-red-700'
                   }`}>
-                    {isWinnerFT ? 'Résultat' : 'Score réel'}
+                    {(isWinnerFT || isWinnerMT) ? 'Résultat' : 'Score réel'}
                   </p>
                   {realWinnerName ? (
                     <>
