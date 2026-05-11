@@ -209,7 +209,7 @@ export default function PalmaresTop14() {
                         {f.champion === expandedPodium ? "🏆" : "🥈"}
                       </span>
                       <span className="text-gray-700 truncate">
-                        {f.score_dom != null ? (f.score_dom + "-" + f.score_ext) : "?"}{" "}
+                        {f.score_domicile != null ? (f.score_domicile + "-" + f.score_exterieur) : "?"}{" "}
                         <span className="text-gray-400">vs</span>{" "}
                         {displayName(f.champion === expandedPodium ? f.finaliste : f.champion)}
                       </span>
@@ -280,7 +280,7 @@ export default function PalmaresTop14() {
                               {f.champion === club.club ? "🏆" : "🥈"}
                             </span>
                             <span className="text-gray-700 truncate">
-                              {f.score_dom != null ? (f.score_dom + "-" + f.score_ext) : "?"}{" "}
+                              {f.score_domicile != null ? (f.score_domicile + "-" + f.score_exterieur) : "?"}{" "}
                               <span className="text-gray-400">vs</span>{" "}
                               {/* Fix point 2 : displayName sur l'adversaire aussi */}
                               {displayName(f.champion === club.club ? f.finaliste : f.champion)}
@@ -360,7 +360,7 @@ export default function PalmaresTop14() {
                     {/* Score */}
                     <div className="flex flex-col items-center flex-shrink-0 px-1">
                       <span className="text-xl font-black text-gray-800">
-                        {f.score_dom != null ? (f.score_dom + " - " + f.score_ext) : "? - ?"}
+                        {f.score_domicile != null ? (f.score_domicile + " - " + f.score_exterieur) : "? - ?"}
                       </span>
                       {f.score_mt_dom != null && (
                         <span className="text-xs text-gray-400">
