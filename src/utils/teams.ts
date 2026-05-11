@@ -170,33 +170,53 @@ export const TEAMS_DATA = {
 
 
   // ════════════════════════════════════════════════════════════
-  //  PALMARÈS HISTORIQUE — clubs anciens sans logo dédié
+  //  ALIASES SANS ACCENTS (robustesse encodage Windows/JSON)
   // ════════════════════════════════════════════════════════════
 
-  // FC Lourdes (8 titres entre 1948 et 1968)
-  'FC LOURDES': { logo: '/logos/lourdes.svg', name: 'Lourdes' },
-  'LOURDES': { logo: '/logos/lourdes.svg', name: 'Lourdes' },
+  'UNION BORDEAUX BEGLES':         { logo: '/logos/ubb.svg', name: 'Bordeaux' },
+  'UNION BORDEAUX-BEGLES':         { logo: '/logos/ubb.svg', name: 'Bordeaux' },
+  'BORDEAUX BEGLES':               { logo: '/logos/ubb.svg', name: 'Bordeaux' },
+  'BEGLES-BORDEAUX':               { logo: '/logos/ubb.svg', name: 'Bordeaux' },
 
-  // US Colomiers (finaliste 2000)
-  'US COLOMIERS': { logo: '/logos/colomiers.svg', name: 'Colomiers' },
+  'MONTPELLIER HERAULT RUGBY':     { logo: '/logos/montpellier.svg', name: 'Montpellier' },
+  'MONTPELLIER HERAULT':           { logo: '/logos/montpellier.svg', name: 'Montpellier' },
 
-  // Stade Tarbes (champion 1919, 1920, 1973)
-  'STADE TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-  'STADO TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
+  'STADE FRANCAIS PARIS':          { logo: '/logos/paris.svg', name: 'Stade Français' },
+  'STADE FRANCAIS':                { logo: '/logos/paris.svg', name: 'Stade Français' },
 
-  // Nice Rugby (finaliste historique)
-  'NICE RUGBY': { logo: '/logos/nice.svg', name: 'Nice' },
+  'AS BEZIERS HERAULT':            { logo: '/logos/beziers.svg', name: 'Béziers' },
+  'AS BEZIERS':                    { logo: '/logos/beziers.svg', name: 'Béziers' },
+  'BEZIERS':                       { logo: '/logos/beziers.svg', name: 'Béziers' },
 
-  // Vieux clubs sans logo SVG dédié → default
-  'FC LYON': { logo: '/logos/default.svg', name: 'FC Lyon' },
-  'SCUF': { logo: '/logos/default.svg', name: 'SCUF Paris' },
-  'LA VOULTE': { logo: '/logos/default.svg', name: 'La Voulte' },
-  'QUILLAN': { logo: '/logos/default.svg', name: 'Quillan' },
-  'LÉZIGNAN': { logo: '/logos/default.svg', name: 'Lézignan' },
-  'LEZIGNAN': { logo: '/logos/default.svg', name: 'Lézignan' },
-  'CARMAUX': { logo: '/logos/default.svg', name: 'Carmaux' },
-  'SC VIENNE': { logo: '/logos/default.svg', name: 'SC Vienne' },
-  'VIENNE': { logo: '/logos/default.svg', name: 'SC Vienne' },
+  // ════════════════════════════════════════════════════════════
+  //  PALMARÈS HISTORIQUE — clubs anciens
+  // ════════════════════════════════════════════════════════════
+
+  'FC LOURDES':                    { logo: '/logos/lourdes.svg', name: 'Lourdes' },
+  'LOURDES':                       { logo: '/logos/lourdes.svg', name: 'Lourdes' },
+
+  'US COLOMIERS':                  { logo: '/logos/colomiers.svg', name: 'Colomiers' },
+
+  'STADE TARBES':                  { logo: '/logos/tarbes.svg', name: 'Tarbes' },
+  'STADO TARBES':                  { logo: '/logos/tarbes.svg', name: 'Tarbes' },
+
+  'NICE RUGBY':                    { logo: '/logos/nice.svg', name: 'Nice' },
+
+  'BAGNÈRES':                      { logo: '/logos/default.svg', name: 'Bagnères' },
+  'BAGNERES':                      { logo: '/logos/default.svg', name: 'Bagnères' },
+  'MAZAMET':                       { logo: '/logos/default.svg', name: 'Mazamet' },
+  'COGNAC':                        { logo: '/logos/default.svg', name: 'Cognac' },
+  'CARCASSONNE':                   { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
+  'US CARCASSONNE':                { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
+  'FC LYON':                       { logo: '/logos/default.svg', name: 'FC Lyon' },
+  'SCUF':                          { logo: '/logos/default.svg', name: 'SCUF Paris' },
+  'LA VOULTE':                     { logo: '/logos/default.svg', name: 'La Voulte' },
+  'QUILLAN':                       { logo: '/logos/default.svg', name: 'Quillan' },
+  'LÉZIGNAN':                      { logo: '/logos/default.svg', name: 'Lézignan' },
+  'LEZIGNAN':                      { logo: '/logos/default.svg', name: 'Lézignan' },
+  'CARMAUX':                       { logo: '/logos/default.svg', name: 'Carmaux' },
+  'SC VIENNE':                     { logo: '/logos/default.svg', name: 'SC Vienne' },
+  'VIENNE':                        { logo: '/logos/default.svg', name: 'SC Vienne' },
 
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — Premiership (Angleterre)
@@ -240,36 +260,6 @@ export const TEAMS_DATA = {
   'LEEDS CARNEGIE': { logo: '/logos/leeds.svg', name: 'Leeds' },
 
   'LONDON IRISH': { logo: '/logos/london-irish.svg', name: 'London Irish' },
-
-
-  // ════════════════════════════════════════════════════════════
-  //  PALMARÈS HISTORIQUE — clubs anciens sans logo dédié
-  // ════════════════════════════════════════════════════════════
-
-  // FC Lourdes (8 titres entre 1948 et 1968)
-  'FC LOURDES': { logo: '/logos/lourdes.svg', name: 'Lourdes' },
-  'LOURDES': { logo: '/logos/lourdes.svg', name: 'Lourdes' },
-
-  // US Colomiers (finaliste 2000)
-  'US COLOMIERS': { logo: '/logos/colomiers.svg', name: 'Colomiers' },
-
-  // Stade Tarbes (champion 1919, 1920, 1973)
-  'STADE TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-  'STADO TARBES': { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-
-  // Nice Rugby (finaliste historique)
-  'NICE RUGBY': { logo: '/logos/nice.svg', name: 'Nice' },
-
-  // Vieux clubs sans logo SVG dédié → default
-  'FC LYON': { logo: '/logos/default.svg', name: 'FC Lyon' },
-  'SCUF': { logo: '/logos/default.svg', name: 'SCUF Paris' },
-  'LA VOULTE': { logo: '/logos/default.svg', name: 'La Voulte' },
-  'QUILLAN': { logo: '/logos/default.svg', name: 'Quillan' },
-  'LÉZIGNAN': { logo: '/logos/default.svg', name: 'Lézignan' },
-  'LEZIGNAN': { logo: '/logos/default.svg', name: 'Lézignan' },
-  'CARMAUX': { logo: '/logos/default.svg', name: 'Carmaux' },
-  'SC VIENNE': { logo: '/logos/default.svg', name: 'SC Vienne' },
-  'VIENNE': { logo: '/logos/default.svg', name: 'SC Vienne' },
 
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — URC : Irlande, Pays de Galles, Écosse, Italie, Afrique du Sud
