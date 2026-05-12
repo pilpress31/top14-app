@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="l1-hex"><polygon points="100,10 175,50 175,150 100,190 25,150 25,50"/></clipPath>
+    <clipPath id="l1-safe"><polygon points="100,36 150,64 150,136 100,164 50,136 50,64"/></clipPath>
+  </defs>
+  <g clip-path="url(#l1-hex)">
+    <rect width="200" height="200" fill="#FFFFFF"/>
+    <rect x="0" y="0" width="200" height="67" fill="#E63B2E"/>
+    <rect x="0" y="133" width="200" height="67" fill="#E63B2E"/>
+    <rect x="80" y="0" width="40" height="200" fill="#E63B2E"/>
+  </g>
+  <g clip-path="url(#l1-safe)">
+    <rect x="58" y="95" width="84" height="5" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+  <polygon points="100,10 175,50 175,150 100,190 25,150 25,50" fill="none" stroke="#000000" stroke-width="8"/>
+  <polygon points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54" fill="none" stroke="#E63B2E" stroke-width="4"/>
+  <polygon points="100,30 156,58 156,142 100,170 44,142 44,58" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="50%" y="112" text-anchor="middle" dominant-baseline="middle" fill="#E63B2E" stroke="#000000" stroke-width="7" paint-order="stroke" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="44" textLength="84" lengthAdjust="spacingAndGlyphs">SJL</text>
+  <text x="50%" y="112" text-anchor="middle" dominant-baseline="middle" fill="#E63B2E" stroke="#FFFFFF" stroke-width="2" paint-order="stroke" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="44" textLength="84" lengthAdjust="spacingAndGlyphs">SJL</text>
+</svg>

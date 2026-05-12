@@ -209,7 +209,7 @@ export const TEAMS_DATA = {
   'CARCASSONNE':                   { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'US CARCASSONNE':                { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'FC LYON':                       { logo: '/logos/fclyon.svg', name: 'FC Lyon' },
-  'STADE BORDELAIS':               { logo: '/logos/stadebordelais.svg', name: 'Stade Bordelais' },  // pas de logo SVG dédié
+  'STADE BORDELAIS':               { logo: '/logos/stadebordelais.svg', name: 'Stade Bordelais' },
   'SCUF':                          { logo: '/logos/scuf.svg', name: 'SCUF Paris' },
   'LA VOULTE':                     { logo: '/logos/lavoulte.svg', name: 'La Voulte' },
   'QUILLAN':                       { logo: '/logos/quillan.svg', name: 'Quillan' },
@@ -218,6 +218,75 @@ export const TEAMS_DATA = {
   'CARMAUX':                       { logo: '/logos/carmaux.svg', name: 'Carmaux' },
   'SC VIENNE':                     { logo: '/logos/scvienne.svg', name: 'SC Vienne' },
   'VIENNE':                        { logo: '/logos/scvienne.svg', name: 'SC Vienne' },
+
+  // ════════════════════════════════════════════════════════════
+  //  CLUBS HISTORIQUES 2e DIVISION (1925-2000)
+  //  Logos générés dans logos_historiques_d2/
+  // ════════════════════════════════════════════════════════════
+
+  // — 1925-1939 —
+  'AS MONTFERRAND':                { logo: '/logos/as_montferrand.svg', name: 'AS Montferrand' },
+  'NAC ROANNE':                    { logo: '/logos/nac_roanne.svg', name: 'NAC Roanne' },
+  'AS BORTOISE':                   { logo: '/logos/as_bortoise.svg', name: 'AS Bortoise' },
+  'UA LIBOURNE':                   { logo: '/logos/ua_libourne.svg', name: 'UA Libourne' },
+  'CS VILLEFRANCHE-SUR-SAÔNE':     { logo: '/logos/cs_villefranche.svg', name: 'CS Villefranche' },
+  'STADE NANTAIS':                 { logo: '/logos/stade_nantais.svg', name: 'Stade Nantais' },
+  'STADE POITEVIN':                { logo: '/logos/stade_poitevin.svg', name: 'Stade Poitevin' },
+  'SC DECAZEVILLE':                { logo: '/logos/sc_decazeville.svg', name: 'SC Decazeville' },
+  'AVENIR VALENCIEN':              { logo: '/logos/avenir_valencien.svg', name: 'Avenir Valencien' },
+  'US BRESSANE':                   { logo: '/logos/us_bressane.svg', name: 'US Bressane' },
+
+  // — 1948-1963 —
+  'STADOCESTE TARBAIS':            { logo: '/logos/stadoceste_tarbais.svg', name: 'Stadoceste Tarbais' },
+  'SC GRAULHET':                   { logo: '/logos/sc_graulhet.svg', name: 'SC Graulhet' },
+  'CASG PARIS':                    { logo: '/logos/casg_paris.svg', name: 'CASG Paris' },
+  'AVENIR ATURIN RUGBY':           { logo: '/logos/avenir_aturin.svg', name: 'Avenir Aturin' },
+  'SO CHAMBÉRY':                   { logo: '/logos/so_chambery.svg', name: 'SO Chambéry' },
+  'STADE CADURCIEN':               { logo: '/logos/stade_cadurcien.svg', name: 'Stade Cadurcien' },
+  'US BERGERAC':                   { logo: '/logos/us_bergerac.svg', name: 'US Bergerac' },
+  'AS SAINT-JUNIEN':               { logo: '/logos/as_saint_junien.svg', name: 'AS Saint-Junien' },
+  'GS FIGEAC':                     { logo: '/logos/gs_figeac.svg', name: 'GS Figeac' },
+  'STADE LANGONNAIS':              { logo: '/logos/stade_langonnais.svg', name: 'Stade Langonnais' },
+
+  // — 1966-1982 —
+  'SAINT-JEAN-DE-LUZ OLYMPIQUE':   { logo: '/logos/saint_jean_de_luz.svg', name: 'St-Jean-de-Luz' },
+  'PARIS UNIVERSITÉ CLUB':         { logo: '/logos/paris_universite_club.svg', name: 'Paris UC' },
+  'STADE RUTHÉNOIS':               { logo: '/logos/stade_ruthenois.svg', name: 'Stade Ruthénois' },
+  'CA CASTELSARRASIN':             { logo: '/logos/ca_castelsarrasin.svg', name: 'CA Castelsarrasin' },
+  'US VICQUOISE':                  { logo: '/logos/us_vicquoise.svg', name: 'US Vicquoise' },
+  'SA CONDOM':                     { logo: '/logos/sa_condom.svg', name: 'SA Condom' },
+  'US MONTÉLIMAR':                 { logo: '/logos/us_montelimar.svg', name: 'US Montélimar' },
+  'SA HAGETMAUTIEN':               { logo: '/logos/sa_hagetmautien.svg', name: 'SA Hagetmautien' },
+  'US SALLES':                     { logo: '/logos/us_salles.svg', name: 'US Salles' },
+  'STADE MONTLUÇONNAIS':           { logo: '/logos/stade_montluconnais.svg', name: 'Stade Montluçonnais' },
+
+  // — 1983-1998 —
+  'BLAGNAC SCR':                   { logo: '/logos/blagnac_scr.svg', name: 'Blagnac SCR' },
+  'SC MAZAMET':                    { logo: '/logos/mazamet.svg', name: 'Mazamet' },
+  'FCS RUMILLY':                   { logo: '/logos/fcs_rumilly.svg', name: 'FCS Rumilly' },
+  'RC VICHY':                      { logo: '/logos/rc_vichy.svg', name: 'RC Vichy' },
+  'ASPTT PARIS':                   { logo: '/logos/asptt_paris.svg', name: 'ASPTT Paris' },
+  'FLEURY OLYMPIQUE':              { logo: '/logos/fleury_olympique.svg', name: 'Fleury Olympique' },
+  'CÉRET SPORTIF':                 { logo: '/logos/ceret_sportif.svg', name: 'Céret Sportif' },
+  'PEYREHORADE SPORTS':            { logo: '/logos/peyrehorade_sports.svg', name: 'Peyrehorade' },
+  'STADE PISCENOIS':               { logo: '/logos/stade_piscenois.svg', name: 'Stade Piscenois' },
+  'US TOURS':                      { logo: '/logos/us_tours.svg', name: 'US Tours' },
+
+  // — Compléments —
+  'US CARMAUX':                    { logo: '/logos/us_carmaux.svg', name: 'US Carmaux' },
+  'RRC NICE':                      { logo: '/logos/nice.svg', name: 'Nice' },
+  'USA LIMOGES':                   { logo: '/logos/limoges.svg', name: 'Limoges' },
+  'US COGNAC':                     { logo: '/logos/cognac.svg', name: 'Cognac' },
+  'UA GAILLAC':                    { logo: '/logos/gaillac.svg', name: 'Gaillac' },
+  'ENTENTE QUILLAN-ESPERAZA':      { logo: '/logos/quillan.svg', name: 'Quillan' },
+  'FC LÉZIGNAN':                   { logo: '/logos/lezignan.svg', name: 'Lézignan' },
+  'LA VOULTE SPORTIF':             { logo: '/logos/lavoulte.svg', name: 'La Voulte' },
+  'STADE BORDELAIS UC':            { logo: '/logos/stadebordelais.svg', name: 'Stade Bordelais' },
+  'STADE BEAUMONTOIS':             { logo: '/logos/stade_beaumontois.svg', name: 'Stade Beaumontois' },
+  'RACING CLUB DE FRANCE':         { logo: '/logos/racing92.svg', name: 'Racing Club de France' },
+  'RACING MÉTRO 92':               { logo: '/logos/racing92.svg', name: 'Racing 92' },
+  'OLYMPIQUE DE CARMAUX':          { logo: '/logos/carmaux.svg', name: 'Carmaux' },
+  'STADE AUTO LYONNAIS':           { logo: '/logos/fclyon.svg', name: 'Stade Lyonnais' },
 
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — Premiership (Angleterre)
