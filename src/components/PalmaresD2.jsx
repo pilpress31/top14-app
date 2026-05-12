@@ -346,6 +346,19 @@ export default function PalmaresD2() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold" style={{ color: D2_BLUE }}>{anneeFinale(f.saison)}</span>
                   </div>
+                  {/* Corps de la carte selon le type */}
+                  {f.type === 'classement' ? (
+                    <div className="flex items-center justify-center gap-2 py-2">
+                      <LogoClub club={f.champion} size={40} />
+                      <div className="text-center">
+                        <p className="text-sm font-semibold text-gray-800">{displayName(f.champion)}</p>
+                        <span className="text-xs font-bold mt-0.5" style={{ color: D2_BLUE }}>🏆 Champion</span>
+                        <p className="text-xs text-gray-400 mt-1 italic">
+                          {f.saison === '2019-2020' ? 'Saison arrêtée (Covid)' : 'Titre sur classement régulier'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="flex items-center gap-2">
                     {/* Champion */}
                     <div className="flex flex-col items-center flex-1 min-w-0">
@@ -376,6 +389,7 @@ export default function PalmaresD2() {
                       }
                     </div>
                   </div>
+                  )}
                 </div>
               );
             })}
