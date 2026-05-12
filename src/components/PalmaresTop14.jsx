@@ -311,50 +311,22 @@ export default function PalmaresTop14() {
       {viewMode === "finales" && (
         <div className="px-3">
 
-          {/* Filtre club — intégré avec logos, tri alphabétique */}
-          <div className="mb-4">
-            {/* Bouton "Tous" */}
-            <button
-              onClick={() => setFilterClub("")}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl mb-2 font-semibold text-sm transition-colors"
-              style={!filterClub
-                ? { backgroundColor: '#1a1208', color: '#D4AF37' }
-                : { backgroundColor: '#f3f4f6', color: '#374151' }}
+          {/* Filtre club */}
+          <div className="mb-3">
+            <select
+              value={filterClub}
+              onChange={e => setFilterClub(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-700"
             >
-              <span className="text-base">🏆</span>
-              Tous les clubs
-            </button>
-            {/* Liste clubs triée alphabétiquement */}
-            <div className="grid grid-cols-2 gap-1.5">
+              <option value="">Tous les clubs</option>
               {[...palmares]
                 .sort((a, b) => displayName(a.club).localeCompare(displayName(b.club)))
-                .map(p => {
-                  const isActive = filterClub === p.club;
-                  const teamData = getTeamData(p.club);
-                  return (
-                    <button
-                      key={p.club}
-                      onClick={() => setFilterClub(isActive ? "" : p.club)}
-                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors"
-                      style={isActive
-                        ? { backgroundColor: '#1a1208', color: '#FFFFFF', border: '2px solid #D4AF37' }
-                        : { backgroundColor: '#f9fafb', color: '#374151', border: '2px solid transparent' }}
-                    >
-                      <img
-                        src={teamData.logo}
-                        alt={p.club}
-                        className="object-contain flex-shrink-0"
-                        style={{ width: 24, height: 24 }}
-                        onError={e => { e.currentTarget.style.display = 'none'; }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold leading-tight truncate">{displayName(p.club)}</p>
-                        <p className="text-[10px] opacity-70">{p.titres} 🏆</p>
-                      </div>
-                    </button>
-                  );
-                })}
-            </div>
+                .map(p => (
+                  <option key={p.club} value={p.club}>
+                    {displayName(p.club)} ({p.titres} 🏆)
+                  </option>
+                ))}
+            </select>
           </div>
 
           {/* Liste des finales */}
