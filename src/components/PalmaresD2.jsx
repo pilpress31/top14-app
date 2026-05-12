@@ -319,21 +319,43 @@ export default function PalmaresD2() {
       {viewMode === "finales" && (
         <div className="px-3">
 
-          {/* Filtre club */}
-          <div className="mb-3">
-            <select
-              value={filterClub}
-              onChange={e => setFilterClub(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm bg-white text-gray-700"
-              style={{ borderColor: D2_NAVY }}
+          {/* Filtre club — intégré avec logos, tri alphabétique */}
+          <div className="mb-4">
+            {/* Bouton "Tous" */}
+            <button
+              onClick={() => setFilterClub("")}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl mb-2 font-semibold text-sm transition-colors"
+              style={!filterClub
+                ? { backgroundColor: D2_NAVY, color: D2_BLUE }
+                : { backgroundColor: '#f3f4f6', color: '#374151' }}
             >
-              <option value="">Toutes les finales</option>
-              {stats.map(s => (
-                <option key={s.club} value={s.club}>
-                  {displayName(s.club)} ({s.titres} 🏆)
-                </option>
-              ))}
-            </select>
+              <span className="text-base">🏆</span>
+              Toutes les finales
+            </button>
+            {/* Liste clubs triée alphabétiquement */}
+            <div className="grid grid-cols-2 gap-1.5">
+              {[...stats]
+                .sort((a, b) => displayName(a.club).localeCompare(displayName(b.club)))
+                .map(s => {
+                  const isActive = filterClub === s.club;
+                  return (
+                    <button
+                      key={s.club}
+                      onClick={() => setFilterClub(isActive ? "" : s.club)}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors"
+                      style={isActive
+                        ? { backgroundColor: D2_NAVY, color: '#FFFFFF', border: `2px solid ${D2_BLUE}` }
+                        : { backgroundColor: '#f9fafb', color: '#374151', border: '2px solid transparent' }}
+                    >
+                      <LogoClub club={s.club} size={24} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold leading-tight truncate">{displayName(s.club)}</p>
+                        <p className="text-[10px] opacity-70">{s.titres} 🏆</p>
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
           </div>
 
           {/* Liste des finales */}
