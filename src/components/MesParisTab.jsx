@@ -379,6 +379,15 @@ export default function MesParisTab() {
                         🏉 Pro D2
                       </span>
                     )}
+                    {/* Badge Barrage / Accession */}
+                    {isD2 && bet.round && bet.round !== 'Journée' && (
+                      <span className="px-2 py-1 rounded-full text-[10px] font-bold"
+                        style={bet.round === 'Accession'
+                          ? { backgroundColor: '#7c3aed', color: '#fff' }
+                          : { backgroundColor: '#00174D', color: '#97C1FE' }}>
+                        {bet.round === 'Accession' ? '⚡ Accession' : '🏆 Barrage'}
+                      </span>
+                    )}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
                       {bet.bet_type === 'MT' ? '⏱️ Mi-temps' 
                         : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur' 

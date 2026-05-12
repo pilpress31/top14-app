@@ -48,6 +48,7 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
             date: p.date_match,
             confiance_algo: p.confiance_algo ? Number(p.confiance_algo) * 100 : 0,
             isD2: true,
+            round: p.round || 'Journée',
           }))
         : raw;
 
@@ -145,7 +146,13 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" style={pronosJournee[0]?.isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
-                  <span className="font-bold text-sm" style={pronosJournee[0]?.isD2 ? { color: '#00174D' } : {}}>Journée {journee}</span>
+                  {(() => {
+                    const round = pronosJournee[0]?.round;
+                    const isD2Match = pronosJournee[0]?.isD2;
+                    if (isD2Match && round === 'Barrage') return <span className="font-bold text-sm" style={{ color: '#00174D' }}>Barrage</span>;
+                    if (isD2Match && round === 'Accession') return <span className="font-bold text-sm" style={{ color: '#00174D' }}>Match d'accession</span>;
+                    return <span className="font-bold text-sm" style={isD2Match ? { color: '#00174D' } : {}}>Journée {journee}</span>;
+                  })()}
                   <span className="text-xs text-gray-500">({pronosJournee.length} {pronosJournee.length > 1 ? 'matchs' : 'match'})</span>
                 </div>
                 {isExpanded ? (
@@ -1315,6 +1322,18 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
           <div className="text-xs font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>{heureFormatted}</div>
         )}
       </div>
+
+      {/* Badge Barrage / Accession (Pro D2 uniquement) */}
+      {match.isD2 && match.round && match.round !== 'Journée' && (
+        <div className="flex justify-center mb-3">
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+            style={match.round === 'Accession'
+              ? { backgroundColor: '#7c3aed', color: '#fff' }
+              : { backgroundColor: '#00174D', color: '#97C1FE' }}>
+            {match.round === 'Accession' ? '⚡ Match d\'accession' : '🏆 Barrage'}
+          </span>
+        </div>
+      )}
 
       {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-4 mb-2">
