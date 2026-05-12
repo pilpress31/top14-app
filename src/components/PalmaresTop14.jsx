@@ -2,7 +2,7 @@
 // Palmarès du Top 14 / Championnat de France depuis 1905
 // Source : GET /api/top14/palmares (palmares_top14.json)
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getTeamData } from "../utils/teams";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -50,6 +50,7 @@ export default function PalmaresTop14() {
   const [showAll, setShowAll]         = useState(false);
   const [viewMode, setViewMode]       = useState("palmares");
   const [filterClub, setFilterClub]   = useState("");
+  const [openFilter, setOpenFilter]   = useState(false);
 
   useEffect(() => {
     fetch(API_BASE + "/api/top14/palmares")
@@ -311,22 +312,67 @@ export default function PalmaresTop14() {
       {viewMode === "finales" && (
         <div className="px-3">
 
-          {/* Filtre club */}
-          <div className="mb-3">
-            <select
-              value={filterClub}
-              onChange={e => setFilterClub(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-700"
+          {/* Filtre club — custom dropdown intégré */}
+          <div className="mb-3 relative">
+            {/* Bouton trigger */}
+            <button
+              onClick={() => setOpenFilter(!openFilter)}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ backgroundColor: '#1a1208', color: '#D4AF37', border: '2px solid #D4AF37' }}
             >
-              <option value="">Tous les clubs</option>
-              {[...palmares]
-                .sort((a, b) => displayName(a.club).localeCompare(displayName(b.club)))
-                .map(p => (
-                  <option key={p.club} value={p.club}>
-                    {displayName(p.club)} ({p.titres} 🏆)
-                  </option>
-                ))}
-            </select>
+              <div className="flex items-center gap-2">
+                {filterClub ? (
+                  <>
+                    <img src={getTeamData(filterClub).logo} alt={filterClub}
+                      className="object-contain flex-shrink-0" style={{ width: 22, height: 22 }}
+                      onError={e => { e.currentTarget.style.display = 'none'; }} />
+                    <span>{displayName(filterClub)} ({palmares.find(p => p.club === filterClub)?.titres} 🏆)</span>
+                  </>
+                ) : (
+                  <><span>🏆</span><span>Tous les clubs</span></>
+                )}
+              </div>
+              {openFilter ? <ChevronUp className="w-4 h-4 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 flex-shrink-0" />}
+            </button>
+
+            {/* Liste déroulante intégrée */}
+            {openFilter && (
+              <div className="mt-1 rounded-xl overflow-hidden shadow-lg"
+                style={{ border: '2px solid #1a1208', backgroundColor: '#fff', maxHeight: 280, overflowY: 'auto' }}>
+                {/* Option "Tous" */}
+                <button
+                  onClick={() => { setFilterClub(""); setOpenFilter(false); }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-left transition-colors"
+                  style={!filterClub
+                    ? { backgroundColor: '#1a1208', color: '#D4AF37' }
+                    : { backgroundColor: '#fff', color: '#374151' }}
+                >
+                  <span>🏆</span> Tous les clubs
+                </button>
+                <div style={{ borderTop: '#1a120820 1px solid' }} />
+                {[...palmares]
+                  .sort((a, b) => displayName(a.club).localeCompare(displayName(b.club)))
+                  .map(p => {
+                    const td = getTeamData(p.club);
+                    return (
+                      <button
+                        key={p.club}
+                        onClick={() => { setFilterClub(p.club); setOpenFilter(false); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors"
+                        style={filterClub === p.club
+                          ? { backgroundColor: '#1a1208', color: '#D4AF37' }
+                          : { backgroundColor: '#fff', color: '#374151' }}
+                      >
+                        <img src={td.logo} alt={p.club}
+                          className="object-contain flex-shrink-0" style={{ width: 22, height: 22 }}
+                          onError={e => { e.currentTarget.style.display = 'none'; }} />
+                        <span className="flex-1 truncate font-medium">{displayName(p.club)}</span>
+                        <span className="text-xs opacity-60 flex-shrink-0">{p.titres} 🏆</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
           </div>
 
           {/* Liste des finales */}
