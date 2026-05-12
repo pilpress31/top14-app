@@ -4,6 +4,7 @@ import { getTeamData } from "../utils/teams";
 import type { EquipeStats } from "../types/rugby";
 import ClassementHcupTabs from "../components/ClassementHcupTabs";
 import ClassementTop14Tabs from "../components/ClassementTop14Tabs";
+import ClassementD2Tabs from "../components/ClassementD2Tabs";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -181,14 +182,14 @@ function ClassementPage() {
           ═══════════════════════════════════════════════════════ */}
       {isHcup && <ClassementHcupTabs />}
 
-      {!isHcup && (
-        <ClassementTop14Tabs isD2={isD2}>
+      {!isHcup && !isD2 && (
+        <ClassementTop14Tabs>
       {/* Titre */}
       {(
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2 whitespace-nowrap">
           <span className={themeColors.primary}>
-            Classement {isD2 ? 'Pro D2' : 'Top 14'}
+            Classement Top 14
           </span>
           {classement[0]?.saison && (
             <span className="text-gray-600 text-sm ml-2">{classement[0].saison}</span>
@@ -200,14 +201,10 @@ function ClassementPage() {
       </div>
       )}
 
-      {!isHcup && (loading ? (
+      {!isHcup && !isD2 && (loading ? (
         <div className="p-6 text-center text-gray-500">🔄 Chargement du classement…</div>
       ) : classement.length === 0 ? (
-        <div className="p-6 text-center text-gray-500">
-          {isD2 
-            ? 'Classement Pro D2 indisponible pour le moment. Réessayez dans quelques instants.'
-            : 'Aucune donnée disponible'}
-        </div>
+        <div className="p-6 text-center text-gray-500">Aucune donnée disponible</div>
       ) : (
         <>
           {/* ═══════════════════════════════════════════════════════
@@ -224,10 +221,10 @@ function ClassementPage() {
             <table className="w-full">
               <thead className={`${themeColors.primaryBg} text-white`}>
                 <tr>
-                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-left text-xs font-bold uppercase`}>#</th>
-                  <th className={`${isD2 ? 'px-1' : 'px-3'} py-3 text-left text-xs font-bold uppercase`}>Équipe</th>
-                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-xs font-bold uppercase`}>Pts</th>
-                  <th className={`${isD2 ? 'px-1' : 'px-2'} py-3 text-center text-xs font-bold uppercase`}>MJ</th>
+                  <th className="px-2 py-3 text-left text-xs font-bold uppercase">#</th>
+                  <th className="px-3 py-3 text-left text-xs font-bold uppercase">Équipe</th>
+                  <th className="px-2 py-3 text-center text-xs font-bold uppercase">Pts</th>
+                  <th className="px-2 py-3 text-center text-xs font-bold uppercase">MJ</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">V</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">N</th>
                   <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">D</th>
@@ -521,9 +518,178 @@ function ClassementPage() {
             </div>
           )}
         </>
-      ))}
+      )))}
 
         </ClassementTop14Tabs>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          MODE PRO D2
+          ═══════════════════════════════════════════════════════ */}
+      {isD2 && (
+        <ClassementD2Tabs>
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold mb-2 whitespace-nowrap">
+              <span className={themeColors.primary}>Classement Pro D2</span>
+              {classement[0]?.saison && (
+                <span className="text-gray-600 text-sm ml-2">{classement[0].saison}</span>
+              )}
+            </h2>
+            <p className="text-xs text-gray-500 italic">
+              💡 Cliquez sur une équipe pour voir ses statistiques détaillées
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="p-6 text-center text-gray-500">🔄 Chargement du classement…</div>
+          ) : classement.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              Classement Pro D2 indisponible pour le moment. Réessayez dans quelques instants.
+            </div>
+          ) : (
+            <>
+              <p className="md:hidden text-[11px] text-gray-500 italic text-center mb-2">
+                🔄 Tournez l'écran pour voir toutes les colonnes
+              </p>
+              <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+                <table className="w-full">
+                  <thead className={`${themeColors.primaryBg} text-white`}>
+                    <tr>
+                      <th className="px-1 py-3 text-left text-xs font-bold uppercase">#</th>
+                      <th className="px-1 py-3 text-left text-xs font-bold uppercase">Équipe</th>
+                      <th className="px-1 py-3 text-center text-xs font-bold uppercase">Pts</th>
+                      <th className="px-1 py-3 text-center text-xs font-bold uppercase">MJ</th>
+                      <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">V</th>
+                      <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">N</th>
+                      <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">D</th>
+                      <th className="px-2 py-3 text-center text-xs font-bold uppercase hidden md:table-cell">+/-</th>
+                      <th className="px-1 py-3 text-center text-xs font-bold uppercase">Forme</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classement.map((equipe, index) => {
+                      const teamData = getTeamData(equipe.equipe);
+                      const bgColor = index % 2 === 0 ? "bg-gray-50" : "bg-white";
+                      const isTop6 = equipe.rang <= 6;
+                      const isRelegation = equipe.rang === 16;
+                      const isAccessMatch = equipe.rang === 15;
+                      return (
+                        <tr
+                          key={equipe.equipe}
+                          className={`${bgColor} ${themeColors.rowHover} cursor-pointer transition-colors ${
+                            isTop6 ? 'border-l-4 border-green-500' :
+                            isRelegation ? 'border-l-4 border-red-500' :
+                            isAccessMatch ? 'border-l-4 border-orange-500' : ''
+                          }`}
+                          onClick={() => setSelectedEquipe(selectedEquipe?.equipe === equipe.equipe ? null : equipe)}
+                        >
+                          <td className="px-1 py-3 text-sm font-bold" style={{ color: '#00174D' }}>{equipe.rang}</td>
+                          <td className="px-1 py-3">
+                            <div className="flex items-center gap-1">
+                              <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <img src={teamData.logo} alt={teamData.name} className="w-5 h-5 object-contain"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                              </div>
+                              <span className="text-xs font-semibold text-gray-800 leading-tight">{teamData.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-1 py-3 text-center text-sm font-bold" style={{ color: '#002A7D' }}>{equipe.points_classement || 0}</td>
+                          <td className="px-1 py-3 text-center text-sm text-gray-700">{equipe.matchs_joues}</td>
+                          <td className="px-2 py-3 text-center text-sm font-semibold text-green-600 hidden md:table-cell">{equipe.victoires}</td>
+                          <td className="px-2 py-3 text-center text-sm text-gray-600 hidden md:table-cell">{equipe.nuls}</td>
+                          <td className="px-2 py-3 text-center text-sm font-semibold text-red-600 hidden md:table-cell">{equipe.defaites}</td>
+                          <td className={`px-2 py-3 text-center text-sm font-bold hidden md:table-cell ${
+                            (equipe.differentiel || 0) > 0 ? 'text-green-600' :
+                            (equipe.differentiel || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                          }`}>
+                            {(equipe.differentiel || 0) > 0 ? '+' : ''}{equipe.differentiel || 0}
+                          </td>
+                          <td className="px-1 py-3">
+                            <div className="flex justify-center gap-0.5">
+                              {equipe.forme && equipe.forme.length > 0 ? (
+                                equipe.forme.map((resultat, i) => (
+                                  <div key={i} className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${
+                                    resultat === 'V' ? 'bg-green-500' : resultat === 'D' ? 'bg-red-500' : 'bg-gray-400'
+                                  }`}>{resultat}</div>
+                                ))
+                              ) : <span className="text-xs text-gray-400">-</span>}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-600">
+                  <span className="inline-block w-3 h-3 bg-green-500 rounded mr-1"></span>
+                  Les 6 premiers sont qualifiés pour les phases finales
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  <span className="inline-block w-3 h-3 bg-orange-500 rounded mr-1"></span>
+                  15ème : Access match contre le finaliste de Nationale
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  <span className="inline-block w-3 h-3 bg-red-500 rounded mr-1"></span>
+                  16ème : Relégation en Nationale
+                </p>
+              </div>
+
+              {selectedEquipe && (
+                <div ref={detailsHeaderRef} className="mt-4 bg-white rounded-xl shadow-md p-4 border-2" style={{ borderColor: '#00174D' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                      <img src={getTeamData(selectedEquipe.equipe).logo} alt={selectedEquipe.equipe}
+                        className="w-11 h-11 object-contain"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold" style={{ color: '#00174D' }}>{selectedEquipe.equipe}</h3>
+                      <p className="text-xs text-gray-600">#{selectedEquipe.rang} • {selectedEquipe.points_classement} points</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Points marqués</p>
+                      <p className="text-xl font-bold" style={{ color: '#002A7D' }}>{selectedEquipe.points_pour}</p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">Moy: {selectedEquipe.points_moy_pour?.toFixed(1)}/match</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Points encaissés</p>
+                      <p className="text-xl font-bold text-gray-700">{selectedEquipe.points_contre}</p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">Moy: {selectedEquipe.points_moy_contre?.toFixed(1)}/match</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Bilan</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        <span className="text-green-600">{selectedEquipe.victoires}V</span> -
+                        <span className="text-gray-500">{selectedEquipe.nuls}N</span> -
+                        <span className="text-red-600">{selectedEquipe.defaites}D</span>
+                      </p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">
+                        Taux: {selectedEquipe.taux_victoires ? `${(selectedEquipe.taux_victoires * 100).toFixed(0)}%` : '-'}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2 text-center">
+                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Différentiel</p>
+                      <p className={`text-xl font-bold ${
+                        (selectedEquipe.differentiel || 0) > 0 ? 'text-green-600' :
+                        (selectedEquipe.differentiel || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {(selectedEquipe.differentiel || 0) > 0 ? '+' : ''}{selectedEquipe.differentiel || 0}
+                      </p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">
+                        Bonus : {(selectedEquipe as any).bonus || 0}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </ClassementD2Tabs>
       )}
 
       {/* Bouton retour en haut */}
