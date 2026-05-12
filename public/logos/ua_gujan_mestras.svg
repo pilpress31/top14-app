@@ -1,0 +1,13 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="a21-hex"><polygon points="100,10 175,50 175,150 100,190 25,150 25,50"/></clipPath>
+  </defs>
+  <g clip-path="url(#a21-hex)">
+    <rect width="200" height="200" fill="#003DA5"/>
+    <rect x="0" y="0" width="200" height="100" fill="#FFD700"/>
+  </g>
+  <polygon points="100,10 175,50 175,150 100,190 25,150 25,50" fill="none" stroke="#000000" stroke-width="8"/>
+  <polygon points="100,22 163.5,54 163.5,146 100,178 36.5,146 36.5,54" fill="none" stroke="#FFD700" stroke-width="4"/>
+  <text x="50%" y="112" text-anchor="middle" dominant-baseline="middle" fill="#FFD700" stroke="#000000" stroke-width="7" paint-order="stroke" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="44" textLength="84" lengthAdjust="spacingAndGlyphs">UAG</text>
+  <text x="50%" y="112" text-anchor="middle" dominant-baseline="middle" fill="#FFD700" stroke="#003DA5" stroke-width="2" paint-order="stroke" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="44" textLength="84" lengthAdjust="spacingAndGlyphs">UAG</text>
+</svg>
