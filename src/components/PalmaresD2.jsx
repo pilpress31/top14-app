@@ -345,9 +345,6 @@ export default function PalmaresD2() {
                 <div key={f.saison + i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold" style={{ color: D2_BLUE }}>{anneeFinale(f.saison)}</span>
-                    {f.score_finale && (
-                      <span className="text-xs text-gray-400">{f.score_finale}</span>
-                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Champion */}
@@ -361,13 +358,13 @@ export default function PalmaresD2() {
                     {/* Séparateur */}
                     <div className="flex flex-col items-center flex-shrink-0 px-1">
                       <span className="text-lg font-black text-gray-800">
-                        {f.score_finale || "vs"}
+                        {f.score_finale && !f.score_finale.includes('—') ? f.score_finale : 'vs'}
                       </span>
                       <span className="text-xs text-gray-300 mt-0.5">Finale</span>
                     </div>
                     {/* Finaliste */}
                     <div className="flex flex-col items-center flex-1 min-w-0">
-                      {f.finaliste
+                      {f.finaliste && !f.finaliste.startsWith('PAS DE') && !f.finaliste.startsWith('COMPÉTITION') && f.finaliste !== '—'
                         ? <>
                             <LogoClub club={f.finaliste} size={40} />
                             <p className="text-xs font-semibold text-center text-gray-800 leading-tight mt-1 w-full">
@@ -375,7 +372,7 @@ export default function PalmaresD2() {
                             </p>
                             <span className="text-xs text-gray-400 font-bold mt-0.5">🥈 Finaliste</span>
                           </>
-                        : <span className="text-xs text-gray-300">—</span>
+                        : <span className="text-xs text-gray-400 text-center">Finaliste<br/>inconnu</span>
                       }
                     </div>
                   </div>
