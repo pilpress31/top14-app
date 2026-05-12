@@ -330,7 +330,7 @@ export const TEAMS_DATA = {
   'RACING CLUB DE FRANCE':         { logo: '/logos/racing92.svg', name: 'Racing Club de France' },
   'RACING MÉTRO 92':               { logo: '/logos/racing92.svg', name: 'Racing 92' },
   'OLYMPIQUE DE CARMAUX':          { logo: '/logos/carmaux.svg', name: 'Carmaux' },
-  'STADE AUTO LYONNAIS':           { logo: '/logos/fclyon.svg', name: 'Stade Lyonnais' },
+  'STADE AUTO LYONNAIS':           { logo: '/logos/stade_auto_lyonnais.svg', name: 'Stade Auto Lyonnais' },
 
   // ════════════════════════════════════════════════════════════
   //  CHAMPIONS CUP — Premiership (Angleterre)
