@@ -518,7 +518,7 @@ function ClassementPage() {
             </div>
           )}
         </>
-      )))}
+      ))}
 
         </ClassementTop14Tabs>
       )}
