@@ -338,7 +338,7 @@ export default function PalmaresD2() {
 
           {/* Liste des finales */}
           <div className="space-y-2">
-            {finalesFiltrees.map((f, i) => {
+            {[...finalesFiltrees].reverse().map((f, i) => {
               // Ignorer les entrées sans champion réel
               if (!f.champion || f.champion.startsWith('PAS DE') || f.champion.startsWith('COMPÉTITION')) return null;
               return (
