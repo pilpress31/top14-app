@@ -359,7 +359,7 @@ export default function PalmaresTop14() {
                     </div>
                     {/* Score */}
                     <div className="flex flex-col items-center flex-shrink-0 px-1">
-                      <span className="text-xl font-black text-gray-800">
+                      <span className="text-base font-semibold text-gray-800">
                         {f.score_domicile != null ? (f.score_domicile + " - " + f.score_exterieur) : "? - ?"}
                       </span>
                       {f.score_mt_dom != null && (
