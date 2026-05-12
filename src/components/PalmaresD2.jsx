@@ -357,7 +357,7 @@ export default function PalmaresD2() {
                     </div>
                     {/* Séparateur */}
                     <div className="flex flex-col items-center flex-shrink-0 px-1">
-                      <span className="text-lg font-black text-gray-800">
+                      <span className="text-base font-semibold text-gray-600">
                         {f.score_finale && !f.score_finale.includes('—') ? f.score_finale : 'vs'}
                       </span>
                       <span className="text-xs text-gray-300 mt-0.5">Finale</span>
