@@ -389,10 +389,10 @@ export default function MesParisTab() {
                       </span>
                     )}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
-                      {bet.bet_type === 'MT' ? '⏱️ Mi-temps'
-                        : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur'
+                      {bet.bet_type === 'MT' ? '⏱️ Score MT'
+                        : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur FT'
                         : bet.bet_type === 'WINNER_MT' ? '🎯 Vainqueur MT'
-                        : '🏉 Temps plein'}
+                        : '🏉 Score FT'}
                     </span>
                   </div>
                 </div>
