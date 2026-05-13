@@ -122,7 +122,7 @@ export default function RugbyIATab() {
            style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 7rem)' }}>
 
         {/* Quota */}
-        <div className="flex items-center justify-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200 w-fit mx-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200 w-fit mx-auto">
           <Zap className={`w-4 h-4 ${quotaColor}`} />
           <span className={`text-xs font-semibold ${quotaColor}`}>
             {quota.remaining}/{quota.limit} questions aujourd'hui
