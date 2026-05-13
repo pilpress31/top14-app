@@ -39,7 +39,12 @@ export default function RugbyIATab() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length === 0) return;
+    const last = messages[messages.length - 1];
+    // Scroller uniquement si c'est un message court (< 300 chars) ou une question user
+    if (last.role === 'user' || (last.text && last.text.length < 300)) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const loadQuota = async () => {
