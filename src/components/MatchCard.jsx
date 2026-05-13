@@ -99,26 +99,30 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <CheckCircle className="w-3 h-3 text-green-600" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
         </div>
+        {/* FT score exact */}
         {pronoFT && !isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
+            🏉 Score FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
           </span>
         )}
+        {/* FT vainqueur */}
         {pronoFT && isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🎯 {pronoFT.winner_predit === 'domicile' ? teamDom.name 
+            🎯 Vainqueur FT : {pronoFT.winner_predit === 'domicile' ? teamDom.name 
               : pronoFT.winner_predit === 'exterieur' ? teamExt.name 
               : 'Match nul'}
           </span>
         )}
+        {/* MT score exact */}
         {pronoMT && pronoMT.bet_type !== 'WINNER_MT' && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
+            ⏱️ Score MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
           </span>
         )}
+        {/* MT vainqueur */}
         {pronoMT && pronoMT.bet_type === 'WINNER_MT' && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🎯 MT : {pronoMT.winner_predit === 'domicile' ? teamDom.name 
+            🎯 Vainqueur MT : {pronoMT.winner_predit === 'domicile' ? teamDom.name 
               : pronoMT.winner_predit === 'exterieur' ? teamExt.name 
               : 'Match nul'}
           </span>
