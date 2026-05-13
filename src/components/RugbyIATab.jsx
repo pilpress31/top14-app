@@ -119,7 +119,7 @@ export default function RugbyIATab() {
 
       {/* Zone messages */}
       <div className="flex-1 container mx-auto px-4 py-4 space-y-4 pb-40"
-           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 9rem)' }}>
+           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 6rem)' }}>
 
         {/* Quota */}
         <div className="sticky top-0 z-10 flex items-center justify-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200 w-fit mx-auto">
