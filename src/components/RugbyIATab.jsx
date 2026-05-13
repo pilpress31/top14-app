@@ -130,7 +130,7 @@ export default function RugbyIATab() {
         <div className="sticky top-0 z-10 flex items-center justify-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200 w-fit mx-auto">
           <Zap className={`w-4 h-4 ${quotaColor}`} />
           <span className={`text-xs font-semibold ${quotaColor}`}>
-            {quota.remaining}/{quota.limit} questions aujourd'hui
+            {quota.remaining} question{quota.remaining > 1 ? 's' : ''} restante{quota.remaining > 1 ? 's' : ''} aujourd'hui
           </span>
         </div>
 
