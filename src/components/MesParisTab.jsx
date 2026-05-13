@@ -431,7 +431,7 @@ export default function MesParisTab() {
                           <p className="text-[10px] text-blue-700 font-semibold mb-1 flex items-center gap-1">
                             <Target className="w-3 h-3" /> Ton pronostic
                           </p>
-                          {bet.bet_type === 'WINNER_FT' ? (
+                          {(bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT') ? (
                             <p className="text-base font-bold text-blue-900 text-center">
                               🎯 {bet.winner_predit === 'domicile' ? (teamDom?.name || 'Domicile')
                                 : bet.winner_predit === 'exterieur' ? (teamExt?.name || 'Extérieur')
