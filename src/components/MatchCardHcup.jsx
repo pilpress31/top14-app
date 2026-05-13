@@ -115,16 +115,18 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
           <CheckCircle className="w-3 h-3 text-green-600" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">Mon pari</span>
         </div>
+        {/* Score exact FT */}
         {pronoFT && !isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'}
+            🏉 Score FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'}
             {' - '}
             {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
           </span>
         )}
+        {/* Vainqueur FT */}
         {pronoFT && isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🎯 {getWinnerName(pronoFT.winner_predit)}
+            🎯 Vainqueur FT : {getWinnerName(pronoFT.winner_predit)}
           </span>
         )}
         {pronoFT && (
@@ -242,7 +244,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
       {/* ── ZONE ACTIONS ─────────────────────────────────────────── */}
       <div className="flex flex-col gap-2">
 
-        {/* Match non jouable (jamais bloqué pour HCup, mais on garde l'API au cas où) */}
+        {/* Match non jouable */}
         {!jouable && (
           <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 w-fit mx-auto">
             <Lock className="w-4 h-4 text-gray-400" />
@@ -287,7 +289,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
               </div>
             )}
 
-            {/* Bouton voir mes paris si pari déjà placé */}
+            {/* Bouton voir mon pari si pari déjà placé */}
             {hasFT && (
               <button
                 onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } })}

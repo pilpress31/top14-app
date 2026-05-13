@@ -311,8 +311,9 @@ export default function MesParisHcupTab() {
                         {bet.round}
                       </span>
                     )}
+                    {/* ✅ Badge type de pari uniformisé */}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
-                      {bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur' : '🏉 Score exact'}
+                      {bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur FT' : '🏉 Score FT'}
                     </span>
                   </div>
                 </div>
