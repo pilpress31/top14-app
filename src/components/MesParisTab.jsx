@@ -389,8 +389,9 @@ export default function MesParisTab() {
                       </span>
                     )}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
-                      {bet.bet_type === 'MT' ? '⏱️ Mi-temps' 
-                        : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur' 
+                      {bet.bet_type === 'MT' ? '⏱️ Mi-temps'
+                        : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur'
+                        : bet.bet_type === 'WINNER_MT' ? '🎯 Vainqueur MT'
                         : '🏉 Temps plein'}
                     </span>
                   </div>
@@ -431,6 +432,7 @@ export default function MesParisTab() {
                           <p className="text-[10px] text-blue-700 font-semibold mb-1 flex items-center gap-1">
                             <Target className="w-3 h-3" /> Ton pronostic
                           </p>
+                          {/* ✅ Fix : WINNER_FT et WINNER_MT affichent le vainqueur prédit */}
                           {(bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT') ? (
                             <p className="text-base font-bold text-blue-900 text-center">
                               🎯 {bet.winner_predit === 'domicile' ? (teamDom?.name || 'Domicile')
@@ -447,36 +449,36 @@ export default function MesParisTab() {
                         {!isPending && (() => {
                           const result = matchResults[bet.match_id];
                           const matchData = result || bet.matches;
-                          
+
                           // En Top 14 : on lit depuis matchResults
                           // En Pro D2 : on lit directement bet.score_reel_dom/ext (renvoyé par l'endpoint)
                           let realHome, realAway;
-                          
+
                           if (isD2) {
                             realHome = bet.score_reel_dom ?? matchData?.score_domicile;
                             realAway = bet.score_reel_ext ?? matchData?.score_exterieur;
-                          } else if (bet.bet_type === 'MT') {
+                          } else if (bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT') {
                             realHome = matchData?.score_ht_domicile ?? matchData?.score_ht_home;
                             realAway = matchData?.score_ht_exterieur ?? matchData?.score_ht_away;
                           } else {
                             realHome = matchData?.score_domicile ?? matchData?.score_home;
                             realAway = matchData?.score_exterieur ?? matchData?.score_away;
                           }
-                          
+
                           if (realHome == null || realAway == null) return null;
-                          
-                          // 🆕 v3 : pour les paris WINNER_FT, calculer et afficher aussi le vrai vainqueur
+
+                          // Pour les paris WINNER_FT et WINNER_MT, calculer et afficher le vrai vainqueur
                           let realWinnerName = null;
-                          if (bet.bet_type === 'WINNER_FT') {
+                          if (bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT') {
                             if (realHome > realAway) realWinnerName = teamDom?.name || 'Domicile';
                             else if (realAway > realHome) realWinnerName = teamExt?.name || 'Extérieur';
                             else realWinnerName = 'Match nul';
                           }
-                          
+
                           return (
                             <div className={`rounded-lg py-2 px-3 border ${isWon ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                               <p className={`text-[10px] font-semibold mb-1 ${isWon ? 'text-green-700' : 'text-red-700'}`}>
-                                {bet.bet_type === 'WINNER_FT' ? 'Résultat' : 'Score réel'}
+                                {(bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT') ? 'Résultat' : 'Score réel'}
                               </p>
                               {realWinnerName ? (
                                 <>
