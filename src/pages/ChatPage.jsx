@@ -3,7 +3,7 @@ import { Send, Users, MessageCircle, X, AlertCircle, Trash2, Brain } from 'lucid
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useChatNotification } from '../contexts/ChatNotificationContext';
-import RugbyIATab from './RugbyIATab';
+import RugbyIATab from '../components/RugbyIATab';
 
 
 // ✅ Fonction de formatage heure - VERSION DÉFINITIVE
