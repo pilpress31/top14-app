@@ -88,8 +88,8 @@ const ConseilPopup = ({ match, isD2, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
-        style={{ maxHeight: 'calc(100vh - 80px)' }}
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: 'calc(100vh - 140px)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -113,7 +113,7 @@ const ConseilPopup = ({ match, isD2, onClose }) => {
         </div>
 
         {/* Contenu scrollable */}
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="overflow-y-auto flex-1">
 
           {/* Loading */}
           {loading && (
