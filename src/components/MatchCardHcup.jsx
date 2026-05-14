@@ -84,7 +84,7 @@ const ConseilPopupHcup = ({ match, onClose }) => {
     >
       <div
         className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
-        style={{ maxHeight: '85vh' }}
+        style={{ maxHeight: 'calc(100vh - 80px)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -104,7 +104,7 @@ const ConseilPopupHcup = ({ match, onClose }) => {
           </button>
         </div>
 
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 80px)' }}>
+        <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
           {loading && (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader className="w-8 h-8 animate-spin" style={{ color: HCUP_BLUE }} />
