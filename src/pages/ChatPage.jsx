@@ -52,9 +52,16 @@ export default function ChatPage() {
   useEffect(() => {
     sessionStorage.setItem('chat_active_tab', activeTab);
     if (activeTab === 'chat') {
-      setTimeout(() => {
-        window.scrollTo(0, savedScrollPos.current);
-      }, 150);
+      // Double RAF pour attendre le paint complet
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (savedScrollPos.current > 0) {
+            window.scrollTo(0, savedScrollPos.current);
+          } else {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+          }
+        });
+      });
     } else {
       window.scrollTo(0, 0);
     }
