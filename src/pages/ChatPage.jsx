@@ -46,7 +46,7 @@ export default function ChatPage() {
       // Restaurer la position de scroll du Chat
       setTimeout(() => {
         window.scrollTo(0, savedScrollPos.current);
-      }, 50);
+      }, 150);
     } else {
       // Sauvegarder la position avant de quitter le Chat
       savedScrollPos.current = window.scrollY;
@@ -605,7 +605,13 @@ export default function ChatPage() {
                           onTouchEnd={handleTouchEnd}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <p className="text-base whitespace-pre-wrap break-words">{msg.message}</p>
+                          <p className="text-base whitespace-pre-wrap break-words">
+                            {msg.message.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+                              /^https?:\/\//.test(part)
+                                ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 break-all">{part}</a>
+                                : part
+                            )}
+                          </p>
                           
                           <div className="flex items-center justify-between mt-1">
                             <p className={`text-[10px] ${
