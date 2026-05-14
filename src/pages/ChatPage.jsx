@@ -454,11 +454,13 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* ── ONGLET IA Rugby ── */}
-      {activeTab === 'ia' && <RugbyIATab />}
+      {/* ── ONGLET IA Rugby ── (display:none pour garder en mémoire) */}
+      <div style={{ display: activeTab === 'ia' ? 'block' : 'none' }}>
+        <RugbyIATab />
+      </div>
 
-      {/* ── ONGLET CHAT COMMUNAUTÉ ── */}
-      {activeTab === 'chat' && (
+      {/* ── ONGLET CHAT COMMUNAUTÉ ── (display:none pour garder en mémoire) */}
+      <div style={{ display: activeTab === 'chat' ? 'block' : 'none' }}>
         <>
           {/* Modal utilisateurs en ligne */}
           {showUsersModal && (
@@ -745,7 +747,7 @@ export default function ChatPage() {
             </div>
           </div>
         </>
-      )}
+      </div>
 
       {/* CSS pour cacher la scrollbar */}
       <style jsx>{`
