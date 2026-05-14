@@ -37,10 +37,21 @@ export default function ChatPage() {
   const [activeTab, setActiveTab] = useState(
     () => sessionStorage.getItem('chat_active_tab') || 'chat'
   );
+  const savedScrollPos = useRef(0);
 
-  // Persister l'onglet actif pour survivre à la mise en veille
+  // Persister l'onglet actif + sauvegarder/restaurer position scroll
   useEffect(() => {
     sessionStorage.setItem('chat_active_tab', activeTab);
+    if (activeTab === 'chat') {
+      // Restaurer la position de scroll du Chat
+      setTimeout(() => {
+        window.scrollTo(0, savedScrollPos.current);
+      }, 50);
+    } else {
+      // Sauvegarder la position avant de quitter le Chat
+      savedScrollPos.current = window.scrollY;
+      window.scrollTo(0, 0);
+    }
   }, [activeTab]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
