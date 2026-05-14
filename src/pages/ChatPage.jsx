@@ -39,17 +39,23 @@ export default function ChatPage() {
   );
   const savedScrollPos = useRef(0);
 
-  // Persister l'onglet actif + sauvegarder/restaurer position scroll
+  // Sauvegarder en continu la position scroll quand on est sur Chat
+  useEffect(() => {
+    if (activeTab !== 'chat') return;
+    const handleScroll = () => {
+      savedScrollPos.current = window.scrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeTab]);
+
   useEffect(() => {
     sessionStorage.setItem('chat_active_tab', activeTab);
     if (activeTab === 'chat') {
-      // Restaurer la position de scroll du Chat
       setTimeout(() => {
         window.scrollTo(0, savedScrollPos.current);
       }, 150);
     } else {
-      // Sauvegarder la position avant de quitter le Chat
-      savedScrollPos.current = window.scrollY;
       window.scrollTo(0, 0);
     }
   }, [activeTab]);
