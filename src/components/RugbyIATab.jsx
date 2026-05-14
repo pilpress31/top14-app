@@ -173,7 +173,7 @@ export default function RugbyIATab() {
 
       {/* Zone messages */}
       <div className="flex-1 container mx-auto px-4 py-4 space-y-4 pb-40"
-           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 9rem)' }}>
+           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 10rem)' }}>
 
         {/* Quota + bouton effacer */}
         <div className="flex items-center justify-center gap-3">
@@ -259,7 +259,14 @@ export default function RugbyIATab() {
       </div>
 
       {/* Barre de saisie fixe */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+      <div className="fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg"
+           style={{
+             bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))',
+             paddingLeft: '1rem',
+             paddingRight: '1rem',
+             paddingTop: '0.75rem',
+             paddingBottom: '0.75rem',
+           }}>
         <div className="container mx-auto">
           {quota.remaining <= 0 ? (
             <div className="text-center py-2 bg-orange-50 rounded-xl border border-orange-200 px-4">
