@@ -78,12 +78,12 @@ const ConseilPopupHcup = ({ match, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-0"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-white rounded-t-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
         style={{ maxHeight: '85vh' }}
         onClick={e => e.stopPropagation()}
       >
@@ -162,6 +162,17 @@ const ConseilPopupHcup = ({ match, onClose }) => {
               </p>
             </div>
           )}
+        </div>
+
+        {/* Bouton Fermer */}
+        <div className="p-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-xl font-semibold text-sm transition-colors text-white"
+            style={{ backgroundColor: HCUP_BLUE }}
+          >
+            Fermer
+          </button>
         </div>
       </div>
     </div>
@@ -291,7 +302,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
           <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
         </button>
         <button onClick={() => setTeamPopup(match.equipe_exterieure)} className="flex items-center gap-2 flex-1 justify-end hover:opacity-75 transition-opacity">
-          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2">{teamExt.name}</span>
+          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamExt.name}</span>
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
             <img src={teamExt.logo} alt={teamExt.name} className="w-7 h-7 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
