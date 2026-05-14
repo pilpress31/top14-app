@@ -288,7 +288,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
             <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2">{teamDom.name}</span>
+          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
         </button>
         <button onClick={() => setTeamPopup(match.equipe_exterieure)} className="flex items-center gap-2 flex-1 justify-end hover:opacity-75 transition-opacity">
           <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2">{teamExt.name}</span>

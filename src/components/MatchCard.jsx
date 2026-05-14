@@ -332,7 +332,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2">{teamDom.name}</span>
+          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
         </button>
         <button
           onClick={() => setTeamPopup(match.equipe_exterieure)}
