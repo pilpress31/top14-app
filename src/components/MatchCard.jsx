@@ -1,12 +1,18 @@
 // ============================================
 // CARTE DE MATCH - VERSION avec support Pro D2
+// + Bouton Conseil personnalisé (mai 2026)
 // ============================================
 
 import { useState } from 'react';
-import { CheckCircle, Edit, Lock, Brain } from 'lucide-react';
+import { CheckCircle, Edit, Lock, Brain, Lightbulb, X, Loader } from 'lucide-react';
 import { getTeamData } from '../utils/teams';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useChampionnat } from '../contexts/ChampionnatContext';
 import TeamPopup from './TeamPopup';
+import axios from 'axios';
+
+const API_BASE = 'https://top14-api-production.up.railway.app';
 
 const isBettingAllowed = (match) => {
   const matchDate = new Date(match.date_match || match.date);
@@ -30,15 +36,179 @@ const getBlockingMessage = (match) => {
     : "Paris fermés (jour du match)";
 };
 
+// ── Popup Conseil personnalisé ──────────────────────────────
+const ConseilPopup = ({ match, isD2, onClose }) => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const chargerConseils = async () => {
+    if (loaded) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const championnat = isD2 ? 'd2' : 'top14';
+      const res = await axios.post(`${API_BASE}/api/insights/conseil-personnalise`, {
+        match_id: match.match_id,
+        equipe_domicile: match.equipe_domicile,
+        equipe_exterieure: match.equipe_exterieure,
+        championnat,
+      }, {
+        headers: { 'x-user-id': user.id }
+      });
+      setData(res.data);
+      setLoaded(true);
+    } catch (err) {
+      setError('Impossible de charger les conseils. Réessaie dans quelques instants.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Charger au montage
+  useState(() => { chargerConseils(); }, []);
+
+  // Couleurs selon championnat
+  const accentColor = isD2 ? '#00174D' : '#D4A017';
+  const bgColor = isD2 ? '#E8EFF7' : '#FFF8E7';
+  const badgeBg = isD2 ? '#00174D' : '#D4A017';
+  const badgeText = '#FFFFFF';
+
+  const styleLabel = data?.profil_style === 'prudent' ? '🛡️ Profil prudent'
+    : data?.profil_style === 'agressif' ? '🔥 Profil audacieux'
+    : data?.profil_style === 'neutre' ? '🏁 Profil débutant'
+    : '⚖️ Profil équilibré';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center p-0"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg bg-white rounded-t-2xl shadow-2xl overflow-hidden"
+        style={{ maxHeight: '85vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="px-5 py-4 flex items-center justify-between"
+          style={{ backgroundColor: bgColor, borderBottom: `3px solid ${accentColor}` }}
+        >
+          <div className="flex items-center gap-2">
+            <Lightbulb className="w-5 h-5" style={{ color: accentColor }} />
+            <div>
+              <p className="font-bold text-sm" style={{ color: accentColor }}>Conseil personnalisé</p>
+              <p className="text-xs text-gray-500">{match.equipe_domicile} vs {match.equipe_exterieure}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-black/10 transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        {/* Contenu scrollable */}
+        <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 80px)' }}>
+
+          {/* Loading */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader className="w-8 h-8 animate-spin" style={{ color: accentColor }} />
+              <p className="text-sm text-gray-500">Analyse de ton profil en cours...</p>
+            </div>
+          )}
+
+          {/* Erreur */}
+          {error && !loading && (
+            <div className="p-5">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">{error}</p>
+                <button
+                  onClick={() => { setLoaded(false); chargerConseils(); }}
+                  className="mt-3 text-xs font-semibold text-red-700 underline"
+                >
+                  Réessayer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Conseils */}
+          {data && !loading && (
+            <div className="p-4 space-y-3">
+
+              {/* Badge profil + résumé */}
+              <div
+                className="rounded-xl px-4 py-3 flex items-start gap-3"
+                style={{ backgroundColor: bgColor }}
+              >
+                <span
+                  className="text-[11px] font-bold px-2 py-1 rounded-full flex-shrink-0 mt-0.5"
+                  style={{ backgroundColor: badgeBg, color: badgeText }}
+                >
+                  {styleLabel}
+                </span>
+                <p className="text-xs text-gray-600 leading-relaxed">{data.resume_profil}</p>
+              </div>
+
+              {/* Stats rapides */}
+              {data.nb_paris > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-gray-50 rounded-xl px-3 py-2 text-center border border-gray-200">
+                    <p className="text-xs text-gray-500">Taux de réussite</p>
+                    <p className="text-lg font-bold" style={{ color: accentColor }}>{data.profil_taux}%</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl px-3 py-2 text-center border border-gray-200">
+                    <p className="text-xs text-gray-500">Paris joués</p>
+                    <p className="text-lg font-bold" style={{ color: accentColor }}>{data.nb_paris}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Conseils */}
+              {data.conseils?.map((conseil, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border p-4 space-y-1"
+                  style={{
+                    borderColor: accentColor + '40',
+                    backgroundColor: i % 2 === 0 ? bgColor : 'white',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{conseil.emoji}</span>
+                    <p className="font-bold text-sm text-gray-800">{conseil.titre}</p>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed pl-7">{conseil.texte}</p>
+                </div>
+              ))}
+
+              {/* Disclaimer */}
+              <p className="text-[10px] text-gray-400 text-center italic px-2 pb-2">
+                Ces conseils sont générés par l'IA à titre informatif et ne constituent pas une incitation au pari.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function MatchCard({ match, existingProno, onBetClick, goToMesParis, jouable = true, prochaineJournee, isD2 = false }) {
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
   const bettingAllowed = isBettingAllowed(match);
   const navigate = useNavigate();
   const [teamPopup, setTeamPopup] = useState(null);
+  const [showConseil, setShowConseil] = useState(false);
 
   // ✅ En Pro D2, pas de paris MT du tout
-  // 🆕 v3 : pronoFT détecte aussi WINNER_FT (paris vainqueur D2)
   const pronoFT = existingProno?.find(p => 
     (p.bet_type === 'FT' || p.bet_type === 'WINNER_FT') && p.status !== 'cancelled'
   );
@@ -46,7 +216,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     (p.bet_type === 'MT' || p.bet_type === 'WINNER_MT') && p.status !== 'cancelled'
   );
   
-  // 🆕 v3 : flag pour différencier l'affichage
   const isWinnerBet = pronoFT?.bet_type === 'WINNER_FT';
   const hasFT = !!pronoFT;
   const hasMT = !!pronoMT;
@@ -54,7 +223,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const pariPartiel = isD2 ? false : ((hasFT && !hasMT) || (!hasFT && hasMT));
   const aucunPari = !hasFT && !hasMT;
 
-  // Scores prédits IA
   const iaFTDom = match.cotes?.score_predit_dom;
   const iaFTExt = match.cotes?.score_predit_ext;
   const iaMTDom = match.cotes?.score_predit_mt_dom;
@@ -65,7 +233,9 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const matchDate = new Date(match.date_match || match.date);
   const showTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
 
-  // ── Bloc Prono IA ───────────────────────────────────────────────
+  // Couleurs selon championnat
+  const accentColor = isD2 ? '#00174D' : '#D4A017';
+
   const BlocPronoIA = ({ showFT, showMT }) => {
     const displayMT = showMT && !isD2 && hasIAMT;
     if (!showFT && !displayMT) return null;
@@ -85,7 +255,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     );
   };
 
-  // ── Zone Mon pari / Mes paris ────────────────────────────────────
   const ZoneMonPari = ({ clickable }) => {
     const label = pariComplet ? 'Mes paris' : 'Mon pari';
     return (
@@ -99,13 +268,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <CheckCircle className="w-3 h-3 text-green-600" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
         </div>
-        {/* FT score exact */}
         {pronoFT && !isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
             🏉 Score FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
           </span>
         )}
-        {/* FT vainqueur */}
         {pronoFT && isWinnerBet && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
             🎯 Vainqueur FT : {pronoFT.winner_predit === 'domicile' ? teamDom.name 
@@ -113,13 +280,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               : 'Match nul'}
           </span>
         )}
-        {/* MT score exact */}
         {pronoMT && pronoMT.bet_type !== 'WINNER_MT' && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
             ⏱️ Score MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
           </span>
         )}
-        {/* MT vainqueur */}
         {pronoMT && pronoMT.bet_type === 'WINNER_MT' && (
           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
             🎯 Vainqueur MT : {pronoMT.winner_predit === 'domicile' ? teamDom.name 
@@ -131,19 +296,33 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     );
   };
 
-  // Couleurs adaptées au championnat
   const hoverColor = isD2 ? 'hover:bg-[#97C1FE]/5' : 'hover:bg-rugby-gold/5';
 
   return (
     <div className={`px-3 py-3 ${hoverColor} transition-colors`}>
 
-      {/* Date */}
-      <p className="text-[10px] text-gray-500 mb-2">
-        {matchDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
-        {showTime && ` • ${matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
-      </p>
+      {/* Date + bouton Conseil */}
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] text-gray-500">
+          {matchDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
+          {showTime && ` • ${matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+        </p>
+        {/* Bouton Conseil personnalisé — discret */}
+        <button
+          onClick={() => setShowConseil(true)}
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-all hover:opacity-80"
+          style={{
+            backgroundColor: accentColor + '15',
+            color: accentColor,
+            border: `1px solid ${accentColor}40`,
+          }}
+        >
+          <Lightbulb className="w-3 h-3" />
+          Conseil
+        </button>
+      </div>
 
-      {/* Équipes + Logos — cliquables */}
+      {/* Équipes + Logos */}
       <div className="flex items-center justify-between gap-3 mb-2">
         <button
           onClick={() => setTeamPopup(match.equipe_domicile)}
@@ -177,13 +356,12 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">2</div>
           </div>
 
-          {/* Ligne Temps plein — cliquable seulement si pas de pari FT */}
+          {/* Ligne Temps plein */}
           <div className="flex items-center gap-1.5">
             <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
               const ftClickable = bettingAllowed && !hasFT && jouable;
               const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
-              // 🆕 D2 : string legacy. Top 14 : objet avec type FT
               const preselect = isD2 ? winnerForClick : { type: 'FT', choice: winnerForClick };
               return (
                 <div key={i}
@@ -203,7 +381,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => {
                 const mtClickable = bettingAllowed && !hasMT && jouable;
                 const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
-                // 🆕 Top 14 : objet avec type MT
                 const preselect = { type: 'MT', choice: winnerForClick };
                 return (
                   <div key={i}
@@ -219,10 +396,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         </div>
       )}
 
-      {/* ── ZONE ACTIONS ─────────────────────────────────────────── */}
+      {/* Zone actions */}
       <div className="flex flex-col gap-2">
-
-        {/* Journée non jouable (J{N-1}) */}
         {!jouable && (
           <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 w-fit mx-auto">
             <Lock className="w-4 h-4 text-gray-400" />
@@ -232,7 +407,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           </div>
         )}
 
-        {/* Paris fermés */}
         {!bettingAllowed && (
           <>
             {(hasFT || hasMT) && (
@@ -248,7 +422,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           </>
         )}
 
-        {/* Paris ouverts */}
         {bettingAllowed && (
           <>
             {(hasFT || hasMT) && (
@@ -257,7 +430,6 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                 <BlocPronoIA showFT={hasFT} showMT={hasMT} />
               </div>
             )}
-
             {aucunPari && (
               <div className="flex flex-col items-center gap-1.5 w-full mt-1">
                 <p className="text-[11px] text-gray-400 italic text-center">
@@ -266,25 +438,19 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                 <BlocPronoIA showFT={true} showMT={true} />
               </div>
             )}
-
-            {/* Bouton compléter si pari partiel (jamais en D2) */}
             {pariPartiel && (
               <button
                 onClick={() => onBetClick(match)}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                          bg-rugby-bronze text-white hover:bg-rugby-bronze/80 transition-colors shadow-sm w-fit mx-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-rugby-bronze text-white hover:bg-rugby-bronze/80 transition-colors shadow-sm w-fit mx-auto"
               >
                 <Edit className="w-4 h-4" />
                 <span>Compléter mon pari</span>
               </button>
             )}
-
-            {/* Bouton voir mes paris si pari complet */}
             {pariComplet && (
               <button
                 onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } })}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold
-                          bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm w-fit mx-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm w-fit mx-auto"
               >
                 Voir mes paris en cours
               </button>
@@ -299,6 +465,15 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           equipeNom={teamPopup}
           isD2={isD2}
           onClose={() => setTeamPopup(null)}
+        />
+      )}
+
+      {/* Popup conseil personnalisé */}
+      {showConseil && (
+        <ConseilPopup
+          match={match}
+          isD2={isD2}
+          onClose={() => setShowConseil(false)}
         />
       )}
     </div>
