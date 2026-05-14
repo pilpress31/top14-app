@@ -427,7 +427,7 @@ export default function ChatPage() {
       {/* ✅ Header - FIXED */}
       <div
         className="fixed left-0 right-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg"
-        style={{ top: 'var(--safe-area-top, 0px)' }}
+        style={{ top: 0, paddingTop: 'var(--safe-area-top, 0px)' }}
       >
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
@@ -536,7 +536,7 @@ export default function ChatPage() {
 
           {/* ✅ Zone messages - PADDING-TOP pour passer sous le header fixed */}
           <div className="container mx-auto px-4 py-4 space-y-3 pb-32"
-               style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 8rem)' }}>
+               style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 9.5rem)' }}>
             {loadingMore && (
               <div className="flex justify-center py-3">
                 <div className="w-5 h-5 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" />
@@ -735,7 +735,14 @@ export default function ChatPage() {
           )}
 
           {/* Barre de saisie fixe */}
-          <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+          <div className="fixed left-0 right-0 bg-white border-t border-gray-200 shadow-lg"
+               style={{ 
+                 bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))',
+                 paddingLeft: '1rem',
+                 paddingRight: '1rem',
+                 paddingTop: '0.75rem',
+                 paddingBottom: '0.75rem',
+               }}>
             <div className="container mx-auto">
               {user ? (
                 <div className="flex gap-2">

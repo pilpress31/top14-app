@@ -84,7 +84,7 @@ const ConseilPopupHcup = ({ match, onClose }) => {
     >
       <div
         className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-        style={{ maxHeight: 'calc(100vh - 140px)' }}
+        style={{ maxHeight: 'calc(100vh - 140px - env(safe-area-inset-bottom, 0px))' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -165,7 +165,8 @@ const ConseilPopupHcup = ({ match, onClose }) => {
         </div>
 
         {/* Bouton Fermer */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100"
+             style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
           <button
             onClick={onClose}
             className="w-full py-3 rounded-xl font-semibold text-sm transition-colors text-white"
