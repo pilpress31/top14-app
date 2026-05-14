@@ -3,14 +3,23 @@
 // ============================================
 // Interface chat avec l'IA rugby intégrée dans ChatPage
 // Limite : 5 questions/jour/user
+// Persistence : localStorage pour survivre à la mise en veille
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, Brain, Zap } from 'lucide-react';
+import { Send, Brain, Zap, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
+const STORAGE_KEY = 'rugby_ia_messages';
+const MAX_STORED_MESSAGES = 20;
+
+const WELCOME_MSG = {
+  id: 'welcome',
+  role: 'assistant',
+  text: "👋 Bonjour ! Je suis ton assistant rugby IA. Pose-moi n'importe quelle question sur le rugby — règles, équipes, pronostics, statistiques... Je suis là pour t'aider ! 🏉",
+};
 
 const SUGGESTIONS = [
   "Comment se porte le Stade Toulousain cette saison ?",
@@ -20,6 +29,31 @@ const SUGGESTIONS = [
   "Combien de fois Toulouse a gagné le championnat ?",
 ];
 
+// ── Helpers localStorage ──────────────────────────────────
+const loadMessagesFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.warn('Erreur lecture localStorage:', e.message);
+  }
+  return null;
+};
+
+const saveMessagesToStorage = (messages) => {
+  try {
+    const toStore = messages
+      .filter(m => m.id !== 'welcome')
+      .slice(-MAX_STORED_MESSAGES);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([WELCOME_MSG, ...toStore]));
+  } catch (e) {
+    console.warn('Erreur écriture localStorage:', e.message);
+  }
+};
+
 export default function RugbyIATab() {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -27,21 +61,34 @@ export default function RugbyIATab() {
   const [loading, setLoading] = useState(false);
   const [quota, setQuota] = useState({ used: 0, remaining: 5, limit: 5 });
   const messagesEndRef = useRef(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     loadQuota();
-    // Message de bienvenue
-    setMessages([{
-      id: 'welcome',
-      role: 'assistant',
-      text: "👋 Bonjour ! Je suis ton assistant rugby IA. Pose-moi n'importe quelle question sur le rugby — règles, équipes, pronostics, statistiques... Je suis là pour t'aider ! 🏉",
-    }]);
+    // Restaurer les messages depuis localStorage
+    const stored = loadMessagesFromStorage();
+    if (stored) {
+      setMessages(stored);
+    } else {
+      setMessages([WELCOME_MSG]);
+    }
   }, []);
 
+  // Sauvegarder dans localStorage à chaque changement de messages
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (messages.length > 0) {
+      saveMessagesToStorage(messages);
+    }
+  }, [messages]);
+
+  // Scroll conditionnel
   useEffect(() => {
     if (messages.length === 0) return;
     const last = messages[messages.length - 1];
-    // Scroller uniquement si c'est un message court (< 300 chars) ou une question user
     if (last.role === 'user' || (last.text && last.text.length < 300)) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -67,7 +114,6 @@ export default function RugbyIATab() {
     setInput('');
     setLoading(true);
 
-    // Ajouter la question dans le fil
     const userMsg = { id: Date.now(), role: 'user', text: question };
     setMessages(prev => [...prev, userMsg]);
 
@@ -94,9 +140,7 @@ export default function RugbyIATab() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'error',
-        text: isQuotaError
-          ? `⏳ ${errorMsg}`
-          : `❌ ${errorMsg}`,
+        text: isQuotaError ? `⏳ ${errorMsg}` : `❌ ${errorMsg}`,
       }]);
       if (isQuotaError) {
         setQuota(prev => ({ ...prev, remaining: 0 }));
@@ -104,6 +148,11 @@ export default function RugbyIATab() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClearMessages = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setMessages([WELCOME_MSG]);
   };
 
   const handleKeyPress = (e) => {
@@ -124,14 +173,26 @@ export default function RugbyIATab() {
 
       {/* Zone messages */}
       <div className="flex-1 container mx-auto px-4 py-4 space-y-4 pb-40"
-           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 8rem)' }}>
+           style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 9rem)' }}>
 
-        {/* Quota */}
-        <div className="sticky top-0 z-10 flex items-center justify-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200 w-fit mx-auto">
-          <Zap className={`w-4 h-4 ${quotaColor}`} />
-          <span className={`text-xs font-semibold ${quotaColor}`}>
-            {quota.remaining} question{quota.remaining > 1 ? 's' : ''} restante{quota.remaining > 1 ? 's' : ''} aujourd'hui
-          </span>
+        {/* Quota + bouton effacer */}
+        <div className="flex items-center justify-center gap-3">
+          <div className="sticky top-0 z-10 flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-200">
+            <Zap className={`w-4 h-4 ${quotaColor}`} />
+            <span className={`text-xs font-semibold ${quotaColor}`}>
+              {quota.remaining} question{quota.remaining > 1 ? 's' : ''} restante{quota.remaining > 1 ? 's' : ''} aujourd'hui
+            </span>
+          </div>
+          {messages.length > 1 && (
+            <button
+              onClick={handleClearMessages}
+              className="flex items-center gap-1 bg-white rounded-full px-3 py-2 shadow-sm border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors"
+              title="Effacer la conversation"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="text-xs">Effacer</span>
+            </button>
+          )}
         </div>
 
         {/* Messages */}
@@ -177,7 +238,7 @@ export default function RugbyIATab() {
           </div>
         )}
 
-        {/* Suggestions (si conversation vide ou après welcome) */}
+        {/* Suggestions (si conversation vide) */}
         {messages.length <= 1 && !loading && (
           <div className="space-y-2 mt-4">
             <p className="text-xs text-gray-400 text-center font-medium">Suggestions</p>

@@ -34,7 +34,14 @@ const formatHeureParis = (dateString) => {
 export default function ChatPage() {
   const { user } = useAuth();
   const { markAsRead } = useChatNotification();
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState(
+    () => sessionStorage.getItem('chat_active_tab') || 'chat'
+  );
+
+  // Persister l'onglet actif pour survivre à la mise en veille
+  useEffect(() => {
+    sessionStorage.setItem('chat_active_tab', activeTab);
+  }, [activeTab]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
