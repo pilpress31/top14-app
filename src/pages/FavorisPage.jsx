@@ -3,10 +3,11 @@
 // ============================================
 
 import { useNavigate } from 'react-router-dom';
-import { Star, ChevronLeft, Calendar, Loader } from 'lucide-react';
+import { Star, ChevronLeft, Calendar, Loader, ArrowUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
+import { useState, useEffect, useRef } from 'react';
 
 const CHAMP_LABELS = {
   top14: { label: 'TOP 14', color: '#D4A017', bg: '#FFF8E7' },
@@ -18,6 +19,13 @@ export default function FavorisPage() {
   const { user } = useAuth();
   const { favorites, matchsFavoris, isFavori, toggleFavori, loading } = useFavorites();
   const navigate = useNavigate();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleToggle = async (equipe_nom) => {
     await toggleFavori(equipe_nom);
@@ -174,6 +182,17 @@ export default function FavorisPage() {
           </>
         )}
       </div>
+
+      {/* Bouton retour en haut */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-24 right-4 w-10 h-10 rounded-full shadow-lg flex items-center justify-center transition-all z-40"
+          style={{ backgroundColor: '#D4A017' }}
+        >
+          <ArrowUp className="w-5 h-5 text-white" />
+        </button>
+      )}
     </div>
   );
 }
