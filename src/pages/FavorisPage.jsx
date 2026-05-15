@@ -209,9 +209,40 @@ export default function FavorisPage() {
                             </div>
                           </div>
 
+                          {/* Journée / Round */}
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-[10px] text-gray-400">
+                              {match.round && match.round !== 'Journée'
+                                ? match.round
+                                : match.journee
+                                  ? `Journée ${String(match.journee).replace('J', '')}`
+                                  : ''}
+                            </span>
+                            {/* Bouton Parier */}
+                            {new Date(match.date_match) > new Date() && (
+                              <button
+                                onClick={() => navigate('/pronos', {
+                                  state: {
+                                    activeTab: 'a-parier',
+                                    scrollToMatchId: match.match_id,
+                                    championnat: match.championnat,
+                                  }
+                                })}
+                                className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                style={{
+                                  backgroundColor: champ.color + '20',
+                                  color: champ.color,
+                                  border: `1px solid ${champ.color}40`
+                                }}
+                              >
+                                🎯 Parier
+                              </button>
+                            )}
+                          </div>
+
                           {/* Prono IA */}
                           {match.score_predit_dom != null && (
-                            <div className="mt-2 flex items-center justify-center gap-2">
+                            <div className="mt-1 flex items-center justify-center gap-2">
                               <span className="text-[10px] text-indigo-500 font-semibold">Prono IA :</span>
                               <span className="text-[11px] font-bold text-indigo-700">
                                 {match.score_predit_dom} - {match.score_predit_ext}
@@ -223,13 +254,6 @@ export default function FavorisPage() {
                                     : Math.round(match.confiance_algo)}% confiance)
                                 </span>
                               )}
-                            </div>
-                          )}
-
-                          {/* Phase HCup */}
-                          {match.round && (
-                            <div className="mt-1 text-center">
-                              <span className="text-[10px] text-gray-400">{match.round}</span>
                             </div>
                           )}
                         </div>
