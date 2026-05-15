@@ -64,13 +64,29 @@ export default function FavorisPage() {
         axios.get(`${API_BASE}/api/hcup/matchs/a-venir`),
       ]);
       setMatchs(favRes.data.matchs || []);
-      // Set des match_ids avec paris ouverts (les 3 championnats)
-      const ids = new Set([
-        ...(top14Res.data.matchs || []).map(m => m.match_id || m.id),
-        ...(d2Res.data.matchs || []).map(m => m.match_id || m.id),
-        ...(hcupRes.data.matchs || []).map(m => m.match_id || m.id),
-      ]);
-      setMatchsDisponibles(ids);
+
+      // Top 14 : garder uniquement la première journée (paris ouverts)
+      const top14Matchs = top14Res.data.matchs || [];
+      const firstJourneeTop14 = top14Matchs.length > 0 ? top14Matchs[0].journee : null;
+      const top14Ids = top14Matchs
+        .filter(m => m.journee === firstJourneeTop14)
+        .map(m => m.match_id || m.id);
+
+      // Pro D2 : garder uniquement la première journée
+      const d2Matchs = d2Res.data.matchs || [];
+      const firstJourneeD2 = d2Matchs.length > 0 ? d2Matchs[0].journee : null;
+      const d2Ids = d2Matchs
+        .filter(m => m.journee === firstJourneeD2)
+        .map(m => m.match_id || m.id);
+
+      // HCup : garder uniquement le premier round
+      const hcupMatchs = hcupRes.data.matchs || [];
+      const firstRoundHcup = hcupMatchs.length > 0 ? hcupMatchs[0].round : null;
+      const hcupIds = hcupMatchs
+        .filter(m => m.round === firstRoundHcup)
+        .map(m => m.match_id || m.id);
+
+      setMatchsDisponibles(new Set([...top14Ids, ...d2Ids, ...hcupIds]));
     } catch (e) {
       console.error('Erreur chargement matchs:', e.message);
     } finally {
