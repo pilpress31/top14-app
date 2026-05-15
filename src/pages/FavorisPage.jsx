@@ -17,9 +17,14 @@ const CHAMP_LABELS = {
 
 export default function FavorisPage() {
   const { user } = useAuth();
-  const { favorites, matchsFavoris, isFavori, toggleFavori, loading } = useFavorites();
+  const { favorites, matchsFavoris, isFavori, toggleFavori, loading, reloadFavorites } = useFavorites();
   const navigate = useNavigate();
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Recharger à chaque fois qu'on arrive sur la page
+  useEffect(() => {
+    reloadFavorites();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
