@@ -51,6 +51,12 @@ export default function PronosPage() {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
     }
+    // Sélectionner le bon championnat si passé depuis FavorisPage
+    if (location.state?.championnat) {
+      const champMap = { top14: 'top14', d2: 'prod2', hcup: 'hcup' };
+      const mapped = champMap[location.state.championnat];
+      if (mapped) setChampionnat(mapped);
+    }
   }, [location.key, location.state]);
 
   useEffect(() => {

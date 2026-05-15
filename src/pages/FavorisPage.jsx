@@ -23,6 +23,7 @@ export default function FavorisPage() {
   const { favorites, isFavori, toggleFavori, reloadFavorites } = useFavorites();
   const navigate = useNavigate();
   const [matchs, setMatchs] = useState([]);
+  const [matchsDisponibles, setMatchsDisponibles] = useState(new Set());
   const [loadingMatchs, setLoadingMatchs] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -56,10 +57,14 @@ export default function FavorisPage() {
     if (!user) return;
     setLoadingMatchs(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/favorites/matchs`, {
-        headers: { 'x-user-id': user.id }
-      });
-      setMatchs(res.data.matchs || []);
+      const [favRes, dispRes] = await Promise.all([
+        axios.get(`${API_BASE}/api/favorites/matchs`, { headers: { 'x-user-id': user.id } }),
+        axios.get(`${API_BASE}/api/matchs/a-venir`),
+      ]);
+      setMatchs(favRes.data.matchs || []);
+      // Construire un Set des match_ids avec paris ouverts
+      const ids = new Set((dispRes.data.matchs || []).map(m => m.match_id || m.id));
+      setMatchsDisponibles(ids);
     } catch (e) {
       console.error('Erreur chargement matchs:', e.message);
     } finally {
@@ -219,32 +224,25 @@ export default function FavorisPage() {
                                   : ''}
                             </span>
                             {/* Bouton Parier — uniquement si paris ouverts */}
-                            {(() => {
-                              const matchDate = new Date(match.date_match);
-                              const now = new Date();
-                              const hasTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
-                              const fiveMinBefore = new Date(matchDate.getTime() - 5 * 60 * 1000);
-                              const parisOuverts = hasTime ? now < fiveMinBefore : now < matchDate;
-                              return parisOuverts ? (
-                                <button
-                                  onClick={() => navigate('/pronos', {
-                                    state: {
-                                      activeTab: 'a-parier',
-                                      scrollToMatchId: match.match_id,
-                                      championnat: match.championnat,
-                                    }
-                                  })}
-                                  className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
-                                  style={{
-                                    backgroundColor: champ.color + '20',
-                                    color: champ.color,
-                                    border: `1px solid ${champ.color}40`
-                                  }}
-                                >
-                                  🎯 Parier
-                                </button>
-                              ) : null;
-                            })()}
+                            {matchsDisponibles.has(match.match_id) && (
+                              <button
+                                onClick={() => navigate('/pronos', {
+                                  state: {
+                                    activeTab: 'a-parier',
+                                    scrollToMatchId: match.match_id,
+                                    championnat: match.championnat,
+                                  }
+                                })}
+                                className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                style={{
+                                  backgroundColor: champ.color + '20',
+                                  color: champ.color,
+                                  border: `1px solid ${champ.color}40`
+                                }}
+                              >
+                                🎯 Parier
+                              </button>
+                            )}
                           </div>
 
                           {/* Prono IA */}
