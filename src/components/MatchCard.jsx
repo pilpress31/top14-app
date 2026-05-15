@@ -3,8 +3,8 @@
 // + Bouton Conseil personnalisé (mai 2026)
 // ============================================
 
-import { useState } from 'react';
-import { CheckCircle, Edit, Lock, Brain, Lightbulb, X, Loader } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle, Edit, Lock, Brain, Lightbulb, X, Loader, Star } from 'lucide-react';
 import { getTeamData } from '../utils/teams';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -219,6 +219,38 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const navigate = useNavigate();
   const [teamPopup, setTeamPopup] = useState(null);
   const [showConseil, setShowConseil] = useState(false);
+  const [isFavDom, setIsFavDom] = useState(false);
+  const [isFavExt, setIsFavExt] = useState(false);
+  const { user } = useAuth();
+
+  // Vérifier si les équipes sont en favoris au montage
+  useEffect(() => {
+    if (!user) return;
+    const checkFavs = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/favorites`, {
+          headers: { 'x-user-id': user.id }
+        });
+        const favs = (res.data.favorites || []).map(f => f.equipe_nom);
+        setIsFavDom(favs.includes(match.equipe_domicile));
+        setIsFavExt(favs.includes(match.equipe_exterieure));
+      } catch (e) {}
+    };
+    checkFavs();
+  }, [user, match.equipe_domicile, match.equipe_exterieure]);
+
+  const toggleFavori = async (equipe_nom, isFav, setIsFav) => {
+    if (!user) return;
+    try {
+      await axios.post(`${API_BASE}/api/favorites/toggle`,
+        { equipe_nom, championnat: isD2 ? 'd2' : 'top14' },
+        { headers: { 'x-user-id': user.id } }
+      );
+      setIsFav(!isFav);
+    } catch (e) {
+      console.error('Erreur toggle favori:', e.message);
+    }
+  };
 
   // ✅ En Pro D2, pas de paris MT du tout
   const pronoFT = existingProno?.find(p => 
@@ -345,6 +377,20 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isFavDom, setIsFavDom); }}
+          className="p-1 flex-shrink-0"
+          title={isFavDom ? "Retirer des favoris" : "Ajouter aux favoris"}
+        >
+          <Star className={`w-4 h-4 ${isFavDom ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isFavExt, setIsFavExt); }}
+          className="p-1 flex-shrink-0"
+          title={isFavExt ? "Retirer des favoris" : "Ajouter aux favoris"}
+        >
+          <Star className={`w-4 h-4 ${isFavExt ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
         </button>
         <button
           onClick={() => setTeamPopup(match.equipe_exterieure)}

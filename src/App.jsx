@@ -41,6 +41,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import MaCagnotte from './pages/MaCagnotte';
 import MesPoints from './pages/MesPoints';
+import FavorisPage from './pages/FavorisPage';
 
 /* ✅ Hook pour savoir quel onglet est actif */
 function useActiveLabel() {
@@ -96,6 +97,7 @@ function AppContent() {
     '/profil',
     '/ma-cagnotte',
     '/mes-points',
+    '/favoris',
     '/conditions-generales',
     '/signaler-bug',
     '/notifications-push',
@@ -171,6 +173,7 @@ function AppContent() {
         <Route path="/profil" element={<ProtectedRoute><ProfilPage /></ProtectedRoute>} />
         <Route path="/ma-cagnotte" element={<ProtectedRoute><MaCagnotte /></ProtectedRoute>} />
         <Route path="/mes-points" element={<ProtectedRoute><MesPoints /></ProtectedRoute>} />
+        <Route path="/favoris" element={<ProtectedRoute><FavorisPage /></ProtectedRoute>} />
         <Route path="/a-propos" element={<ProtectedRoute><AProposPage /></ProtectedRoute>} />
         <Route path="/reglement" element={<ProtectedRoute><ReglementPage /></ProtectedRoute>} />
         <Route path="/cgu" element={<ProtectedRoute><CGUPage /></ProtectedRoute>} />
