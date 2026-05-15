@@ -219,7 +219,7 @@ function ConditionsGeneralesPage() {
 
       {/* Cookie Banner */}
       {showCookieBanner && (
-        <div className="fixed bottom-16 left-0 right-0 bg-gray-900 text-white p-4 shadow-2xl animate-slide-up z-50">
+        <div className="fixed left-0 right-0 bg-gray-900 text-white p-4 shadow-2xl animate-slide-up z-50" style={{ bottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
               <Cookie className="h-6 w-6 text-yellow-400 flex-shrink-0 mt-1" />
