@@ -538,7 +538,7 @@ export default function ChatPage() {
           <div className="container mx-auto px-4 py-4 space-y-3"
             style={{ 
               paddingTop: 'calc(var(--safe-area-top, 0px) + 9.5rem)',
-              paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))'
+              paddingBottom: 'calc(8rem + env(safe-area-inset-bottom, 0px))'
             }}>
             {loadingMore && (
               <div className="flex justify-center py-3">
