@@ -24,7 +24,7 @@ export const FavoritesProvider = ({ children }) => {
   const userRef = useRef(user);
   useEffect(() => { userRef.current = user; }, [user]);
 
-  // Charger tout au login uniquement
+  // Charger tout au login
   useEffect(() => {
     if (user) {
       loadAll();
@@ -71,12 +71,12 @@ export const FavoritesProvider = ({ children }) => {
     if (!userRef.current) return;
     const wasInFav = favorites.includes(equipe_nom);
 
-    // ── Mise à jour optimiste UNIQUEMENT locale, pas de rechargement auto ──
+    // ── Mise à jour optimiste des étoiles ──
     setFavorites(prev =>
       wasInFav ? prev.filter(e => e !== equipe_nom) : [...prev, equipe_nom]
     );
 
-    // Suppression : retirer les matchs immédiatement sans recharger
+    // Suppression optimiste des matchs
     if (wasInFav) {
       setMatchsFavoris(prev =>
         prev.filter(m =>
@@ -90,13 +90,11 @@ export const FavoritesProvider = ({ children }) => {
         { equipe_nom, championnat },
         { headers: { 'x-user-id': userRef.current.id } }
       );
-      // Ajout confirmé → recharger les matchs depuis l'API
-      if (!wasInFav) {
-        await loadMatchsFavoris();
-      }
+      // Recharger les matchs depuis l'API dans les deux cas (ajout ET suppression)
+      await loadMatchsFavoris();
     } catch (e) {
       console.error('Erreur toggle favori, rollback:', e.message);
-      // Rollback
+      // Rollback étoiles
       setFavorites(prev =>
         wasInFav ? [...prev, equipe_nom] : prev.filter(eq => eq !== equipe_nom)
       );
