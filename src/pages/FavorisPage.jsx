@@ -2,7 +2,7 @@
 // FavorisPage.jsx – Mes équipes favorites
 // ============================================
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Star, ChevronLeft, Calendar, Loader, ArrowUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
@@ -19,12 +19,13 @@ export default function FavorisPage() {
   const { user } = useAuth();
   const { favorites, matchsFavoris, isFavori, toggleFavori, loading, reloadFavorites } = useFavorites();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Recharger à chaque fois qu'on arrive sur la page
+  // Recharger à chaque navigation vers cette page
   useEffect(() => {
     reloadFavorites();
-  }, []);
+  }, [location.key]);
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
