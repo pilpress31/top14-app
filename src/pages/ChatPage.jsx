@@ -535,8 +535,11 @@ export default function ChatPage() {
           )}
 
           {/* ✅ Zone messages - PADDING-TOP pour passer sous le header fixed */}
-          <div className="container mx-auto px-4 py-4 space-y-3 pb-32"
-               style={{ paddingTop: 'calc(var(--safe-area-top, 0px) + 9.5rem)' }}>
+          <div className="container mx-auto px-4 py-4 space-y-3"
+            style={{ 
+              paddingTop: 'calc(var(--safe-area-top, 0px) + 9.5rem)',
+              paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))'
+            }}>
             {loadingMore && (
               <div className="flex justify-center py-3">
                 <div className="w-5 h-5 border-2 border-rugby-gold border-t-transparent rounded-full animate-spin" />
