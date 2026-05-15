@@ -3,7 +3,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Star, ChevronLeft, Calendar, Trophy, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getTeamData } from '../utils/teams';
@@ -20,13 +20,14 @@ const CHAMP_LABELS = {
 export default function FavorisPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [favorites, setFavorites] = useState([]);
   const [matchs, setMatchs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadFavoris();
-  }, []);
+  }, [location.key]);
 
   const loadFavoris = async () => {
     if (!user) return;
