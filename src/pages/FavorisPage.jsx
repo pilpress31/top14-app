@@ -218,26 +218,33 @@ export default function FavorisPage() {
                                   ? `Journée ${String(match.journee).replace('J', '')}`
                                   : ''}
                             </span>
-                            {/* Bouton Parier */}
-                            {new Date(match.date_match) > new Date() && (
-                              <button
-                                onClick={() => navigate('/pronos', {
-                                  state: {
-                                    activeTab: 'a-parier',
-                                    scrollToMatchId: match.match_id,
-                                    championnat: match.championnat,
-                                  }
-                                })}
-                                className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
-                                style={{
-                                  backgroundColor: champ.color + '20',
-                                  color: champ.color,
-                                  border: `1px solid ${champ.color}40`
-                                }}
-                              >
-                                🎯 Parier
-                              </button>
-                            )}
+                            {/* Bouton Parier — uniquement si paris ouverts */}
+                            {(() => {
+                              const matchDate = new Date(match.date_match);
+                              const now = new Date();
+                              const hasTime = matchDate.getHours() !== 0 || matchDate.getMinutes() !== 0;
+                              const fiveMinBefore = new Date(matchDate.getTime() - 5 * 60 * 1000);
+                              const parisOuverts = hasTime ? now < fiveMinBefore : now < matchDate;
+                              return parisOuverts ? (
+                                <button
+                                  onClick={() => navigate('/pronos', {
+                                    state: {
+                                      activeTab: 'a-parier',
+                                      scrollToMatchId: match.match_id,
+                                      championnat: match.championnat,
+                                    }
+                                  })}
+                                  className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                  style={{
+                                    backgroundColor: champ.color + '20',
+                                    color: champ.color,
+                                    border: `1px solid ${champ.color}40`
+                                  }}
+                                >
+                                  🎯 Parier
+                                </button>
+                              ) : null;
+                            })()}
                           </div>
 
                           {/* Prono IA */}
