@@ -2,7 +2,7 @@
 // FavoritesContext.jsx – Contexte global favoris
 // ============================================
 // Realtime Supabase sur user_favorites
-// Mise à jour automatique quand la table change
+// Mutex pour éviter les conflits toggle/realtime
 // ============================================
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
@@ -26,6 +26,8 @@ export const FavoritesProvider = ({ children }) => {
   const [matchsFavoris, setMatchsFavoris] = useState([]);
   const [loading, setLoading] = useState(false);
   const userRef = useRef(user);
+  const isTogglingRef = useRef(false); // Mutex pour bloquer le Realtime pendant un toggle
+
   useEffect(() => { userRef.current = user; }, [user]);
 
   // ── Charger tout au login ─────────────────────────────────
@@ -52,15 +54,18 @@ export const FavoritesProvider = ({ children }) => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          console.log('🔄 Favoris changés → rechargement');
+          // Ne pas recharger si un toggle est en cours (évite les conflits)
+          if (isTogglingRef.current) {
+            console.log('🔄 Realtime ignoré (toggle en cours)');
+            return;
+          }
+          console.log('🔄 Realtime favoris → rechargement');
           loadAll();
         }
       )
       .subscribe();
 
-    return () => {
-      channel.unsubscribe();
-    };
+    return () => { channel.unsubscribe(); };
   }, [user]);
 
   const loadAll = async () => {
@@ -100,6 +105,9 @@ export const FavoritesProvider = ({ children }) => {
     if (!userRef.current) return;
     const wasInFav = favorites.includes(equipe_nom);
 
+    // Activer le mutex — bloquer le Realtime pendant l'opération
+    isTogglingRef.current = true;
+
     // ── Mise à jour optimiste des étoiles ──
     setFavorites(prev =>
       wasInFav ? prev.filter(e => e !== equipe_nom) : [...prev, equipe_nom]
@@ -110,7 +118,7 @@ export const FavoritesProvider = ({ children }) => {
         { equipe_nom, championnat },
         { headers: { 'x-user-id': userRef.current.id } }
       );
-      // Recharger les matchs depuis l'API dans tous les cas
+      // Recharger les matchs après confirmation API
       await loadMatchsFavoris();
     } catch (e) {
       console.error('Erreur toggle favori, rollback:', e.message);
@@ -118,6 +126,9 @@ export const FavoritesProvider = ({ children }) => {
         wasInFav ? [...prev, equipe_nom] : prev.filter(eq => eq !== equipe_nom)
       );
       await loadMatchsFavoris();
+    } finally {
+      // Désactiver le mutex après 1s (laisser le temps au Realtime de passer)
+      setTimeout(() => { isTogglingRef.current = false; }, 1000);
     }
   }, [favorites]);
 
