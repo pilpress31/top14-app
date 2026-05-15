@@ -2,15 +2,11 @@
 // FavorisPage.jsx – Mes équipes favorites
 // ============================================
 
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Star, ChevronLeft, Calendar, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
-import axios from 'axios';
-
-const API_BASE = 'https://top14-api-production.up.railway.app';
 
 const CHAMP_LABELS = {
   top14: { label: 'TOP 14', color: '#D4A017', bg: '#FFF8E7' },
@@ -20,35 +16,8 @@ const CHAMP_LABELS = {
 
 export default function FavorisPage() {
   const { user } = useAuth();
-  const { favorites, isFavori, toggleFavori } = useFavorites();
+  const { favorites, matchsFavoris, isFavori, toggleFavori, loading } = useFavorites();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [matchs, setMatchs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Recharger les matchs quand les favoris changent ou qu'on navigue ici
-  useEffect(() => {
-    loadMatchs();
-  }, [favorites, location.key]);
-
-  const loadMatchs = async () => {
-    if (!user || favorites.length === 0) {
-      setMatchs([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE}/api/favorites/matchs`, {
-        headers: { 'x-user-id': user.id }
-      });
-      setMatchs(res.data.matchs || []);
-    } catch (e) {
-      console.error('Erreur chargement matchs favoris:', e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToggle = async (equipe_nom) => {
     await toggleFavori(equipe_nom);
@@ -124,13 +93,13 @@ export default function FavorisPage() {
                 Prochains matchs
               </h2>
 
-              {matchs.length === 0 ? (
+              {matchsFavoris.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-200">
                   <p className="text-gray-400 text-sm">Aucun match à venir pour tes équipes favorites</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {matchs.map((match) => {
+                  {matchsFavoris.map((match) => {
                     const teamDom = getTeamData(match.equipe_domicile);
                     const teamExt = getTeamData(match.equipe_exterieure);
                     const champ = CHAMP_LABELS[match.championnat] || CHAMP_LABELS.top14;

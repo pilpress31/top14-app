@@ -1,8 +1,8 @@
 // ============================================
 // FavoritesContext.jsx – Contexte global favoris
 // ============================================
-// Charge les favoris une seule fois au login
-// Expose : favorites, isFavori(), toggleFavori()
+// Charge les favoris + matchs une seule fois au login
+// Expose : favorites, matchsFavoris, isFavori(), toggleFavori()
 // Mise à jour instantanée dans toute l'app
 // ============================================
 
@@ -24,7 +24,8 @@ export const useFavorites = () => {
 
 export const FavoritesProvider = ({ children }) => {
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState([]); // liste des equipe_nom
+  const [favorites, setFavorites] = useState([]);
+  const [matchsFavoris, setMatchsFavoris] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Charger les favoris quand l'user se connecte
@@ -33,8 +34,19 @@ export const FavoritesProvider = ({ children }) => {
       loadFavorites();
     } else {
       setFavorites([]);
+      setMatchsFavoris([]);
     }
   }, [user]);
+
+  // Recharger les matchs à chaque changement de favoris
+  useEffect(() => {
+    if (!user) return;
+    if (favorites.length === 0) {
+      setMatchsFavoris([]);
+      return;
+    }
+    loadMatchsFavoris();
+  }, [favorites]);
 
   const loadFavorites = async () => {
     if (!user) return;
@@ -52,7 +64,19 @@ export const FavoritesProvider = ({ children }) => {
     }
   };
 
-  // Vérifier si une équipe est en favori
+  const loadMatchsFavoris = async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get(`${API_BASE}/api/favorites/matchs`, {
+        headers: { 'x-user-id': user.id }
+      });
+      setMatchsFavoris(res.data.matchs || []);
+    } catch (e) {
+      console.warn('Erreur chargement matchs favoris:', e.message);
+    }
+  };
+
+  // Vérifier si une équipe est en favori — instantané
   const isFavori = useCallback((equipe_nom) => {
     return favorites.includes(equipe_nom);
   }, [favorites]);
@@ -70,11 +94,24 @@ export const FavoritesProvider = ({ children }) => {
         : [...prev, equipe_nom]
     );
 
+    // Mise à jour optimiste des matchs aussi
+    if (wasInFav) {
+      setMatchsFavoris(prev =>
+        prev.filter(m =>
+          m.equipe_domicile !== equipe_nom && m.equipe_exterieure !== equipe_nom
+        )
+      );
+    }
+
     try {
       await axios.post(`${API_BASE}/api/favorites/toggle`,
         { equipe_nom, championnat },
         { headers: { 'x-user-id': user.id } }
       );
+      // Si on a ajouté, recharger les matchs depuis l'API
+      if (!wasInFav) {
+        loadMatchsFavoris();
+      }
     } catch (e) {
       // Rollback si erreur API
       console.error('Erreur toggle favori:', e.message);
@@ -83,11 +120,13 @@ export const FavoritesProvider = ({ children }) => {
           ? [...prev, equipe_nom]
           : prev.filter(eq => eq !== equipe_nom)
       );
+      loadMatchsFavoris();
     }
   }, [user, favorites]);
 
   const value = {
     favorites,
+    matchsFavoris,
     loading,
     isFavori,
     toggleFavori,
