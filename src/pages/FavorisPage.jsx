@@ -3,7 +3,7 @@
 // ============================================
 
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Star, ChevronLeft, Calendar, Loader, ArrowUp } from 'lucide-react';
+import { Star, ChevronLeft, Calendar, Loader, ArrowUp, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
@@ -47,10 +47,18 @@ export default function FavorisPage() {
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
             <Star className="w-5 h-5 text-rugby-gold fill-rugby-gold" />
             <h1 className="text-lg font-bold text-gray-900">Mes équipes favorites</h1>
           </div>
+          <button
+            onClick={reloadFavorites}
+            disabled={loading}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            title="Actualiser"
+          >
+            <RefreshCw className={`w-5 h-5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
