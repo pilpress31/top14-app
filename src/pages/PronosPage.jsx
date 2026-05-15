@@ -44,6 +44,8 @@ export default function PronosPage() {
   }, [championnat]);
 
   const lastHandledKey = useRef(null);
+  const [scrollToMatchId, setScrollToMatchId] = useState(null);
+
   useEffect(() => {
     if (location.key === lastHandledKey.current) return;
     lastHandledKey.current = location.key;
@@ -51,11 +53,13 @@ export default function PronosPage() {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
     }
-    // Sélectionner le bon championnat si passé depuis FavorisPage
     if (location.state?.championnat) {
       const champMap = { top14: 'top14', d2: 'prod2', hcup: 'hcup' };
       const mapped = champMap[location.state.championnat];
       if (mapped) setChampionnat(mapped);
+    }
+    if (location.state?.scrollToMatchId) {
+      setScrollToMatchId(location.state.scrollToMatchId);
     }
   }, [location.key, location.state]);
 
@@ -194,8 +198,8 @@ export default function PronosPage() {
       >
         {activeTab === 'a-parier' && (
           isHcup
-            ? <MesPronosHcupTab goToMesParis={goToMesParis} />
-            : <MesPronosTab goToMesParis={goToMesParis} />
+            ? <MesPronosHcupTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
+            : <MesPronosTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
         )}
 
         {activeTab === 'mes-paris' && (

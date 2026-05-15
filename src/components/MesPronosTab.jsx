@@ -14,7 +14,7 @@ import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-export default function MesPronosTab({ goToMesParis }) {
+export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDone }) {
   const { isD2 } = useChampionnat();  // ✅ Lecture du championnat actif
 
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
@@ -31,10 +31,26 @@ export default function MesPronosTab({ goToMesParis }) {
   const [parisOuverts, setParisOuverts] = useState(true);
   const [journeeIncomplete, setJourneeIncomplete] = useState(null);
   const lastScrollY = useRef(0);
+  const matchRefs = useRef({});
 
   // Ref stable pour capturer isD2 dans les closures async
   const isD2Ref = useRef(isD2);
   useEffect(() => { isD2Ref.current = isD2; }, [isD2]);
+
+  // Scroll vers le match cible après chargement
+  useEffect(() => {
+    if (!scrollToMatchId || loading) return;
+    const match = matchsDisponibles.find(m => m.match_id === scrollToMatchId);
+    if (!match) return;
+    setExpandedJournees(prev => new Set([...prev, match.journee]));
+    setTimeout(() => {
+      const el = matchRefs.current[scrollToMatchId];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        onScrollDone?.();
+      }
+    }, 400);
+  }, [scrollToMatchId, loading]);
 
   // ✅ Realtime — tables différentes selon championnat
   useRealtimeSync([
@@ -387,16 +403,17 @@ export default function MesPronosTab({ goToMesParis }) {
                       );
 
                       return (
-                        <MatchCard
-                          key={match.match_id}
-                          match={match}
-                          existingProno={existingProno}
-                          onBetClick={ouvrirModal}
-                          goToMesParis={goToMesParis}
-                          jouable={match.journee === prochaineJournee}
-                          prochaineJournee={prochaineJournee}
-                          isD2={isD2}
-                        />
+                        <div key={match.match_id} ref={el => matchRefs.current[match.match_id] = el}>
+                          <MatchCard
+                            match={match}
+                            existingProno={existingProno}
+                            onBetClick={ouvrirModal}
+                            goToMesParis={goToMesParis}
+                            jouable={match.journee === prochaineJournee}
+                            prochaineJournee={prochaineJournee}
+                            isD2={isD2}
+                          />
+                        </div>
                       );
                     })}
                   </div>

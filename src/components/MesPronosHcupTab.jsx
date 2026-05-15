@@ -38,7 +38,7 @@ const ROUND_ORDER = {
   'Finale': 10,
 };
 
-export default function MesPronosHcupTab({ goToMesParis }) {
+export default function MesPronosHcupTab({ goToMesParis, scrollToMatchId, onScrollDone }) {
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
   const [userCredits, setUserCredits] = useState(null);
@@ -48,6 +48,22 @@ export default function MesPronosHcupTab({ goToMesParis }) {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [preselectedWinner, setPreselectedWinner] = useState(null);
   const [expandedRounds, setExpandedRounds] = useState(new Set());
+  const matchRefs = useRef({});
+
+  // Scroll vers le match cible après chargement
+  useEffect(() => {
+    if (!scrollToMatchId || loading) return;
+    const match = matchsDisponibles.find(m => m.match_id === scrollToMatchId);
+    if (!match) return;
+    setExpandedRounds(prev => new Set([...prev, match.round]));
+    setTimeout(() => {
+      const el = matchRefs.current[scrollToMatchId];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        onScrollDone?.();
+      }
+    }, 400);
+  }, [scrollToMatchId, loading]);
 
   // ✅ Realtime sur les tables HCup
   useRealtimeSync([
@@ -292,14 +308,15 @@ export default function MesPronosHcupTab({ goToMesParis }) {
                       );
 
                       return (
-                        <MatchCardHcup
-                          key={match.match_id}
-                          match={match}
-                          existingProno={existingProno}
-                          onBetClick={ouvrirModal}
-                          goToMesParis={goToMesParis}
-                          jouable={true}  // HCup : tous les matchs sont toujours jouables
-                        />
+                        <div key={match.match_id} ref={el => matchRefs.current[match.match_id] = el}>
+                          <MatchCardHcup
+                            match={match}
+                            existingProno={existingProno}
+                            onBetClick={ouvrirModal}
+                            goToMesParis={goToMesParis}
+                            jouable={true}
+                          />
+                        </div>
                       );
                     })}
                   </div>
