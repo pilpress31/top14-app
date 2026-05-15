@@ -57,13 +57,19 @@ export default function FavorisPage() {
     if (!user) return;
     setLoadingMatchs(true);
     try {
-      const [favRes, dispRes] = await Promise.all([
+      const [favRes, top14Res, d2Res, hcupRes] = await Promise.all([
         axios.get(`${API_BASE}/api/favorites/matchs`, { headers: { 'x-user-id': user.id } }),
         axios.get(`${API_BASE}/api/matchs/a-venir`),
+        axios.get(`${API_BASE}/api/d2/matchs/a-venir`),
+        axios.get(`${API_BASE}/api/hcup/matchs/a-venir`),
       ]);
       setMatchs(favRes.data.matchs || []);
-      // Construire un Set des match_ids avec paris ouverts
-      const ids = new Set((dispRes.data.matchs || []).map(m => m.match_id || m.id));
+      // Set des match_ids avec paris ouverts (les 3 championnats)
+      const ids = new Set([
+        ...(top14Res.data.matchs || []).map(m => m.match_id || m.id),
+        ...(d2Res.data.matchs || []).map(m => m.match_id || m.id),
+        ...(hcupRes.data.matchs || []).map(m => m.match_id || m.id),
+      ]);
       setMatchsDisponibles(ids);
     } catch (e) {
       console.error('Erreur chargement matchs:', e.message);
