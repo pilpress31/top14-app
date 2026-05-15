@@ -16,7 +16,7 @@
 }
 
 html, body {
-  overscroll-behavior-y: none;
+  
   /* ✅ S'assurer que la viewport mobile est gérée correctement */
   margin: 0;
   padding: 0;
