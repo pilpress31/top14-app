@@ -3,6 +3,7 @@
 // ========================================= //
 
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
 import { NotificationsProvider } from "./contexts/NotificationsContext";
@@ -189,6 +190,16 @@ function AppContent() {
 }
 
 function App() {
+  // ✅ Bloquer overscroll bounce uniquement sur iOS PWA standalone
+  // window.navigator.standalone est exclusif à iOS Safari — Android non affecté
+  useEffect(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.navigator.standalone === true;
+    if (isIOS && isStandalone) {
+      document.documentElement.style.overscrollBehaviorY = 'none';
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <ChampionnatProvider>
