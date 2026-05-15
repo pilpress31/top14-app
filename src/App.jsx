@@ -42,6 +42,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import MaCagnotte from './pages/MaCagnotte';
 import MesPoints from './pages/MesPoints';
 import FavorisPage from './pages/FavorisPage';
+import { FavoritesProvider } from './contexts/FavoritesContext';
 
 /* ✅ Hook pour savoir quel onglet est actif */
 function useActiveLabel() {
@@ -206,11 +207,13 @@ function App() {
   return (
     <AuthProvider>
       <ChampionnatProvider>
-        <ChatNotificationProvider>
-          <NotificationsProvider>
-            <AppContent />
-          </NotificationsProvider>
-        </ChatNotificationProvider>
+        <FavoritesProvider>
+          <ChatNotificationProvider>
+            <NotificationsProvider>
+              <AppContent />
+            </NotificationsProvider>
+          </ChatNotificationProvider>
+        </FavoritesProvider>
       </ChampionnatProvider>
     </AuthProvider>
   );

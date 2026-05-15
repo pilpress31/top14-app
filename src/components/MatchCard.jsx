@@ -9,6 +9,7 @@ import { getTeamData } from '../utils/teams';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useChampionnat } from '../contexts/ChampionnatContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import TeamPopup from './TeamPopup';
 import axios from 'axios';
 
@@ -219,38 +220,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const navigate = useNavigate();
   const [teamPopup, setTeamPopup] = useState(null);
   const [showConseil, setShowConseil] = useState(false);
-  const [isFavDom, setIsFavDom] = useState(false);
-  const [isFavExt, setIsFavExt] = useState(false);
   const { user } = useAuth();
-
-  // Vérifier si les équipes sont en favoris au montage
-  useEffect(() => {
-    if (!user) return;
-    const checkFavs = async () => {
-      try {
-        const res = await axios.get(`${API_BASE}/api/favorites`, {
-          headers: { 'x-user-id': user.id }
-        });
-        const favs = (res.data.favorites || []).map(f => f.equipe_nom);
-        setIsFavDom(favs.includes(match.equipe_domicile));
-        setIsFavExt(favs.includes(match.equipe_exterieure));
-      } catch (e) {}
-    };
-    checkFavs();
-  }, [user, match.equipe_domicile, match.equipe_exterieure]);
-
-  const toggleFavori = async (equipe_nom, isFav, setIsFav) => {
-    if (!user) return;
-    try {
-      await axios.post(`${API_BASE}/api/favorites/toggle`,
-        { equipe_nom, championnat: isD2 ? 'd2' : 'top14' },
-        { headers: { 'x-user-id': user.id } }
-      );
-      setIsFav(!isFav);
-    } catch (e) {
-      console.error('Erreur toggle favori:', e.message);
-    }
-  };
+  const { isFavori, toggleFavori } = useFavorites();
 
   // ✅ En Pro D2, pas de paris MT du tout
   const pronoFT = existingProno?.find(p => 
@@ -379,18 +350,18 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isFavDom, setIsFavDom); }}
+          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isD2 ? 'd2' : 'top14'); }}
           className="p-1 flex-shrink-0"
-          title={isFavDom ? "Retirer des favoris" : "Ajouter aux favoris"}
+          title={isFavori(match.equipe_domicile) ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
-          <Star className={`w-4 h-4 ${isFavDom ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+          <Star className={`w-4 h-4 ${isFavori(match.equipe_domicile) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isFavExt, setIsFavExt); }}
+          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isD2 ? 'd2' : 'top14'); }}
           className="p-1 flex-shrink-0"
-          title={isFavExt ? "Retirer des favoris" : "Ajouter aux favoris"}
+          title={isFavori(match.equipe_exterieure) ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
-          <Star className={`w-4 h-4 ${isFavExt ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+          <Star className={`w-4 h-4 ${isFavori(match.equipe_exterieure) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
         </button>
         <button
           onClick={() => setTeamPopup(match.equipe_exterieure)}

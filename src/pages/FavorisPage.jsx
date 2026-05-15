@@ -4,8 +4,9 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Star, ChevronLeft, Calendar, Trophy, Loader } from 'lucide-react';
+import { Star, ChevronLeft, Calendar, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
 import axios from 'axios';
 
@@ -19,46 +20,38 @@ const CHAMP_LABELS = {
 
 export default function FavorisPage() {
   const { user } = useAuth();
+  const { favorites, isFavori, toggleFavori } = useFavorites();
   const navigate = useNavigate();
   const location = useLocation();
-  const [favorites, setFavorites] = useState([]);
   const [matchs, setMatchs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Recharger les matchs quand les favoris changent ou qu'on navigue ici
   useEffect(() => {
-    loadFavoris();
-  }, [location.key]);
+    loadMatchs();
+  }, [favorites, location.key]);
 
-  const loadFavoris = async () => {
-    if (!user) return;
+  const loadMatchs = async () => {
+    if (!user || favorites.length === 0) {
+      setMatchs([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const [favRes, matchsRes] = await Promise.all([
-        axios.get(`${API_BASE}/api/favorites`, { headers: { 'x-user-id': user.id } }),
-        axios.get(`${API_BASE}/api/favorites/matchs`, { headers: { 'x-user-id': user.id } }),
-      ]);
-      setFavorites(favRes.data.favorites || []);
-      setMatchs(matchsRes.data.matchs || []);
+      const res = await axios.get(`${API_BASE}/api/favorites/matchs`, {
+        headers: { 'x-user-id': user.id }
+      });
+      setMatchs(res.data.matchs || []);
     } catch (e) {
-      console.error('Erreur chargement favoris:', e.message);
+      console.error('Erreur chargement matchs favoris:', e.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFavori = async (equipe_nom) => {
-    try {
-      await axios.post(`${API_BASE}/api/favorites/toggle`,
-        { equipe_nom },
-        { headers: { 'x-user-id': user.id } }
-      );
-      setFavorites(prev => prev.filter(f => f.equipe_nom !== equipe_nom));
-      setMatchs(prev => prev.filter(m =>
-        m.equipe_domicile !== equipe_nom && m.equipe_exterieure !== equipe_nom
-      ));
-    } catch (e) {
-      console.error('Erreur suppression favori:', e.message);
-    }
+  const handleToggle = async (equipe_nom) => {
+    await toggleFavori(equipe_nom);
   };
 
   return (
@@ -101,10 +94,10 @@ export default function FavorisPage() {
                   {favorites.length} équipe{favorites.length > 1 ? 's' : ''} suivie{favorites.length > 1 ? 's' : ''}
                 </h2>
               </div>
-              {favorites.map((fav, i) => {
-                const teamData = getTeamData(fav.equipe_nom);
+              {favorites.map((equipe_nom, i) => {
+                const teamData = getTeamData(equipe_nom);
                 return (
-                  <div key={fav.id}
+                  <div key={equipe_nom}
                     className={`px-4 py-3 flex items-center gap-3 ${i < favorites.length - 1 ? 'border-b border-gray-100' : ''}`}>
                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <img src={teamData.logo} alt={teamData.name}
@@ -113,7 +106,7 @@ export default function FavorisPage() {
                     </div>
                     <span className="flex-1 font-semibold text-gray-800 uppercase">{teamData.name}</span>
                     <button
-                      onClick={() => removeFavori(fav.equipe_nom)}
+                      onClick={() => handleToggle(equipe_nom)}
                       className="p-1.5 rounded-full hover:bg-red-50 transition-colors"
                       title="Retirer des favoris"
                     >
