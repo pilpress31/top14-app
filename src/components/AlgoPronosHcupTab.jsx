@@ -188,6 +188,19 @@ export default function AlgoPronosHcupTab() {
         const isExpanded = expandedRounds.has(round);
         const pronosRound = pronosParRound[round] || [];
         const isPhaseFinale = PHASE_FINALE_ROUNDS.includes(round);
+        const now = new Date();
+        const DUREE_MAX_MS = 3 * 60 * 60 * 1000; // 3h max (prolongations incluses)
+        const nbAVenir = pronosRound.filter(m => new Date(m.date_match) > now).length;
+        const nbEnCours = pronosRound.filter(m => {
+          const d = new Date(m.date_match);
+          return d <= now && d > new Date(now - DUREE_MAX_MS);
+        }).length;
+        const nbTermines = pronosRound.filter(m => new Date(m.date_match) <= new Date(now - DUREE_MAX_MS)).length;
+        const labelParts = [];
+        if (nbAVenir > 0) labelParts.push(`${nbAVenir} à venir`);
+        if (nbEnCours > 0) labelParts.push(`${nbEnCours} en cours 🔴`);
+        if (nbTermines > 0) labelParts.push(`${nbTermines} terminé${nbTermines > 1 ? 's' : ''} ✅`);
+        const matchsLabel = labelParts.length > 0 ? labelParts.join(' · ') : `${pronosRound.length} match${pronosRound.length > 1 ? 's' : ''}`;
 
         return (
           <div
@@ -214,7 +227,7 @@ export default function AlgoPronosHcupTab() {
                     {round}
                   </span>
                   <span className="text-xs text-gray-500">
-                    ({pronosRound.length} {pronosRound.length > 1 ? 'matchs' : 'match'})
+                    ({matchsLabel})
                   </span>
                 </div>
                 {isExpanded ? (

@@ -130,7 +130,18 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
         const isExpanded = expandedJournees.has(journee);
         const pronosJournee = pronosParJournee[journee] || [];
         const now = new Date();
+        const DUREE_MAX_MS = 3 * 60 * 60 * 1000; // 3h max (prolongations incluses)
         const nbAVenir = pronosJournee.filter(m => new Date(m.date) > now).length;
+        const nbEnCours = pronosJournee.filter(m => {
+          const d = new Date(m.date);
+          return d <= now && d > new Date(now - DUREE_MAX_MS);
+        }).length;
+        const nbTermines = pronosJournee.filter(m => new Date(m.date) <= new Date(now - DUREE_MAX_MS)).length;
+        const labelParts = [];
+        if (nbAVenir > 0) labelParts.push(`${nbAVenir} à venir`);
+        if (nbEnCours > 0) labelParts.push(`${nbEnCours} en cours 🔴`);
+        if (nbTermines > 0) labelParts.push(`${nbTermines} terminé${nbTermines > 1 ? 's' : ''} ✅`);
+        const matchsLabel = labelParts.length > 0 ? labelParts.join(' · ') : `${pronosJournee.length} match${pronosJournee.length > 1 ? 's' : ''}`;
 
         return (
           <div
@@ -155,7 +166,7 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
                     if (isD2Match && round === 'Accession') return <span className="font-bold text-sm" style={{ color: '#00174D' }}>Match d'accession</span>;
                     return <span className="font-bold text-sm" style={isD2Match ? { color: '#00174D' } : {}}>Journée {journee}</span>;
                   })()}
-                  <span className="text-xs text-gray-500">({nbAVenir} match{nbAVenir > 1 ? 's' : ''} à venir)</span>
+                  <span className="text-xs text-gray-500">({matchsLabel})</span>
                 </div>
                 {isExpanded ? (
                   <ChevronUp className="w-4 h-4" style={pronosJournee[0]?.isD2 ? { color: '#97C1FE' } : { color: '#CBA135' }} />
