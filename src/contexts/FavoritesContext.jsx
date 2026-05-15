@@ -105,25 +105,15 @@ export const FavoritesProvider = ({ children }) => {
       wasInFav ? prev.filter(e => e !== equipe_nom) : [...prev, equipe_nom]
     );
 
-    // Suppression optimiste des matchs
-    if (wasInFav) {
-      setMatchsFavoris(prev =>
-        prev.filter(m =>
-          m.equipe_domicile !== equipe_nom && m.equipe_exterieure !== equipe_nom
-        )
-      );
-    }
-
     try {
       await axios.post(`${API_BASE}/api/favorites/toggle`,
         { equipe_nom, championnat },
         { headers: { 'x-user-id': userRef.current.id } }
       );
-      // Recharger les matchs après confirmation API
+      // Recharger les matchs depuis l'API dans tous les cas
       await loadMatchsFavoris();
     } catch (e) {
       console.error('Erreur toggle favori, rollback:', e.message);
-      // Rollback
       setFavorites(prev =>
         wasInFav ? [...prev, equipe_nom] : prev.filter(eq => eq !== equipe_nom)
       );
