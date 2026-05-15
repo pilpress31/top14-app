@@ -2,12 +2,15 @@
 // FavorisPage.jsx – Mes équipes favorites
 // ============================================
 
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Star, ChevronLeft, Calendar, Loader, ArrowUp, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
-import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+
+const API_BASE = 'https://top14-api-production.up.railway.app';
 
 const CHAMP_LABELS = {
   top14: { label: 'TOP 14', color: '#D4A017', bg: '#FFF8E7' },
@@ -17,25 +20,71 @@ const CHAMP_LABELS = {
 
 export default function FavorisPage() {
   const { user } = useAuth();
-  const { favorites, matchsFavoris, isFavori, toggleFavori, loading, reloadFavorites } = useFavorites();
+  const { favorites, isFavori, toggleFavori, reloadFavorites } = useFavorites();
   const navigate = useNavigate();
-  const location = useLocation();
+  const [matchs, setMatchs] = useState([]);
+  const [loadingMatchs, setLoadingMatchs] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const prevFavoritesRef = useRef([]);
 
-  // Recharger à chaque navigation vers cette page
-  useEffect(() => {
-    reloadFavorites();
-  }, [location.key]);
-
+  // Scroll to top button
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Charger les matchs au montage
+  useEffect(() => {
+    loadMatchs();
+    setLoadingPage(false);
+  }, []);
+
+  // Recharger les matchs quand favorites change
+  useEffect(() => {
+    const prev = prevFavoritesRef.current;
+    const curr = favorites;
+    // Détecter un changement réel
+    if (JSON.stringify(prev.sort()) !== JSON.stringify([...curr].sort())) {
+      prevFavoritesRef.current = [...curr];
+      loadMatchs();
+    }
+  }, [favorites]);
+
+  const loadMatchs = async () => {
+    if (!user) return;
+    setLoadingMatchs(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/favorites/matchs`, {
+        headers: { 'x-user-id': user.id }
+      });
+      setMatchs(res.data.matchs || []);
+    } catch (e) {
+      console.error('Erreur chargement matchs:', e.message);
+    } finally {
+      setLoadingMatchs(false);
+    }
+  };
+
+  const handleActualiser = async () => {
+    await reloadFavorites();
+    await loadMatchs();
+  };
+
   const handleToggle = async (equipe_nom) => {
     await toggleFavori(equipe_nom);
+    // Recharger les matchs immédiatement après toggle
+    await loadMatchs();
   };
+
+  if (loadingPage) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader className="w-8 h-8 animate-spin text-rugby-gold" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -52,23 +101,19 @@ export default function FavorisPage() {
             <h1 className="text-lg font-bold text-gray-900">Mes équipes favorites</h1>
           </div>
           <button
-            onClick={reloadFavorites}
-            disabled={loading}
+            onClick={handleActualiser}
+            disabled={loadingMatchs}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             title="Actualiser"
           >
-            <RefreshCw className={`w-5 h-5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 text-gray-500 ${loadingMatchs ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-4 space-y-5">
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader className="w-8 h-8 animate-spin text-rugby-gold" />
-          </div>
-        ) : favorites.length === 0 ? (
+        {favorites.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">
             <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">Aucune équipe favorite</p>
@@ -113,15 +158,16 @@ export default function FavorisPage() {
               <h2 className="text-sm font-bold text-gray-700 uppercase px-1 mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Prochains matchs
+                {loadingMatchs && <Loader className="w-3.5 h-3.5 animate-spin text-gray-400" />}
               </h2>
 
-              {matchsFavoris.length === 0 ? (
+              {matchs.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-200">
                   <p className="text-gray-400 text-sm">Aucun match à venir pour tes équipes favorites</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {matchsFavoris.map((match) => {
+                  {matchs.map((match) => {
                     const teamDom = getTeamData(match.equipe_domicile);
                     const teamExt = getTeamData(match.equipe_exterieure);
                     const champ = CHAMP_LABELS[match.championnat] || CHAMP_LABELS.top14;
@@ -163,7 +209,7 @@ export default function FavorisPage() {
                             </div>
                           </div>
 
-                          {/* Prono IA si disponible */}
+                          {/* Prono IA */}
                           {match.score_predit_dom != null && (
                             <div className="mt-2 flex items-center justify-center gap-2">
                               <span className="text-[10px] text-indigo-500 font-semibold">Prono IA :</span>
@@ -180,7 +226,7 @@ export default function FavorisPage() {
                             </div>
                           )}
 
-                          {/* Phase HCup si disponible */}
+                          {/* Phase HCup */}
                           {match.round && (
                             <div className="mt-1 text-center">
                               <span className="text-[10px] text-gray-400">{match.round}</span>
