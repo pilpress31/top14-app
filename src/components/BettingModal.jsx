@@ -117,10 +117,13 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     }
   }, [betModeMT, isD2]);
 
-  // 🆕 Pré-sélection du vainqueur si l'user a cliqué sur une cote depuis MesPronosTab
+  // 🆕 Pré-sélection du vainqueur si l'user a cliqué sur une cote depuis MatchCard
   // preselectedWinner peut être :
   //   - une string : 'domicile' | 'nul' | 'exterieur' (legacy D2 → applique à FT)
   //   - un objet : { type: 'FT'|'MT', choice: 'domicile'|'nul'|'exterieur' } (Top 14)
+  //
+  // ✅ Bug fix : on coche la bonne section (betOnFT / betOnMT) selon le type cliqué.
+  //    Sans ça la modal s'ouvrait toujours avec FT coché même si l'user cliquait sur MT.
   useEffect(() => {
     if (!preselectedWinner) return;
 
@@ -128,8 +131,12 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     if (typeof preselectedWinner === 'object' && preselectedWinner.choice) {
       if (preselectedWinner.type === 'MT') {
         setWinnerChoiceMT(preselectedWinner.choice);
+        setBetOnMT(true);
+        if (!hasFT) setBetOnFT(false); // décocher FT seulement si pas de pari FT existant
       } else {
         setWinnerChoiceFT(preselectedWinner.choice);
+        setBetOnFT(true);
+        if (!hasMT) setBetOnMT(false);
       }
       return;
     }
@@ -137,8 +144,9 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
     // Format string (legacy) → applique à FT
     if (typeof preselectedWinner === 'string') {
       setWinnerChoiceFT(preselectedWinner);
+      setBetOnFT(true);
     }
-  }, [preselectedWinner]);
+  }, [preselectedWinner]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 🆕 Si l'user change de mode FT, on reset les inputs de l'autre mode
   useEffect(() => {
@@ -742,7 +750,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                         onChange={(e) => setStakeFT(e.target.value)}
                         onFocus={(e) => e.target.select()}
                         disabled={hasFT || !betOnFT}
-                        className="w-full text-center text-sm font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
+                        style={{ fontSize: '16px' }} className="w-full text-center font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
                         placeholder="0"
                       />
                     </div>
@@ -838,7 +846,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                       onChange={(e) => setStakeFT(e.target.value)}
                       onFocus={(e) => e.target.select()}
                       disabled={hasFT || !betOnFT}
-                      className="w-full text-center text-sm font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
+                      style={{ fontSize: '16px' }} className="w-full text-center font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
                       placeholder="0"
                     />
                   </div>
@@ -998,7 +1006,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                           onChange={(e) => setStakeMT(e.target.value)}
                           onFocus={(e) => e.target.select()}
                           disabled={hasMT || !betOnMT}
-                          className="w-full text-center text-sm font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
+                          style={{ fontSize: '16px' }} className="w-full text-center font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
                           placeholder="0"
                         />
                       </div>
@@ -1094,7 +1102,7 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
                         onChange={(e) => setStakeMT(e.target.value)}
                         onFocus={(e) => e.target.select()}
                         disabled={hasMT || !betOnMT}
-                        className="w-full text-center text-sm font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
+                        style={{ fontSize: '16px' }} className="w-full text-center font-bold disabled:bg-gray-100 disabled:cursor-not-allowed border-none focus:outline-none focus:ring-0"
                         placeholder="0"
                       />
                     </div>

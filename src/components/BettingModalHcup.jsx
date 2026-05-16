@@ -475,7 +475,7 @@ export default function BettingModalHcup({ match, existingProno, userCredits, pr
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
                   className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-center font-bold focus:outline-none"
-                  style={{ borderColor: stakeNum >= 10 ? HCUP_BLUE : '#d1d5db' }}
+                  style={{ borderColor: stakeNum >= 10 ? HCUP_BLUE : '#d1d5db', fontSize: '16px' }}
                 />
               </div>
 
