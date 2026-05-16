@@ -23,7 +23,7 @@ export default function FavorisPage() {
   const { favorites, isFavori, toggleFavori, reloadFavorites } = useFavorites();
   const navigate = useNavigate();
   const [matchs, setMatchs] = useState([]);
-  const [matchsDisponibles, setMatchsDisponibles] = useState(new Set());
+  const [matchsBetStatus, setMatchsBetStatus] = useState({}); // match_id → 'none' | 'partial' | 'complete'
   const [loadingMatchs, setLoadingMatchs] = useState(false);
   const [loadingPage, setLoadingPage] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -68,49 +68,44 @@ export default function FavorisPage() {
       ]);
       setMatchs(favRes.data.matchs || []);
 
-      // Paris existants par match_id (uniquement pending)
+      // Paris existants (uniquement pending)
       const betsTop14 = (betsTop14Res.data.bets || []).filter(b => b.status === 'pending');
       const betsD2 = (betsD2Res.data.bets || []).filter(b => b.status === 'pending');
       const betsHcup = (betsHcupRes.data.bets || []).filter(b => b.status === 'pending');
 
-      // Top 14 : complet si FT ET MT placés (ou si match sans MT)
+      const status = {};
+
+      // Top 14 — première journée uniquement
       const top14Matchs = top14Res.data.matchs || [];
       const firstJourneeTop14 = top14Matchs.length > 0 ? top14Matchs[0].journee : null;
-      const top14Ids = top14Matchs
-        .filter(m => m.journee === firstJourneeTop14)
-        .filter(m => {
-          const matchBets = betsTop14.filter(b => b.match_id === (m.match_id || m.id));
-          const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
-          const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
-          const hasMTCotes = m.cote_mt_domicile != null;
-          // Complet si FT + MT placés (quand MT dispo) ou juste FT (sans MT)
-          return !(hasFT && (!hasMTCotes || hasMT));
-        })
-        .map(m => m.match_id || m.id);
+      top14Matchs.filter(m => m.journee === firstJourneeTop14).forEach(m => {
+        const id = m.match_id || m.id;
+        const matchBets = betsTop14.filter(b => b.match_id === id);
+        const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
+        const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
+        const hasMTCotes = m.cote_mt_domicile != null;
+        if (!hasFT && !hasMT) status[id] = 'none';
+        else if ((hasFT && hasMTCotes && !hasMT) || (!hasFT && hasMTCotes && hasMT)) status[id] = 'partial';
+        else status[id] = 'complete';
+      });
 
-      // Pro D2 : complet si FT placé
+      // Pro D2 — première journée uniquement
       const d2Matchs = d2Res.data.matchs || [];
       const firstJourneeD2 = d2Matchs.length > 0 ? d2Matchs[0].journee : null;
-      const d2Ids = d2Matchs
-        .filter(m => m.journee === firstJourneeD2)
-        .filter(m => {
-          const hasFT = betsD2.some(b => b.match_id === (m.match_id || m.id));
-          return !hasFT;
-        })
-        .map(m => m.match_id || m.id);
+      d2Matchs.filter(m => m.journee === firstJourneeD2).forEach(m => {
+        const id = m.match_id || m.id;
+        status[id] = betsD2.some(b => b.match_id === id) ? 'complete' : 'none';
+      });
 
-      // HCup : complet si FT placé
+      // HCup — premier round uniquement
       const hcupMatchs = hcupRes.data.matchs || [];
       const firstRoundHcup = hcupMatchs.length > 0 ? hcupMatchs[0].round : null;
-      const hcupIds = hcupMatchs
-        .filter(m => m.round === firstRoundHcup)
-        .filter(m => {
-          const hasFT = betsHcup.some(b => b.match_id === (m.match_id || m.id));
-          return !hasFT;
-        })
-        .map(m => m.match_id || m.id);
+      hcupMatchs.filter(m => m.round === firstRoundHcup).forEach(m => {
+        const id = m.match_id || m.id;
+        status[id] = betsHcup.some(b => b.match_id === id) ? 'complete' : 'none';
+      });
 
-      setMatchsDisponibles(new Set([...top14Ids, ...d2Ids, ...hcupIds]));
+      setMatchsBetStatus(status);
     } catch (e) {
       console.error('Erreur chargement matchs:', e.message);
     } finally {
@@ -269,26 +264,44 @@ export default function FavorisPage() {
                                   ? `Journée ${String(match.journee).replace('J', '')}`
                                   : ''}
                             </span>
-                            {/* Bouton Parier — uniquement si paris ouverts */}
-                            {matchsDisponibles.has(match.match_id) && (
-                              <button
-                                onClick={() => navigate('/pronos', {
-                                  state: {
-                                    activeTab: 'a-parier',
-                                    scrollToMatchId: match.match_id,
-                                    championnat: match.championnat,
-                                  }
-                                })}
-                                className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
-                                style={{
-                                  backgroundColor: champ.color + '20',
-                                  color: champ.color,
-                                  border: `1px solid ${champ.color}40`
-                                }}
-                              >
-                                🎯 Parier
-                              </button>
-                            )}
+                            {/* Bouton selon statut des paris */}
+                            {(() => {
+                              const betStatus = matchsBetStatus[match.match_id];
+                              if (betStatus === 'none') {
+                                return (
+                                  <button
+                                    onClick={() => navigate('/pronos', { state: { activeTab: 'a-parier', scrollToMatchId: match.match_id, championnat: match.championnat } })}
+                                    className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                    style={{ backgroundColor: champ.color + '20', color: champ.color, border: `1px solid ${champ.color}40` }}
+                                  >
+                                    🎯 Parier
+                                  </button>
+                                );
+                              }
+                              if (betStatus === 'partial') {
+                                return (
+                                  <button
+                                    onClick={() => navigate('/pronos', { state: { activeTab: 'a-parier', scrollToMatchId: match.match_id, championnat: match.championnat } })}
+                                    className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                    style={{ backgroundColor: '#FF8C0020', color: '#FF8C00', border: '1px solid #FF8C0040' }}
+                                  >
+                                    ✏️ Compléter
+                                  </button>
+                                );
+                              }
+                              if (betStatus === 'complete') {
+                                return (
+                                  <button
+                                    onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id, championnat: match.championnat } })}
+                                    className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+                                    style={{ backgroundColor: '#16a34a20', color: '#16a34a', border: '1px solid #16a34a40' }}
+                                  >
+                                    ✅ Voir mon pari
+                                  </button>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
 
                           {/* Prono IA */}
