@@ -80,8 +80,7 @@ export default function FavorisPage() {
       const firstJourneeTop14 = top14Matchs.length > 0 ? top14Matchs[0].journee : null;
       top14Matchs.filter(m => m.journee === firstJourneeTop14).forEach(m => {
         const id = m.match_id || m.id;
-        const matchBets = betsTop14.filter(b => b.match_id === id);
-        const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
+        const matchBets = betsTop14.filter(b => b.match_id === id);        const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
         const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
         const hasMTCotes = m.cote_mt_domicile != null;
         if (!hasFT && !hasMT) status[id] = 'none';
@@ -224,13 +223,25 @@ export default function FavorisPage() {
                       <div key={match.match_id}
                         className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
 
-                        {/* Badge championnat + date */}
+                        {/* Badge championnat + date + journée */}
                         <div className="px-4 py-2 flex items-center justify-between"
                              style={{ backgroundColor: champ.bg }}>
-                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-                                style={{ backgroundColor: champ.color, color: '#fff' }}>
-                            {champ.label}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                                  style={{ backgroundColor: champ.color, color: '#fff' }}>
+                              {champ.label}
+                            </span>
+                            {/* Journée / Round à côté du badge */}
+                            {(match.journee || match.round) && (
+                              <span className="text-[10px] text-gray-500 font-medium">
+                                {match.round && match.round !== 'Journée'
+                                  ? match.round
+                                  : match.journee
+                                    ? `Journée ${String(match.journee).replace('J', '')}`
+                                    : ''}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-xs text-gray-500">
                             {date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
                             {showTime && ` • ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
@@ -255,22 +266,15 @@ export default function FavorisPage() {
                             </div>
                           </div>
 
-                          {/* Journée / Round */}
-                          <div className="mt-1.5 flex items-center justify-between">
-                            <span className="text-[10px] text-gray-400">
-                              {match.round && match.round !== 'Journée'
-                                ? match.round
-                                : match.journee
-                                  ? `Journée ${String(match.journee).replace('J', '')}`
-                                  : ''}
-                            </span>
-                            {/* Bouton selon statut des paris */}
+                          {/* Bouton selon statut des paris */}
+                          <div className="mt-1.5 flex items-center justify-end">
                             {(() => {
-                              const betStatus = matchsBetStatus[match.match_id];
+                              const matchId = match.match_id || match.id;
+                              const betStatus = matchsBetStatus[matchId];
                               if (betStatus === 'none') {
                                 return (
                                   <button
-                                    onClick={() => navigate('/pronos', { state: { activeTab: 'a-parier', scrollToMatchId: match.match_id, championnat: match.championnat } })}
+                                    onClick={() => navigate('/pronos', { state: { activeTab: 'a-parier', scrollToMatchId: matchId, championnat: match.championnat } })}
                                     className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
                                     style={{ backgroundColor: champ.color + '20', color: champ.color, border: `1px solid ${champ.color}40` }}
                                   >
@@ -281,7 +285,7 @@ export default function FavorisPage() {
                               if (betStatus === 'partial') {
                                 return (
                                   <button
-                                    onClick={() => navigate('/pronos', { state: { activeTab: 'a-parier', scrollToMatchId: match.match_id, championnat: match.championnat } })}
+                                    onClick={() => navigate('/pronos', { state: { activeTab: 'a-parier', scrollToMatchId: matchId, championnat: match.championnat } })}
                                     className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
                                     style={{ backgroundColor: '#FF8C0020', color: '#FF8C00', border: '1px solid #FF8C0040' }}
                                   >
@@ -292,7 +296,7 @@ export default function FavorisPage() {
                               if (betStatus === 'complete') {
                                 return (
                                   <button
-                                    onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id, championnat: match.championnat } })}
+                                    onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: matchId, championnat: match.championnat } })}
                                     className="text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
                                     style={{ backgroundColor: '#16a34a20', color: '#16a34a', border: '1px solid #16a34a40' }}
                                   >
