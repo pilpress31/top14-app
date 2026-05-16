@@ -28,6 +28,8 @@ export default function FavorisPage() {
   const [loadingPage, setLoadingPage] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const prevFavoritesRef = useRef([]);
+  // ✅ Compteur pour ignorer les résultats périmés (race condition)
+  const loadCounterRef = useRef(0);
 
   // Scroll to top button
   useEffect(() => {
@@ -42,19 +44,14 @@ export default function FavorisPage() {
     setLoadingPage(false);
   }, []);
 
-  // Recharger les matchs quand favorites change
-  useEffect(() => {
-    const prev = prevFavoritesRef.current;
-    const curr = favorites;
-    // Détecter un changement réel
-    if (JSON.stringify(prev.sort()) !== JSON.stringify([...curr].sort())) {
-      prevFavoritesRef.current = [...curr];
-      loadMatchs();
-    }
-  }, [favorites]);
+  // ✅ Supprimé : le useEffect sur favorites déclenchait loadMatchs sur les mises à jour
+  // optimistes (avant confirmation serveur) → race condition. On recharge uniquement
+  // depuis handleToggle (après await toggleFavori) et handleActualiser.
 
   const loadMatchs = async () => {
     if (!user) return;
+    // ✅ Chaque appel reçoit un numéro — seul le plus récent applique son résultat
+    const myCount = ++loadCounterRef.current;
     setLoadingMatchs(true);
     try {
       const [favRes, top14Res, d2Res, hcupRes, betsTop14Res, betsD2Res, betsHcupRes] = await Promise.all([
@@ -66,6 +63,8 @@ export default function FavorisPage() {
         axios.get(`${API_BASE}/api/d2/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
         axios.get(`${API_BASE}/api/hcup/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
       ]);
+      // ✅ Si un appel plus récent a déjà démarré, on abandonne ce résultat
+      if (myCount !== loadCounterRef.current) return;
       setMatchs(favRes.data.matchs || []);
 
       // Paris existants (uniquement pending)
@@ -141,12 +140,13 @@ export default function FavorisPage() {
     } catch (e) {
       console.error('Erreur chargement matchs:', e.message);
     } finally {
-      setLoadingMatchs(false);
+      if (myCount === loadCounterRef.current) setLoadingMatchs(false);
     }
   };
 
   const handleActualiser = async () => {
-    await reloadFavorites();
+    // ✅ On rafraîchit directement depuis le serveur — pas besoin de reloadFavorites()
+    // qui déclenchait une double exécution de loadMatchs via le useEffect
     await loadMatchs();
   };
 
