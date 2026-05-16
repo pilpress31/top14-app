@@ -33,8 +33,8 @@ function ResetPasswordPage() {
       return
     }
 
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères')
+    if (password.length < 8) {
+      setError('Le mot de passe doit contenir au moins 8 caractères')
       setLoading(false)
       return
     }
@@ -60,7 +60,11 @@ function ResetPasswordPage() {
       }, 3000)
     } catch (error) {
       console.error('Erreur:', error)
-      setError('Erreur lors de la réinitialisation. Le lien est peut-être expiré.')
+      if (error.message?.toLowerCase().includes('password') || error.message?.includes('weak')) {
+        setError('Le mot de passe doit contenir au moins 8 caractères')
+      } else {
+        setError('Erreur lors de la réinitialisation. Le lien est peut-être expiré.')
+      }
     } finally {
       setLoading(false)
     }
@@ -113,7 +117,7 @@ function ResetPasswordPage() {
                     disabled={loading}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Au moins 6 caractères</p>
+                <p className="text-xs text-gray-500 mt-1">Au moins 8 caractères</p>
               </div>
 
               {/* Confirmation */}
