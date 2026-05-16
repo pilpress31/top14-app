@@ -75,12 +75,47 @@ export default function FavorisPage() {
 
       const status = {};
 
-      // Top 14 — première journée uniquement
+      // ── Top 14 ───────────────────────────────────────────
+      // Grouper les bets par match_id
       const top14Matchs = top14Res.data.matchs || [];
       const firstJourneeTop14 = top14Matchs.length > 0 ? top14Matchs[0].journee : null;
+
+      // Construire un map journee → match_id depuis les bets (les bets ont les vrais IDs)
+      // Pour chaque match favori de la première journée, chercher ses bets
+      const betsParMatchTop14 = {};
+      betsTop14.forEach(b => {
+        if (!betsParMatchTop14[b.match_id]) betsParMatchTop14[b.match_id] = [];
+        betsParMatchTop14[b.match_id].push(b);
+      });
+
+      // Pour chaque match de la première journée, déterminer le statut
+      // On utilise les matchs favoris retournés par /api/favorites/matchs qui ont les vrais IDs
+      const favMatchsTop14 = (favRes.data.matchs || []).filter(m =>
+        m.championnat === 'top14' && m.journee === firstJourneeTop14
+      );
+
+      favMatchsTop14.forEach(m => {
+        const id = m.match_id;
+        const matchBets = betsParMatchTop14[id] || [];
+        const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
+        const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
+        // Vérifier si cotes MT disponibles depuis les matchs a-venir
+        const matchAVenir = top14Matchs.find(av =>
+          av.equipe_domicile === m.equipe_domicile && av.equipe_exterieure === m.equipe_exterieure
+        );
+        const hasMTCotes = matchAVenir?.cote_mt_domicile != null;
+        if (!hasFT && !hasMT) status[id] = 'none';
+        else if ((hasFT && hasMTCotes && !hasMT) || (!hasFT && hasMTCotes && hasMT)) status[id] = 'partial';
+        else status[id] = 'complete';
+      });
+
+      // Ajouter aussi les matchs de la J courante qui ne sont pas en favoris
+      // mais qui pourraient l'être (pour que les matchs a-venir non favoris soient aussi couverts)
       top14Matchs.filter(m => m.journee === firstJourneeTop14).forEach(m => {
         const id = m.match_id || m.id;
-        const matchBets = betsTop14.filter(b => b.match_id === id);        const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
+        if (!id || status[id] !== undefined) return;
+        const matchBets = betsParMatchTop14[id] || [];
+        const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
         const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
         const hasMTCotes = m.cote_mt_domicile != null;
         if (!hasFT && !hasMT) status[id] = 'none';
@@ -88,19 +123,23 @@ export default function FavorisPage() {
         else status[id] = 'complete';
       });
 
-      // Pro D2 — première journée uniquement
+      // ── Pro D2 ───────────────────────────────────────────
       const d2Matchs = d2Res.data.matchs || [];
       const firstJourneeD2 = d2Matchs.length > 0 ? d2Matchs[0].journee : null;
-      d2Matchs.filter(m => m.journee === firstJourneeD2).forEach(m => {
-        const id = m.match_id || m.id;
+      const favMatchsD2 = (favRes.data.matchs || []).filter(m =>
+        m.championnat === 'd2' && m.journee === firstJourneeD2
+      );
+      favMatchsD2.forEach(m => {
+        const id = m.match_id;
         status[id] = betsD2.some(b => b.match_id === id) ? 'complete' : 'none';
       });
 
-      // HCup — premier round uniquement
+      // ── HCup ─────────────────────────────────────────────
       const hcupMatchs = hcupRes.data.matchs || [];
       const firstRoundHcup = hcupMatchs.length > 0 ? hcupMatchs[0].round : null;
-      hcupMatchs.filter(m => m.round === firstRoundHcup).forEach(m => {
-        const id = m.match_id || m.id;
+      const favMatchsHcup = (favRes.data.matchs || []).filter(m => m.championnat === 'hcup');
+      favMatchsHcup.forEach(m => {
+        const id = m.match_id;
         status[id] = betsHcup.some(b => b.match_id === id) ? 'complete' : 'none';
       });
 
