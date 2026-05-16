@@ -82,7 +82,7 @@ const SLIDES = [
     content: (
       <div className="space-y-3">
         <p className="text-sm text-gray-600 mb-2">
-          Pour chaque match, tu peux parier sur <strong>jusqu'à 2 marchés</strong> :
+          Pour chaque match, tu peux placer jusqu'à <strong>2 types de paris</strong> :
         </p>
         <div className="bg-white rounded-xl border border-green-200 overflow-hidden shadow-sm">
           <div className="bg-green-600 px-4 py-2">

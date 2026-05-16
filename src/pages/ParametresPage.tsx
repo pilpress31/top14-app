@@ -199,19 +199,6 @@ Résultats du diagnostic :
           <span className="flex-1 text-left text-gray-800 font-medium">Mes équipes favorites</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
-
-        {/* Guide de l'application */}
-        <button
-          onClick={() => {
-            localStorage.removeItem('guide_seen_v1');
-            navigate('/guide');
-          }}
-          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
-        >
-          <BookOpen className="h-5 w-5 text-amber-500" />
-          <span className="flex-1 text-left text-gray-800 font-medium">Guide de l'application</span>
-          <ChevronRight className="h-5 w-5 text-gray-400" />
-        </button>
       </div>
 
       {/* Notifications */}
@@ -315,6 +302,18 @@ Résultats du diagnostic :
             Informations
           </h2>
         </div>
+        {/* Guide de l'application */}
+        <button
+          onClick={() => {
+            localStorage.removeItem('guide_seen_v1');
+            navigate('/guide');
+          }}
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100"
+        >
+          <BookOpen className="h-5 w-5 text-amber-500" />
+          <span className="flex-1 text-left text-gray-800 font-medium">Guide de l'application</span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+        </button>
         <button
           onClick={() => navigate('/reglement')}
           className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
