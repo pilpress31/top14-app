@@ -57,33 +57,57 @@ export default function FavorisPage() {
     if (!user) return;
     setLoadingMatchs(true);
     try {
-      const [favRes, top14Res, d2Res, hcupRes] = await Promise.all([
+      const [favRes, top14Res, d2Res, hcupRes, betsTop14Res, betsD2Res, betsHcupRes] = await Promise.all([
         axios.get(`${API_BASE}/api/favorites/matchs`, { headers: { 'x-user-id': user.id } }),
         axios.get(`${API_BASE}/api/matchs/a-venir`),
         axios.get(`${API_BASE}/api/d2/matchs/a-venir`),
         axios.get(`${API_BASE}/api/hcup/matchs/a-venir`),
+        axios.get(`${API_BASE}/api/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
+        axios.get(`${API_BASE}/api/d2/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
+        axios.get(`${API_BASE}/api/hcup/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
       ]);
       setMatchs(favRes.data.matchs || []);
 
-      // Top 14 : garder uniquement la première journée (paris ouverts)
+      // Paris existants par match_id (uniquement pending)
+      const betsTop14 = (betsTop14Res.data.bets || []).filter(b => b.status === 'pending');
+      const betsD2 = (betsD2Res.data.bets || []).filter(b => b.status === 'pending');
+      const betsHcup = (betsHcupRes.data.bets || []).filter(b => b.status === 'pending');
+
+      // Top 14 : complet si FT ET MT placés (ou si match sans MT)
       const top14Matchs = top14Res.data.matchs || [];
       const firstJourneeTop14 = top14Matchs.length > 0 ? top14Matchs[0].journee : null;
       const top14Ids = top14Matchs
         .filter(m => m.journee === firstJourneeTop14)
+        .filter(m => {
+          const matchBets = betsTop14.filter(b => b.match_id === (m.match_id || m.id));
+          const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
+          const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
+          const hasMTCotes = m.cote_mt_domicile != null;
+          // Complet si FT + MT placés (quand MT dispo) ou juste FT (sans MT)
+          return !(hasFT && (!hasMTCotes || hasMT));
+        })
         .map(m => m.match_id || m.id);
 
-      // Pro D2 : garder uniquement la première journée
+      // Pro D2 : complet si FT placé
       const d2Matchs = d2Res.data.matchs || [];
       const firstJourneeD2 = d2Matchs.length > 0 ? d2Matchs[0].journee : null;
       const d2Ids = d2Matchs
         .filter(m => m.journee === firstJourneeD2)
+        .filter(m => {
+          const hasFT = betsD2.some(b => b.match_id === (m.match_id || m.id));
+          return !hasFT;
+        })
         .map(m => m.match_id || m.id);
 
-      // HCup : garder uniquement le premier round
+      // HCup : complet si FT placé
       const hcupMatchs = hcupRes.data.matchs || [];
       const firstRoundHcup = hcupMatchs.length > 0 ? hcupMatchs[0].round : null;
       const hcupIds = hcupMatchs
         .filter(m => m.round === firstRoundHcup)
+        .filter(m => {
+          const hasFT = betsHcup.some(b => b.match_id === (m.match_id || m.id));
+          return !hasFT;
+        })
         .map(m => m.match_id || m.id);
 
       setMatchsDisponibles(new Set([...top14Ids, ...d2Ids, ...hcupIds]));
