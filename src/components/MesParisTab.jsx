@@ -444,6 +444,16 @@ export default function MesParisTab() {
                               {bet.score_domicile} - {bet.score_exterieur}
                             </p>
                           )}
+                          {/* ✅ Badge FT / MT sous le pronostic — demande users */}
+                          <div className="flex justify-center mt-1">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT'
+                                ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                                : 'bg-amber-100 text-amber-700 border border-amber-200'
+                            }`}>
+                              {bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT' ? '⏱ MT' : '🏉 FT'}
+                            </span>
+                          </div>
                         </div>
                         {/* Score réel - uniquement pour paris résolus */}
                         {!isPending && (() => {
