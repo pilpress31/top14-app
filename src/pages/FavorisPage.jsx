@@ -99,14 +99,9 @@ export default function FavorisPage() {
         const matchBets = betsParMatchTop14[id] || [];
         const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
         const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
-        // Vérifier si cotes MT disponibles depuis les matchs a-venir
-        const matchAVenir = top14Matchs.find(av =>
-          av.equipe_domicile === m.equipe_domicile && av.equipe_exterieure === m.equipe_exterieure
-        );
-        const hasMTCotes = matchAVenir?.cote_mt_domicile != null;
         if (!hasFT && !hasMT) status[id] = 'none';
-        else if ((hasFT && hasMTCotes && !hasMT) || (!hasFT && hasMTCotes && hasMT)) status[id] = 'partial';
-        else status[id] = 'complete';
+        else if (hasFT && hasMT) status[id] = 'complete';
+        else status[id] = 'partial'; // un seul des deux types placé
       });
 
       // Ajouter aussi les matchs de la J courante qui ne sont pas en favoris
@@ -117,10 +112,9 @@ export default function FavorisPage() {
         const matchBets = betsParMatchTop14[id] || [];
         const hasFT = matchBets.some(b => b.bet_type === 'FT' || b.bet_type === 'WINNER_FT');
         const hasMT = matchBets.some(b => b.bet_type === 'MT' || b.bet_type === 'WINNER_MT');
-        const hasMTCotes = m.cote_mt_domicile != null;
         if (!hasFT && !hasMT) status[id] = 'none';
-        else if ((hasFT && hasMTCotes && !hasMT) || (!hasFT && hasMTCotes && hasMT)) status[id] = 'partial';
-        else status[id] = 'complete';
+        else if (hasFT && hasMT) status[id] = 'complete';
+        else status[id] = 'partial';
       });
 
       // ── Pro D2 ───────────────────────────────────────────
