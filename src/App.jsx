@@ -2,7 +2,7 @@
 // ================= App.jsx =============== //
 // ========================================= //
 
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatNotificationProvider } from "./contexts/ChatNotificationContext";
@@ -43,6 +43,7 @@ import MaCagnotte from './pages/MaCagnotte';
 import MesPoints from './pages/MesPoints';
 import FavorisPage from './pages/FavorisPage';
 import { FavoritesProvider } from './contexts/FavoritesContext';
+import GuidePage, { GUIDE_STORAGE_KEY } from './pages/GuidePage';
 
 /* ✅ Hook pour savoir quel onglet est actif */
 function useActiveLabel() {
@@ -65,7 +66,23 @@ function AppContent() {
   const active = useActiveLabel();
   const [resetFlag, setResetFlag] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
+
+  // ── Redirection guide au 1er login ──
+  // Déclenché une seule fois après connexion si guide jamais vu
+  // Ignoré sur les pages publiques et si déjà sur /guide
+  useEffect(() => {
+    if (
+      user &&
+      !localStorage.getItem(GUIDE_STORAGE_KEY) &&
+      location.pathname !== '/guide' &&
+      !isPublicPage
+    ) {
+      navigate('/guide');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
 
   // ── TOUS LES HOOKS EN HAUT ──
@@ -99,6 +116,7 @@ function AppContent() {
     '/ma-cagnotte',
     '/mes-points',
     '/favoris',
+    '/guide',
     '/conditions-generales',
     '/signaler-bug',
     '/notifications-push',
@@ -175,6 +193,7 @@ function AppContent() {
         <Route path="/ma-cagnotte" element={<ProtectedRoute><MaCagnotte /></ProtectedRoute>} />
         <Route path="/mes-points" element={<ProtectedRoute><MesPoints /></ProtectedRoute>} />
         <Route path="/favoris" element={<ProtectedRoute><FavorisPage /></ProtectedRoute>} />
+        <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
         <Route path="/a-propos" element={<ProtectedRoute><AProposPage /></ProtectedRoute>} />
         <Route path="/reglement" element={<ProtectedRoute><ReglementPage /></ProtectedRoute>} />
         <Route path="/cgu" element={<ProtectedRoute><CGUPage /></ProtectedRoute>} />
