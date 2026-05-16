@@ -442,20 +442,28 @@ export default function MaCagnotte() {
     nbDistributions: 0
   });
 
-  // ✅ Realtime avec debounce 1000ms pour éviter les boucles infinies
-  // Les events Realtime peuvent arriver en rafale (multi-tables qui changent ensemble)
-  // → on regroupe les déclenchements dans un seul appel à loadData après 1s
+  // ✅ userId dans un ref → stable entre les renders, pas de re-subscribe intempestif
+  const userIdRef = useRef(null);
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
+
+  // ✅ Refs stables pour le debounce
   const realtimeDebounceRef = useRef(null);
   const lastLoadAtRef = useRef(0);
-  const debouncedLoadData = (userId) => {
+
+  // ✅ debouncedLoadData dans un ref → référence stable pour useMemo ci-dessous
+  // Pattern "always-fresh ref" : le ref est stable, .current pointe toujours sur
+  // la dernière version de la fonction sans la mettre en dépendance de useMemo.
+  const debouncedLoadDataRef = useRef(null);
+  debouncedLoadDataRef.current = () => {
+    const userId = userIdRef.current;
     if (!userId) return;
-    if (realtimeDebounceRef.current) {
-      clearTimeout(realtimeDebounceRef.current);
-    }
+    if (realtimeDebounceRef.current) clearTimeout(realtimeDebounceRef.current);
     realtimeDebounceRef.current = setTimeout(() => {
       // Skip si chargement déjà en cours OU si dernier load < 2s
       const now = Date.now();
-      if (loadingRef.current || (now - lastLoadAtRef.current < 2000)) {
+      if (loadingRef.current || now - lastLoadAtRef.current < 2000) {
         realtimeDebounceRef.current = null;
         return;
       }
@@ -465,20 +473,25 @@ export default function MaCagnotte() {
     }, 1000);
   };
 
-  useRealtimeSync([
-    { table: 'user_credits', onUpdate: () => debouncedLoadData(user?.id) },
-    { table: 'user_bets', onUpdate: () => debouncedLoadData(user?.id) },
-    { table: 'user_bets_d2', onUpdate: () => debouncedLoadData(user?.id) },
-    { table: 'user_bets_hcup', onUpdate: () => debouncedLoadData(user?.id) },
-    { table: 'credit_transactions', onUpdate: () => debouncedLoadData(user?.id) },
-  ]);
+  // ✅ Tableau mémoïsé avec deps vides → référence stable pour toute la vie du composant.
+  // CORRIGE le bug de boucle infinie : sans useMemo, un nouveau tableau était créé à
+  // chaque render → useRealtimeSync re-subscribait à chaque render → accumulation de
+  // channels Supabase → chaque event DB déclenchait N×5 callbacks → setLoading(true)
+  // en boucle → scroll to top + spinner sans fin.
+  const realtimeSubscriptions = useMemo(() => [
+    { table: 'user_credits',        onUpdate: () => debouncedLoadDataRef.current() },
+    { table: 'user_bets',           onUpdate: () => debouncedLoadDataRef.current() },
+    { table: 'user_bets_d2',        onUpdate: () => debouncedLoadDataRef.current() },
+    { table: 'user_bets_hcup',      onUpdate: () => debouncedLoadDataRef.current() },
+    { table: 'credit_transactions', onUpdate: () => debouncedLoadDataRef.current() },
+  ], []); // deps vides intentionnels — la stabilité est assurée par les refs
+
+  useRealtimeSync(realtimeSubscriptions);
 
   // 🔧 Cleanup du timeout de debounce au démontage du composant
   useEffect(() => {
     return () => {
-      if (realtimeDebounceRef.current) {
-        clearTimeout(realtimeDebounceRef.current);
-      }
+      if (realtimeDebounceRef.current) clearTimeout(realtimeDebounceRef.current);
     };
   }, []);
 
