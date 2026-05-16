@@ -142,8 +142,8 @@ function RegisterPage() {
       return
     }
 
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères')
+    if (password.length < 8) {
+      setError('Le mot de passe doit contenir au moins 8 caractères')
       setLoading(false)
       return
     }
@@ -165,8 +165,10 @@ function RegisterPage() {
     if (signUpError) {
       if (signUpError.message.includes('already registered')) {
         setError('Cette adresse email est déjà utilisée')
+      } else if (signUpError.message.toLowerCase().includes('password') || signUpError.message.includes('weak')) {
+        setError('Le mot de passe doit contenir au moins 8 caractères')
       } else {
-        setError('Erreur lors de l\'inscription. Réessayez.')
+        setError(`Erreur : ${signUpError.message}`)
       }
       setLoading(false)
       return
@@ -421,7 +423,7 @@ function RegisterPage() {
                     disabled={loading}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Au moins 6 caractères</p>
+                <p className="text-xs text-gray-500 mt-1">Au moins 8 caractères</p>
               </div>
 
               {/* Confirmation mot de passe */}
