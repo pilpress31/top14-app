@@ -127,7 +127,7 @@ export default function PronosPage() {
             {/* Onglet À parier */}
             <button
               onClick={() => setActiveTab('a-parier')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors ${
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors ${
                 activeTab === 'a-parier'
                   ? activeTabClassName
                   : inactiveTabClassName
@@ -138,7 +138,7 @@ export default function PronosPage() {
                 <Target className="w-5 h-5" />
                 <span className="font-bold">À parier</span>
               </div>
-              <span className="text-xs font-normal">Prochains matchs disponibles</span>
+              <span className="text-[10px] font-normal leading-tight text-gray-500">Prochains matchs disponibles</span>
             </button>
 
             {/* CARROUSEL : 3 championnats - compact et centré verticalement */}
@@ -173,7 +173,7 @@ export default function PronosPage() {
             {/* Onglet Mes paris */}
             <button
               onClick={() => setActiveTab('mes-paris')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors ${
+              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors ${
                 activeTab === 'mes-paris'
                   ? activeTabClassName
                   : inactiveTabClassName
@@ -184,7 +184,7 @@ export default function PronosPage() {
                 <Trophy className="w-5 h-5" />
                 <span className="font-bold">Mes paris</span>
               </div>
-              <span className="text-xs font-normal">Historique &amp; statistiques</span>
+              <span className="text-[10px] font-normal leading-tight text-gray-500">Historique &amp; statistiques</span>
             </button>
 
           </div>

@@ -127,7 +127,7 @@ export default function IAPage() {
                 <Brain className="w-5 h-5" />
                 <span className="font-bold">Algorithme</span>
               </div>
-              <span className="text-[10px] font-normal leading-tight" style={{ color: '#9ca3af' }}>
+              <span className="text-[10px] font-normal leading-tight text-gray-500">
                 Prédictions des prochains matchs
               </span>
             </button>
@@ -177,7 +177,7 @@ export default function IAPage() {
                 <Clock className="w-5 h-5" />
                 <span className="font-bold">Historique</span>
               </div>
-              <span className="text-[10px] font-normal leading-tight" style={{ color: '#9ca3af' }}>
+              <span className="text-[10px] font-normal leading-tight text-gray-500">
                 Matchs déjà joués
               </span>
             </button>
