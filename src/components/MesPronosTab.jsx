@@ -384,7 +384,18 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Calendar className={`w-4 h-4 ${headerIconColor}`} />
-                      <span className="font-bold text-rugby-black text-sm">{journee}</span>
+                      <span className="font-bold text-rugby-black text-sm">{(() => {
+                        const r = matchsJournee[0]?.round;
+                        const PLAYOFF_LABELS = {
+                          'Barrage 1': 'Barrages', 'Barrage 2': 'Barrages',
+                          'Barrage': 'Barrage', 'Accession': "Match d'accession",
+                          'Demi-finale 1': 'Demi-finales', 'Demi-finale 2': 'Demi-finales',
+                          'Finale': 'Finale',
+                          'Access Match Pro D2': "Match d'accession Pro D2",
+                          'Access Match Top 14': "Match d'accession Top 14",
+                        };
+                        return (r && PLAYOFF_LABELS[r]) ? PLAYOFF_LABELS[r] : `J${journee}`;
+                      })()}</span>
                       <span className="text-xs text-gray-500">({matchsJournee.length} matchs)</span>
                     </div>
                     {isExpanded ? (
