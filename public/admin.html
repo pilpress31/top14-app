@@ -1239,6 +1239,37 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
     </div>
 
+    <!-- COMMUNICATION -->
+    <div id="panel-communication" class="panel">
+
+      <!-- Sélecteurs -->
+      <div class="card">
+        <div class="card-title">📊 Suivi des résultats — Journée</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <label>Championnat</label>
+            <select id="commChamp" onchange="loadCommJournees()" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;">
+              <option value="top14">🏆 Top 14</option>
+              <option value="prod2">🥈 Pro D2</option>
+              <option value="hcup">⭐ Champions Cup</option>
+            </select>
+          </div>
+          <div>
+            <label>Journée</label>
+            <select id="commJournee" onchange="loadCommResults()" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;">
+              <option value="">— Sélectionner —</option>
+            </select>
+          </div>
+          <button class="btn btn-gold" onclick="loadCommResults()" style="padding:8px 16px;">
+            <span class="btn-text">🔄 Actualiser</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Résultats journée -->
+      <div id="commResultsContainer"></div>
+
+    </div>
 
 
   </div>
@@ -1352,7 +1383,10 @@ function showTab(name, el) {
       break;
     case 'mail':
       loadMailUsers();
-      break;  
+      break;
+    case 'communication':
+      loadCommJournees();
+      break;
   }
 }
 
@@ -3348,6 +3382,151 @@ async function loadUsersAccess() {
     `;
   }).join('');
 }
+// ══════════════════════════════════════════════════
+// COMMUNICATION — Suivi résultats
+// ══════════════════════════════════════════════════
+
+async function loadCommJournees() {
+  const champ = document.getElementById('commChamp').value;
+  const sel = document.getElementById('commJournee');
+  sel.innerHTML = '<option value="">Chargement...</option>';
+
+  let endpoint;
+  if (champ === 'top14')  endpoint = '/api/admin/journees';
+  else if (champ === 'prod2') endpoint = '/api/d2/admin/journees';
+  else endpoint = '/api/hcup/admin/journees';
+
+  try {
+    const data = await api(endpoint);
+    const journees = data.journees || data || [];
+    sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+      journees.map(j => `<option value="${j}">${getJourneeLabel(j, champ)}</option>`).join('');
+    // Auto-sélectionner la dernière journée avec résultats
+    if (journees.length > 0) {
+      sel.value = journees[journees.length - 1];
+      loadCommResults();
+    }
+  } catch(e) {
+    sel.innerHTML = '<option value="">Erreur chargement</option>';
+  }
+}
+
+function getJourneeLabel(j, champ) {
+  return `Journée ${j}`;
+}
+
+async function loadCommResults() {
+  const champ = document.getElementById('commChamp').value;
+  const journee = document.getElementById('commJournee').value;
+  const container = document.getElementById('commResultsContainer');
+
+  if (!journee) { container.innerHTML = ''; return; }
+
+  container.innerHTML = '<div class="card"><p style="color:var(--muted2);text-align:center;padding:24px">Chargement...</p></div>';
+
+  let endpoint;
+  if (champ === 'top14')  endpoint = `/api/admin/resultats-journee?journee=${journee}`;
+  else if (champ === 'prod2') endpoint = `/api/d2/admin/resultats-journee?journee=${journee}`;
+  else endpoint = `/api/hcup/admin/resultats-journee?journee=${journee}`;
+
+  try {
+    const data = await api(endpoint);
+    const matchs = data.matchs || [];
+    const stats = data.stats || {};
+
+    if (!matchs.length) {
+      container.innerHTML = '<div class="card"><p style="color:var(--muted2);text-align:center;padding:24px">Aucun résultat pour cette journée</p></div>';
+      return;
+    }
+
+    const champColors = {
+      top14: { bg: '#1a1a1a', accent: '#CBA135', text: '#ffffff', label: '🏆 TOP 14' },
+      prod2: { bg: '#00174D', accent: '#C0C0C0', text: '#97C1FE',  label: '🥈 PRO D2' },
+      hcup:  { bg: '#003E7E', accent: '#FFC72C', text: '#ffffff',  label: '⭐ CHAMPIONS CUP' },
+    };
+    const col = champColors[champ];
+    const journeeLabel = `Journée ${journee}`;
+
+    // Générer les lignes de matchs
+    const rows = matchs.map(m => {
+      const scoreReel = (m.score_reel_dom !== null && m.score_reel_ext !== null)
+        ? `<strong>${m.score_reel_dom} - ${m.score_reel_ext}</strong>`
+        : '<span style="color:var(--muted2)">À jouer</span>';
+
+      const scorePredit = (m.score_predit_dom !== null && m.score_predit_ext !== null)
+        ? `${m.score_predit_dom} - ${m.score_predit_ext}`
+        : '—';
+
+      const bonPreno = m.score_reel_dom !== null && m.score_predit_dom !== null
+        ? (m.score_reel_dom > m.score_reel_ext) === (m.score_predit_dom > m.score_predit_ext)
+          ? '<span style="color:var(--green);font-size:16px">✅</span>'
+          : '<span style="color:var(--red);font-size:16px">❌</span>'
+        : '—';
+
+      const date = m.date_match
+        ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+        : '';
+
+      const cote = m.cote_domicile
+        ? `<span style="font-size:11px;color:var(--muted2)">${m.cote_domicile} / ${m.cote_nul} / ${m.cote_exterieur || m.cote_exterieur}</span>`
+        : '';
+
+      return `
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:10px 8px;font-size:12px;color:var(--muted2)">${date}</td>
+          <td style="padding:10px 8px;font-weight:600;text-align:right">${m.equipe_domicile}</td>
+          <td style="padding:10px 8px;text-align:center;min-width:90px">${scoreReel}<br>${cote}</td>
+          <td style="padding:10px 8px;font-weight:600">${m.equipe_exterieure}</td>
+          <td style="padding:10px 8px;text-align:center;font-size:13px;color:var(--muted2)">${scorePredit}</td>
+          <td style="padding:10px 8px;text-align:center">${bonPreno}</td>
+          <td style="padding:10px 8px;text-align:center;font-size:12px;color:var(--muted2)">${m.nb_paris ?? '—'}</td>
+        </tr>`;
+    }).join('');
+
+    // Stats de la journée
+    const statsHtml = stats.total_matchs ? `
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;">
+        <span>🎯 Précision : <strong style="color:${col.accent}">${stats.precision_pct ?? '—'}%</strong></span>
+        <span>✅ Corrects : <strong>${stats.corrects ?? '—'}/${stats.joues ?? '—'}</strong></span>
+        <span>🏦 Paris placés : <strong>${stats.total_paris ?? '—'}</strong></span>
+        <span>💰 Jetons misés : <strong>${stats.total_mises ?? '—'}</strong></span>
+      </div>` : '';
+
+    container.innerHTML = `
+      <div class="card" style="padding:0;overflow:hidden;border:2px solid ${col.accent};">
+        <!-- Header journée -->
+        <div style="background:${col.bg};padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="color:${col.accent};font-weight:700;font-size:15px;letter-spacing:1px">${col.label}</div>
+            <div style="color:${col.text};font-size:18px;font-weight:800;margin-top:2px">${journeeLabel}</div>
+          </div>
+          <div style="text-align:right;color:${col.text};font-size:13px">${statsHtml}</div>
+        </div>
+
+        <!-- Tableau matchs -->
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:var(--bg2);color:var(--muted2);font-size:11px;text-transform:uppercase;">
+                <th style="padding:8px;text-align:left">Date</th>
+                <th style="padding:8px;text-align:right">Domicile</th>
+                <th style="padding:8px;text-align:center">Score réel</th>
+                <th style="padding:8px;text-align:left">Extérieur</th>
+                <th style="padding:8px;text-align:center">Prédit</th>
+                <th style="padding:8px;text-align:center">IA</th>
+                <th style="padding:8px;text-align:center">Paris</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  } catch(e) {
+    container.innerHTML = `<div class="card"><p style="color:var(--red);text-align:center;padding:24px">Erreur : ${e.message}</p></div>`;
+  }
+}
+
 
 
 </script>
