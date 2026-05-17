@@ -1,4 +1,4 @@
-// ============================================
+﻿// ============================================
 // MES PRONOS - VERSION AVEC SUPPORT PRO D2
 // ============================================
 
@@ -15,7 +15,7 @@ import { useChampionnat } from '../contexts/ChampionnatContext';
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
 export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDone }) {
-  const { isD2 } = useChampionnat();  // ✅ Lecture du championnat actif
+  const { isD2 } = useChampionnat();  // âœ… Lecture du championnat actif
 
   const [matchsDisponibles, setMatchsDisponibles] = useState([]);
   const [mesPronos, setMesPronos] = useState([]);
@@ -24,7 +24,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
   const [showModal, setShowModal] = useState(false);
   const [showReglementModal, setShowReglementModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  // 🆕 v3 : valeur préselectionnée pour le mode vainqueur (D2 only)
+  // ðŸ†• v3 : valeur prÃ©selectionnÃ©e pour le mode vainqueur (D2 only)
   const [preselectedWinner, setPreselectedWinner] = useState(null);
   const [expandedJournees, setExpandedJournees] = useState(new Set());
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -37,7 +37,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
   const isD2Ref = useRef(isD2);
   useEffect(() => { isD2Ref.current = isD2; }, [isD2]);
 
-  // Scroll vers le match cible après chargement
+  // Scroll vers le match cible aprÃ¨s chargement
   useEffect(() => {
     if (!scrollToMatchId || loading) return;
     const match = matchsDisponibles.find(m => m.match_id === scrollToMatchId);
@@ -52,7 +52,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
     }, 400);
   }, [scrollToMatchId, loading]);
 
-  // ✅ Realtime — tables différentes selon championnat
+  // âœ… Realtime â€” tables diffÃ©rentes selon championnat
   useRealtimeSync([
     { table: isD2 ? 'user_bets_d2' : 'user_bets', onUpdate: () => loadData() },
     { table: 'user_credits', onUpdate: () => loadData() },
@@ -62,7 +62,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
 
   useEffect(() => {
     loadData();
-    setExpandedJournees(new Set()); // Reset à chaque switch championnat
+    setExpandedJournees(new Set()); // Reset Ã  chaque switch championnat
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isD2]);
 
@@ -86,7 +86,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
 
       const useD2 = isD2Ref.current;
 
-      // ✅ URLs selon championnat
+      // âœ… URLs selon championnat
       const matchsUrl = useD2 ? `${API_BASE}/api/d2/matchs/a-venir` : `${API_BASE}/api/matchs/a-venir`;
       const cotesUrl  = useD2 ? `${API_BASE}/api/d2/cotes/all`     : `${API_BASE}/api/cotes/all`;
 
@@ -143,8 +143,8 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
 
       setMatchsDisponibles(matchsAvecCotes);
 
-      // Expand la première journée UNIQUEMENT si aucune n'est ouverte
-      // (au premier chargement OU après un switch de championnat qui a reset le Set)
+      // Expand la premiÃ¨re journÃ©e UNIQUEMENT si aucune n'est ouverte
+      // (au premier chargement OU aprÃ¨s un switch de championnat qui a reset le Set)
       if (matchsAvecCotes.length > 0) {
         const matchsParJournee = matchsAvecCotes.reduce((acc, m) => {
           if (!acc[m.journee]) acc[m.journee] = [];
@@ -155,12 +155,12 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
           parseInt(String(a).replace('J', '')) - parseInt(String(b).replace('J', ''))
         );
         if (journees.length > 0) {
-          // ✅ setter fonctionnel pour lire la valeur à jour (après le reset sur switch championnat)
+          // âœ… setter fonctionnel pour lire la valeur Ã  jour (aprÃ¨s le reset sur switch championnat)
           setExpandedJournees(prev => prev.size === 0 ? new Set([journees[0]]) : prev);
         }
       }
 
-      // ✅ Mes pronos selon championnat
+      // âœ… Mes pronos selon championnat
       if (useD2) {
         try {
           const betsRes = await axios.get(`${API_BASE}/api/d2/user/bets/detailed`, {
@@ -175,10 +175,10 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
             score_ext_pronos: b.score_exterieur,
             score_domicile: b.score_domicile,
             score_exterieur: b.score_exterieur,
-            winner_predit: b.winner_predit,  // 🆕 pour pari WINNER_FT
-            odds: b.odds,                     // 🆕 utile pour affichage
-            stake: b.stake,                   // 🆕 utile pour affichage
-            potential_win: b.potential_win,   // 🆕 utile pour affichage
+            winner_predit: b.winner_predit,  // ðŸ†• pour pari WINNER_FT
+            odds: b.odds,                     // ðŸ†• utile pour affichage
+            stake: b.stake,                   // ðŸ†• utile pour affichage
+            potential_win: b.potential_win,   // ðŸ†• utile pour affichage
           }));
           setMesPronos(pronosD2);
         } catch (e) {
@@ -195,13 +195,13 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
         if (!error) setMesPronos(pronos || []);
       }
 
-      // Crédits (communs Top14 + D2)
+      // CrÃ©dits (communs Top14 + D2)
       try {
         const creditsResponse = await axios.get(`${API_BASE}/api/user/credits`, {
           headers: { 'x-user-id': user.id }
         });
 
-        // Total gagné : agréger user_bets + user_bets_d2
+        // Total gagnÃ© : agrÃ©ger user_bets + user_bets_d2
         const [{ data: wonTop14 }, { data: wonD2 }] = await Promise.all([
           supabase.from('user_bets').select('payout').eq('user_id', user.id).eq('status', 'won'),
           supabase.from('user_bets_d2').select('payout').eq('user_id', user.id).eq('status', 'won'),
@@ -237,8 +237,8 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
     }
   };
 
-  // 🆕 clickedWinner peut être :
-  //   - une string : 'domicile'|'nul'|'exterieur' (legacy D2 → applique à FT)
+  // ðŸ†• clickedWinner peut Ãªtre :
+  //   - une string : 'domicile'|'nul'|'exterieur' (legacy D2 â†’ applique Ã  FT)
   //   - un objet : { type: 'FT'|'MT', choice: 'domicile'|'nul'|'exterieur' } (Top 14)
   const ouvrirModal = (match, clickedWinner = null) => {
     if (!parisOuverts) return;
@@ -251,18 +251,18 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
     const dejaPronos = mesPronos.filter(p =>
       p.match_id === match.match_id && p.status !== 'cancelled'
     );
-    // 🆕 Détection : FT/WINNER_FT pour le slot FT, MT/WINNER_MT pour le slot MT
+    // ðŸ†• DÃ©tection : FT/WINNER_FT pour le slot FT, MT/WINNER_MT pour le slot MT
     const hasFT = dejaPronos.some(p => p.bet_type === 'FT' || p.bet_type === 'WINNER_FT');
     const hasMT = !isD2 && dejaPronos.some(p => p.bet_type === 'MT' || p.bet_type === 'WINNER_MT');
 
-    // En D2 : si un pari FT/WINNER_FT déjà pris, on ouvre Mes Paris
+    // En D2 : si un pari FT/WINNER_FT dÃ©jÃ  pris, on ouvre Mes Paris
     // En Top14 : si FT ET MT pris, on ouvre Mes Paris
     if (isD2 ? hasFT : (hasFT && hasMT)) {
       goToMesParis?.();
       return;
     }
 
-    // 🆕 stocker la pré-sélection (string en D2 = legacy, objet en Top 14)
+    // ðŸ†• stocker la prÃ©-sÃ©lection (string en D2 = legacy, objet en Top 14)
     setPreselectedWinner(clickedWinner);
     setSelectedMatch(match);
     setShowModal(true);
@@ -275,11 +275,11 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
   };
 
   const toggleJournee = (journee) => {
-    // ✅ Accordéon exclusif : ferme toutes les autres journées, n'en garde qu'une
-    // Si on re-clique sur la journée déjà ouverte, on la ferme (Set vide)
+    // âœ… AccordÃ©on exclusif : ferme toutes les autres journÃ©es, n'en garde qu'une
+    // Si on re-clique sur la journÃ©e dÃ©jÃ  ouverte, on la ferme (Set vide)
     setExpandedJournees(prev => {
       if (prev.has(journee)) {
-        return new Set(); // toutes fermées
+        return new Set(); // toutes fermÃ©es
       }
       return new Set([journee]); // uniquement celle-ci ouverte
     });
@@ -336,7 +336,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
             onClick={() => window.location.href = '/ma-cagnotte'}
             className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
           >
-            <p className="text-white/80 text-xs">Total gagné</p>
+            <p className="text-white/80 text-xs">Total gagnÃ©</p>
             <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
               <TrendingUp className="w-4 h-4" />
               {userCredits?.totalWonFromBets || 0}
@@ -348,25 +348,25 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
       {/* Badge championnat en mode D2 */}
       {isD2 && (
         <div className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00174D] rounded-lg w-fit mx-auto">
-          <span className="text-xs font-bold text-[#C0C0C0] uppercase tracking-wide">🏉 Mode Pro D2 — Paris FT uniquement</span>
+          <span className="text-xs font-bold text-[#C0C0C0] uppercase tracking-wide">ðŸ‰ Mode Pro D2 â€” Paris FT uniquement</span>
         </div>
       )}
 
       {/* Message blocage paris (Top 14 uniquement) */}
       {!isD2 && !parisOuverts && journeeIncomplete && (
         <div className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-50 rounded-lg border border-orange-200 w-fit mx-auto mb-3">
-          <span className="text-lg">🔒</span>
+          <span className="text-lg">ðŸ”’</span>
           <span className="text-xs font-semibold text-orange-700 text-center">
-            Paris ouverts après la fin de la J{journeeIncomplete}
+            Paris ouverts aprÃ¨s la fin de la J{journeeIncomplete}
           </span>
         </div>
       )}
 
-      {/* Liste des journées */}
+      {/* Liste des journÃ©es */}
       {journees.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
           <p className="text-gray-500">
-            {isD2 ? 'Aucun match Pro D2 à venir' : 'Aucun match à venir'}
+            {isD2 ? 'Aucun match Pro D2 Ã  venir' : 'Aucun match Ã  venir'}
           </p>
         </div>
       ) : (
@@ -394,7 +394,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
                           'Access Match Pro D2': "Match d'accession Pro D2",
                           'Access Match Top 14': "Match d'accession Top 14",
                         };
-                        return (r && PLAYOFF_LABELS[r]) ? PLAYOFF_LABELS[r] : `J${journee}`;
+                        return (r && PLAYOFF_LABELS[r]) ? PLAYOFF_LABELS[r] : String(journee);
                       })()}</span>
                       <span className="text-xs text-gray-500">({matchsJournee.length} matchs)</span>
                     </div>
@@ -450,14 +450,14 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
         />
       )}
 
-      {/* Bouton Règlement en bas de page */}
+      {/* Bouton RÃ¨glement en bas de page */}
       <div className="flex justify-center mt-6 mb-4">
         <button
           onClick={() => setShowReglementModal(true)}
           className={`flex items-center gap-2 ${isD2 ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE]' : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze'} text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all`}
         >
           <FileText className="w-5 h-5" />
-          <span className="font-semibold">Consulter le règlement</span>
+          <span className="font-semibold">Consulter le rÃ¨glement</span>
         </button>
       </div>
 
