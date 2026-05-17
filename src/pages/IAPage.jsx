@@ -127,8 +127,8 @@ export default function IAPage() {
                 <Brain className="w-5 h-5" />
                 <span className="font-bold">Algorithme</span>
               </div>
-              <span className="text-xs font-normal" style={{ color: '#9ca3af' }}>
-                Prédictions des prochains matchs
+              <span className="text-[10px] font-normal leading-tight" style={{ color: '#9ca3af' }}>
+                Prédictions des prochains matchs
               </span>
             </button>
 
@@ -143,7 +143,7 @@ export default function IAPage() {
                     aria-label={`Passer à ${conf.label}`}
                     className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold uppercase tracking-wider transition-all duration-200"
                     style={{
-                      width: '42px',
+                      width: '46px',
                       padding: '4px 3px',
                       fontSize: '9px',
                       backgroundColor: conf.bg,
@@ -177,7 +177,7 @@ export default function IAPage() {
                 <Clock className="w-5 h-5" />
                 <span className="font-bold">Historique</span>
               </div>
-              <span className="text-xs font-normal" style={{ color: '#9ca3af' }}>
+              <span className="text-[10px] font-normal leading-tight" style={{ color: '#9ca3af' }}>
                 Matchs déjà joués
               </span>
             </button>
