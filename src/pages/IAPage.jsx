@@ -114,7 +114,7 @@ export default function IAPage() {
             {/* Onglet Algorithme */}
             <button
               onClick={() => setActiveTab('algorithme')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors"
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors"
               style={activeTab === 'algorithme'
                 ? isHcup
                   ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
@@ -133,7 +133,7 @@ export default function IAPage() {
             </button>
 
             {/* CARROUSEL : 3 championnats - compact */}
-            <div className="flex items-center justify-center gap-1 px-1 self-center">
+            <div className="flex items-center justify-center gap-0.5 px-0.5 self-center">
               {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
                 const isActive = championnat === key;
                 return (
@@ -143,7 +143,7 @@ export default function IAPage() {
                     aria-label={`Passer à ${conf.label}`}
                     className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold uppercase tracking-wider transition-all duration-200"
                     style={{
-                      width: '46px',
+                      width: '42px',
                       padding: '4px 3px',
                       fontSize: '9px',
                       backgroundColor: conf.bg,
@@ -164,7 +164,7 @@ export default function IAPage() {
             {/* Onglet Historique */}
             <button
               onClick={() => setActiveTab('historique')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 font-medium transition-colors"
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors"
               style={activeTab === 'historique'
                 ? isHcup
                   ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
