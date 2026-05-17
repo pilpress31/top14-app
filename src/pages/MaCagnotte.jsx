@@ -773,14 +773,15 @@ export default function MaCagnotte() {
       
       lostBetsToAdd.forEach(bet => {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
-        // balance_after pour un pari perdu = balance après la mise (= le solde déduit de la mise)
-        // placedTx.balance_after est le solde APRES déduction de la mise → c'est le bon solde "résultant"
+        // Pour D2/HCup, pas de bet_placed dans credit_transactions
+        // La mise a déjà été déduite en BDD — on affiche juste l'entrée "pari perdu" sans retraiter l'amount
+        const isD2orHcup = bet.championnat === 'prod2' || bet.championnat === 'hcup';
         const balanceAfter = placedTx?.balance_after ?? null;
         
         transactionsFiltered.push({
           id: `lost_${bet.id}`,
           type: 'bet_lost',
-          amount: -bet.stake,
+          amount: isD2orHcup ? 0 : -bet.stake, // D2/HCup : amount 0 pour ne pas fausser le balanceMap
           balance_after: balanceAfter,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
@@ -812,10 +813,11 @@ export default function MaCagnotte() {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
         
+        const isD2orHcupWon = bet.championnat === 'prod2' || bet.championnat === 'hcup';
         transactionsFiltered.push({
           id: `won_${bet.id}`,
           type: 'bet_won',
-          amount: payout,
+          amount: isD2orHcupWon ? (payout - (bet.stake || 0)) : payout, // D2/HCup : profit net (gain - mise)
           balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
