@@ -198,6 +198,27 @@ function EngagementBloc({ data }) {
           <div className="text-xs text-gray-500 mt-1">paris placés (7j)</div>
         </div>
       </div>
+
+      {/* Liste des users actifs */}
+      {data.users_actifs?.length > 0 && (
+        <div className="mb-4">
+          <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">🟢 Connectés cette semaine</div>
+          <div className="max-h-48 overflow-y-auto space-y-1">
+            {data.users_actifs.map((u, i) => (
+              <div key={i} className="flex justify-between items-center py-1.5 px-2 rounded-lg hover:bg-gray-50">
+                <div>
+                  <span className="text-sm font-semibold text-gray-800">{u.pseudo}</span>
+                  <span className="text-xs text-gray-400 ml-2">{u.email}</span>
+                </div>
+                <span className="text-xs text-gray-400">
+                  {u.derniere_activite ? new Date(u.derniere_activite).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {data.top_matchs?.length > 0 && (
         <>
           <div className="text-xs text-gray-400 uppercase tracking-widest mb-2">🔥 Matchs les + pariés</div>
