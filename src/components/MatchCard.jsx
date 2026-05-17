@@ -338,10 +338,10 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
       </div>
 
       {/* Équipes + Logos */}
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-center justify-between gap-1 mb-2">
         <button
           onClick={() => setTeamPopup(match.equipe_domicile)}
-          className="flex items-center gap-2 flex-1 hover:opacity-75 transition-opacity"
+          className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-75 transition-opacity"
         >
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
             <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
@@ -349,23 +349,25 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           </div>
           <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
         </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isD2 ? 'd2' : 'top14'); }}
-          className="p-1 flex-shrink-0"
-          title={isFavori(match.equipe_domicile) ? "Retirer des favoris" : "Ajouter aux favoris"}
-        >
-          <Star className={`w-4 h-4 ${isFavori(match.equipe_domicile) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isD2 ? 'd2' : 'top14'); }}
-          className="p-1 flex-shrink-0"
-          title={isFavori(match.equipe_exterieure) ? "Retirer des favoris" : "Ajouter aux favoris"}
-        >
-          <Star className={`w-4 h-4 ${isFavori(match.equipe_exterieure) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
-        </button>
+        <div className="flex gap-0.5 flex-shrink-0">
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isD2 ? 'd2' : 'top14'); }}
+            className="p-1 flex-shrink-0"
+            title={isFavori(match.equipe_domicile) ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            <Star className={`w-4 h-4 ${isFavori(match.equipe_domicile) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isD2 ? 'd2' : 'top14'); }}
+            className="p-1 flex-shrink-0"
+            title={isFavori(match.equipe_exterieure) ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            <Star className={`w-4 h-4 ${isFavori(match.equipe_exterieure) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+          </button>
+        </div>
         <button
           onClick={() => setTeamPopup(match.equipe_exterieure)}
-          className="flex items-center gap-2 flex-1 justify-end hover:opacity-75 transition-opacity"
+          className="flex items-center gap-2 flex-1 min-w-0 justify-end hover:opacity-75 transition-opacity"
         >
           <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamExt.name}</span>
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
