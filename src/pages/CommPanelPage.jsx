@@ -208,7 +208,6 @@ function EngagementBloc({ data }) {
               <div key={i} className="flex justify-between items-center py-1.5 px-2 rounded-lg hover:bg-gray-50">
                 <div>
                   <span className="text-sm font-semibold text-gray-800">{u.pseudo}</span>
-                  <span className="text-xs text-gray-400 ml-2">{u.email}</span>
                 </div>
                 <span className="text-xs text-gray-400">
                   {u.derniere_activite ? new Date(u.derniere_activite).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) : ''}
