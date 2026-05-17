@@ -3619,9 +3619,8 @@ async function loadCommTeaser() {
         const predit = m.score_predit_dom !== null
           ? `${m.score_predit_dom}-${m.score_predit_ext}`
           : '—';
-        const conf = m.confiance_algo
-          ? `${Math.round(m.confiance_algo * 100)}%`
-          : '';
+        const confVal = m.confiance_algo > 1 ? Math.round(m.confiance_algo) : Math.round(m.confiance_algo * 100);
+        const conf = m.confiance_algo ? `${confVal}%` : '';
         return `
           <div style="border-bottom:1px solid #222;padding:8px 0;">
             <div style="font-size:10px;color:#666;margin-bottom:4px">${date}</div>
