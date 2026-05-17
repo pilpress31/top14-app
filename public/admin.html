@@ -3392,7 +3392,7 @@ async function loadCommJournees() {
   const sel = document.getElementById('commJournee');
   sel.innerHTML = '<option value="">Chargement...</option>';
 
-  let endpoint;
+
   const endpoint = `/api/comm/journees?champ=${champ}`;
   
   
@@ -3425,7 +3425,7 @@ async function loadCommResults() {
 
   container.innerHTML = '<div class="card"><p style="color:var(--muted2);text-align:center;padding:24px">Chargement...</p></div>';
 
-  let endpoint;
+
   const endpoint = `/api/comm/resultats?champ=${champ}&journee=${journee}`;
 
   try {
