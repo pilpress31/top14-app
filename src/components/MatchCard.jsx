@@ -337,44 +337,58 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         </button>
       </div>
 
-      {/* Équipes + Logos */}
-      <div className="flex items-center justify-between gap-1 mb-2">
+      {/* Équipes + Logos — layout identique à la page IA (grid 3 colonnes) */}
+      <div className="grid grid-cols-3 items-start px-1 mb-2">
+
+        {/* Équipe domicile */}
         <button
           onClick={() => setTeamPopup(match.equipe_domicile)}
-          className="flex items-center gap-2 flex-1 min-w-0 hover:opacity-75 transition-opacity"
+          className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
         >
-          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamDom.logo} alt={teamDom.name} className="w-10 h-10 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamDom.name}</span>
+          <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2 uppercase">
+            {teamDom.name}
+          </span>
         </button>
-        <div className="flex gap-0.5 flex-shrink-0">
-          <button
-            onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isD2 ? 'd2' : 'top14'); }}
-            className="p-1 flex-shrink-0"
-            title={isFavori(match.equipe_domicile) ? "Retirer des favoris" : "Ajouter aux favoris"}
-          >
-            <Star className={`w-4 h-4 ${isFavori(match.equipe_domicile) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isD2 ? 'd2' : 'top14'); }}
-            className="p-1 flex-shrink-0"
-            title={isFavori(match.equipe_exterieure) ? "Retirer des favoris" : "Ajouter aux favoris"}
-          >
-            <Star className={`w-4 h-4 ${isFavori(match.equipe_exterieure) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
-          </button>
+
+        {/* Centre — étoiles favoris + VS */}
+        <div className="flex flex-col items-center justify-start pt-1 gap-0.5">
+          <div className="flex gap-1">
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_domicile, isD2 ? 'd2' : 'top14'); }}
+              className="p-1"
+              title={isFavori(match.equipe_domicile) ? "Retirer des favoris" : "Ajouter aux favoris"}
+            >
+              <Star className={`w-4 h-4 ${isFavori(match.equipe_domicile) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleFavori(match.equipe_exterieure, isD2 ? 'd2' : 'top14'); }}
+              className="p-1"
+              title={isFavori(match.equipe_exterieure) ? "Retirer des favoris" : "Ajouter aux favoris"}
+            >
+              <Star className={`w-4 h-4 ${isFavori(match.equipe_exterieure) ? 'text-rugby-gold fill-rugby-gold' : 'text-gray-300'}`} />
+            </button>
+          </div>
+          <span className="text-xs text-gray-400 font-semibold mt-1">VS</span>
         </div>
+
+        {/* Équipe extérieure */}
         <button
           onClick={() => setTeamPopup(match.equipe_exterieure)}
-          className="flex items-center gap-2 flex-1 min-w-0 justify-end hover:opacity-75 transition-opacity"
+          className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
         >
-          <span className="text-base font-bold text-gray-900 truncate underline decoration-dotted underline-offset-2 uppercase">{teamExt.name}</span>
-          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <img src={teamExt.logo} alt={teamExt.name} className="w-7 h-7 object-contain"
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamExt.logo} alt={teamExt.name} className="w-10 h-10 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
+          <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2 uppercase">
+            {teamExt.name}
+          </span>
         </button>
+
       </div>
 
       {/* Cotes style bookmaker 1-N-2 */}
