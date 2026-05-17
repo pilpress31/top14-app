@@ -3401,7 +3401,7 @@ async function loadCommJournees() {
     const data = await api(endpoint);
     const journees = data.journees || data || [];
     sel.innerHTML = '<option value="">— Sélectionner —</option>' +
-      journees.map(j => `<option value="${j}">${getJourneeLabel(j, champ)}</option>`).join('');
+      journees.map(j => { const label = (j.round && j.round !== 'Journée') ? j.round : `Journée ${j.journee}`; return `<option value="${j.journee}">${label}</option>`; }).join('');
     // Auto-sélectionner la dernière journée avec résultats
     if (journees.length > 0) {
       sel.value = journees[journees.length - 1];
