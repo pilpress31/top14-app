@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -262,6 +262,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .nav-tabs { padding: 12px 16px 0; }
   .input-row { grid-template-columns: 1fr; }
 }
+select#commChamp, select#commJournee { -moz-appearance: none !important; appearance: none !important; background: #111111 !important; color: #F0EDE8 !important; border: 2px solid #C9A84C !important; padding: 8px 12px !important; border-radius: 6px !important; font-size: 14px !important; min-width: 160px !important; } select#commChamp option, select#commJournee option { background: #111111 !important; color: #F0EDE8 !important; }
 </style>
 </head>
 <body>
@@ -303,6 +304,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <button class="tab" onclick="showTab('actualites', this)">📰 Actualités</button>
     <button class="tab" onclick="showTab('invitations', this)">🎟️ Invitations</button>
     <button class="tab" onclick="showTab('mail', this)">📧 Mail</button>
+    <button class="tab" onclick="showTab('communication', this)">📊 Communication</button>
   </div>
 
   <div class="content">
@@ -1248,7 +1250,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
           <div>
             <label>Championnat</label>
-            <select id="commChamp" onchange="loadCommJournees()" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;">
+            <select id="commChamp" onchange="loadCommJournees()" style="display:block;width:100%;padding:8px 12px;border-radius:6px;border:2px solid #C9A84C;background:#111;color:#F0EDE8;font-size:14px;min-width:160px;">
               <option value="top14">🏆 Top 14</option>
               <option value="prod2">🥈 Pro D2</option>
               <option value="hcup">⭐ Champions Cup</option>
@@ -1256,7 +1258,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           <div>
             <label>Journée</label>
-            <select id="commJournee" onchange="loadCommResults()" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;">
+            <select id="commJournee" onchange="loadCommResults()" style="display:block;width:100%;padding:8px 12px;border-radius:6px;border:2px solid #C9A84C;background:#111;color:#F0EDE8;font-size:14px;min-width:160px;">
               <option value="">— Sélectionner —</option>
             </select>
           </div>
@@ -3391,16 +3393,16 @@ async function loadCommJournees() {
   const sel = document.getElementById('commJournee');
   sel.innerHTML = '<option value="">Chargement...</option>';
 
-  let endpoint;
-  if (champ === 'top14')  endpoint = '/api/admin/journees';
-  else if (champ === 'prod2') endpoint = '/api/d2/admin/journees';
-  else endpoint = '/api/hcup/admin/journees';
+
+  const endpoint = `/api/comm/journees?champ=${champ}`;
+  
+  
 
   try {
     const data = await api(endpoint);
     const journees = data.journees || data || [];
-    sel.innerHTML = '<option value="">— Sélectionner —</option>' +
-      journees.map(j => `<option value="${j}">${getJourneeLabel(j, champ)}</option>`).join('');
+    sel.innerHTML = '<option value="" style="color:#F0EDE8;background:#1a1a1a">— Choisir une journée —</option>' +
+      journees.map(j => { const label = (j.round && j.round !== 'Journée') ? j.round : `Journée ${j.journee}`; return `<option value="${j.journee}">${label}</option>`; }).join('');
     // Auto-sélectionner la dernière journée avec résultats
     if (journees.length > 0) {
       sel.value = journees[journees.length - 1];
@@ -3424,10 +3426,8 @@ async function loadCommResults() {
 
   container.innerHTML = '<div class="card"><p style="color:var(--muted2);text-align:center;padding:24px">Chargement...</p></div>';
 
-  let endpoint;
-  if (champ === 'top14')  endpoint = `/api/admin/resultats-journee?journee=${journee}`;
-  else if (champ === 'prod2') endpoint = `/api/d2/admin/resultats-journee?journee=${journee}`;
-  else endpoint = `/api/hcup/admin/resultats-journee?journee=${journee}`;
+
+  const endpoint = `/api/comm/resultats?champ=${champ}&journee=${journee}`;
 
   try {
     const data = await api(endpoint);
@@ -3448,82 +3448,63 @@ async function loadCommResults() {
     const journeeLabel = `Journée ${journee}`;
 
     // Générer les lignes de matchs
-    // ── Layout cartes compactes (optimisé screenshot mobile 390px) ──
+    // ── Layout cartes compactes (optimisé screenshot mobile 420px) ──
     const cards = matchs.map(m => {
       const joue = m.score_reel_dom !== null && m.score_reel_ext !== null;
-      const aJouer = !joue;
-
       const iaOk = joue && m.score_predit_dom !== null
         ? (m.score_reel_dom > m.score_reel_ext) === (m.score_predit_dom > m.score_predit_ext)
         : null;
-
-      const iaIcon = iaOk === true ? '✅' : iaOk === false ? '❌' : '';
-
+      const iaIcon  = iaOk === true ? '✅' : iaOk === false ? '❌' : '';
       const date = m.date_match
         ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
         : '';
-
-      const scoreBg  = aJouer ? 'background:#1a2a1a' : iaOk === false ? 'background:#2a1a1a' : 'background:#1a1a2a';
-      const scoreColor = aJouer ? col.accent : '#ffffff';
-
-      const scoreDisplay = aJouer
-        ? `<span style="font-size:15px;font-weight:700;color:${col.accent}">À jouer</span>`
-        : `<span style="font-size:18px;font-weight:800;color:#fff">${m.score_reel_dom} – ${m.score_reel_ext}</span>`;
-
+      const scoreBg = !joue ? '' : iaOk === false ? 'background:#2a1a1a;' : 'background:#1a2a1a;';
+      const scoreDisplay = !joue
+        ? `<span style="font-size:13px;font-weight:700;color:${col.accent}">À jouer</span>`
+        : `<span style="font-size:17px;font-weight:800;color:#fff">${m.score_reel_dom} – ${m.score_reel_ext}</span>`;
       const predit = m.score_predit_dom !== null
-        ? `<span style="font-size:11px;color:#888">IA: ${m.score_predit_dom}-${m.score_predit_ext} ${iaIcon}</span>`
+        ? `<div style="font-size:11px;color:#888;margin-top:2px">IA ${m.score_predit_dom}-${m.score_predit_ext} ${iaIcon}</div>`
         : '';
-
       const cotes = m.cote_domicile
-        ? `<span style="font-size:10px;color:#555">${m.cote_domicile} · ${m.cote_nul} · ${m.cote_exterieur ?? '—'}</span>`
+        ? `<div style="font-size:10px;color:#555;margin-top:1px">${m.cote_domicile}·${m.cote_nul}·${m.cote_exterieur ?? '—'}</div>`
         : '';
-
       const parisInfo = m.nb_paris > 0
-        ? `<span style="font-size:10px;color:#888">🏦 ${m.nb_paris} paris</span>`
-        : '';
-
+        ? `<div style="font-size:10px;color:#888;margin-top:1px">🏦 ${m.nb_paris}</div>` : '';
       return `
-        <div style="border-bottom:1px solid #222;padding:10px 14px;">
-          <div style="font-size:10px;color:#555;margin-bottom:6px">${date}</div>
-          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;">
+        <div style="border-bottom:1px solid #222;padding:8px 12px;">
+          <div style="font-size:10px;color:#555;margin-bottom:5px">${date}</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;">
             <div style="text-align:right">
-              <div style="font-size:13px;font-weight:700;color:#F0EDE8;line-height:1.2">${m.equipe_domicile}</div>
-              ${cotes ? `<div style="margin-top:2px">${cotes.split('·')[0].replace('<span','<span')}</div>` : ''}
+              <div style="font-size:12px;font-weight:700;color:#F0EDE8;line-height:1.2">${m.equipe_domicile}</div>
+              ${cotes}
             </div>
-            <div style="text-align:center;min-width:80px;padding:4px 8px;border-radius:6px;${scoreBg}">
-              ${scoreDisplay}
-              <div style="margin-top:2px">${predit}</div>
-              ${parisInfo ? `<div>${parisInfo}</div>` : ''}
+            <div style="text-align:center;min-width:90px;padding:5px 8px;border-radius:8px;${scoreBg}">
+              ${scoreDisplay}${predit}${parisInfo}
             </div>
             <div style="text-align:left">
-              <div style="font-size:13px;font-weight:700;color:#F0EDE8;line-height:1.2">${m.equipe_exterieure}</div>
+              <div style="font-size:12px;font-weight:700;color:#F0EDE8;line-height:1.2">${m.equipe_exterieure}</div>
             </div>
           </div>
         </div>`;
     }).join('');
 
-    // Stats header compact
     const statsLine = stats.joues > 0 ? [
       stats.precision_pct !== null ? `🎯 ${stats.precision_pct}%` : '',
       `✅ ${stats.corrects}/${stats.joues}`,
       stats.total_paris > 0 ? `🏦 ${stats.total_paris} paris` : '',
-      stats.total_mises > 0 ? `🪙 ${stats.total_mises} jetons` : '',
-    ].filter(Boolean).join('  ·  ') : '';
+      stats.total_mises > 0 ? `🪙 ${stats.total_mises}` : '',
+    ].filter(Boolean).join(' · ') : '';
 
     container.innerHTML = `
       <div style="max-width:420px;margin:0 auto;">
         <div style="border-radius:12px;overflow:hidden;border:2px solid ${col.accent};background:#111;">
-          <!-- Header -->
-          <div style="background:${col.bg};padding:12px 16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
-              <div>
-                <div style="color:${col.accent};font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase">${col.label}</div>
-                <div style="color:#fff;font-size:20px;font-weight:800;margin-top:2px">${journeeLabel}</div>
-              </div>
-              ${statsLine ? `<div style="font-size:12px;color:#ccc;text-align:right">${statsLine}</div>` : ''}
+          <div style="background:${col.bg};padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            <div>
+              <div style="color:${col.accent};font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase">${col.label}</div>
+              <div style="color:#fff;font-size:19px;font-weight:800;margin-top:1px">${journeeLabel}</div>
             </div>
+            ${statsLine ? `<div style="font-size:12px;color:#ccc;text-align:right;line-height:1.6">${statsLine}</div>` : ''}
           </div>
-          <!-- Matchs -->
           <div>${cards}</div>
         </div>
       </div>
