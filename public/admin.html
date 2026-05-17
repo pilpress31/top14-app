@@ -1271,6 +1271,24 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
       <!-- Résultats journée -->
       <div id="commResultsContainer"></div>
 
+      <!-- Bloc Engagement -->
+      <div class="card" id="commEngagementCard">
+        <div class="card-title">👥 Engagement communauté</div>
+        <div id="commEngagementContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
+      </div>
+
+      <!-- Bloc Leaderboard -->
+      <div class="card" id="commLeaderboardCard">
+        <div class="card-title">🏆 Leaderboard saison</div>
+        <div id="commLeaderboardContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
+      </div>
+
+      <!-- Bloc Teaser -->
+      <div class="card" id="commTeaserCard">
+        <div class="card-title">🔮 Prochains matchs — Prédictions IA</div>
+        <div id="commTeaserContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
+      </div>
+
     </div>
 
 
@@ -1388,6 +1406,7 @@ function showTab(name, el) {
       break;
     case 'communication':
       loadCommJournees();
+      loadCommExtras();
       break;
   }
 }
@@ -3504,6 +3523,133 @@ async function loadCommResults() {
     `;
   } catch(e) {
     container.innerHTML = `<div class="card"><p style="color:var(--red);text-align:center;padding:24px">Erreur : ${e.message}</p></div>`;
+  }
+}
+
+
+// ══════════════════════════════════════════════════
+// COMMUNICATION — Engagement + Leaderboard + Teaser
+// ══════════════════════════════════════════════════
+
+async function loadCommExtras() {
+  loadCommEngagement();
+  loadCommLeaderboard();
+  loadCommTeaser();
+}
+
+async function loadCommEngagement() {
+  const el = document.getElementById('commEngagementContainer');
+  try {
+    const d = await api('/api/comm/engagement');
+    el.innerHTML = `
+      <div style="max-width:420px;margin:0 auto;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div style="background:#1a1a1a;border-radius:10px;padding:14px;text-align:center;border:1px solid #333;">
+            <div style="font-size:28px;font-weight:800;color:#C9A84C">${d.users_actifs_7j}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px">users actifs (7j)</div>
+          </div>
+          <div style="background:#1a1a1a;border-radius:10px;padding:14px;text-align:center;border:1px solid #333;">
+            <div style="font-size:28px;font-weight:800;color:#C9A84C">${d.paris_7j}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px">paris placés (7j)</div>
+          </div>
+        </div>
+        ${d.top_matchs.length > 0 ? `
+        <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🔥 Matchs les + pariés</div>
+        ${d.top_matchs.map((m, i) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #222;">
+            <span style="font-size:12px;color:#F0EDE8">${['🥇','🥈','🥉'][i]} ${m.label}</span>
+            <span style="font-size:12px;font-weight:700;color:#C9A84C">${m.nb} paris</span>
+          </div>`).join('')}` : ''}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<p style="color:var(--red)">Erreur : ${e.message}</p>`;
+  }
+}
+
+async function loadCommLeaderboard() {
+  const el = document.getElementById('commLeaderboardContainer');
+  try {
+    const d = await api('/api/comm/leaderboard');
+    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    const renderList = (items, valueKey, valueSuffix, subKey, subLabel) => items.map((u, i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #222;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px">${medals[i]}</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#F0EDE8">${u.pseudo}</div>
+            ${subKey ? `<div style="font-size:11px;color:#666">${u[subKey]} ${subLabel}</div>` : ''}
+          </div>
+        </div>
+        <span style="font-size:14px;font-weight:800;color:#C9A84C">${u[valueKey]}${valueSuffix}</span>
+      </div>`).join('');
+
+    el.innerHTML = `
+      <div style="max-width:420px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🪙 Cagnotte</div>
+          ${renderList(d.top_cagnotte, 'credits', ' 🪙', null, '')}
+        </div>
+        <div>
+          <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🎯 Précision</div>
+          ${renderList(d.top_taux, 'taux', '%', 'pronos', 'pronos')}
+        </div>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<p style="color:var(--red)">Erreur : ${e.message}</p>`;
+  }
+}
+
+async function loadCommTeaser() {
+  const el = document.getElementById('commTeaserContainer');
+  try {
+    const d = await api('/api/comm/teaser');
+
+    const champCfg = {
+      top14: { label: '🏆 TOP 14',     accent: '#C9A84C', bg: '#1a1a1a' },
+      d2:    { label: '🥈 PRO D2',     accent: '#97C1FE', bg: '#00174D' },
+      hcup:  { label: '⭐ CHAMP. CUP', accent: '#FFC72C', bg: '#003E7E' },
+    };
+
+    const renderMatchs = (matchs, cfg) => {
+      if (!matchs.length) return `<div style="font-size:12px;color:#555;padding:8px 0">Aucun match à venir</div>`;
+      return matchs.slice(0, 7).map(m => {
+        const date = m.date_match
+          ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+          : '';
+        const predit = m.score_predit_dom !== null
+          ? `${m.score_predit_dom}-${m.score_predit_ext}`
+          : '—';
+        const conf = m.confiance_algo
+          ? `${Math.round(m.confiance_algo * 100)}%`
+          : '';
+        return `
+          <div style="border-bottom:1px solid #222;padding:8px 0;">
+            <div style="font-size:10px;color:#666;margin-bottom:4px">${date}</div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;">
+              <div style="font-size:12px;font-weight:700;color:#F0EDE8;text-align:right">${m.equipe_domicile}</div>
+              <div style="text-align:center;min-width:80px;background:#1a2a1a;border-radius:6px;padding:4px 8px;">
+                <div style="font-size:13px;font-weight:800;color:${cfg.accent}">IA: ${predit}</div>
+                ${conf ? `<div style="font-size:10px;color:#888">${conf} confiance</div>` : ''}
+              </div>
+              <div style="font-size:12px;font-weight:700;color:#F0EDE8">${m.equipe_exterieure}</div>
+            </div>
+          </div>`;
+      }).join('');
+    };
+
+    el.innerHTML = `<div style="max-width:420px;margin:0 auto;">` +
+      Object.entries({ top14: d.top14, d2: d.d2, hcup: d.hcup }).map(([key, matchs]) => {
+        const cfg = champCfg[key];
+        return `
+          <div style="border-radius:10px;overflow:hidden;border:1px solid #333;margin-bottom:12px;">
+            <div style="background:${cfg.bg};padding:8px 14px;">
+              <span style="color:${cfg.accent};font-weight:700;font-size:12px;letter-spacing:1px">${cfg.label}</span>
+            </div>
+            <div style="padding:0 12px;">${renderMatchs(matchs, cfg)}</div>
+          </div>`;
+      }).join('') + `</div>`;
+  } catch(e) {
+    el.innerHTML = `<p style="color:var(--red)">Erreur : ${e.message}</p>`;
   }
 }
 
