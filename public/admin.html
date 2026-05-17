@@ -3393,9 +3393,9 @@ async function loadCommJournees() {
   sel.innerHTML = '<option value="">Chargement...</option>';
 
   let endpoint;
-  if (champ === 'top14')  endpoint = '/api/admin/journees';
-  else if (champ === 'prod2') endpoint = '/api/d2/admin/journees';
-  else endpoint = '/api/hcup/admin/journees';
+  const endpoint = `/api/comm/journees?champ=${champ}`;
+  
+  
 
   try {
     const data = await api(endpoint);
@@ -3426,9 +3426,7 @@ async function loadCommResults() {
   container.innerHTML = '<div class="card"><p style="color:var(--muted2);text-align:center;padding:24px">Chargement...</p></div>';
 
   let endpoint;
-  if (champ === 'top14')  endpoint = `/api/admin/resultats-journee?journee=${journee}`;
-  else if (champ === 'prod2') endpoint = `/api/d2/admin/resultats-journee?journee=${journee}`;
-  else endpoint = `/api/hcup/admin/resultats-journee?journee=${journee}`;
+  const endpoint = `/api/comm/resultats?champ=${champ}&journee=${journee}`;
 
   try {
     const data = await api(endpoint);
