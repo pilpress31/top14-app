@@ -3465,21 +3465,15 @@ async function loadCommResults() {
       const predit = m.score_predit_dom !== null
         ? `<div style="font-size:11px;color:#888;margin-top:2px">IA ${m.score_predit_dom}-${m.score_predit_ext} ${iaIcon}</div>`
         : '';
-      const cotes = m.cote_domicile
-        ? `<div style="font-size:10px;color:#555;margin-top:1px">${m.cote_domicile}·${m.cote_nul}·${m.cote_exterieur ?? '—'}</div>`
-        : '';
-      const parisInfo = m.nb_paris > 0
-        ? `<div style="font-size:10px;color:#888;margin-top:1px">🏦 ${m.nb_paris}</div>` : '';
       return `
         <div style="border-bottom:1px solid #222;padding:8px 12px;">
-          <div style="font-size:10px;color:#555;margin-bottom:5px">${date}</div>
+          <div style="font-size:11px;color:#aaa;margin-bottom:5px;font-weight:500">${date}</div>
           <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;">
             <div style="text-align:right">
               <div style="font-size:12px;font-weight:700;color:#F0EDE8;line-height:1.2">${m.equipe_domicile}</div>
-              ${cotes}
             </div>
             <div style="text-align:center;min-width:90px;padding:5px 8px;border-radius:8px;${scoreBg}">
-              ${scoreDisplay}${predit}${parisInfo}
+              ${scoreDisplay}${predit}
             </div>
             <div style="text-align:left">
               <div style="font-size:12px;font-weight:700;color:#F0EDE8;line-height:1.2">${m.equipe_exterieure}</div>
@@ -3492,7 +3486,6 @@ async function loadCommResults() {
       stats.precision_pct !== null ? `🎯 ${stats.precision_pct}%` : '',
       `✅ ${stats.corrects}/${stats.joues}`,
       stats.total_paris > 0 ? `🏦 ${stats.total_paris} paris` : '',
-      stats.total_mises > 0 ? `🪙 ${stats.total_mises}` : '',
     ].filter(Boolean).join(' · ') : '';
 
     container.innerHTML = `
