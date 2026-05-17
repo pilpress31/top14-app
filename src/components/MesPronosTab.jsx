@@ -1,4 +1,4 @@
-// ============================================
+﻿// ============================================
 // MES PRONOS - VERSION AVEC SUPPORT PRO D2
 // ============================================
 
@@ -111,6 +111,8 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
               proba_exterieur:   cote.proba_exterieure,
               score_predit_dom:  cote.score_predit_dom,
               score_predit_ext:  cote.score_predit_ext,
+              round:             cote.round,
+              journee:           cote.journee,
             }
           : {
               // Top 14 : FT + MT
@@ -138,6 +140,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
         ...match,
         match_id: match.id || match.match_id,
         date_match: match.date || match.date_match,
+        round: cotesMap[match.id || match.match_id]?.round || match.round,
         cotes: cotesMap[match.id || match.match_id] || null,
       }));
 
