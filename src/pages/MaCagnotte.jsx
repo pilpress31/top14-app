@@ -939,12 +939,22 @@ export default function MaCagnotte() {
       return true;
     });
 
+    const sortByBalanceCoherence = (a, b) => {
+      // Tri principal : date de résolution DESC
+      const dateDiff = new Date(b.created_at) - new Date(a.created_at);
+      if (dateDiff !== 0) return dateDiff;
+      // Même timestamp → tri par balance_after DESC pour cohérence du solde
+      // balance[i] - gain[i] = balance[i+1] est respecté naturellement
+      const ba = a.balance_after ?? -Infinity;
+      const bb = b.balance_after ?? -Infinity;
+      return bb - ba;
+    };
+
     if (sortMode === "recent") {
-      deduped.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      deduped.sort(sortByBalanceCoherence);
     } else if (sortMode === "ancient") {
-      deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      deduped.sort((a, b) => -sortByBalanceCoherence(a, b));
     } else if (sortMode === "placed") {
-      // Tri par date de prise de pari (placed_at sur les bets)
       const getPlacedAt = (tx) => tx.bets?.placed_at || tx.created_at;
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
     }
