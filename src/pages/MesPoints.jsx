@@ -612,9 +612,9 @@ export default function MesPoints() {
                   const diffReel   = Math.abs(realDom - realExt);
                   let explication = '';
                   const pts = isFTBet ? bet.points_ft : bet.points_mt;
-                  if (pts >= 10 || pts >= 5 && !isFTBet) explication = '🎯 Score exact !';
-                  else if (pts === 7) explication = `Écart parfait (diff ${diffReel})`;
-                  else if (pts === 5) explication = `Bon écart (écart ${Math.abs(diffPredit - diffReel)})`;
+                  if ((isFTBet && pts >= 10) || (!isFTBet && pts >= 5)) explication = '🎯 Score exact !';
+                  else if (pts === 7) explication = '✨ Même écart de points !';
+                  else if (pts === 5) explication = '👍 Bon écart';
                   else if (pts >= 1) explication = `Bon vainqueur${isFTBet ? '' : ' MT'}`;
                   return (
                     <div className="mb-2 text-xs bg-gray-50 rounded-lg px-3 py-1.5 text-center">
