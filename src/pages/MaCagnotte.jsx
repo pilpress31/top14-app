@@ -959,16 +959,19 @@ export default function MaCagnotte() {
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
     }
 
-    // ✅ Solde d'affichage cohérent : recalculé depuis le solde actuel
-    // en remontant la séquence visible (les bet_placed cachés créent des sauts
-    // dans les balance_after DB → on ignore les valeurs DB et on recalcule)
-    const withCoherentBalances = deduped.map((tx, i, arr) => {
-      if (i === 0) return { ...tx, balance_after: userCredits };
-      const prev = arr[i - 1];
-      const prevBalance = prev.balance_after ?? userCredits;
-      const prevAmount  = prev.amount ?? 0;
-      return { ...tx, balance_after: prevBalance - prevAmount };
-    });
+    // ✅ Solde d'affichage cohérent via reduce (chaînage correct des valeurs calculées)
+    // map() ne fonctionne pas ici car arr[i-1] pointe toujours l'original
+    // reduce() permet d'utiliser la valeur calculée du précédent élément
+    const withCoherentBalances = deduped.reduce((acc, tx) => {
+      if (acc.length === 0) {
+        acc.push({ ...tx, balance_after: userCredits });
+      } else {
+        const prev = acc[acc.length - 1]; // ← valeur CALCULÉE, pas l'original
+        const coherentBalance = (prev.balance_after ?? userCredits) - (prev.amount ?? 0);
+        acc.push({ ...tx, balance_after: coherentBalance });
+      }
+      return acc;
+    }, []);
     return withCoherentBalances;
   }, [transactions, teamFilter, sortMode, userCredits]);
 
