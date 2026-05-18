@@ -948,53 +948,39 @@ export default function MaCagnotte() {
       deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
-    // ✅ Stratégie hybride :
-    // 1. Utiliser balance_after réel (DB) quand disponible → Top14 credit_transactions
-    // 2. Pour les entrées sans balance_after (D2/HCup synthétiques) → interpoler
-    //    entre les vraies valeurs les plus proches
+    // ✅ Stratégie simple et fiable :
+    // - Valeurs réelles DB (Top14 credit_transactions) → utilisées telles quelles
+    // - Entrées synthétiques D2/HCup sans balance_after → recalcul depuis la 
+    //   prochaine vraie valeur en remontant les amounts
 
     const chronological = [...deduped].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-    // Identifier les entrées avec un vrai solde DB
     const hasRealBalance = (tx) => tx.balance_after !== null && tx.balance_after !== undefined;
 
-    // S'assurer que la dernière vraie valeur = userCredits (décalage global si import bulk)
-    const realEntries = chronological.filter(hasRealBalance);
-    let globalOffset = 0;
-    if (realEntries.length > 0 && userCredits) {
-      const lastReal = realEntries[realEntries.length - 1];
-      globalOffset = userCredits - lastReal.balance_after;
-    }
-
-    // Reconstruire les soldes manquants par interpolation entre vraies valeurs
-    const result = [...chronological];
-    for (let i = 0; i < result.length; i++) {
-      if (hasRealBalance(result[i])) {
-        result[i] = { ...result[i], balance_after: result[i].balance_after + globalOffset };
-      } else {
-        // Chercher la prochaine vraie valeur
-        let nextReal = null;
-        for (let j = i + 1; j < result.length; j++) {
-          if (hasRealBalance(result[j])) { nextReal = result[j]; break; }
+    const computed = [...chronological];
+    for (let i = 0; i < computed.length; i++) {
+      if (!hasRealBalance(computed[i])) {
+        // Trouver la prochaine vraie valeur (chronologiquement après)
+        let ref = null;
+        for (let j = i + 1; j < computed.length; j++) {
+          if (hasRealBalance(computed[j])) { ref = computed[j]; break; }
         }
-        if (nextReal) {
-          // balance approximative = prochain vrai solde - somme des amounts entre i et nextReal
-          let sumBetween = 0;
-          for (let k = i + 1; k < result.length; k++) {
-            if (result[k] === nextReal) break;
-            sumBetween += (result[k].amount || 0);
+        if (ref) {
+          // Remonter depuis la référence en soustrayant les amounts intermédiaires
+          let cumul = ref.balance_after;
+          for (let k = computed.length - 1; k >= i; k--) {
+            if (computed[k] === ref) continue;
+            if (k > i) cumul -= (computed[k].amount || 0);
           }
-          result[i] = { ...result[i], balance_after: (nextReal.balance_after + globalOffset) - sumBetween - (result[i].amount || 0) };
+          computed[i] = { ...computed[i], balance_after: cumul };
         } else {
-          // Pas de vraie valeur après → utiliser userCredits comme référence
-          result[i] = { ...result[i], balance_after: userCredits || null };
+          // Aucune référence après → utiliser le solde actuel
+          computed[i] = { ...computed[i], balance_after: userCredits ?? null };
         }
       }
     }
 
-    // Retourner dans l'ordre d'affichage (deduped preservé)
     const balanceById = {};
-    result.forEach(tx => { balanceById[tx.id] = tx.balance_after; });
+    computed.forEach(tx => { balanceById[tx.id] = tx.balance_after; });
     return deduped.map(tx => ({ ...tx, balance_after: balanceById[tx.id] ?? tx.balance_after }));
   }, [transactions, teamFilter, sortMode, userCredits]);
 
