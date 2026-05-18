@@ -201,13 +201,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
     }
   }
 
-  // Pour bet_won/bet_lost : afficher la date de prise de pari (placed_at)
-  // au lieu de la date de résolution (created_at = même seconde pour tout le batch)
-  const isBetResult = trans.type === 'bet_won' || trans.type === 'bet_lost';
-  const displayDate = isBetResult && trans.bets?.placed_at
-    ? trans.bets.placed_at
-    : trans.created_at;
-  const dateObj = new Date(displayDate);
+  const dateObj = new Date(trans.created_at);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
     weekday: 'short',
     day: "2-digit", 
@@ -947,8 +941,12 @@ export default function MaCagnotte() {
 
     if (sortMode === "recent") {
       deduped.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else {
+    } else if (sortMode === "ancient") {
       deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (sortMode === "placed") {
+      // Tri par date de prise de pari (placed_at sur les bets)
+      const getPlacedAt = (tx) => tx.bets?.placed_at || tx.created_at;
+      deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
     }
 
     // ✅ Stratégie définitive : utiliser uniquement les balance_after réelles de la DB
@@ -1220,11 +1218,12 @@ export default function MaCagnotte() {
 
               <PremiumDropdown
                 label="Tri"
-                value={sortMode === "recent" ? "Récent → Ancien" : "Ancien → Récent"}
-                onChange={(v) => setSortMode(v === "Récent → Ancien" ? "recent" : "ancien")}
+                value={sortMode === "recent" ? "Récent → Ancien" : sortMode === "ancient" ? "Ancien → Récent" : "Date prise de pari"}
+                onChange={(v) => setSortMode(v === "Récent → Ancien" ? "recent" : v === "Ancien → Récent" ? "ancient" : "placed")}
                 options={[
                   { value: "Récent → Ancien", label: "Récent → Ancien" },
-                  { value: "Ancien → Récent", label: "Ancien → Récent" }
+                  { value: "Ancien → Récent", label: "Ancien → Récent" },
+                  { value: "Date prise de pari", label: "Date prise de pari" }
                 ]}
               />
             </div>
