@@ -112,7 +112,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
   // ✅ Calculer isFT/isMT/isWinnerFT/isWinnerMT depuis toutes les sources disponibles
-  const betType = trans.bets?.bet_type || fullBet?.bet_type; // trans.bets prime : source de vérité
+  const betType = fullBet?.bet_type || trans.bets?.bet_type;
   // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
   const isWinnerFT = betType === 'WINNER_FT' || trans.description?.includes('Pari vainqueur');
   const isWinnerMT = betType === 'WINNER_MT';
@@ -812,10 +812,14 @@ export default function MaCagnotte() {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
         
+        const isD2orHcup = bet.championnat === 'prod2' || bet.championnat === 'hcup';
+        // Pour D2/HCup : pas de bet_placed dans credit_transactions donc net = payout - stake
+        // Pour Top14 : bet_placed est déjà dans balanceMap donc amount = payout seul
+        const wonAmount = isD2orHcup ? (payout - (bet.stake || 0)) : payout;
         transactionsFiltered.push({
           id: `won_${bet.id}`,
           type: 'bet_won',
-          amount: payout,
+          amount: wonAmount,
           balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
