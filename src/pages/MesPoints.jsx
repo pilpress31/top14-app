@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, ArrowDownUp, Filter, Award, Target, ThumbsUp, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Trophy, ArrowDownUp, Filter, Award, Target, ThumbsUp, CheckCircle2 , Clock } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
@@ -25,10 +25,11 @@ const computeBetPoints = (bet) => {
 // ─── Helper : déterminer le badge selon les points et le bet_type ───
 const getBadgeForBet = (bet) => {
   const points = computeBetPoints(bet);
-  const isWinnerBet = bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT';
-
-  if (isWinnerBet) {
-    return { icon: Target, color: 'text-purple-600 bg-purple-100', label: 'Bon vainqueur' };
+  if (bet.bet_type === 'WINNER_MT') {
+    return { icon: Target, color: 'text-purple-600 bg-purple-100', label: 'Bon vainqueur MT' };
+  }
+  if (bet.bet_type === 'WINNER_FT') {
+    return { icon: Target, color: 'text-purple-600 bg-purple-100', label: 'Bon vainqueur FT' };
   }
 
   // Paris score classiques (FT/MT)
@@ -36,14 +37,14 @@ const getBadgeForBet = (bet) => {
     if (points === 10) return { icon: Trophy, color: 'text-yellow-600 bg-yellow-100', label: 'Score exact' };
     if (points === 7) return { icon: Award, color: 'text-amber-600 bg-amber-100', label: 'Parfait écart' };
     if (points === 5) return { icon: CheckCircle2, color: 'text-green-600 bg-green-100', label: 'Bon écart' };
-    if (points === 3) return { icon: CheckCircle2, color: 'text-blue-600 bg-blue-100', label: 'Bon vainqueur' };
-    if (points === 1) return { icon: ThumbsUp, color: 'text-gray-600 bg-gray-100', label: 'Bon vainqueur' };
+    if (points === 3) return { icon: Clock, color: 'text-blue-600 bg-blue-100', label: 'Bon vainqueur FT' };
+    if (points === 1) return { icon: Clock, color: 'text-gray-600 bg-gray-100', label: 'Bon vainqueur FT' };
   }
 
   if (bet.bet_type === 'MT') {
     if (points === 5) return { icon: Trophy, color: 'text-yellow-600 bg-yellow-100', label: 'Score exact MT' };
     if (points === 3) return { icon: CheckCircle2, color: 'text-green-600 bg-green-100', label: 'Bon écart MT' };
-    if (points === 1) return { icon: ThumbsUp, color: 'text-gray-600 bg-gray-100', label: 'Bon vainqueur MT' };
+    if (points === 1) return { icon: Clock, color: 'text-purple-600 bg-purple-100', label: 'Bon vainqueur MT' };
   }
 
   return { icon: CheckCircle2, color: 'text-gray-600 bg-gray-100', label: 'Pari gagné' };
@@ -604,7 +605,7 @@ export default function MesPoints() {
                   <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold ${badge.color}`}>
                     <BadgeIcon className="w-3.5 h-3.5" />
                     <span>{badge.label}</span>
-                    {isMT && bet.bet_type !== 'WINNER_MT' && !badge.label.includes('MT') && <span>(MT)</span>}
+                    {isMT && bet.bet_type !== 'WINNER_MT' && !badge.label.includes('MT') && <span className="ml-1">(MT)</span>}
                   </div>
 
                   <div className="flex items-center gap-3 text-xs">
