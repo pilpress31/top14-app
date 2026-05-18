@@ -113,17 +113,13 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
 
   // ✅ Calculer isFT/isMT/isWinnerFT/isWinnerMT depuis toutes les sources disponibles
   const betType = trans.bets?.bet_type || fullBet?.bet_type; // trans.bets prime : source de vérité
-  // D2/HCup sans bet_type → WINNER_FT par défaut (seul type proposé dans ces championnats)
-  const descIsD2orHcup = trans.description?.includes('D2') || trans.description?.includes('HCup') || trans.description?.includes('vainqueur');
-  const isD2orHcupBet = trans.bets?.championnat === 'prod2' || trans.bets?.championnat === 'hcup' || fullBet?.championnat === 'prod2' || fullBet?.championnat === 'hcup';
-  const effectiveBetType = betType || ((isD2orHcupBet || descIsD2orHcup) ? 'WINNER_FT' : betType);
   // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
   // betType est la source de vérité (trans.bets?.bet_type prime - cf. ligne 115)
   // Pas de fallback description pour éviter les faux positifs (ex: 'MT J24' dans description)
-  const isWinnerMT = effectiveBetType === 'WINNER_MT';
-  const isWinnerFT = effectiveBetType === 'WINNER_FT';
-  const isFT = !isWinnerFT && !isWinnerMT && (effectiveBetType === 'FT' || trans.description?.includes('FT'));
-  const isMT = !isWinnerMT && (effectiveBetType === 'MT' || trans.description?.includes('MT'));
+  const isWinnerMT = betType === 'WINNER_MT';
+  const isWinnerFT = betType === 'WINNER_FT';
+  const isFT = !isWinnerFT && !isWinnerMT && (betType === 'FT' || trans.description?.includes('FT'));
+  const isMT = !isWinnerMT && (betType === 'MT' || trans.description?.includes('MT'));
   const periodLabel = isWinnerFT ? 'Vainqueur FT' : isWinnerMT ? 'Vainqueur MT' : isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
   
   // 🆕 v3 : récupérer winner_predit pour les paris WINNER_FT
@@ -205,7 +201,13 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
     }
   }
 
-  const dateObj = new Date(trans.created_at);
+  // Pour bet_won/bet_lost : afficher la date de prise de pari (placed_at)
+  // au lieu de la date de résolution (created_at = même seconde pour tout le batch)
+  const isBetResult = trans.type === 'bet_won' || trans.type === 'bet_lost';
+  const displayDate = isBetResult && trans.bets?.placed_at
+    ? trans.bets.placed_at
+    : trans.created_at;
+  const dateObj = new Date(displayDate);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
     weekday: 'short',
     day: "2-digit", 
