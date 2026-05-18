@@ -114,11 +114,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   // ✅ Calculer isFT/isMT/isWinnerFT/isWinnerMT depuis toutes les sources disponibles
   const betType = trans.bets?.bet_type || fullBet?.bet_type; // trans.bets prime : source de vérité
   // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
-  // MT détecté en priorité (descriptions contiennent aussi 'Pari vainqueur' pour MT)
-  const descHasMT = trans.description?.includes(' MT ') || trans.description?.includes(' MT J') || trans.description?.includes('mi-temps');
-  const isWinnerMT = betType === 'WINNER_MT' || descHasMT;
-  // FT seulement si pas MT
-  const isWinnerFT = !isWinnerMT && (betType === 'WINNER_FT' || trans.description?.includes('Pari vainqueur'));
+  // betType est la source de vérité (trans.bets?.bet_type prime - cf. ligne 115)
+  // Pas de fallback description pour éviter les faux positifs (ex: 'MT J24' dans description)
+  const isWinnerMT = betType === 'WINNER_MT';
+  const isWinnerFT = betType === 'WINNER_FT';
   const isFT = !isWinnerFT && !isWinnerMT && (betType === 'FT' || trans.description?.includes('FT'));
   const isMT = !isWinnerMT && (betType === 'MT' || trans.description?.includes('MT'));
   const periodLabel = isWinnerFT ? 'Vainqueur FT' : isWinnerMT ? 'Vainqueur MT' : isFT ? 'Temps plein' : isMT ? 'Mi-temps' : '';
