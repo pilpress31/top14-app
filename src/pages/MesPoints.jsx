@@ -617,14 +617,17 @@ export default function MesPoints() {
                   else if (pts === 5) explication = `Bon écart (écart ${Math.abs(diffPredit - diffReel)})`;
                   else if (pts >= 1) explication = `Bon vainqueur${isFTBet ? '' : ' MT'}`;
                   return (
-                    <div className="flex items-center justify-center gap-3 mb-2 text-xs bg-gray-50 rounded-lg px-3 py-1.5">
-                      <span className="text-gray-500">Ton prono :</span>
-                      <span className="font-bold text-gray-800">{predDom} - {predExt}</span>
-                      <span className="text-gray-400">|</span>
-                      <span className="text-gray-500">Réel :</span>
-                      <span className="font-bold text-gray-800">{realDom} - {realExt}</span>
-                      {explication && <span className="text-gray-400">→</span>}
-                      {explication && <span className="text-green-600 font-semibold">{explication}</span>}
+                    <div className="mb-2 text-xs bg-gray-50 rounded-lg px-3 py-1.5 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-gray-500">Prono:</span>
+                        <span className="font-bold text-gray-800">{predDom}-{predExt}</span>
+                        <span className="text-gray-400">→</span>
+                        <span className="text-gray-500">Réel:</span>
+                        <span className="font-bold text-gray-800">{realDom}-{realExt}</span>
+                      </div>
+                      {explication && (
+                        <div className="text-green-600 font-semibold mt-0.5">{explication}</div>
+                      )}
                     </div>
                   );
                 })()}
