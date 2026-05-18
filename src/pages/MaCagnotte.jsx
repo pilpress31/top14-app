@@ -112,7 +112,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
   // ✅ Calculer isFT/isMT/isWinnerFT/isWinnerMT depuis toutes les sources disponibles
-  const betType = fullBet?.bet_type || trans.bets?.bet_type;
+  const betType = trans.bets?.bet_type || fullBet?.bet_type; // trans.bets prime : source de vérité
   // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
   const isWinnerFT = betType === 'WINNER_FT' || trans.description?.includes('Pari vainqueur');
   const isWinnerMT = betType === 'WINNER_MT';
@@ -773,15 +773,14 @@ export default function MaCagnotte() {
       
       lostBetsToAdd.forEach(bet => {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
-        // Pour D2/HCup, pas de bet_placed dans credit_transactions
-        // La mise a déjà été déduite en BDD — on affiche juste l'entrée "pari perdu" sans retraiter l'amount
-        const isD2orHcup = bet.championnat === 'prod2' || bet.championnat === 'hcup';
+        // balance_after pour un pari perdu = balance après la mise (= le solde déduit de la mise)
+        // placedTx.balance_after est le solde APRES déduction de la mise → c'est le bon solde "résultant"
         const balanceAfter = placedTx?.balance_after ?? null;
         
         transactionsFiltered.push({
           id: `lost_${bet.id}`,
           type: 'bet_lost',
-          amount: isD2orHcup ? 0 : -bet.stake, // D2/HCup : amount 0 pour ne pas fausser le balanceMap
+          amount: -bet.stake,
           balance_after: balanceAfter,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
@@ -813,11 +812,10 @@ export default function MaCagnotte() {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
         
-        const isD2orHcupWon = bet.championnat === 'prod2' || bet.championnat === 'hcup';
         transactionsFiltered.push({
           id: `won_${bet.id}`,
           type: 'bet_won',
-          amount: isD2orHcupWon ? (payout - (bet.stake || 0)) : payout, // D2/HCup : profit net (gain - mise)
+          amount: payout,
           balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
