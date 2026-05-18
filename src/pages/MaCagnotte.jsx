@@ -950,41 +950,34 @@ export default function MaCagnotte() {
     if (sortMode === "placed") {
       const getPlacedAt = (tx) => tx.bets?.placed_at || tx.created_at;
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
-    } else if (sortMode === "ancient") {
-      // Ancien → Récent : trier du plus ancien au plus récent
-      deduped.sort((a, b) => -sortByBalanceCoherence(a, b));
-    } else {
-      // Récent → Ancien (défaut)
-      deduped.sort(sortByBalanceCoherence);
+      return deduped; // utilise les balance_after DB telles quelles
     }
-
-    // Calcul cohérent des soldes selon le mode de tri
-    let withCoherentBalances;
 
     if (sortMode === "ancient") {
-      // Ancien → Récent : on calcule EN AVANT depuis le solde initial
-      // solde initial = userCredits - somme de tous les amounts visibles
-      const totalVisible = deduped.reduce((s, tx) => s + (tx.amount ?? 0), 0);
-      let runningBalance = userCredits - totalVisible;
-      withCoherentBalances = deduped.map(tx => {
-        runningBalance += (tx.amount ?? 0);
-        return { ...tx, balance_after: runningBalance };
+      // Ancien → Récent : tri chronologique ascendant + balance_after DB directe
+      // (les vrais balance_after DB sont corrects dans ce sens)
+      deduped.sort((a, b) => {
+        const dateDiff = new Date(a.created_at) - new Date(b.created_at);
+        if (dateDiff !== 0) return dateDiff;
+        // Même timestamp : balance_after ASC (du plus petit au plus grand)
+        const ba = a.balance_after ?? Infinity;
+        const bb = b.balance_after ?? Infinity;
+        return ba - bb;
       });
-    } else {
-      // Récent → Ancien : on calcule EN ARRIÈRE depuis userCredits
-      withCoherentBalances = deduped.reduce((acc, tx) => {
-        if (acc.length === 0) {
-          acc.push({ ...tx, balance_after: userCredits });
-        } else {
-          const prev = acc[acc.length - 1];
-          const coherentBalance = (prev.balance_after ?? userCredits) - (prev.amount ?? 0);
-          acc.push({ ...tx, balance_after: coherentBalance });
-        }
-        return acc;
-      }, []);
+      return deduped; // balance_after DB correcte en ordre chronologique
     }
 
-    return withCoherentBalances;
+    // Récent → Ancien (défaut) : tri + recalcul cohérent depuis userCredits
+    deduped.sort(sortByBalanceCoherence);
+    return deduped.reduce((acc, tx) => {
+      if (acc.length === 0) {
+        acc.push({ ...tx, balance_after: userCredits });
+      } else {
+        const prev = acc[acc.length - 1];
+        acc.push({ ...tx, balance_after: (prev.balance_after ?? userCredits) - (prev.amount ?? 0) });
+      }
+      return acc;
+    }, []);
   }, [transactions, teamFilter, sortMode, userCredits]);
 
   const teams = [...new Set(
