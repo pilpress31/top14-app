@@ -954,17 +954,25 @@ export default function MaCagnotte() {
     }
 
     if (sortMode === "ancient") {
-      // Ancien → Récent : tri chronologique ascendant + balance_after DB directe
-      // (les vrais balance_after DB sont corrects dans ce sens)
+      // Ancien → Récent : tri chronologique ascendant
       deduped.sort((a, b) => {
         const dateDiff = new Date(a.created_at) - new Date(b.created_at);
         if (dateDiff !== 0) return dateDiff;
-        // Même timestamp : balance_after ASC (du plus petit au plus grand)
         const ba = a.balance_after ?? Infinity;
         const bb = b.balance_after ?? Infinity;
         return ba - bb;
       });
-      return deduped; // balance_after DB correcte en ordre chronologique
+      // Calcul cohérent en avant : 1er solde = DB réel, reste = chaîné
+      return deduped.reduce((acc, tx) => {
+        if (acc.length === 0) {
+          // Partir du vrai solde DB de la 1ère transaction (ancienne)
+          acc.push({ ...tx }); // garde balance_after DB réel
+        } else {
+          const prev = acc[acc.length - 1];
+          acc.push({ ...tx, balance_after: (prev.balance_after ?? 0) + (tx.amount ?? 0) });
+        }
+        return acc;
+      }, []);
     }
 
     // Récent → Ancien (défaut) : tri + recalcul cohérent depuis userCredits
