@@ -950,32 +950,21 @@ export default function MaCagnotte() {
     if (sortMode === "placed") {
       const getPlacedAt = (tx) => tx.bets?.placed_at || tx.created_at;
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
-      return deduped; // utilise les balance_after DB telles quelles
+      return deduped;
     }
 
     if (sortMode === "ancient") {
-      // Ancien → Récent : tri chronologique ascendant
+      // Ancien → Récent : tri ASC, balance_after ASC pour même timestamp
       deduped.sort((a, b) => {
         const dateDiff = new Date(a.created_at) - new Date(b.created_at);
         if (dateDiff !== 0) return dateDiff;
-        const ba = a.balance_after ?? Infinity;
-        const bb = b.balance_after ?? Infinity;
-        return ba - bb;
+        return (a.balance_after ?? Infinity) - (b.balance_after ?? Infinity);
       });
-      // Calcul cohérent en avant : 1er solde = DB réel, reste = chaîné
-      return deduped.reduce((acc, tx) => {
-        if (acc.length === 0) {
-          // Partir du vrai solde DB de la 1ère transaction (ancienne)
-          acc.push({ ...tx }); // garde balance_after DB réel
-        } else {
-          const prev = acc[acc.length - 1];
-          acc.push({ ...tx, balance_after: (prev.balance_after ?? 0) + (tx.amount ?? 0) });
-        }
-        return acc;
-      }, []);
+      return deduped; // balance_after DB réelles — cohérentes au sein de chaque batch
     }
 
-    // Récent → Ancien (défaut) : tri + recalcul cohérent depuis userCredits
+    // Récent → Ancien (défaut) : tri DESC + recalcul cohérent depuis userCredits
+    // (la 1ère ligne = ton vrai solde, chaque ligne suivante = solde précédent - gain)
     deduped.sort(sortByBalanceCoherence);
     return deduped.reduce((acc, tx) => {
       if (acc.length === 0) {
