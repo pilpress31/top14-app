@@ -947,13 +947,15 @@ export default function MaCagnotte() {
       return bb - ba;
     };
 
-    // Toujours calculer les soldes dans l'ordre Récent → Ancien (depuis userCredits)
-    // puis inverser si besoin — garantit la cohérence dans les deux sens
     if (sortMode === "placed") {
       const getPlacedAt = (tx) => tx.bets?.placed_at || tx.created_at;
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
+    } else if (sortMode === "ancient") {
+      // Ancien → Récent : trier du plus ancien au plus récent
+      deduped.sort((a, b) => -sortByBalanceCoherence(a, b));
     } else {
-      deduped.sort(sortByBalanceCoherence); // toujours Récent → Ancien d'abord
+      // Récent → Ancien (défaut)
+      deduped.sort(sortByBalanceCoherence);
     }
 
     // Calcul cohérent des soldes selon le mode de tri
