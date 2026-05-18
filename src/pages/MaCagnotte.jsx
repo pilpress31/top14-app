@@ -940,38 +940,39 @@ export default function MaCagnotte() {
     });
 
     const sortByBalanceCoherence = (a, b) => {
-      // Tri principal : date de résolution DESC
       const dateDiff = new Date(b.created_at) - new Date(a.created_at);
       if (dateDiff !== 0) return dateDiff;
-      // Même timestamp → tri par balance_after DESC pour cohérence du solde
-      // balance[i] - gain[i] = balance[i+1] est respecté naturellement
       const ba = a.balance_after ?? -Infinity;
       const bb = b.balance_after ?? -Infinity;
       return bb - ba;
     };
 
-    if (sortMode === "recent") {
-      deduped.sort(sortByBalanceCoherence);
-    } else if (sortMode === "ancient") {
-      deduped.sort((a, b) => -sortByBalanceCoherence(a, b));
-    } else if (sortMode === "placed") {
+    // Toujours calculer les soldes dans l'ordre Récent → Ancien (depuis userCredits)
+    // puis inverser si besoin — garantit la cohérence dans les deux sens
+    if (sortMode === "placed") {
       const getPlacedAt = (tx) => tx.bets?.placed_at || tx.created_at;
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
+    } else {
+      deduped.sort(sortByBalanceCoherence); // toujours Récent → Ancien d'abord
     }
 
-    // ✅ Solde d'affichage cohérent via reduce (chaînage correct des valeurs calculées)
-    // map() ne fonctionne pas ici car arr[i-1] pointe toujours l'original
-    // reduce() permet d'utiliser la valeur calculée du précédent élément
+    // Calcul cohérent des soldes (Récent → Ancien, depuis userCredits)
     const withCoherentBalances = deduped.reduce((acc, tx) => {
       if (acc.length === 0) {
         acc.push({ ...tx, balance_after: userCredits });
       } else {
-        const prev = acc[acc.length - 1]; // ← valeur CALCULÉE, pas l'original
+        const prev = acc[acc.length - 1];
         const coherentBalance = (prev.balance_after ?? userCredits) - (prev.amount ?? 0);
         acc.push({ ...tx, balance_after: coherentBalance });
       }
       return acc;
     }, []);
+
+    // Inverser pour Ancien → Récent (les soldes restent cohérents dans les deux sens)
+    if (sortMode === "ancient") {
+      withCoherentBalances.reverse();
+    }
+
     return withCoherentBalances;
   }, [transactions, teamFilter, sortMode, userCredits]);
 
