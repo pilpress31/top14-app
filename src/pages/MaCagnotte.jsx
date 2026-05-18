@@ -112,7 +112,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const fullBet = fullBetById || fullBetByMatch || fullBetByDesc || trans.bets;
 
   // ✅ Calculer isFT/isMT/isWinnerFT/isWinnerMT depuis toutes les sources disponibles
-  const betType = fullBet?.bet_type || trans.bets?.bet_type;
+  const betType = trans.bets?.bet_type || fullBet?.bet_type; // trans.bets prime : source de vérité
   // 🆕 v3 : on cherche aussi WINNER_FT dans la description (pour transactions D2)
   const isWinnerFT = betType === 'WINNER_FT' || trans.description?.includes('Pari vainqueur');
   const isWinnerMT = betType === 'WINNER_MT';
