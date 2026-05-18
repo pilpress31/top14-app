@@ -777,12 +777,14 @@ export default function MaCagnotte() {
         // placedTx.balance_after est le solde APRES déduction de la mise → c'est le bon solde "résultant"
         const balanceAfter = placedTx?.balance_after ?? null;
         
+        const isD2orHcupLost = bet.championnat === 'prod2' || bet.championnat === 'hcup';
         transactionsFiltered.push({
           id: `lost_${bet.id}`,
           type: 'bet_lost',
           amount: -bet.stake,
           balance_after: balanceAfter,
-          created_at: bet.result_at || bet.placed_at,
+          // D2/HCup : stake déduit au placement, pas à la résolution
+          created_at: isD2orHcupLost ? (bet.placed_at || bet.result_at) : (bet.result_at || bet.placed_at),
           bet_id: bet.id,
           bets: {
             ...bet,
@@ -813,8 +815,9 @@ export default function MaCagnotte() {
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
         
         const isD2orHcup = bet.championnat === 'prod2' || bet.championnat === 'hcup';
-        // Pour D2/HCup : pas de bet_placed dans credit_transactions donc net = payout - stake
-        // Pour Top14 : bet_placed est déjà dans balanceMap donc amount = payout seul
+        // Pour D2/HCup : pas de bet_placed → on ajoute une entrée synthétique pour la mise
+        // D2/HCup : pas de bet_placed → net amount = payout - stake
+        // Top14 : bet_placed déjà dans balanceMap → amount = payout seul
         const wonAmount = isD2orHcup ? (payout - (bet.stake || 0)) : payout;
         transactionsFiltered.push({
           id: `won_${bet.id}`,
