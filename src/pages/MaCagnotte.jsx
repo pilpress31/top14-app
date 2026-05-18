@@ -959,11 +959,17 @@ export default function MaCagnotte() {
       deduped.sort((a, b) => new Date(getPlacedAt(b)) - new Date(getPlacedAt(a)));
     }
 
-    // ✅ Stratégie définitive : utiliser uniquement les balance_after réelles de la DB
-    // Analyse du 18/05/2026 : D2/HCup ont DÉJÀ de vraies credit_transactions avec balance_after
-    // → pas de reconstruction, pas de synthétiques — on fait confiance à la DB
-    // Les entrées sans balance_after (rares) affichent simplement null (non affiché)
-    return deduped; // balance_after déjà correcte depuis la DB
+    // ✅ Solde d'affichage cohérent : recalculé depuis le solde actuel
+    // en remontant la séquence visible (les bet_placed cachés créent des sauts
+    // dans les balance_after DB → on ignore les valeurs DB et on recalcule)
+    const withCoherentBalances = deduped.map((tx, i, arr) => {
+      if (i === 0) return { ...tx, balance_after: userCredits };
+      const prev = arr[i - 1];
+      const prevBalance = prev.balance_after ?? userCredits;
+      const prevAmount  = prev.amount ?? 0;
+      return { ...tx, balance_after: prevBalance - prevAmount };
+    });
+    return withCoherentBalances;
   }, [transactions, teamFilter, sortMode, userCredits]);
 
   const teams = [...new Set(
