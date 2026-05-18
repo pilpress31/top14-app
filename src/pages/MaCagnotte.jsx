@@ -771,7 +771,7 @@ export default function MaCagnotte() {
         });
 
       // ✅ AJOUTER les paris perdus manuellement
-      const lostBetsToAdd = enrichedBets.filter(b => b.status === 'lost');
+      const lostBetsToAdd = enrichedBets.filter(b => b.status === 'lost' && b.championnat !== 'prod2' && b.championnat !== 'hcup');
       
       lostBetsToAdd.forEach(bet => {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
@@ -779,14 +779,12 @@ export default function MaCagnotte() {
         // placedTx.balance_after est le solde APRES déduction de la mise → c'est le bon solde "résultant"
         const balanceAfter = placedTx?.balance_after ?? null;
         
-        const isD2orHcupLost = bet.championnat === 'prod2' || bet.championnat === 'hcup';
         transactionsFiltered.push({
           id: `lost_${bet.id}`,
           type: 'bet_lost',
           amount: -bet.stake,
           balance_after: balanceAfter,
-          // D2/HCup : stake déduit au placement, pas à la résolution
-          created_at: isD2orHcupLost ? (bet.placed_at || bet.result_at) : (bet.result_at || bet.placed_at),
+          created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
           bets: {
             ...bet,
@@ -808,7 +806,8 @@ export default function MaCagnotte() {
       // ✅ Reconstruire les transactions bet_won manquantes pour les paris won orphelins
       // (legacy : certaines anciennes résolutions n'ont pas créé de credit_transaction)
       // 🔧 Sans console.log pour éviter de polluer la console en cas de boucle
-      const wonBetsInBets = enrichedBets.filter(b => b.status === 'won');
+      // D2/HCup ont déjà des credit_transactions → exclure pour éviter les doublons
+      const wonBetsInBets = enrichedBets.filter(b => b.status === 'won' && b.championnat !== 'prod2' && b.championnat !== 'hcup');
       
       wonBetsInBets.forEach(bet => {
         if (coveredWonBetIds.has(bet.id)) return;
@@ -816,15 +815,14 @@ export default function MaCagnotte() {
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
         
-        const isD2orHcup = bet.championnat === 'prod2' || bet.championnat === 'hcup';
+        // D2/HCup exclus de wonBetsInBets donc pas besoin de distinction
         // Pour D2/HCup : pas de bet_placed → on ajoute une entrée synthétique pour la mise
         // D2/HCup : pas de bet_placed → net amount = payout - stake
         // Top14 : bet_placed déjà dans balanceMap → amount = payout seul
-        const wonAmount = isD2orHcup ? (payout - (bet.stake || 0)) : payout;
         transactionsFiltered.push({
           id: `won_${bet.id}`,
           type: 'bet_won',
-          amount: wonAmount,
+          amount: payout,
           balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
@@ -947,40 +945,11 @@ export default function MaCagnotte() {
       deduped.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
-    // ✅ Stratégie simple et fiable :
-    // - Valeurs réelles DB (Top14 credit_transactions) → utilisées telles quelles
-    // - Entrées synthétiques D2/HCup sans balance_after → recalcul depuis la 
-    //   prochaine vraie valeur en remontant les amounts
-
-    const chronological = [...deduped].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    const hasRealBalance = (tx) => tx.balance_after !== null && tx.balance_after !== undefined;
-
-    const computed = [...chronological];
-    for (let i = 0; i < computed.length; i++) {
-      if (!hasRealBalance(computed[i])) {
-        // Trouver la prochaine vraie valeur (chronologiquement après)
-        let ref = null;
-        for (let j = i + 1; j < computed.length; j++) {
-          if (hasRealBalance(computed[j])) { ref = computed[j]; break; }
-        }
-        if (ref) {
-          // Remonter depuis la référence en soustrayant les amounts intermédiaires
-          let cumul = ref.balance_after;
-          for (let k = computed.length - 1; k >= i; k--) {
-            if (computed[k] === ref) continue;
-            if (k > i) cumul -= (computed[k].amount || 0);
-          }
-          computed[i] = { ...computed[i], balance_after: cumul };
-        } else {
-          // Aucune référence après → utiliser le solde actuel
-          computed[i] = { ...computed[i], balance_after: userCredits ?? null };
-        }
-      }
-    }
-
-    const balanceById = {};
-    computed.forEach(tx => { balanceById[tx.id] = tx.balance_after; });
-    return deduped.map(tx => ({ ...tx, balance_after: balanceById[tx.id] ?? tx.balance_after }));
+    // ✅ Stratégie définitive : utiliser uniquement les balance_after réelles de la DB
+    // Analyse du 18/05/2026 : D2/HCup ont DÉJÀ de vraies credit_transactions avec balance_after
+    // → pas de reconstruction, pas de synthétiques — on fait confiance à la DB
+    // Les entrées sans balance_after (rares) affichent simplement null (non affiché)
+    return deduped; // balance_after déjà correcte depuis la DB
   }, [transactions, teamFilter, sortMode, userCredits]);
 
   const teams = [...new Set(
