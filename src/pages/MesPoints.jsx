@@ -593,12 +593,41 @@ export default function MesPoints() {
                   </p>
                 )}
 
-                {/* Score MT en plus si pari MT */}
-                {isMT && scores && scores.ht_dom != null && (
+                {/* Score MT pour tous les matchs si disponible */}
+                {scores && scores.ht_dom != null && (
                   <p className="text-xs text-gray-500 mb-2 text-center">
                     Mi-temps : {scores.ht_dom}-{scores.ht_ext}
                   </p>
                 )}
+
+                {/* Pronostic user vs réel — paris score */}
+                {(bet.bet_type === 'FT' || bet.bet_type === 'MT') && (() => {
+                  const isFTBet = bet.bet_type === 'FT';
+                  const predDom = isFTBet ? (bet.score_domicile ?? bet.score_dom_pronos) : bet.score_dom_mt;
+                  const predExt = isFTBet ? (bet.score_exterieur ?? bet.score_ext_pronos) : bet.score_ext_mt;
+                  const realDom = isFTBet ? scores?.dom : scores?.ht_dom;
+                  const realExt = isFTBet ? scores?.ext : scores?.ht_ext;
+                  if (predDom == null || realDom == null) return null;
+                  const diffPredit = Math.abs(predDom - predExt);
+                  const diffReel   = Math.abs(realDom - realExt);
+                  let explication = '';
+                  const pts = isFTBet ? bet.points_ft : bet.points_mt;
+                  if (pts >= 10 || pts >= 5 && !isFTBet) explication = '🎯 Score exact !';
+                  else if (pts === 7) explication = `Écart parfait (diff ${diffReel})`;
+                  else if (pts === 5) explication = `Bon écart (écart ${Math.abs(diffPredit - diffReel)})`;
+                  else if (pts >= 1) explication = `Bon vainqueur${isFTBet ? '' : ' MT'}`;
+                  return (
+                    <div className="flex items-center justify-center gap-3 mb-2 text-xs bg-gray-50 rounded-lg px-3 py-1.5">
+                      <span className="text-gray-500">Ton prono :</span>
+                      <span className="font-bold text-gray-800">{predDom} - {predExt}</span>
+                      <span className="text-gray-400">|</span>
+                      <span className="text-gray-500">Réel :</span>
+                      <span className="font-bold text-gray-800">{realDom} - {realExt}</span>
+                      {explication && <span className="text-gray-400">→</span>}
+                      {explication && <span className="text-green-600 font-semibold">{explication}</span>}
+                    </div>
+                  );
+                })()}
 
                 {/* Badge + points + cumul */}
                 <div className="flex items-center justify-between gap-2 mt-2">
