@@ -1289,6 +1289,24 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         <div id="commTeaserContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
       </div>
 
+      <!-- Bloc Diagnostic Soldes -->
+      <div class="card" id="commDiagCard">
+        <div class="card-title">🔍 Diagnostic soldes — Historique par user</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
+          <div>
+            <label style="display:block;font-size:11px;color:var(--muted2);margin-bottom:4px">Utilisateur</label>
+            <select id="diagUserId" onchange="loadDiagTransactions(1)" style="padding:8px 12px;border-radius:6px;border:2px solid #C9A84C;background:#111;color:#F0EDE8;font-size:14px;min-width:220px;">
+              <option value="">— Sélectionner —</option>
+            </select>
+          </div>
+          <button class="btn btn-gold" onclick="exportDiagCSV()" style="padding:8px 16px;font-size:13px;">
+            <span class="btn-text">📥 Export CSV</span>
+          </button>
+        </div>
+        <div id="diagTableContainer"></div>
+        <div id="diagPagination" style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;"></div>
+      </div>
+
     </div>
 
 
@@ -1407,6 +1425,7 @@ function showTab(name, el) {
     case 'communication':
       loadCommJournees();
       loadCommExtras();
+      loadDiagUsers();
       break;
   }
 }
@@ -3664,6 +3683,113 @@ async function loadCommTeaser() {
   }
 }
 
+
+
+
+// ══════════════════════════════════════════════════
+// DIAGNOSTIC SOLDES
+// ══════════════════════════════════════════════════
+
+let diagAllData = [];
+let diagCurrentPage = 1;
+
+async function loadDiagUsers() {
+  try {
+    const d = await api('/api/comm/users');
+    const sel = document.getElementById('diagUserId');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+      (d.users || []).map(u => `<option value="${u.user_id}">${u.pseudo}${u.email ? ' (' + u.email + ')' : ''}</option>`).join('');
+  } catch(e) { console.error('loadDiagUsers:', e); }
+}
+
+async function loadDiagTransactions(page = 1) {
+  const userId = document.getElementById('diagUserId')?.value;
+  const container = document.getElementById('diagTableContainer');
+  const pagination = document.getElementById('diagPagination');
+  if (!userId) { container.innerHTML = ''; return; }
+  diagCurrentPage = page;
+
+  container.innerHTML = '<p style="color:var(--muted2);padding:16px">Chargement...</p>';
+  pagination.innerHTML = '';
+
+  try {
+    const d = await api(`/api/comm/user-transactions?user_id=${encodeURIComponent(userId)}&page=${page}&limit=50`);
+    diagAllData = d.transactions || [];
+
+    if (!diagAllData.length) {
+      container.innerHTML = '<p style="color:var(--muted2);padding:16px">Aucune transaction</p>';
+      return;
+    }
+
+    const rows = diagAllData.map(tx => {
+      const date = tx.date ? new Date(tx.date).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+      const gainStr = tx.gain > 0 ? `<span style="color:#4ade80">+${tx.gain}</span>` : tx.gain < 0 ? `<span style="color:#f87171">${tx.gain}</span>` : '<span style="color:#888">0</span>';
+      const soldeStr = tx.solde_db !== null && tx.solde_db !== undefined ? `<strong style="color:#C9A84C">${tx.solde_db}</strong>` : '<span style="color:#444">—</span>';
+      const champColor = tx.champ === 'Top14' ? '#C9A84C' : tx.champ === 'Pro D2' ? '#97C1FE' : '#FFC72C';
+      const sourceIcon = tx.source === 'DB' ? '🟢' : '🟡';
+      const typeLabel = { bet_won:'Gagné', bet_lost:'Perdu', monthly_distribution:'Distrib.', initial_capital:'Init.', bet_placed:'Mise' }[tx.type] || tx.type;
+
+      return `<tr style="border-bottom:1px solid #1a1a1a;">
+        <td style="padding:5px 8px;font-size:11px;color:#888;white-space:nowrap">${date}</td>
+        <td style="padding:5px 8px;font-size:11px"><span style="color:${champColor}">${tx.champ}</span></td>
+        <td style="padding:5px 8px;font-size:11px;color:#ccc">${typeLabel} ${tx.bet_type ? '<span style="color:#666">'+tx.bet_type+'</span>' : ''}</td>
+        <td style="padding:5px 8px;font-size:11px;color:#aaa;max-width:140px;overflow:hidden;white-space:nowrap">${tx.match || '—'}</td>
+        <td style="padding:5px 8px;font-size:11px;text-align:right;color:#888">${tx.mise ?? '—'}</td>
+        <td style="padding:5px 8px;font-size:12px;text-align:right;font-weight:600">${gainStr}</td>
+        <td style="padding:5px 8px;font-size:12px;text-align:right">${soldeStr}</td>
+        <td style="padding:5px 8px;font-size:11px;text-align:center">${sourceIcon}</td>
+      </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:var(--dark2);color:var(--muted2);font-size:10px;text-transform:uppercase;">
+              <th style="padding:6px 8px;text-align:left">Date</th>
+              <th style="padding:6px 8px;text-align:left">Champ.</th>
+              <th style="padding:6px 8px;text-align:left">Type</th>
+              <th style="padding:6px 8px;text-align:left">Match</th>
+              <th style="padding:6px 8px;text-align:right">Mise</th>
+              <th style="padding:6px 8px;text-align:right">Gain</th>
+              <th style="padding:6px 8px;text-align:right">Solde DB</th>
+              <th style="padding:6px 8px;text-align:center">Src</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    // Pagination
+    const totalPages = Math.ceil((d.total || 0) / 50);
+    if (totalPages > 1) {
+      pagination.innerHTML = Array.from({length: Math.min(totalPages, 10)}, (_, i) => i + 1)
+        .map(p => `<button onclick="loadDiagTransactions(${p})" style="padding:4px 10px;border-radius:4px;border:1px solid ${p===page?'#C9A84C':'#333'};background:${p===page?'#C9A84C':'transparent'};color:${p===page?'#000':'#888'};font-size:12px;cursor:pointer">${p}</button>`)
+        .join('');
+    }
+
+  } catch(e) {
+    container.innerHTML = `<p style="color:var(--red)">Erreur: ${e.message}</p>`;
+  }
+}
+
+function exportDiagCSV() {
+  if (!diagAllData.length) { alert('Aucune donnée à exporter'); return; }
+  const headers = ['Date', 'Championnat', 'Type', 'Bet Type', 'Match', 'Journee', 'Mise', 'Gain', 'Solde DB', 'Source'];
+  const rows = diagAllData.map(tx => [
+    tx.date ? new Date(tx.date).toLocaleString('fr-FR') : '',
+    tx.champ, tx.type, tx.bet_type || '',
+    tx.match || '', tx.journee || '',
+    tx.mise ?? '', tx.gain ?? '', tx.solde_db ?? '', tx.source
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'transactions_diagnostic.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
 
 
 </script>
