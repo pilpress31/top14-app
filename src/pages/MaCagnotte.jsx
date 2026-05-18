@@ -956,21 +956,30 @@ export default function MaCagnotte() {
       deduped.sort(sortByBalanceCoherence); // toujours Récent → Ancien d'abord
     }
 
-    // Calcul cohérent des soldes (Récent → Ancien, depuis userCredits)
-    const withCoherentBalances = deduped.reduce((acc, tx) => {
-      if (acc.length === 0) {
-        acc.push({ ...tx, balance_after: userCredits });
-      } else {
-        const prev = acc[acc.length - 1];
-        const coherentBalance = (prev.balance_after ?? userCredits) - (prev.amount ?? 0);
-        acc.push({ ...tx, balance_after: coherentBalance });
-      }
-      return acc;
-    }, []);
+    // Calcul cohérent des soldes selon le mode de tri
+    let withCoherentBalances;
 
-    // Inverser pour Ancien → Récent (les soldes restent cohérents dans les deux sens)
     if (sortMode === "ancient") {
-      withCoherentBalances.reverse();
+      // Ancien → Récent : on calcule EN AVANT depuis le solde initial
+      // solde initial = userCredits - somme de tous les amounts visibles
+      const totalVisible = deduped.reduce((s, tx) => s + (tx.amount ?? 0), 0);
+      let runningBalance = userCredits - totalVisible;
+      withCoherentBalances = deduped.map(tx => {
+        runningBalance += (tx.amount ?? 0);
+        return { ...tx, balance_after: runningBalance };
+      });
+    } else {
+      // Récent → Ancien : on calcule EN ARRIÈRE depuis userCredits
+      withCoherentBalances = deduped.reduce((acc, tx) => {
+        if (acc.length === 0) {
+          acc.push({ ...tx, balance_after: userCredits });
+        } else {
+          const prev = acc[acc.length - 1];
+          const coherentBalance = (prev.balance_after ?? userCredits) - (prev.amount ?? 0);
+          acc.push({ ...tx, balance_after: coherentBalance });
+        }
+        return acc;
+      }, []);
     }
 
     return withCoherentBalances;
