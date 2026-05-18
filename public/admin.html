@@ -1300,7 +1300,10 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
             </select>
           </div>
           <button class="btn btn-gold" onclick="exportDiagCSV()" style="padding:8px 16px;font-size:13px;">
-            <span class="btn-text">📥 Export CSV</span>
+            <span class="btn-text">📥 Page courante</span>
+          </button>
+          <button onclick="exportDiagAllCSV()" style="padding:8px 16px;font-size:13px;background:#333;color:#F0EDE8;border:1px solid #555;border-radius:6px;cursor:pointer;">
+            <span id="exportAllText">📥 Tout exporter</span>
           </button>
         </div>
         <div id="diagTableContainer"></div>
@@ -3771,6 +3774,44 @@ async function loadDiagTransactions(page = 1) {
 
   } catch(e) {
     container.innerHTML = `<p style="color:var(--red)">Erreur: ${e.message}</p>`;
+  }
+}
+
+async function exportDiagAllCSV() {
+  const userId = document.getElementById('diagUserId')?.value;
+  if (!userId) { alert('Selectionnez un utilisateur'); return; }
+  const btn = document.getElementById('exportAllText');
+  btn.textContent = '⏳ Chargement...';
+  try {
+    let allRows = [];
+    let page = 1;
+    let hasMore = true;
+    while (hasMore) {
+      const d = await api(`/api/comm/user-transactions?user_id=${encodeURIComponent(userId)}&page=${page}&limit=100`);
+      const rows = d.transactions || [];
+      allRows = allRows.concat(rows);
+      hasMore = rows.length === 100;
+      page++;
+      if (page > 50) break; // max 5000 lignes
+    }
+    if (!allRows.length) { alert('Aucune donnee'); return; }
+    const headers = ['Date','Championnat','Type','Bet Type','Match','Journee','Mise','Gain','Solde DB','Source'];
+    const csvRows = allRows.map(tx => [
+      tx.date ? new Date(tx.date).toLocaleString('fr-FR') : '',
+      tx.champ, tx.type, tx.bet_type || '', tx.match || '', tx.journee || '',
+      tx.mise ?? '', tx.gain ?? '', tx.solde_db ?? '', tx.source
+    ]);
+    const csv = [headers, ...csvRows].map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const pseudo = document.getElementById('diagUserId').selectedOptions[0]?.text?.split(' ')[0] || 'user';
+    a.href = url; a.download = 'transactions_' + pseudo + '_complet.csv'; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  } finally {
+    btn.textContent = '📥 Tout exporter';
   }
 }
 
