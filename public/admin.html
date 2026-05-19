@@ -1318,41 +1318,41 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         <!-- Filtres FT/MT (pour ajuster ce qu'on screenshoot) -->
         <div id="commAlgoFiltres" style="display:none;margin:10px 0;padding:10px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;">
           <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--muted2)">Inclure dans l'aperçu :</label>
-          <div style="display:flex;gap:14px;flex-wrap:wrap">
-            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
-              <input type="checkbox" id="commAlgoSendFT" checked onchange="commMajApercu()" style="cursor:pointer"> % Temps Plein (FT)
+          <div style="display:flex;gap:20px;align-items:center;flex-wrap:nowrap">
+            <label style="font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+              <input type="checkbox" id="commAlgoSendFT" checked onchange="commMajApercu()" style="cursor:pointer;margin:0"> % Temps Plein (FT)
             </label>
-            <label id="commAlgoSendMTWrap" style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
-              <input type="checkbox" id="commAlgoSendMT" checked onchange="commMajApercu()" style="cursor:pointer"> % Mi-Temps (MT)
+            <label id="commAlgoSendMTWrap" style="font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+              <input type="checkbox" id="commAlgoSendMT" checked onchange="commMajApercu()" style="cursor:pointer;margin:0"> % Mi-Temps (MT)
             </label>
           </div>
         </div>
 
-        <!-- 🎯 Container screenshot-ready : 4 carrés en grid responsive -->
-        <div id="commAlgoScreenshotCard" style="display:none;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 100%);border:2px solid #C9A84C;border-radius:14px;padding:16px;margin:10px 0;">
-          <div style="text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #333">
+        <!-- 🎯 Container screenshot-ready : 4 carrés compacts, calqués sur le pattern admin -->
+        <div id="commAlgoScreenshotCard" style="display:none;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 100%);border:2px solid #C9A84C;border-radius:14px;padding:14px;margin:10px 0;max-width:500px;">
+          <div style="text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #333">
             <div id="commAlgoCardTitle" style="font-size:14px;font-weight:700;color:#C9A84C;letter-spacing:0.5px">🏉 Top 14 — J27</div>
             <div id="commAlgoCardSubtitle" style="font-size:11px;color:#888;margin-top:3px">Saison 2025-2026</div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-            <div style="background:rgba(201,168,76,0.10);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
-              <div id="commAlgoJourneeLabel" style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Journée</div>
-              <div id="commAlgoJourneeVal" style="font-size:24px;font-weight:800;color:#C9A84C">—</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+            <div style="background:rgba(201,168,76,0.10);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px;flex:1 1 90px;max-width:120px">
+              <div id="commAlgoJourneeLabel" style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Journée</div>
+              <div id="commAlgoJourneeVal" style="font-size:18px;font-weight:800;color:#C9A84C">—</div>
             </div>
-            <div id="commAlgoPctFTCard" style="background:rgba(46,160,67,0.10);border:1px solid rgba(46,160,67,0.3);border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
-              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">% FT</div>
-              <div id="commAlgoPctFT" style="font-size:24px;font-weight:800;color:#3FB950">—</div>
+            <div id="commAlgoPctFTCard" style="background:rgba(46,160,67,0.10);border:1px solid rgba(46,160,67,0.3);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px;flex:1 1 90px;max-width:120px">
+              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">% FT</div>
+              <div id="commAlgoPctFT" style="font-size:18px;font-weight:800;color:#3FB950">—</div>
             </div>
-            <div id="commAlgoPctMTCard" style="background:rgba(88,166,255,0.10);border:1px solid rgba(88,166,255,0.3);border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
-              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">% MT</div>
-              <div id="commAlgoPctMT" style="font-size:24px;font-weight:800;color:#58A6FF">—</div>
+            <div id="commAlgoPctMTCard" style="background:rgba(88,166,255,0.10);border:1px solid rgba(88,166,255,0.3);border-radius:8px;padding:10px 16px;text-align:center;min-width:90px;flex:1 1 90px;max-width:120px">
+              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">% MT</div>
+              <div id="commAlgoPctMT" style="font-size:18px;font-weight:800;color:#58A6FF">—</div>
             </div>
-            <div style="background:rgba(255,255,255,0.04);border:1px solid #333;border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
-              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Matchs analysés</div>
-              <div id="commAlgoNbMatchs" style="font-size:24px;font-weight:800;color:#fff">—</div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid #333;border-radius:8px;padding:10px 16px;text-align:center;min-width:90px;flex:1 1 90px;max-width:120px">
+              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Matchs analysés</div>
+              <div id="commAlgoNbMatchs" style="font-size:18px;font-weight:800;color:#fff">—</div>
             </div>
           </div>
-          <div id="commAlgoFooter" style="margin-top:14px;text-align:center;font-size:11px;color:#666;font-style:italic">
+          <div id="commAlgoFooter" style="margin-top:10px;text-align:center;font-size:11px;color:#666;font-style:italic">
             📸 Tap & maintien pour screenshot
           </div>
         </div>
