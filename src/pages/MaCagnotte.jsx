@@ -1062,9 +1062,10 @@ export default function MaCagnotte() {
   });
 
   // 🆕 Décomposition par championnat (pour diagnostic du total)
+  // Basé sur filteredTransactions pour cohérence visuelle avec les autres compteurs (147 partout)
   const transactionsByChamp = useMemo(() => {
     const stats = { top14: 0, prod2: 0, hcup: 0, autre: 0 };
-    transactions.forEach(t => {
+    filteredTransactions.forEach(t => {
       const champ = t.bets?.championnat || t._championnat;
       if (champ === 'prod2') stats.prod2++;
       else if (champ === 'hcup') stats.hcup++;
@@ -1072,7 +1073,7 @@ export default function MaCagnotte() {
       else stats.autre++;
     });
     return stats;
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   const winRate = stats.totalBets > 0
     ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
@@ -1322,7 +1323,7 @@ export default function MaCagnotte() {
                 onChange={setTeamFilter}
                 fullWidthMenu={true}
                 options={[
-                  { value: "", label: `Toutes les équipes (${Object.values(teamCounts).reduce((a, b) => a + b, 0)})` },
+                  { value: "", label: `Toutes les équipes (${filteredTransactions.length})` },
                   ...teamsSorted.map(t => ({
                     value: t,
                     label: `${(t || '').toUpperCase()} (${teamCounts[t] || 0})`
@@ -1331,10 +1332,11 @@ export default function MaCagnotte() {
               />
             </div>
 
-            {/* 🆕 Compteur de diagnostic enrichi : total + décomposition par championnat */}
+            {/* 🆕 Compteur diagnostic aligne sur filteredTransactions (= nombre reellement affiche).
+                 Coherence visuelle : Historique (X) = X chargees = Toutes les equipes (X). */}
             <div className="text-center text-xs text-gray-500 mb-3">
               <div>
-                {transactions.length} transactions chargées au total
+                {filteredTransactions.length} transactions chargées au total
                 {teamFilter && (
                   <>
                     {' '}•{' '}
