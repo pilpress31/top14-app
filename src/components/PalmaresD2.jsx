@@ -406,14 +406,36 @@ export default function PalmaresD2() {
                   </div>
                   {/* Corps de la carte selon le type */}
                   {f.type === 'classement' ? (
-                    <div className="flex items-center justify-center gap-2 py-2">
-                      <LogoClub club={f.champion} size={40} />
-                      <div className="text-center">
-                        <p className="text-sm font-semibold text-gray-800">{displayName(f.champion)}</p>
-                        <span className="text-xs font-bold mt-0.5" style={{ color: D2_BLUE }}>🏆 Champion</span>
-                        <p className="text-xs text-gray-400 mt-1 italic">
-                          {f.saison === '2019-2020' ? 'Saison arrêtée (Covid)' : 'Titre sur classement régulier'}
+                    <div className="flex items-center gap-2">
+                      {/* Champion (1er du classement) */}
+                      <div className="flex flex-col items-center flex-1 min-w-0">
+                        <LogoClub club={f.champion} size={40} />
+                        <p className="text-xs font-semibold text-center text-gray-800 leading-tight mt-1 w-full">
+                          {displayName(f.champion)}
                         </p>
+                        <span className="text-xs font-bold mt-0.5" style={{ color: D2_BLUE }}>🏆 1er</span>
+                      </div>
+                      {/* Séparateur */}
+                      <div className="flex flex-col items-center flex-shrink-0 px-1">
+                        <span className="text-xs text-gray-500 italic font-medium">
+                          {f.saison === '2019-2020' ? 'Covid' : 'Classement'}
+                        </span>
+                        <span className="text-xs text-gray-300 mt-0.5">
+                          {f.saison === '2019-2020' ? 'saison arrêtée' : 'régulier'}
+                        </span>
+                      </div>
+                      {/* Finaliste (2e du classement) */}
+                      <div className="flex flex-col items-center flex-1 min-w-0">
+                        {f.finaliste && !f.finaliste.startsWith('PAS DE') && !f.finaliste.startsWith('COMPÉTITION') && f.finaliste !== '—'
+                          ? <>
+                              <LogoClub club={f.finaliste} size={40} />
+                              <p className="text-xs font-semibold text-center text-gray-800 leading-tight mt-1 w-full">
+                                {displayName(f.finaliste)}
+                              </p>
+                              <span className="text-xs text-gray-400 font-bold mt-0.5">🥈 2e</span>
+                            </>
+                          : <span className="text-xs text-gray-400 text-center italic">2e<br/>inconnu</span>
+                        }
                       </div>
                     </div>
                   ) : (
