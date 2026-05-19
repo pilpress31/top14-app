@@ -667,10 +667,19 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         <div class="card-header">
           <div class="card-title">📊 Notification Algo — Résultats journée</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="algoChampionnat" onchange="chargerStatsAlgo()"
+            <select id="algoChampionnat" onchange="onAlgoChampChange()"
                     style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px">
               <option value="top14">🏆 Top 14</option>
               <option value="prod2">🥈 Pro D2</option>
+              <option value="hcup">🌍 Champions Cup</option>
+            </select>
+            <select id="algoSaison" onchange="onAlgoSaisonChange()"
+                    style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;min-width:130px">
+              <option value="">⏳ Chargement…</option>
+            </select>
+            <select id="algoJournee" onchange="chargerStatsAlgo()"
+                    style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;min-width:170px">
+              <option value="">— Sélectionner saison —</option>
             </select>
             <button class="btn" onclick="chargerStatsAlgo()">↻ Calculer</button>
           </div>
@@ -678,8 +687,8 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         <div id="algoStatsPreview" style="display:none;padding:12px 0">
           <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
-              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Journée</div>
-              <div id="algoJournee" style="font-size:20px;font-weight:700;color:var(--gold-light)">—</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px" id="algoJourneeLabel">Journée</div>
+              <div id="algoJourneeVal" style="font-size:20px;font-weight:700;color:var(--gold-light)">—</div>
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px">
               <div style="font-size:11px;color:var(--muted);margin-bottom:4px">% FT</div>
@@ -1283,6 +1292,75 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         <div id="commLeaderboardContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
       </div>
 
+      <!-- 🆕 Bloc Notif Algo CONSULTATION (admin_com : lecture seule, pas d'envoi) -->
+      <div class="card" id="commAlgoCard">
+        <div class="card-header">
+          <div class="card-title">📊 Stats algo — Consultation</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="commAlgoChamp" onchange="onCommAlgoChampChange()"
+                    style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px">
+              <option value="top14">🏆 Top 14</option>
+              <option value="prod2">🥈 Pro D2</option>
+              <option value="hcup">🌍 Champions Cup</option>
+            </select>
+            <select id="commAlgoSaison" onchange="onCommAlgoSaisonChange()"
+                    style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;min-width:130px">
+              <option value="">⏳ Chargement…</option>
+            </select>
+            <select id="commAlgoJournee" onchange="commChargerStatsAlgo()"
+                    style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;min-width:170px">
+              <option value="">— Sélectionner saison —</option>
+            </select>
+            <button class="btn" onclick="commChargerStatsAlgo()">↻ Calculer</button>
+          </div>
+        </div>
+
+        <!-- Filtres FT/MT (pour ajuster ce qu'on screenshoot) -->
+        <div id="commAlgoFiltres" style="display:none;margin:10px 0;padding:10px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:8px;">
+          <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px;color:var(--muted2)">Inclure dans l'aperçu :</label>
+          <div style="display:flex;gap:14px;flex-wrap:wrap">
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="commAlgoSendFT" checked onchange="commMajApercu()" style="cursor:pointer"> % Temps Plein (FT)
+            </label>
+            <label id="commAlgoSendMTWrap" style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="commAlgoSendMT" checked onchange="commMajApercu()" style="cursor:pointer"> % Mi-Temps (MT)
+            </label>
+          </div>
+        </div>
+
+        <!-- 🎯 Container screenshot-ready : 4 carrés en grid responsive -->
+        <div id="commAlgoScreenshotCard" style="display:none;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 100%);border:2px solid #C9A84C;border-radius:14px;padding:16px;margin:10px 0;">
+          <div style="text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #333">
+            <div id="commAlgoCardTitle" style="font-size:14px;font-weight:700;color:#C9A84C;letter-spacing:0.5px">🏉 Top 14 — J27</div>
+            <div id="commAlgoCardSubtitle" style="font-size:11px;color:#888;margin-top:3px">Saison 2025-2026</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+            <div style="background:rgba(201,168,76,0.10);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
+              <div id="commAlgoJourneeLabel" style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Journée</div>
+              <div id="commAlgoJourneeVal" style="font-size:24px;font-weight:800;color:#C9A84C">—</div>
+            </div>
+            <div id="commAlgoPctFTCard" style="background:rgba(46,160,67,0.10);border:1px solid rgba(46,160,67,0.3);border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
+              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">% FT</div>
+              <div id="commAlgoPctFT" style="font-size:24px;font-weight:800;color:#3FB950">—</div>
+            </div>
+            <div id="commAlgoPctMTCard" style="background:rgba(88,166,255,0.10);border:1px solid rgba(88,166,255,0.3);border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
+              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">% MT</div>
+              <div id="commAlgoPctMT" style="font-size:24px;font-weight:800;color:#58A6FF">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid #333;border-radius:10px;padding:14px;text-align:center;aspect-ratio:1.2/1;display:flex;flex-direction:column;justify-content:center">
+              <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Matchs analysés</div>
+              <div id="commAlgoNbMatchs" style="font-size:24px;font-weight:800;color:#fff">—</div>
+            </div>
+          </div>
+          <div id="commAlgoFooter" style="margin-top:14px;text-align:center;font-size:11px;color:#666;font-style:italic">
+            📸 Tap & maintien pour screenshot
+          </div>
+        </div>
+
+        <div id="commAlgoLoading" style="display:none;color:var(--muted);padding:12px">⏳ Calcul en cours...</div>
+        <div class="result" id="commAlgoResult"></div>
+      </div>
+
       <!-- Bloc Teaser -->
       <div class="card" id="commTeaserCard">
         <div class="card-title">🔮 Prochains matchs — Prédictions IA</div>
@@ -1406,6 +1484,7 @@ function showTab(name, el) {
   switch(name) {
     case 'classement':
       loadClassement();
+      loadAlgoSaisons();  // 🆕 Init des sélecteurs saison/journée pour Notif Algo
       break;
     case 'jetons':
       loadSoldes();
@@ -1429,6 +1508,7 @@ function showTab(name, el) {
       loadCommJournees();
       loadCommExtras();
       loadDiagUsers();
+      loadCommAlgoSaisons();  // 🆕 Init Notif Algo (consultation seule) pour admin_com
       break;
   }
 }
@@ -1888,22 +1968,121 @@ async function loadClassement() {
 }
 
 // ── NOTIF ALGO ──
-async function chargerStatsAlgo() {
-  const champ = document.getElementById('algoChampionnat').value;  // 'top14' | 'prod2'
-  const champLabel = champ === 'prod2' ? 'Pro D2' : 'Top 14';
-  const isProD2 = champ === 'prod2';
 
-  // ─── Adapter l'UI selon le championnat ──────────────────────
-  // Pro D2 n'a pas de mi-temps : on masque le KPI MT et la checkbox MT
+// 🆕 Chargement dynamique des saisons disponibles selon le championnat
+async function loadAlgoSaisons() {
+  const champ = document.getElementById('algoChampionnat').value;
+  const selSaison = document.getElementById('algoSaison');
+  const selJournee = document.getElementById('algoJournee');
+
+  selSaison.innerHTML = '<option value="">⏳ Chargement…</option>';
+  selJournee.innerHTML = '<option value="">— Sélectionner saison —</option>';
+
+  try {
+    const data = await api(`/api/admin/algo-saisons?champ=${champ}`);
+    const saisons = data.saisons || [];
+
+    if (!saisons.length) {
+      selSaison.innerHTML = '<option value="">Aucune saison</option>';
+      return;
+    }
+
+    // Préselection : saison courante (en tête de liste car triée DESC)
+    selSaison.innerHTML = saisons.map((s, i) =>
+      `<option value="${s}"${i === 0 ? ' selected' : ''}>${s}</option>`
+    ).join('');
+
+    // Charger les journées/rounds pour cette saison
+    await loadAlgoJournees();
+  } catch (e) {
+    selSaison.innerHTML = '<option value="">❌ Erreur</option>';
+    console.error('loadAlgoSaisons:', e);
+  }
+}
+
+// 🆕 Chargement des journées (top14/prod2) ou rounds (hcup) pour une saison
+async function loadAlgoJournees() {
+  const champ = document.getElementById('algoChampionnat').value;
+  const saison = document.getElementById('algoSaison').value;
+  const selJournee = document.getElementById('algoJournee');
+  const isHcup = champ === 'hcup';
+
+  if (!saison) {
+    selJournee.innerHTML = '<option value="">— Sélectionner saison —</option>';
+    return;
+  }
+
+  selJournee.innerHTML = '<option value="">⏳ Chargement…</option>';
+
+  try {
+    const data = await api(`/api/admin/algo-journees?champ=${champ}&saison=${encodeURIComponent(saison)}`);
+    const items = data.journees || data.rounds || [];
+
+    if (!items.length) {
+      selJournee.innerHTML = '<option value="">Aucune journée</option>';
+      return;
+    }
+
+    const labelToutes = isHcup ? '🌍 Tous les rounds' : '🏆 Toutes les journées';
+    let options = `<option value="__all__">${labelToutes}</option>`;
+
+    if (isHcup) {
+      options += items.map(r => `<option value="${r}">${r}</option>`).join('');
+    } else {
+      options += items.map(j => `<option value="${j}">J${j}</option>`).join('');
+    }
+
+    selJournee.innerHTML = options;
+    // Présélectionner la 1ère journée/round réel (pas "Toutes")
+    if (items.length > 0) selJournee.value = String(items[0]);
+  } catch (e) {
+    selJournee.innerHTML = '<option value="">❌ Erreur</option>';
+    console.error('loadAlgoJournees:', e);
+  }
+}
+
+// 🆕 Handler : changement de championnat → recharger saisons + UI
+function onAlgoChampChange() {
+  const champ = document.getElementById('algoChampionnat').value;
+  const isProD2 = champ === 'prod2';
+  const isHcup = champ === 'hcup';
+
+  // Adapter le label "Journée" vs "Round" (HCup utilise round)
+  const lblJournee = document.getElementById('algoJourneeLabel');
+  if (lblJournee) lblJournee.textContent = isHcup ? 'Round' : 'Journée';
+
+  // Pro D2 et HCup n'ont pas de mi-temps : masquer KPI MT et checkbox MT
   const mtWrap = document.getElementById('algoPctMTWrap');
   const mtCheckWrap = document.getElementById('algoSendMTWrap');
-  if (mtWrap) mtWrap.style.display = isProD2 ? 'none' : '';
-  if (mtCheckWrap) mtCheckWrap.style.display = isProD2 ? 'none' : '';
+  const noMt = isProD2 || isHcup;
+  if (mtWrap) mtWrap.style.display = noMt ? 'none' : '';
+  if (mtCheckWrap) mtCheckWrap.style.display = noMt ? 'none' : '';
 
-  // En Pro D2, force la checkbox MT à false (ne pas l'inclure dans le message)
-  if (isProD2) {
-    const cbMT = document.getElementById('algoSendMT');
-    if (cbMT) cbMT.checked = false;
+  // Reset preview
+  document.getElementById('algoStatsPreview').style.display = 'none';
+  document.getElementById('algoResult').innerHTML = '';
+
+  // Recharger saisons pour le nouveau championnat
+  loadAlgoSaisons();
+}
+
+// 🆕 Handler : changement de saison → recharger journées/rounds
+function onAlgoSaisonChange() {
+  document.getElementById('algoStatsPreview').style.display = 'none';
+  loadAlgoJournees();
+}
+
+async function chargerStatsAlgo() {
+  const champ = document.getElementById('algoChampionnat').value;  // 'top14' | 'prod2' | 'hcup'
+  const saison = document.getElementById('algoSaison').value;
+  const journee = document.getElementById('algoJournee').value;
+  const isProD2 = champ === 'prod2';
+  const isHcup = champ === 'hcup';
+
+  if (!saison || !journee) {
+    document.getElementById('algoResult').innerHTML =
+      '<span style="color:var(--red)">❌ Sélectionnez une saison et une journée</span>';
+    return;
   }
 
   document.getElementById('algoStatsLoading').style.display = 'block';
@@ -1911,9 +2090,16 @@ async function chargerStatsAlgo() {
   document.getElementById('algoResult').innerHTML = '';
 
   try {
-    const endpoint = isProD2
-      ? '/api/d2/admin/stats-algo-journee'
-      : '/api/admin/stats-algo-journee';
+    let endpoint;
+    if (isProD2) {
+      endpoint = `/api/d2/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
+    } else if (isHcup) {
+      // Pour HCup, le param s'appelle 'round'
+      endpoint = `/api/hcup/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&round=${encodeURIComponent(journee)}`;
+    } else {
+      endpoint = `/api/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
+    }
+
     const data = await api(endpoint);
 
     if (!data || data.error) {
@@ -1922,7 +2108,12 @@ async function chargerStatsAlgo() {
       return;
     }
 
-    document.getElementById('algoJournee').textContent = 'J' + data.journee;
+    // Affichage Journée/Round
+    if (isHcup) {
+      document.getElementById('algoJourneeVal').textContent = (journee === '__all__') ? 'Tous' : journee;
+    } else {
+      document.getElementById('algoJourneeVal').textContent = (journee === '__all__') ? 'Toutes' : ('J' + (data.journee || journee));
+    }
     document.getElementById('algoPctFT').textContent = (data.pct_ft != null ? data.pct_ft : '—') + '%';
     document.getElementById('algoPctMT').textContent = (data.pct_mt != null ? data.pct_mt + '%' : '—');
     document.getElementById('algoNbMatchs').textContent = data.nb_matchs;
@@ -1939,23 +2130,26 @@ async function chargerStatsAlgo() {
 
 function majApercuAlgo() {
   const champ = document.getElementById('algoChampionnat').value;
-  const champLabel = champ === 'prod2' ? 'Pro D2' : 'Top 14';
-  const champEmoji = champ === 'prod2' ? '🥈' : '🏉';
+  const champLabel = champ === 'prod2' ? 'Pro D2' : (champ === 'hcup' ? 'Champions Cup' : 'Top 14');
+  const champEmoji = champ === 'prod2' ? '🥈' : (champ === 'hcup' ? '🌍' : '🏉');
 
-  const journee = document.getElementById('algoJournee').textContent;
+  const journeeVal = document.getElementById('algoJourneeVal').textContent;
   const pctFT = document.getElementById('algoPctFT').textContent;
   const pctMT = document.getElementById('algoPctMT').textContent;
   const sendFT = document.getElementById('algoSendFT').checked;
   const sendMT = document.getElementById('algoSendMT').checked;
   const isProD2 = champ === 'prod2';
+  const isHcup = champ === 'hcup';
 
-  // Titre adapté au championnat
-  const title = `${champEmoji} Résultats algo ${journee} ${champLabel}`;
+  // Titre adapté au championnat + au type de filtre (journée/round/toutes)
+  let titlePart = journeeVal;
+  if (!isHcup && journeeVal !== 'Toutes') titlePart = journeeVal; // "J24" déjà préfixé
+  const title = `${champEmoji} Résultats algo ${titlePart} ${champLabel}`;
 
   // Corps : FT toujours dispo, MT seulement en Top 14
   const parts = [];
   if (sendFT) parts.push('Temps plein ' + pctFT);
-  if (!isProD2 && sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
+  if (!isProD2 && !isHcup && sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
   const body = parts.length
     ? parts.join(' • ') + ' de réussite sur les pronostics !'
     : '(rien sélectionné)';
@@ -1972,15 +2166,16 @@ document.addEventListener('change', function(e) {
 async function envoyerNotifAlgo() {
   const champ = document.getElementById('algoChampionnat').value;
   const isProD2 = champ === 'prod2';
-  const champLabel = champ === 'prod2' ? 'Pro D2' : 'Top 14';
+  const isHcup = champ === 'hcup';
+  const champLabel = isProD2 ? 'Pro D2' : (isHcup ? 'Champions Cup' : 'Top 14');
 
   const sendFT = document.getElementById('algoSendFT').checked;
   const sendMT = document.getElementById('algoSendMT').checked;
 
-  // Validation : en Pro D2 il n'y a que FT, en Top14 il faut au moins un des deux
-  if (isProD2) {
+  // Validation : Pro D2 et HCup n'ont que FT, Top14 il faut au moins un des deux
+  if (isProD2 || isHcup) {
     if (!sendFT) {
-      showResult('algoResult', 'err', '❌ En Pro D2, le % FT doit être sélectionné');
+      showResult('algoResult', 'err', `❌ En ${champLabel}, le % FT doit être sélectionné`);
       return;
     }
   } else {
@@ -1990,9 +2185,10 @@ async function envoyerNotifAlgo() {
     }
   }
 
-  const journeeRaw = document.getElementById('algoJournee').textContent; // ex "J27"
+  const journeeVal = document.getElementById('algoJourneeVal').textContent;       // ex "J27", "Toutes", "Poule 1"
+  const journeeRaw = document.getElementById('algoJournee').value;                 // ex "27", "__all__", "Poule 1"
   const journeeNum = String(journeeRaw).replace('J', '');
-  const pctFTraw = document.getElementById('algoPctFT').textContent;     // ex "71%"
+  const pctFTraw = document.getElementById('algoPctFT').textContent;               // ex "71%"
   const pctFTnum = parseInt(String(pctFTraw).replace('%', ''), 10);
 
   const btn = document.getElementById('algoSendBtn');
@@ -2016,6 +2212,23 @@ async function envoyerNotifAlgo() {
       } else {
         showResult('algoResult', 'err', `❌ ${data.error || 'Erreur'}`);
       }
+    } else if (isHcup) {
+      // ─── HCup : pattern aligné Pro D2 ─────────────────────
+      const data = await api('/api/hcup/admin/notif-algo-all', {
+        method: 'POST',
+        body: JSON.stringify({
+          round: journeeRaw,
+          pctFT: pctFTnum,
+          includeFT: sendFT,
+        }),
+      });
+
+      if (data.success) {
+        showResult('algoResult', 'ok',
+          `✅ ${champLabel} ${journeeVal} : ${data.sent || 0} push + ${data.inAppCreated || 0} in-app envoyées`);
+      } else {
+        showResult('algoResult', 'err', `❌ ${data.error || 'Erreur'}`);
+      }
     } else {
       // ─── Top 14 : pattern existant inchangé ────────────────
       const pctMT = document.getElementById('algoPctMT').textContent;
@@ -2023,13 +2236,13 @@ async function envoyerNotifAlgo() {
       if (sendFT) parts.push('Temps plein ' + pctFTraw);
       if (sendMT && pctMT !== '—') parts.push('Mi-temps ' + pctMT);
 
-      const title = '🏉 Résultats algo ' + journeeRaw;
+      const title = '🏉 Résultats algo ' + journeeVal;
       const body = parts.join(' • ') + ' de réussite sur les pronostics !';
 
       // 1. Notif in-app pour tous les users
       await api('/api/admin/notif-algo-all', {
         method: 'POST',
-        body: JSON.stringify({ title, body, journee: journeeRaw }),
+        body: JSON.stringify({ title, body, journee: journeeVal }),
       });
 
       // 2. Push pour les abonnés
@@ -2049,7 +2262,199 @@ async function envoyerNotifAlgo() {
 }
 
 
-// ── JETONS ──
+// ══════════════════════════════════════════════════
+// 🆕 NOTIF ALGO — CONSULTATION (admin_com, lecture seule)
+// Réutilise les mêmes endpoints que la version admin mais
+// sans bouton d'envoi. Affichage screenshot-ready (4 carrés).
+// ══════════════════════════════════════════════════
+
+async function loadCommAlgoSaisons() {
+  const champ = document.getElementById('commAlgoChamp')?.value || 'top14';
+  const selSaison = document.getElementById('commAlgoSaison');
+  const selJournee = document.getElementById('commAlgoJournee');
+  if (!selSaison) return;
+
+  selSaison.innerHTML = '<option value="">⏳ Chargement…</option>';
+  selJournee.innerHTML = '<option value="">— Sélectionner saison —</option>';
+
+  try {
+    const data = await api(`/api/admin/algo-saisons?champ=${champ}`);
+    const saisons = data.saisons || [];
+
+    if (!saisons.length) {
+      selSaison.innerHTML = '<option value="">Aucune saison</option>';
+      return;
+    }
+    selSaison.innerHTML = saisons.map((s, i) =>
+      `<option value="${s}"${i === 0 ? ' selected' : ''}>${s}</option>`
+    ).join('');
+
+    await loadCommAlgoJournees();
+  } catch (e) {
+    selSaison.innerHTML = '<option value="">❌ Erreur</option>';
+    console.error('loadCommAlgoSaisons:', e);
+  }
+}
+
+async function loadCommAlgoJournees() {
+  const champ = document.getElementById('commAlgoChamp').value;
+  const saison = document.getElementById('commAlgoSaison').value;
+  const selJournee = document.getElementById('commAlgoJournee');
+  const isHcup = champ === 'hcup';
+
+  if (!saison) {
+    selJournee.innerHTML = '<option value="">— Sélectionner saison —</option>';
+    return;
+  }
+  selJournee.innerHTML = '<option value="">⏳ Chargement…</option>';
+
+  try {
+    const data = await api(`/api/admin/algo-journees?champ=${champ}&saison=${encodeURIComponent(saison)}`);
+    const items = data.journees || data.rounds || [];
+
+    if (!items.length) {
+      selJournee.innerHTML = '<option value="">Aucune journée</option>';
+      return;
+    }
+
+    const labelToutes = isHcup ? '🌍 Tous les rounds' : '🏆 Toutes les journées';
+    let options = `<option value="__all__">${labelToutes}</option>`;
+    if (isHcup) {
+      options += items.map(r => `<option value="${r}">${r}</option>`).join('');
+    } else {
+      options += items.map(j => `<option value="${j}">J${j}</option>`).join('');
+    }
+    selJournee.innerHTML = options;
+    if (items.length > 0) selJournee.value = String(items[0]);
+  } catch (e) {
+    selJournee.innerHTML = '<option value="">❌ Erreur</option>';
+    console.error('loadCommAlgoJournees:', e);
+  }
+}
+
+function onCommAlgoChampChange() {
+  const champ = document.getElementById('commAlgoChamp').value;
+  const isProD2 = champ === 'prod2';
+  const isHcup = champ === 'hcup';
+
+  // Adapter label "Journée/Round"
+  const lblJournee = document.getElementById('commAlgoJourneeLabel');
+  if (lblJournee) lblJournee.textContent = isHcup ? 'Round' : 'Journée';
+
+  // Masquer % MT en Pro D2 et HCup
+  const mtCard = document.getElementById('commAlgoPctMTCard');
+  const mtCheckWrap = document.getElementById('commAlgoSendMTWrap');
+  const noMt = isProD2 || isHcup;
+  if (mtCard) mtCard.style.display = noMt ? 'none' : '';
+  if (mtCheckWrap) mtCheckWrap.style.display = noMt ? 'none' : '';
+
+  // Reset preview
+  document.getElementById('commAlgoScreenshotCard').style.display = 'none';
+  document.getElementById('commAlgoFiltres').style.display = 'none';
+  document.getElementById('commAlgoResult').innerHTML = '';
+
+  loadCommAlgoSaisons();
+}
+
+function onCommAlgoSaisonChange() {
+  document.getElementById('commAlgoScreenshotCard').style.display = 'none';
+  document.getElementById('commAlgoFiltres').style.display = 'none';
+  loadCommAlgoJournees();
+}
+
+async function commChargerStatsAlgo() {
+  const champ = document.getElementById('commAlgoChamp').value;
+  const saison = document.getElementById('commAlgoSaison').value;
+  const journee = document.getElementById('commAlgoJournee').value;
+  const isProD2 = champ === 'prod2';
+  const isHcup = champ === 'hcup';
+
+  if (!saison || !journee) {
+    document.getElementById('commAlgoResult').innerHTML =
+      '<span style="color:var(--red)">❌ Sélectionnez une saison et une journée</span>';
+    return;
+  }
+
+  document.getElementById('commAlgoLoading').style.display = 'block';
+  document.getElementById('commAlgoScreenshotCard').style.display = 'none';
+  document.getElementById('commAlgoFiltres').style.display = 'none';
+  document.getElementById('commAlgoResult').innerHTML = '';
+
+  try {
+    let endpoint;
+    if (isProD2) {
+      endpoint = `/api/d2/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
+    } else if (isHcup) {
+      endpoint = `/api/hcup/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&round=${encodeURIComponent(journee)}`;
+    } else {
+      endpoint = `/api/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
+    }
+    const data = await api(endpoint);
+
+    if (!data || data.error) {
+      document.getElementById('commAlgoResult').innerHTML =
+        '<span style="color:var(--red)">❌ ' + (data?.error || 'Erreur') + '</span>';
+      return;
+    }
+
+    // Remplir les 4 carrés
+    let journeeDisplay;
+    if (isHcup) {
+      journeeDisplay = (journee === '__all__') ? 'Tous' : journee;
+    } else {
+      journeeDisplay = (journee === '__all__') ? 'Toutes' : ('J' + (data.journee || journee));
+    }
+    document.getElementById('commAlgoJourneeVal').textContent = journeeDisplay;
+    document.getElementById('commAlgoPctFT').textContent = (data.pct_ft != null ? data.pct_ft : '—') + '%';
+    document.getElementById('commAlgoPctMT').textContent = (data.pct_mt != null ? data.pct_mt + '%' : '—');
+    document.getElementById('commAlgoNbMatchs').textContent = data.nb_matchs;
+
+    // Header (titre + saison)
+    const champLabel = isProD2 ? 'Pro D2' : (isHcup ? 'Champions Cup' : 'Top 14');
+    const champEmoji = isProD2 ? '🥈' : (isHcup ? '🌍' : '🏉');
+    document.getElementById('commAlgoCardTitle').textContent =
+      `${champEmoji} ${champLabel} — ${journeeDisplay}`;
+    document.getElementById('commAlgoCardSubtitle').textContent = `Saison ${saison}`;
+
+    // Filtres FT/MT et carte screenshot visibles
+    document.getElementById('commAlgoFiltres').style.display = '';
+    document.getElementById('commAlgoScreenshotCard').style.display = '';
+
+    // Appliquer les filtres FT/MT au rendu (au cas où l'utilisateur les a changés avant le calcul)
+    commMajApercu();
+  } catch(e) {
+    document.getElementById('commAlgoResult').innerHTML =
+      '<span style="color:var(--red)">❌ ' + e.message + '</span>';
+  } finally {
+    document.getElementById('commAlgoLoading').style.display = 'none';
+  }
+}
+
+// 🆕 Met à jour l'aperçu screenshot quand les checkbox FT/MT changent
+function commMajApercu() {
+  const champ = document.getElementById('commAlgoChamp').value;
+  const isProD2 = champ === 'prod2';
+  const isHcup = champ === 'hcup';
+
+  const showFT = document.getElementById('commAlgoSendFT').checked;
+  const showMT = document.getElementById('commAlgoSendMT')?.checked;
+
+  // Masquer/afficher les carrés selon les checkboxes (en respectant noMt)
+  const ftCard = document.getElementById('commAlgoPctFTCard');
+  const mtCard = document.getElementById('commAlgoPctMTCard');
+
+  if (ftCard) ftCard.style.display = showFT ? '' : 'none';
+  if (mtCard) {
+    // Pas de MT en Pro D2/HCup, donc toujours masqué dans ces cas
+    if (isProD2 || isHcup) {
+      mtCard.style.display = 'none';
+    } else {
+      mtCard.style.display = showMT ? '' : 'none';
+    }
+  }
+}
+
+
 async function crediterJetons() {
   const userId = document.getElementById('jetonsUserId').value;
   const amount = parseInt(document.getElementById('jetonsAmount').value);
@@ -3618,7 +4023,7 @@ async function loadCommLeaderboard() {
       </div>`).join('');
 
     el.innerHTML = `
-      <div style="max-width:420px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:24px;">
         <div>
           <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🪙 Cagnotte</div>
           ${renderList(d.top_cagnotte, 'credits', ' 🪙', null, '')}
