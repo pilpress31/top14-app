@@ -58,7 +58,8 @@ function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = fals
         className="w-full flex items-center justify-between px-3 py-2 border rounded-lg bg-white shadow-sm hover:shadow-md transition-all"
       >
         <span className="text-sm text-gray-700 truncate">
-          {value ? value : label}
+          {/* 🆕 Affiche le label de l'option sélectionnée (pas juste la value brute) */}
+          {value ? (options.find(o => o.value === value)?.label || value) : label}
         </span>
         <ChevronDown
           className={`w-4 h-4 text-gray-500 transition-transform flex-shrink-0 ${
@@ -1035,6 +1036,44 @@ export default function MaCagnotte() {
       .map(canonicalTeamName)
   )].sort();
 
+  // 🆕 Comptage des transactions par équipe canonique (pour affichage dans le dropdown)
+  //    Une transaction compte pour ses 2 équipes (home + away).
+  //    Les bet_placed sont exclus car on les filtre dans le useMemo principal.
+  const teamCounts = useMemo(() => {
+    const counts = {};
+    transactions.forEach(t => {
+      if (t.type === 'bet_placed') return;
+      const match = t.bets?.matches;
+      if (!match) return;
+      const home = canonicalTeamName(match.home_team);
+      const away = canonicalTeamName(match.away_team);
+      if (home) counts[home] = (counts[home] || 0) + 1;
+      if (away && away !== home) counts[away] = (counts[away] || 0) + 1;
+    });
+    return counts;
+  }, [transactions]);
+
+  // 🆕 Trier les équipes par nombre de transactions décroissant (puis alphabétique)
+  const teamsSorted = [...teams].sort((a, b) => {
+    const ca = teamCounts[a] || 0;
+    const cb = teamCounts[b] || 0;
+    if (cb !== ca) return cb - ca;
+    return a.localeCompare(b);
+  });
+
+  // 🆕 Décomposition par championnat (pour diagnostic du total)
+  const transactionsByChamp = useMemo(() => {
+    const stats = { top14: 0, prod2: 0, hcup: 0, autre: 0 };
+    transactions.forEach(t => {
+      const champ = t.bets?.championnat || t._championnat;
+      if (champ === 'prod2') stats.prod2++;
+      else if (champ === 'hcup') stats.hcup++;
+      else if (champ === 'top14' || !champ) stats.top14++;
+      else stats.autre++;
+    });
+    return stats;
+  }, [transactions]);
+
   const winRate = stats.totalBets > 0
     ? ((stats.wonBets / stats.totalBets) * 100).toFixed(1)
     : 0;
@@ -1283,24 +1322,35 @@ export default function MaCagnotte() {
                 onChange={setTeamFilter}
                 fullWidthMenu={true}
                 options={[
-                  { value: "", label: "Toutes les équipes" },
-                  ...teams.map(t => ({ value: t, label: t }))
+                  { value: "", label: `Toutes les équipes (${Object.values(teamCounts).reduce((a, b) => a + b, 0)})` },
+                  ...teamsSorted.map(t => ({
+                    value: t,
+                    label: `${(t || '').toUpperCase()} (${teamCounts[t] || 0})`
+                  }))
                 ]}
               />
             </div>
 
-            {/* 🆕 Compteur de diagnostic : permet de comparer avec Supabase */}
+            {/* 🆕 Compteur de diagnostic enrichi : total + décomposition par championnat */}
             <div className="text-center text-xs text-gray-500 mb-3">
-              {transactions.length} transactions chargées au total
-              {teamFilter && (
-                <>
-                  {' '}•{' '}
-                  <strong className="text-rugby-gold">
-                    {filteredTransactions.length}
-                  </strong>
-                  {' '}pour <strong>{teamFilter}</strong>
-                </>
-              )}
+              <div>
+                {transactions.length} transactions chargées au total
+                {teamFilter && (
+                  <>
+                    {' '}•{' '}
+                    <strong className="text-rugby-gold">
+                      {filteredTransactions.length}
+                    </strong>
+                    {' '}pour <strong>{teamFilter.toUpperCase()}</strong>
+                  </>
+                )}
+              </div>
+              <div className="mt-0.5 text-[10px] text-gray-400">
+                Top14: {transactionsByChamp.top14}
+                {' • '}Pro D2: {transactionsByChamp.prod2}
+                {' • '}HCup: {transactionsByChamp.hcup}
+                {transactionsByChamp.autre > 0 && <> {' • '}Autre: {transactionsByChamp.autre}</>}
+              </div>
             </div>
 
             {/* ✅ BANDEAUX PARIS EN COURS — séparés par championnat */}
