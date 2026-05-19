@@ -3,7 +3,7 @@
 // Cache agressif multi-stratégie
 // ============================================
 
-const APP_VERSION = 'v3';
+const APP_VERSION = 'v4';
 const CACHE_STATIC = `top14-static-${APP_VERSION}`;
 const CACHE_API    = `top14-api-${APP_VERSION}`;
 const CACHE_IMAGES = `top14-images-${APP_VERSION}`;
