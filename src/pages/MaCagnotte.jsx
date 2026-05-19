@@ -995,10 +995,19 @@ export default function MaCagnotte() {
   // 🆕 Dédup intelligente via getTeamData : "Bordeaux" et "Union Bordeaux Bègles"
   // (et variantes de casse / accents) sont mappés vers le même nom canonique.
   // canonicalTeamName est défini au niveau du fichier (top du module).
+  //
+  // 🆕 v6 : on construit la liste des équipes à partir des TRANSACTIONS effectivement
+  //         affichables, et non plus des bets. Raison : bets contient parfois des
+  //         équipes orphelines (paris cross-championnat, anciennes saisons, etc.)
+  //         qui n'apparaissent pas dans l'historique des transactions. Avec
+  //         transactions, le dropdown ne liste QUE les équipes pour lesquelles
+  //         il y a vraiment quelque chose à afficher.
+  //         Bonus : le bet_placed (pari en cours) est exclu naturellement
+  //         puisqu'il sera ignoré par le filtre de l'historique.
   const teams = [...new Set(
-    bets
-      .map((b) => b.matches?.home_team)
-      .concat(bets.map((b) => b.matches?.away_team))
+    transactions
+      .filter(t => t.type !== 'bet_placed')
+      .flatMap(t => [t.bets?.matches?.home_team, t.bets?.matches?.away_team])
       .filter(Boolean)
       .map(canonicalTeamName)
   )].sort();
