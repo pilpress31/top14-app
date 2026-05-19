@@ -413,7 +413,7 @@ export default function PalmaresD2() {
                         <p className="text-xs font-semibold text-center text-gray-800 leading-tight mt-1 w-full">
                           {displayName(f.champion)}
                         </p>
-                        <span className="text-xs font-bold mt-0.5" style={{ color: D2_BLUE }}>🏆 1er</span>
+                        <span className="text-xs font-bold mt-0.5" style={{ color: D2_BLUE }}>🏆 Champion</span>
                       </div>
                       {/* Séparateur */}
                       <div className="flex flex-col items-center flex-shrink-0 px-1">
@@ -432,9 +432,9 @@ export default function PalmaresD2() {
                               <p className="text-xs font-semibold text-center text-gray-800 leading-tight mt-1 w-full">
                                 {displayName(f.finaliste)}
                               </p>
-                              <span className="text-xs text-gray-400 font-bold mt-0.5">🥈 2e</span>
+                              <span className="text-xs text-gray-400 font-bold mt-0.5">🥈 Finaliste</span>
                             </>
-                          : <span className="text-xs text-gray-400 text-center italic">2e<br/>inconnu</span>
+                          : <span className="text-xs text-gray-400 text-center italic">Finaliste<br/>inconnu</span>
                         }
                       </div>
                     </div>
