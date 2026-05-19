@@ -216,6 +216,16 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
     }
   }
 
+  // 🆕 Normalisation MAJUSCULES : uniformiser l'affichage des noms d'équipes
+  // (certaines sources retournent "La Rochelle", d'autres "LA ROCHELLE", d'autres "STADE TOULOUSAIN")
+  // On force toUpperCase() pour cohérence visuelle, sauf pour les placeholders par défaut.
+  if (homeTeam && homeTeam !== 'Équipe domicile') {
+    homeTeam = homeTeam.toUpperCase();
+  }
+  if (awayTeam && awayTeam !== 'Équipe extérieure') {
+    awayTeam = awayTeam.toUpperCase();
+  }
+
   const dateObj = new Date(trans.created_at);
   const dateStr = dateObj.toLocaleDateString("fr-FR", { 
     weekday: 'short',
