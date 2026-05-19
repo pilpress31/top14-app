@@ -403,11 +403,11 @@ export default function PalmaresTop14() {
 
           {/* Liste des finales */}
           <div className="space-y-2">
-            {finalesFiltrees.map(f => {
+            {finalesFiltrees.map((f, idx) => {
               const champData = getTeamData(f.champion);
               const finalData = getTeamData(f.finaliste);
               return (
-                <div key={f.saison + f.champion} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+                <div key={`${f.id || f.saison}-${f.champion}-${idx}`} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-rugby-gold">{anneeFinale(f.saison)}</span>
