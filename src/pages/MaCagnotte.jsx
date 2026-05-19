@@ -785,13 +785,27 @@ export default function MaCagnotte() {
           return trans;
         });
 
-      // ✅ AJOUTER les paris perdus manuellement
-      const lostBetsToAdd = enrichedBets.filter(b => b.status === 'lost' && b.championnat !== 'prod2' && b.championnat !== 'hcup');
-      
+      // ✅ AJOUTER les paris perdus manuellement (TOUS championnats : Top14 + Pro D2 + HCup)
+      // 🆕 v7 : on inclut désormais Pro D2 et HCup car aucune credit_transaction native
+      //         n'existe en BDD pour ces championnats (le commentaire historique "déjà
+      //         des credit_transactions" était faux pour ces tables). Avec garde-fou
+      //         anti-doublon basé sur bet_id, au cas où des transactions natives seraient
+      //         créées plus tard via trigger SQL.
+      const coveredLostBetIds = new Set(
+        transactionsFiltered
+          .filter(t => t.type === 'bet_lost' || t.type === 'perte_pari_hcup')
+          .map(t => t.bet_id || t.reference_id)
+          .filter(Boolean)
+      );
+      const lostBetsToAdd = enrichedBets.filter(b => b.status === 'lost');
+
       lostBetsToAdd.forEach(bet => {
+        if (coveredLostBetIds.has(bet.id)) return;
+
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         // balance_after pour un pari perdu = balance après la mise (= le solde déduit de la mise)
         // placedTx.balance_after est le solde APRES déduction de la mise → c'est le bon solde "résultant"
+        // Pour HCup/Pro D2 : pas de bet_placed côté credit_transactions → balanceAfter = null
         const balanceAfter = placedTx?.balance_after ?? null;
         
         transactionsFiltered.push({
@@ -819,25 +833,27 @@ export default function MaCagnotte() {
       );
 
       // ✅ Reconstruire les transactions bet_won manquantes pour les paris won orphelins
-      // (legacy : certaines anciennes résolutions n'ont pas créé de credit_transaction)
-      // 🔧 Sans console.log pour éviter de polluer la console en cas de boucle
-      // D2/HCup ont déjà des credit_transactions → exclure pour éviter les doublons
-      const wonBetsInBets = enrichedBets.filter(b => b.status === 'won' && b.championnat !== 'prod2' && b.championnat !== 'hcup');
+      // 🆕 v7 : on inclut désormais Pro D2 et HCup pour les mêmes raisons que ci-dessus.
+      //         Le commentaire "D2/HCup ont déjà des credit_transactions" était faux.
+      const wonBetsInBets = enrichedBets.filter(b => b.status === 'won');
       
       wonBetsInBets.forEach(bet => {
         if (coveredWonBetIds.has(bet.id)) return;
         
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
+        const isTop14 = !bet.championnat || bet.championnat === 'top14';
         
-        // D2/HCup exclus de wonBetsInBets donc pas besoin de distinction
-        // Pour D2/HCup : pas de bet_placed → on ajoute une entrée synthétique pour la mise
-        // D2/HCup : pas de bet_placed → net amount = payout - stake
-        // Top14 : bet_placed déjà dans balanceMap → amount = payout seul
+        // Top14 : bet_placed existe en BDD → la mise est déjà déduite du solde
+        //         → on affiche le payout brut (gain total)
+        // HCup/Pro D2 : pas de bet_placed → la mise n'a pas été tracée séparément
+        //               → on affiche le gain NET (payout - stake)
+        const amount = isTop14 ? payout : (payout - bet.stake);
+        
         transactionsFiltered.push({
           id: `won_${bet.id}`,
           type: 'bet_won',
-          amount: payout,
+          amount: amount,
           balance_after: placedTx?.balance_after ? placedTx.balance_after + payout : null,
           created_at: bet.result_at || bet.placed_at,
           bet_id: bet.id,
@@ -996,18 +1012,15 @@ export default function MaCagnotte() {
   // (et variantes de casse / accents) sont mappés vers le même nom canonique.
   // canonicalTeamName est défini au niveau du fichier (top du module).
   //
-  // 🆕 v6 : on construit la liste des équipes à partir des TRANSACTIONS effectivement
-  //         affichables, et non plus des bets. Raison : bets contient parfois des
-  //         équipes orphelines (paris cross-championnat, anciennes saisons, etc.)
-  //         qui n'apparaissent pas dans l'historique des transactions. Avec
-  //         transactions, le dropdown ne liste QUE les équipes pour lesquelles
-  //         il y a vraiment quelque chose à afficher.
-  //         Bonus : le bet_placed (pari en cours) est exclu naturellement
-  //         puisqu'il sera ignoré par le filtre de l'historique.
+  // 🆕 On garde TOUTES les équipes vues dans les paris (bets), pas seulement celles
+  //    avec une transaction associée. Permet à Yoan de toujours voir l'équipe dans
+  //    le dropdown même si elle n'a pas (encore) de transaction.
+  //    Le compteur de transactions affiché sous le dropdown sert au diagnostic
+  //    (cohérence avec Supabase).
   const teams = [...new Set(
-    transactions
-      .filter(t => t.type !== 'bet_placed')
-      .flatMap(t => [t.bets?.matches?.home_team, t.bets?.matches?.away_team])
+    bets
+      .map((b) => b.matches?.home_team)
+      .concat(bets.map((b) => b.matches?.away_team))
       .filter(Boolean)
       .map(canonicalTeamName)
   )].sort();
@@ -1264,6 +1277,20 @@ export default function MaCagnotte() {
                   ...teams.map(t => ({ value: t, label: t }))
                 ]}
               />
+            </div>
+
+            {/* 🆕 Compteur de diagnostic : permet de comparer avec Supabase */}
+            <div className="text-center text-xs text-gray-500 mb-3">
+              {transactions.length} transactions chargées au total
+              {teamFilter && (
+                <>
+                  {' '}•{' '}
+                  <strong className="text-rugby-gold">
+                    {filteredTransactions.length}
+                  </strong>
+                  {' '}pour <strong>{teamFilter}</strong>
+                </>
+              )}
             </div>
 
             {/* ✅ BANDEAUX PARIS EN COURS — séparés par championnat */}
