@@ -14,6 +14,21 @@ import { useChampionnat } from '../contexts/ChampionnatContext';
 
 
 // ---------------------------------------------------------
+// Helper : nom canonique d'équipe (dédup "Bordeaux" vs "Union Bordeaux Bègles", etc.)
+// Utilise getTeamData pour mapper toutes les variantes vers un seul nom.
+// ---------------------------------------------------------
+function canonicalTeamName(raw) {
+  if (!raw) return null;
+  try {
+    const td = getTeamData(raw);
+    return td?.name || raw;
+  } catch {
+    return raw;
+  }
+}
+
+
+// ---------------------------------------------------------
 // Dropdown Premium
 // ---------------------------------------------------------
 function PremiumDropdown({ label, value, onChange, options, fullWidthMenu = false }) {
@@ -895,13 +910,13 @@ export default function MaCagnotte() {
       // ❌ Exclure les bet_placed (paris en cours)
       if (t.type === 'bet_placed') return false;
       
-      // Filtrer par équipe si nécessaire
+      // Filtrer par équipe si nécessaire (compare via le nom canonique)
       if (!teamFilter) return true;
       const match = t.bets?.matches;
       if (!match) return false;
       return (
-        match.home_team?.includes(teamFilter) ||
-        match.away_team?.includes(teamFilter)
+        canonicalTeamName(match.home_team) === teamFilter ||
+        canonicalTeamName(match.away_team) === teamFilter
       );
     });
 
@@ -977,11 +992,15 @@ export default function MaCagnotte() {
     }, []);
   }, [transactions, teamFilter, sortMode, userCredits]);
 
+  // 🆕 Dédup intelligente via getTeamData : "Bordeaux" et "Union Bordeaux Bègles"
+  // (et variantes de casse / accents) sont mappés vers le même nom canonique.
+  // canonicalTeamName est défini au niveau du fichier (top du module).
   const teams = [...new Set(
     bets
       .map((b) => b.matches?.home_team)
       .concat(bets.map((b) => b.matches?.away_team))
       .filter(Boolean)
+      .map(canonicalTeamName)
   )].sort();
 
   const winRate = stats.totalBets > 0
@@ -1225,7 +1244,7 @@ export default function MaCagnotte() {
               Historique des transactions
             </h2>
 
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="mb-3 max-w-md mx-auto">
               <PremiumDropdown
                 label="Toutes les équipes"
                 value={teamFilter}
@@ -1234,17 +1253,6 @@ export default function MaCagnotte() {
                 options={[
                   { value: "", label: "Toutes les équipes" },
                   ...teams.map(t => ({ value: t, label: t }))
-                ]}
-              />
-
-              <PremiumDropdown
-                label="Tri"
-                value={sortMode === "recent" ? "Récent → Ancien" : sortMode === "ancient" ? "Ancien → Récent" : "Date prise de pari"}
-                onChange={(v) => setSortMode(v === "Récent → Ancien" ? "recent" : v === "Ancien → Récent" ? "ancient" : "placed")}
-                options={[
-                  { value: "Récent → Ancien", label: "Récent → Ancien" },
-                  { value: "Ancien → Récent", label: "Ancien → Récent" },
-                  { value: "Date prise de pari", label: "Date prise de pari" }
                 ]}
               />
             </div>
