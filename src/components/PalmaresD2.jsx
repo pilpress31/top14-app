@@ -19,7 +19,7 @@ const PODIUM = [
   { bg: "#7A9BBF", text: "#FFFFFF", border: "#5C7FA0" }, // 3e — bleu-gris
 ];
 const MEDALS  = ["🥇", "🥈", "🥉"];
-const HEIGHTS = [120, 88, 72];
+const HEIGHTS = [132, 108, 92]; // px — élargis vs Top 14 [120, 88, 72] car les noms D2 sont souvent longs (Mont-de-Marsan, Bourgoin-Jallieu, etc.)
 
 function anneeFinale(saison) {
   if (!saison) return "";
