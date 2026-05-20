@@ -90,25 +90,20 @@ export default function ClassementCommunauteTab() {
     try {
       const response = await axios.get('https://top14-api-production.up.railway.app/api/classement/jetons?limit=100');
       const data = response.data || [];
-
-      // Charger les avatars depuis user_profiles
+      // Charger les avatars depuis public_profiles (vue sécurisée)
       const userIds = data.map((u: any) => u.user_id);
       const { data: profiles, error } = await supabase
-        .from('user_profiles')
+        .from('public_profiles')
         .select('user_id, avatar_url')
         .in('user_id', userIds);
-
       const dataWithAvatars = (!error && profiles)
         ? data.map((u: any) => ({
             ...u,
             avatar: profiles.find((p: any) => p.user_id === u.user_id)?.avatar_url || null
           }))
         : data;
-
       setUsers(dataWithAvatars);
       setFilteredUsers(dataWithAvatars);
-
-      // ✅ userId passé en paramètre — pas de race condition
       if (userId) {
         const userRank = dataWithAvatars.find((u: UserRanking) => u.user_id === userId);
         setCurrentUserRank(userRank ? userRank.rang : null);
@@ -119,41 +114,43 @@ export default function ClassementCommunauteTab() {
       setFilteredUsers([]);
     }
   }
-
-  async function loadClassementPoints(userId: string | null) {
+    async function loadClassementPoints(userId: string | null) {
     try {
-      const { data, error } = await supabase
+      // 1. Stats par saison — sans embed
+      const { data: stats, error: statsError } = await supabase
         .from('user_stats')
-        .select(`
-          user_id,
-          total_points,
-          total_pronos,
-          pronos_corrects,
-          taux_reussite,
-          user_profiles!inner(pseudo, avatar_url)
-        `)
+        .select('user_id, total_points, total_pronos, pronos_corrects, taux_reussite')
         .eq('saison', getCurrentSeason())
         .order('total_points', { ascending: false })
         .limit(100);
+      if (statsError) throw statsError;
 
-      if (error) throw error;
+      // 2. Pseudos + avatars depuis la vue sécurisée
+      const userIds = (stats || []).map((s: any) => s.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('public_profiles')
+        .select('user_id, pseudo, avatar_url')
+        .in('user_id', userIds);
+      if (profilesError) throw profilesError;
 
-      const formattedData: UserRanking[] = (data || []).map((item: any, index: number) => ({
-        rang: index + 1,
-        user_id: item.user_id,
-        pseudo: item.user_profiles.pseudo,
-        avatar: item.user_profiles.avatar_url || null,
-        points: item.total_points || 0,
-        matchsPronostiques: item.total_pronos || 0,
-        tauxReussite: item.taux_reussite || 0
-      }));
+      // 3. Fusion côté client
+      const formattedData: UserRanking[] = (stats || []).map((item: any, index: number) => {
+        const profile = profiles?.find((p: any) => p.user_id === item.user_id);
+        return {
+          rang: index + 1,
+          user_id: item.user_id,
+          pseudo: profile?.pseudo || 'Utilisateur',
+          avatar: profile?.avatar_url || null,
+          points: item.total_points || 0,
+          matchsPronostiques: item.total_pronos || 0,
+          tauxReussite: item.taux_reussite || 0
+        };
+      });
 
       setUsers(formattedData);
       setFilteredUsers(formattedData);
-
-      // ✅ userId passé en paramètre — pas de race condition
       if (userId) {
-        const userRank = formattedData.find(u => u.user_id === userId);
+        const userRank = formattedData.find((u: UserRanking) => u.user_id === userId);
         setCurrentUserRank(userRank ? userRank.rang : null);
       }
     } catch (error) {
@@ -162,7 +159,6 @@ export default function ClassementCommunauteTab() {
       setFilteredUsers([]);
     }
   }
-
   const getPodiumIcon = (rang: number) => {
     if (rang === 1) {
       return (
