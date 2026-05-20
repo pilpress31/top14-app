@@ -18,6 +18,7 @@
 // ============================================================
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 
 // Métadonnées par championnat (label + endpoint + libellé "journée")
@@ -118,7 +119,11 @@ export default function StatsAlgoModal({
     navigate("/pronos", { state: { championnat } });
   };
 
-  return (
+  // Le modal est rendu via un Portal directement dans <body>.
+  // INDISPENSABLE : sans ça, le modal hérite du contexte de position du <header>
+  // parent (qui a une transition-transform / translate-y), ce qui casse
+  // le position:fixed et affiche le popup collé en haut de l'écran.
+  return createPortal(
     <div
       onClick={onClose}
       style={{
@@ -306,7 +311,8 @@ export default function StatsAlgoModal({
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }
 
