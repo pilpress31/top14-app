@@ -154,6 +154,50 @@ export default function StatsAlgoModal({
           animation: "statsModalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
+        {/* Croix de fermeture — enfant direct de la carte, au-dessus de tout */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
+          onPointerUp={(e) => {
+            // Filet de sécurité mobile : certains navigateurs PWA ne déclenchent
+            // pas onClick de façon fiable sur un élément en position absolute.
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
+          aria-label="Fermer"
+          style={{
+            position: "absolute",
+            top: "12px",
+            right: "12px",
+            width: "38px",
+            height: "38px",
+            borderRadius: "50%",
+            border: "none",
+            background: "rgba(255,255,255,0.25)",
+            color: theme.onPrimary,
+            fontSize: "18px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1,
+            padding: 0,
+            zIndex: 20,
+            touchAction: "manipulation",
+            transition: "background 0.15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.42)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.25)")}
+        >
+          ✕
+        </button>
+
         {/* Bandeau d'en-tête coloré (charte du championnat) */}
         <div
           style={{
@@ -162,35 +206,6 @@ export default function StatsAlgoModal({
             color: theme.onPrimary,
           }}
         >
-          {/* Croix de fermeture */}
-          <button
-            onClick={onClose}
-            aria-label="Fermer"
-            style={{
-              position: "absolute",
-              top: "14px",
-              right: "14px",
-              width: "30px",
-              height: "30px",
-              borderRadius: "50%",
-              border: "none",
-              background: "rgba(255,255,255,0.22)",
-              color: theme.onPrimary,
-              fontSize: "16px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              lineHeight: 1,
-              transition: "background 0.15s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.38)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.22)")}
-          >
-            ✕
-          </button>
-
           <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", opacity: 0.85 }}>
             Statistiques de l'algorithme
           </div>
