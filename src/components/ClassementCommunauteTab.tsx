@@ -10,7 +10,7 @@ const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID];
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
-import { getCurrentSeason } from '../utils/season';
+import { getSaisonCourante } from '../utils/season';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 interface UserRanking {
@@ -118,7 +118,7 @@ export default function ClassementCommunauteTab() {
       const { data: stats, error: statsError } = await supabase
         .from('user_stats')
         .select('user_id, total_points, total_pronos, pronos_corrects, taux_reussite')
-        .eq('saison', getCurrentSeason())
+        .eq('saison', getSaisonCourante())
         .order('total_points', { ascending: false })
         .limit(100);
       if (statsError) throw statsError;
