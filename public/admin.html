@@ -3897,9 +3897,16 @@ async function loadCommResults() {
     // ── Layout cartes compactes (optimisé screenshot mobile 420px) ──
     const cards = matchs.map(m => {
       const joue = m.score_reel_dom !== null && m.score_reel_ext !== null;
-      const iaOk = joue && m.score_predit_dom !== null
-        ? (m.score_reel_dom > m.score_reel_ext) === (m.score_predit_dom > m.score_predit_ext)
-        : null;
+      // Détermine le vainqueur sur 3 états (dom / ext / nul) — gère le cas du match nul
+      // prédit ou réel, sinon un prédit type 20-20 produit un faux positif.
+      const iaOk = (() => {
+        if (!joue || m.score_predit_dom === null || m.score_predit_ext === null) return null;
+        const vainqueurReel = m.score_reel_dom > m.score_reel_ext ? 'dom'
+                            : m.score_reel_dom < m.score_reel_ext ? 'ext' : 'nul';
+        const vainqueurPredit = m.score_predit_dom > m.score_predit_ext ? 'dom'
+                              : m.score_predit_dom < m.score_predit_ext ? 'ext' : 'nul';
+        return vainqueurReel === vainqueurPredit;
+      })();
       const iaIcon  = iaOk === true ? '✅' : iaOk === false ? '❌' : '';
       const date = m.date_match
         ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
