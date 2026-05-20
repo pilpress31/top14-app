@@ -93,9 +93,7 @@ export default function ClassementCommunauteTab() {
       // Charger les avatars depuis public_profiles (vue sécurisée)
       const userIds = data.map((u: any) => u.user_id);
       const { data: profiles, error } = await supabase
-        .from('public_profiles')
-        .select('user_id, avatar_url')
-        .in('user_id', userIds);
+        .rpc('get_public_profiles', { p_user_ids: userIds });
       const dataWithAvatars = (!error && profiles)
         ? data.map((u: any) => ({
             ...u,
@@ -128,9 +126,7 @@ export default function ClassementCommunauteTab() {
       // 2. Pseudos + avatars depuis la vue sécurisée
       const userIds = (stats || []).map((s: any) => s.user_id);
       const { data: profiles, error: profilesError } = await supabase
-        .from('public_profiles')
-        .select('user_id, pseudo, avatar_url')
-        .in('user_id', userIds);
+        .rpc('get_public_profiles', { p_user_ids: userIds });
       if (profilesError) throw profilesError;
 
       // 3. Fusion côté client
