@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import StatsAlgoModal from "./StatsAlgoModal";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
 
@@ -22,6 +23,9 @@ const API_BASE = "https://top14-api-production.up.railway.app";
  */
 export default function MainHeaderHcup({ isVisible = true }) {
   const [stats, setStats] = useState({ precision: 0, total: 0 });
+
+  // 🆕 État d'ouverture du popup stats algo
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadStats() {
@@ -69,8 +73,14 @@ export default function MainHeaderHcup({ isVisible = true }) {
           </p>
         </div>
 
-        {/* Stats */}
-        <div className="flex justify-center gap-2">
+        {/* Stats — 🆕 cliquables, ouvrent le popup stats algo */}
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          aria-label="Voir les statistiques détaillées de l'algorithme"
+          className="flex justify-center gap-2 cursor-pointer bg-transparent border-0 p-0 m-0
+                     transition-transform duration-150 hover:scale-[1.03] active:scale-95"
+        >
           <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
                style={{ backgroundColor: "#003E7E", border: "1px solid #FFC72C" }}>
             <TrophyIcon className="h-4 w-4" style={{ color: "#FFC72C" }} />
@@ -92,8 +102,18 @@ export default function MainHeaderHcup({ isVisible = true }) {
               <p className="text-[10px]" style={{ color: "#FFC72C" }}>Matchs analysés</p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
+
+      {/* 🆕 Popup stats algo (Champions Cup) */}
+      <StatsAlgoModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        championnat="hcup"
+        theme={{ primary: "#003E7E", accent: "#FFC72C", onPrimary: "#FFFFFF" }}
+        globalStats={{ precision: stats.precision, total: stats.total }}
+        apiBase={API_BASE}
+      />
     </header>
   );
 }

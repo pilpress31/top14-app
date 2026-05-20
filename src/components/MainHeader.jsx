@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getConfig, getStats } from "../lib/api";
+import StatsAlgoModal from "./StatsAlgoModal";
 
 /**
  * MainHeader (Top 14)
@@ -14,6 +15,9 @@ function MainHeader({ isVisible = true }) {
     nombre_matchs_historique: 3651,
     precision: { ft: { pourcentage: 0 } }
   });
+
+  // 🆕 État d'ouverture du popup stats algo
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Chargement config
   useEffect(() => {
@@ -73,8 +77,14 @@ function MainHeader({ isVisible = true }) {
           </p>
         </div>
 
-        {/* Blocs statistiques */}
-        <div className="flex justify-center gap-2">
+        {/* Blocs statistiques — 🆕 cliquables, ouvrent le popup stats algo */}
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          aria-label="Voir les statistiques détaillées de l'algorithme"
+          className="flex justify-center gap-2 cursor-pointer bg-transparent border-0 p-0 m-0
+                     transition-transform duration-150 hover:scale-[1.03] active:scale-95"
+        >
           <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1">
             <ChartIcon className="h-4 w-4 text-rugby-gold" />
             <div>
@@ -94,8 +104,20 @@ function MainHeader({ isVisible = true }) {
               <p className="text-[10px] text-gray-300">Matchs analysés</p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
+
+      {/* 🆕 Popup stats algo (Top 14) */}
+      <StatsAlgoModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        championnat="top14"
+        theme={{ primary: "#C9A84C", accent: "#FFD700", onPrimary: "#FFFFFF" }}
+        globalStats={{
+          precision: stats.precision?.ft?.pourcentage || 0,
+          total: stats.nombre_matchs_historique || 0,
+        }}
+      />
     </header>
   );
 }
