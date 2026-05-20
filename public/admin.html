@@ -816,7 +816,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
 
         <div class="table-wrap">
           <table>
-            <thead id="parisThead"><tr><th>User</th><th>Champ.</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th></tr></thead>
+            <thead id="parisThead"><tr><th>User</th><th>Champ.</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th><th>Posé le</th></tr></thead>
             <tbody id="parisBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
@@ -2511,21 +2511,19 @@ async function loadParis() {
   const champ = document.getElementById('parisChampionnat').value;  // 'tous' | 'top14' | 'prod2' | 'hcup'
   const showChampCol = (champ === 'tous');
 
-  // Adapter le thead : afficher/masquer la colonne Championnat
+  // thead : colonne Championnat selon le filtre, + colonne "Posé le"
   const thead = document.getElementById('parisThead');
   thead.innerHTML = showChampCol
-    ? '<tr><th>User</th><th>Champ.</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th></tr>'
-    : '<tr><th>User</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th></tr>';
+    ? '<tr><th>User</th><th>Champ.</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th><th>Posé le</th></tr>'
+    : '<tr><th>User</th><th>Match</th><th>Type</th><th>Prono</th><th>Mise</th><th>Cote</th><th>Posé le</th></tr>';
 
-  const colspan = showChampCol ? 7 : 6;
+  const colspan = showChampCol ? 8 : 7;
   const tbody = document.getElementById('parisBody');
   tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>`;
 
-  // Masquer les compteurs pendant le chargement (évite l'effet "cassé")
   document.getElementById('parisCounters').style.display = 'none';
 
   try {
-    // Toujours charger TOUS les paris (1 seul appel réseau) — on filtre ensuite côté client
     const all = await api('/api/admin/paris-pending?competition=tous');
 
     if (!Array.isArray(all)) {
@@ -2552,7 +2550,7 @@ async function loadParis() {
       return;
     }
 
-    // Helper pour le badge de championnat
+    // Badge de championnat
     const champBadge = (c) => {
       if (c === 'top14') return '<span style="background:rgba(201,168,76,0.18);color:var(--gold-light);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🏆 T14</span>';
       if (c === 'prod2') return '<span style="background:rgba(0,23,77,0.45);color:#9DB7E8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🥈 D2</span>';
@@ -2560,24 +2558,56 @@ async function loadParis() {
       return '<span style="color:var(--muted)">—</span>';
     };
 
+    // Date/heure de prise du pari (timezone Paris)
+    const fmtDatePari = (iso) => {
+      if (!iso) return '<span style="color:var(--muted)">—</span>';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '<span style="color:var(--muted)">—</span>';
+      return d.toLocaleString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+        timeZone: 'Europe/Paris'
+      });
+    };
+
+    // winner_predit peut être un nom d'équipe OU "domicile"/"exterieur" → on résout les deux
+    const resolveWinner = (b) => {
+      const w = (b.winner_predit || '').trim();
+      if (!w) return null;
+      const wl = w.toLowerCase();
+      if (wl === 'domicile' || wl === 'dom') return b.equipe_domicile || w;
+      if (wl === 'exterieur' || wl === 'exterieure' || wl === 'ext') return b.equipe_exterieure || w;
+      return w;  // déjà un nom d'équipe
+    };
+
     tbody.innerHTML = data.map(b => {
-      // match_id format : "2025-2026_15_TEAM_TEAM" → on saute saison + journée
-      // En HCup le format est "CC_2025-2026_round_TEAM_TEAM" → on saute aussi les 2-3 premiers segments
-      const parts = b.match_id ? b.match_id.split('_') : [];
-      const matchShort = b.championnat === 'hcup'
-        ? parts.slice(3).join(' ')   // CC_2025-2026_Finale_LEINSTER_BORDEAUX → "LEINSTER BORDEAUX"
-        : parts.slice(2).join(' ');  // 2025-2026_15_ASM_CLERMONT → "ASM CLERMONT"
+      // Nom du match : équipes résolues côté serveur
+      const matchLabel = (b.equipe_domicile || b.equipe_exterieure)
+        ? `${b.equipe_domicile || '?'} – ${b.equipe_exterieure || '?'}`
+        : '<span style="color:var(--muted)">—</span>';
 
-      // En WINNER_FT (D2/HCup), pas de score → on affiche le type seulement
-      const isWinnerFT = b.bet_type === 'WINNER_FT';
-      const pronoCell = isWinnerFT
-        ? '<span style="color:var(--muted2);font-style:italic;font-size:12px">vainqueur</span>'
-        : `<span style="font-weight:600">${b.score_domicile ?? '—'}-${b.score_exterieur ?? '—'}</span>`;
+      const betType = b.bet_type || '';
+      const isWinner = betType.startsWith('WINNER');
 
-      // Tag couleur du type (FT/MT existent en CSS, WINNER_FT non → fallback inline)
+      // Prono : équipe pour les paris WINNER, score pour les paris FT/MT
+      let pronoCell;
+      if (isWinner) {
+        const team = resolveWinner(b);
+        pronoCell = team
+          ? `<span style="font-weight:600">${team}</span>`
+          : '<span style="color:var(--muted)">—</span>';
+      } else {
+        const hasScore = b.score_dom != null && b.score_ext != null;
+        pronoCell = hasScore
+          ? `<span style="font-weight:600">${b.score_dom}-${b.score_ext}</span>`
+          : '<span style="color:var(--muted)">—</span>';
+      }
+
+      // Tag du type (inchangé)
+      const isWinnerFT = betType === 'WINNER_FT';
       const typeTag = isWinnerFT
         ? '<span style="background:rgba(96,165,250,0.18);color:var(--blue);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">WINNER</span>'
-        : `<span class="tag-${(b.bet_type || '').toLowerCase()}">${b.bet_type}</span>`;
+        : `<span class="tag-${betType.toLowerCase()}">${betType}</span>`;
 
       const champCell = showChampCol ? `<td>${champBadge(b.championnat)}</td>` : '';
 
@@ -2585,11 +2615,12 @@ async function loadParis() {
         <tr>
           <td>${b.pseudo}</td>
           ${champCell}
-          <td style="font-size:12px;color:var(--muted2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${matchShort}</td>
+          <td style="font-size:12px;color:var(--muted2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${matchLabel}</td>
           <td>${typeTag}</td>
           <td>${pronoCell}</td>
           <td>${b.stake} 🪙</td>
           <td>×${b.odds}</td>
+          <td style="font-size:11px;color:var(--muted2);white-space:nowrap">${fmtDatePari(b.placed_at)}</td>
         </tr>
       `;
     }).join('');
@@ -2597,6 +2628,8 @@ async function loadParis() {
     tbody.innerHTML = `<tr><td colspan="${colspan}" style="color:var(--red);text-align:center;padding:24px">❌ ${e.message}</td></tr>`;
   }
 }
+
+
 
 // ── DISTRIBUTION ──
 async function distribuer() {
