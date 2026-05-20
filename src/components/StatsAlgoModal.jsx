@@ -126,6 +126,12 @@ export default function StatsAlgoModal({
   return createPortal(
     <div
       onClick={onClose}
+      // Absorbe les événements tactiles pour empêcher le "click-through" :
+      // sans ça, fermer le popup propage le tap vers l'écran en dessous
+      // (un accordéon s'ouvrait/fermait tout seul).
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
       style={{
         position: "fixed",
         inset: 0,
@@ -138,6 +144,7 @@ export default function StatsAlgoModal({
         justifyContent: "center",
         padding: "16px",
         animation: "statsModalFadeIn 0.18s ease-out",
+        touchAction: "none",
       }}
     >
       {/* Carte du popup — stopPropagation pour ne pas fermer au clic interne */}
@@ -158,13 +165,6 @@ export default function StatsAlgoModal({
         <button
           type="button"
           onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose();
-          }}
-          onPointerUp={(e) => {
-            // Filet de sécurité mobile : certains navigateurs PWA ne déclenchent
-            // pas onClick de façon fiable sur un élément en position absolute.
             e.preventDefault();
             e.stopPropagation();
             onClose();
