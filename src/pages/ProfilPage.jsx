@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Edit2, Save, X, Trash2, AlertCircle, CheckCircle, ArrowLeft, AtSign, Loader2, Camera, Upload } from 'lucide-react'
+import { User, Mail, Edit2, Save, Send, X, Trash2, AlertCircle, CheckCircle, ArrowLeft, AtSign, Loader2, Camera, Upload } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import axios from 'axios'
 
@@ -705,8 +705,12 @@ function ProfilPage() {
                 disabled={emailLoading || !newEmail}
                 className="flex-1 flex items-center justify-center gap-2 bg-rugby-gold hover:bg-rugby-orange text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
               >
-                {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {emailLoading ? 'Envoi...' : 'Envoyer le lien de confirmation'}
+                {emailLoading
+                  ? <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  : <Send className="h-4 w-4 flex-shrink-0" />}
+                <span className="leading-tight">
+                  {emailLoading ? 'Envoi...' : 'Envoyer le lien'}
+                </span>
               </button>
               <button
                 onClick={() => { setEditingEmail(false); setNewEmail(''); setEmailMsg(null) }}
