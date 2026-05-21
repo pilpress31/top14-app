@@ -305,7 +305,7 @@ function ProfilPage() {
       return
     }
     if (trimmed === (user.email || '').toLowerCase()) {
-      setEmailMsg({ type: 'error', text: "C'est deja ton adresse actuelle." })
+      setEmailMsg({ type: 'error', text: "C'est déjà ton adresse actuelle." })
       return
     }
 
@@ -318,13 +318,13 @@ function ProfilPage() {
         setEmailMsg({
           type: 'error',
           text: dejaPris
-            ? 'Cette adresse est deja utilisee par un autre compte.'
+            ? 'Cette adresse est déjà utilisée par un autre compte.'
             : `Erreur : ${error.message}`
         })
       } else {
         setEmailMsg({
           type: 'success',
-          text: `Un lien de confirmation a ete envoye a ${trimmed}. Clique dessus pour valider le changement. Ton ancienne adresse reste active tant que tu n'as pas confirme.`
+          text: `Un lien de confirmation a été envoyé à ${trimmed}. Clique dessus pour valider le changement. Ton ancienne adresse reste active tant que tu n'as pas confirmé.`
         })
         setEditingEmail(false)
         setNewEmail('')
@@ -688,7 +688,7 @@ function ProfilPage() {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Un lien de confirmation sera envoye a cette adresse. Le changement ne sera effectif qu'apres avoir clique dessus.
+                Un lien de confirmation sera envoyé à cette adresse. Le changement ne sera effectif qu'après avoir cliqué dessus.
               </p>
             </div>
 
