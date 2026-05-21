@@ -1161,6 +1161,11 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
             ⚠️ <strong>Important</strong> : l'IA peut se tromper sur des scores ou équipes. <strong>Relis toujours attentivement</strong> les sections "journée écoulée" et "classement" avant d'envoyer. Vérifie au moins un score en te référant au classement officiel.
           </p>
         </div>
+        <label style="margin-top:4px">📝 Consignes pour l'IA (optionnel)</label>
+        <p style="color:var(--muted2);font-size:12px;margin-bottom:6px;line-height:1.5">
+          Pour cadrer la synthèse sur un sujet précis. Ex : « Concentre-toi uniquement sur les barrages Pro D2 de ce soir et demain ».
+        </p>
+        <textarea id="synthConsignes" rows="2" placeholder="Laisse vide pour une synthèse hebdomadaire classique" style="margin-bottom:12px"></textarea>
         <div class="btn-row" style="flex-wrap:wrap;margin-top:0">
           <button class="btn" id="synthBtnTop14" onclick="generateSynthese('top14')" style="background:#D4A017;color:#fff">
             <div class="spinner"></div>
@@ -3152,9 +3157,10 @@ async function generateSynthese(championnat) {
   }, 1000);
 
   try {
+    const consignes = (document.getElementById('synthConsignes')?.value || '').trim();
     const data = await api('/api/admin/emails/generate-synthesis', {
       method: 'POST',
-      body: JSON.stringify({ championnat })
+      body: JSON.stringify({ championnat, consignes })
     });
 
     clearInterval(timerInterval);
