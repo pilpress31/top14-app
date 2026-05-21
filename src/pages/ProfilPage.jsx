@@ -28,6 +28,12 @@ function ProfilPage() {
   const [pseudoError, setPseudoError] = useState('')
   const [abonnement, setAbonnement] = useState(null)
 
+  // 🆕 Changement d'adresse email
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailMsg, setEmailMsg] = useState(null)
+
   // Charger avatar depuis Supabase
   useEffect(() => {
     loadAvatar()
@@ -284,6 +290,50 @@ function ProfilPage() {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 🆕 Demande de changement d'email via Supabase Auth (avec confirmation)
+  const handleChangeEmail = async () => {
+    setEmailMsg(null)
+
+    const trimmed = newEmail.trim().toLowerCase()
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!emailPattern.test(trimmed)) {
+      setEmailMsg({ type: 'error', text: 'Adresse email invalide.' })
+      return
+    }
+    if (trimmed === (user.email || '').toLowerCase()) {
+      setEmailMsg({ type: 'error', text: "C'est deja ton adresse actuelle." })
+      return
+    }
+
+    setEmailLoading(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ email: trimmed })
+
+      if (error) {
+        const dejaPris = /registered|already|exists/i.test(error.message)
+        setEmailMsg({
+          type: 'error',
+          text: dejaPris
+            ? 'Cette adresse est deja utilisee par un autre compte.'
+            : `Erreur : ${error.message}`
+        })
+      } else {
+        setEmailMsg({
+          type: 'success',
+          text: `Un lien de confirmation a ete envoye a ${trimmed}. Clique dessus pour valider le changement. Ton ancienne adresse reste active tant que tu n'as pas confirme.`
+        })
+        setEditingEmail(false)
+        setNewEmail('')
+      }
+    } catch (e) {
+      console.error('Erreur changement email:', e)
+      setEmailMsg({ type: 'error', text: 'Erreur lors de la demande de changement.' })
+    } finally {
+      setEmailLoading(false)
     }
   }
 
@@ -578,13 +628,6 @@ function ProfilPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 py-3 border-b border-gray-100">
-              <Mail className="h-5 w-5 text-gray-400" />
-              <div>
-                <p className="text-xs text-gray-500">Email</p>
-                <p className="font-semibold text-gray-800">{user.email}</p>
-              </div>
-            </div>
           </div>
         )}
 
@@ -600,6 +643,93 @@ function ProfilPage() {
           <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">
             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-green-700">{success}</p>
+          </div>
+        )}
+      </div>
+
+      {/* 🆕 Adresse email */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Adresse email</h2>
+          {!editingEmail && (
+            <button
+              onClick={() => { setEditingEmail(true); setNewEmail(''); setEmailMsg(null) }}
+              className="flex items-center gap-2 text-rugby-gold hover:text-rugby-orange transition-colors"
+            >
+              <Edit2 className="h-4 w-4" />
+              <span className="text-sm font-semibold">Modifier</span>
+            </button>
+          )}
+        </div>
+
+        {!editingEmail ? (
+          <div className="flex items-center gap-3 py-3">
+            <Mail className="h-5 w-5 text-gray-400" />
+            <div>
+              <p className="text-xs text-gray-500">Email actuel</p>
+              <p className="font-semibold text-gray-800">{user.email}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nouvelle adresse email <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rugby-gold focus:border-transparent"
+                  disabled={emailLoading}
+                  placeholder="nouvelle@adresse.fr"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Un lien de confirmation sera envoye a cette adresse. Le changement ne sera effectif qu'apres avoir clique dessus.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-700">
+                Tes pronostics, jetons, statistiques et historique sont conserves : ils sont lies a ton compte, pas a ton adresse email.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleChangeEmail}
+                disabled={emailLoading || !newEmail}
+                className="flex-1 flex items-center justify-center gap-2 bg-rugby-gold hover:bg-rugby-orange text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {emailLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {emailLoading ? 'Envoi...' : 'Envoyer le lien de confirmation'}
+              </button>
+              <button
+                onClick={() => { setEditingEmail(false); setNewEmail(''); setEmailMsg(null) }}
+                disabled={emailLoading}
+                className="px-6 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition-colors"
+              >
+                <X className="h-4 w-4" />
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+
+        {emailMsg && (
+          <div className={`mt-4 rounded-lg p-3 flex items-start gap-2 border ${
+            emailMsg.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+          }`}>
+            {emailMsg.type === 'success'
+              ? <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+              : <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />}
+            <p className={`text-sm ${emailMsg.type === 'success' ? 'text-green-700' : 'text-red-700'}`}>
+              {emailMsg.text}
+            </p>
           </div>
         )}
       </div>
