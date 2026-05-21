@@ -695,7 +695,7 @@ function ProfilPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-700">
-                Tes pronostics, jetons, statistiques et historique sont conserves : ils sont lies a ton compte, pas a ton adresse email.
+                Tes pronostics, jetons, statistiques et historique sont conservés : ils sont liés à ton compte, pas à ton adresse email.
               </p>
             </div>
 
