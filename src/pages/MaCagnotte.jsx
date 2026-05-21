@@ -150,14 +150,15 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   // Scores du pari et du match réel
   const pronoHome = fullBet?.score_domicile ?? trans.bets?.score_domicile;
   const pronoAway = fullBet?.score_exterieur ?? trans.bets?.score_exterieur;
-  // ✅ Pour un pari MT, afficher le score de mi-temps (champs match_results)
-  const isMTPari = isMT;
-  const realHome = isMTPari
-    ? (match?.score_ht_home ?? match?.score_ht_domicile ?? match?.score_home)
-    : match?.score_home;
-  const realAway = isMTPari
-    ? (match?.score_ht_away ?? match?.score_ht_exterieur ?? match?.score_away)
-    : match?.score_away;
+  // ✅ Pour un pari mi-temps (MT score OU WINNER_MT), le score "principal" affiche
+  //    est le score a la mi-temps ; le score final est montre en complement (plus petit).
+  const isPariMiTemps = isMT || isWinnerMT;
+  const ftHome = match?.score_home ?? match?.score_domicile;
+  const ftAway = match?.score_away ?? match?.score_exterieur;
+  const htHome = match?.score_ht_home ?? match?.score_ht_domicile;
+  const htAway = match?.score_ht_away ?? match?.score_ht_exterieur;
+  const realHome = isPariMiTemps ? (htHome ?? ftHome) : ftHome;
+  const realAway = isPariMiTemps ? (htAway ?? ftAway) : ftAway;
 
   // Calculer l'écart
   const hasRealScore = realHome !== null && realHome !== undefined;
@@ -374,6 +375,8 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
                 else realWinnerName = 'Match nul';
               }
               const isWon = trans.type === 'bet_won';
+              // 🆕 Pari mi-temps : on affiche aussi le score final, en plus petit, dessous
+              const showFinal = isPariMiTemps && ftHome != null && ftAway != null;
               return (
                 <div className={`rounded-lg p-2 border ${
                   isWon 
@@ -384,6 +387,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
                     isWon ? 'text-green-700' : 'text-red-700'
                   }`}>
                     {(isWinnerFT || isWinnerMT) ? 'Résultat' : 'Score réel'}
+                    {isPariMiTemps && <span className="font-normal"> (mi-temps)</span>}
                   </p>
                   {realWinnerName ? (
                     <>
@@ -403,6 +407,11 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
                       isWon ? 'text-green-900' : 'text-red-900'
                     }`}>
                       {realHome} - {realAway}
+                    </p>
+                  )}
+                  {showFinal && (
+                    <p className="text-[10px] text-gray-500 text-center mt-1">
+                      Score final : {ftHome} - {ftAway}
                     </p>
                   )}
                 </div>

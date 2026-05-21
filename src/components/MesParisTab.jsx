@@ -459,20 +459,30 @@ export default function MesParisTab() {
                         {!isPending && (() => {
                           const result = matchResults[bet.match_id];
                           const matchData = result || bet.matches;
+                          const isPariMT = bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT';
 
                           // En Top 14 : on lit depuis matchResults
                           // En Pro D2 : on lit directement bet.score_reel_dom/ext (renvoyé par l'endpoint)
                           let realHome, realAway;
 
+                          // Score plein temps (toujours calculé : sert de score final
+                          // secondaire pour les paris mi-temps)
+                          const ftHome = isD2
+                            ? (bet.score_reel_dom ?? matchData?.score_domicile)
+                            : (matchData?.score_domicile ?? matchData?.score_home);
+                          const ftAway = isD2
+                            ? (bet.score_reel_ext ?? matchData?.score_exterieur)
+                            : (matchData?.score_exterieur ?? matchData?.score_away);
+
                           if (isD2) {
-                            realHome = bet.score_reel_dom ?? matchData?.score_domicile;
-                            realAway = bet.score_reel_ext ?? matchData?.score_exterieur;
-                          } else if (bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT') {
+                            realHome = ftHome;
+                            realAway = ftAway;
+                          } else if (isPariMT) {
                             realHome = matchData?.score_ht_domicile ?? matchData?.score_ht_home;
                             realAway = matchData?.score_ht_exterieur ?? matchData?.score_ht_away;
                           } else {
-                            realHome = matchData?.score_domicile ?? matchData?.score_home;
-                            realAway = matchData?.score_exterieur ?? matchData?.score_away;
+                            realHome = ftHome;
+                            realAway = ftAway;
                           }
 
                           if (realHome == null || realAway == null) return null;
@@ -485,10 +495,14 @@ export default function MesParisTab() {
                             else realWinnerName = 'Match nul';
                           }
 
+                          // Pari mi-temps : on affiche le score final en complément (plus petit)
+                          const showFinal = isPariMT && ftHome != null && ftAway != null;
+
                           return (
                             <div className={`rounded-lg py-2 px-3 border ${isWon ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
                               <p className={`text-[10px] font-semibold mb-1 ${isWon ? 'text-green-700' : 'text-red-700'}`}>
                                 {(bet.bet_type === 'WINNER_FT' || bet.bet_type === 'WINNER_MT') ? 'Résultat' : 'Score réel'}
+                                {isPariMT && <span className="font-normal"> (mi-temps)</span>}
                               </p>
                               {realWinnerName ? (
                                 <>
@@ -502,6 +516,11 @@ export default function MesParisTab() {
                               ) : (
                                 <p className={`text-xl font-bold text-center ${isWon ? 'text-green-900' : 'text-red-900'}`}>
                                   {realHome} - {realAway}
+                                </p>
+                              )}
+                              {showFinal && (
+                                <p className="text-[10px] text-gray-500 text-center mt-1">
+                                  Score final : {ftHome} - {ftAway}
                                 </p>
                               )}
                             </div>
