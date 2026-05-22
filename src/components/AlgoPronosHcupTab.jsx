@@ -890,6 +890,125 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
   );
 }
 
+
+// ============================================
+// COMPOSANT : ActuMatchHcup (rubrique "Actu du match" Champions Cup)
+// ============================================
+const ACTU_HCUP_SECTIONS = [
+  { key: 'forme_domicile',  label: 'Forme récente',     combine: 'forme_exterieure' },
+  { key: 'pronostic_ia',    label: 'Pronostic IA' },
+  { key: 'contexte_match',  label: 'Contexte & Enjeux' },
+  { key: 'declarations',    label: 'Déclarations' },
+];
+
+function ActuMatchHcup({ match, isOpen, onToggle }) {
+  const [actu, setActu] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [openSection, setOpenSection] = useState(null);
+
+  const handleToggle = async () => {
+    onToggle();
+    if (!isOpen && !actu && !loading) {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`${API_BASE}/api/actu?championnat=hcup`);
+        const actus = Array.isArray(res.data) ? res.data : (res.data?.actus || []);
+        const found = actus.find(a =>
+          a.equipe_domicile === match.equipe_domicile &&
+          a.equipe_exterieure === match.equipe_exterieure
+        );
+        setActu(found || null);
+        if (!found) setError('Aucune actualité disponible pour ce match.');
+      } catch (e) {
+        setError("Impossible de charger l'actualité du match.");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const toggleSection = (key) => setOpenSection(prev => prev === key ? null : key);
+
+  return (
+    <div className="mt-3 border-t border-gray-100 pt-3">
+      <button
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm">📰</span>
+          <span className="text-xs font-semibold text-gray-700">Actu du match</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: HCUP_OR }} />}
+          {isOpen
+            ? <ChevronUp className="w-4 h-4 text-gray-400" />
+            : <ChevronDown className="w-4 h-4 text-gray-400" />
+          }
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="mt-2 space-y-2">
+          {error && <p className="text-xs text-gray-400 text-center py-2 italic">{error}</p>}
+          {loading && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: HCUP_OR }} />
+            </div>
+          )}
+          {actu && !loading && (
+            <>
+              {actu.resume_global && actu.resume_global !== 'Synthèse en cours de génération...' && (
+                <p className="text-[11px] text-gray-600 italic leading-relaxed px-1">
+                  {actu.resume_global}
+                </p>
+              )}
+              {ACTU_HCUP_SECTIONS.map(section => {
+                const isSectionOpen = openSection === section.key;
+                const contenu = section.key === 'forme_domicile'
+                  ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
+                  : actu[section.key];
+                if (!contenu || contenu === 'Information non disponible') return null;
+                return (
+                  <div key={section.key} className="rounded-lg overflow-hidden"
+                    style={{ border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                    <button
+                      onClick={() => toggleSection(section.key)}
+                      className="w-full flex items-center justify-between px-3 py-2 transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: HCUP_BLEU_SOFT }}
+                    >
+                      <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: HCUP_BLEU }}>
+                        {section.label}
+                      </span>
+                      {isSectionOpen
+                        ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
+                        : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                      }
+                    </button>
+                    {isSectionOpen && (
+                      <div className="px-3 py-2.5 bg-white">
+                        {contenu.split('\n').map((line, i) => (
+                          line.trim() === ''
+                            ? <div key={i} className="h-2" />
+                            : <p key={i} className="text-[12px] text-gray-700 leading-relaxed">{line}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
 // ============================================
 // COMPOSANT : PronoCardHcup (carte d'un match HCup)
 // ============================================
@@ -1016,6 +1135,11 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
           match={match}
           isOpen={openPanel === 'insights'}
           onToggle={() => onTogglePanel('insights')}
+        />
+        <ActuMatchHcup
+          match={match}
+          isOpen={openPanel === 'actu'}
+          onToggle={() => onTogglePanel('actu')}
         />
       </div>
     </div>
