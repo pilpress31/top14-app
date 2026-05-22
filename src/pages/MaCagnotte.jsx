@@ -463,7 +463,7 @@ export default function MaCagnotte() {
   const [bets, setBets] = useState([]);
   const [loading, setLoading] = useState(true);
   const loadingRef = useRef(false); // guard anti-boucle Realtime
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("transactions");
   
   const [sortMode, setSortMode] = useState("recent");
   const [teamFilter, setTeamFilter] = useState("");
