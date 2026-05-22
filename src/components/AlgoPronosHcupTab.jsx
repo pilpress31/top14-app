@@ -970,7 +970,9 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
                 const contenu = section.key === 'forme_domicile'
                   ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
                   : actu[section.key];
-                if (!contenu || contenu === 'Information non disponible') return null;
+                const contenuVide = !contenu
+                  || /^(information non disponible|non disponible|aucune (information|d[ée]claration)|n\/?a)\.?$/i.test(contenu.trim());
+                if (contenuVide) return null;
                 return (
                   <div key={section.key} className="rounded-lg overflow-hidden"
                     style={{ border: `1px solid ${HCUP_BLEU_BORDER}` }}>
