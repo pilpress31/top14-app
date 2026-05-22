@@ -388,8 +388,8 @@ function SectionBlock({ icon, title, isOpen, onToggle, children }) {
 
 function TeamSection({ name, logo, content }) {
   const isUnavailable = !content ||
-    content === 'Information non disponible' ||
-    content === 'Données en cours de chargement...';
+    content === 'Données en cours de chargement...' ||
+    /^(information non disponible|non disponible|aucune (information|d[ée]claration)|n\/?a)\.?$/i.test(String(content).trim());
 
   return (
     <div className="flex items-start gap-2">

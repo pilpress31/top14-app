@@ -753,7 +753,9 @@ function ActuMatch({ match, isOpen, onToggle }) {
                 const contenu = section.key === 'forme_domicile'
                   ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
                   : actu[section.key];
-                if (!contenu) return null;
+                const contenuVide = !contenu
+                  || /^(information non disponible|non disponible|aucune (information|d[ée]claration)|n\/?a)\.?$/i.test(String(contenu).trim());
+                if (contenuVide) return null;
                 return (
                   <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
                     <button
