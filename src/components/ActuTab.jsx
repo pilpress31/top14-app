@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Calendar, CloudSun, Swords, Trophy, ClipboardLi
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { useChampionnat } from '../contexts/ChampionnatContext';
 
 
 /**
@@ -30,6 +31,7 @@ function parseAsParis(dateStr) {
 }
 
 export default function ActuTab() {
+  const { championnat } = useChampionnat();
   const [actus, setActus] = useState([]);
   const [journee, setJournee] = useState(null);
   const [disponible, setDisponible] = useState(true);
@@ -48,11 +50,11 @@ export default function ActuTab() {
 
     useEffect(() => {
       loadActus();
-    }, []);
+    }, [championnat]);
 
   const loadActus = async () => {
     try {
-      const response = await axios.get('https://top14-api-production.up.railway.app/api/actu');
+      const response = await axios.get(`https://top14-api-production.up.railway.app/api/actu?championnat=${championnat}`);
       const data = response.data;
 
       // Nouveau format : { actus: [], journee, disponible, message }
