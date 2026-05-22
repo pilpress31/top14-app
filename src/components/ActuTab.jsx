@@ -147,7 +147,19 @@ export default function ActuTab() {
     );
   }
 
-  const journees = [...new Set(actus.map(a => a.journee))].sort((a, b) => a - b);
+  // 🆕 Libellé de phase : "round" sert de titre quand ce n'est pas une journée
+  // de saison régulière ("Journée"). Sinon on retombe sur "Journée {numéro}".
+  const sectionLabel = (a) => {
+    const r = (a.round || '').trim();
+    return (r && r.toLowerCase() !== 'journée') ? r : `Journée ${a.journee}`;
+  };
+  // Sections ordonnées par date du 1er match
+  const sections = [...new Set(actus.map(sectionLabel))].sort((s1, s2) => {
+    const minDate = (s) => Math.min(...actus
+      .filter(a => sectionLabel(a) === s)
+      .map(a => new Date(a.date_match).getTime()));
+    return minDate(s1) - minDate(s2);
+  });
 
   return (
     <div className="space-y-4 mt-2">
@@ -160,16 +172,18 @@ export default function ActuTab() {
           })}
         </p>
       )}
-      {journees.map(journee => {
-        const matchsJournee = actus.filter(a => a.journee === journee);
+      {sections.map(section => {
+        const matchsJournee = actus.filter(a => sectionLabel(a) === section);
         return (
-          <div key={journee}>
+          <div key={section}>
             <div className="flex items-center gap-2 mb-3 px-1">
               <Calendar className="w-4 h-4 text-rugby-gold" />
               <h2 className="font-bold text-rugby-black text-sm uppercase tracking-wide">
-                Journée {journee}
+                {section}
               </h2>
-              <span className="text-xs text-gray-400">({matchsJournee.length} matchs)</span>
+              <span className="text-xs text-gray-400">
+                ({matchsJournee.length} match{matchsJournee.length > 1 ? 's' : ''})
+              </span>
             </div>
 
             <div className="space-y-3">
