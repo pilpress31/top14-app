@@ -652,7 +652,7 @@ function ActuMatch({ match, isOpen, onToggle }) {
           {actu && !loading && (
             <>
               {/* Bandeau météo */}
-              {actu.meteo && (
+              {actu.meteo && !['Météo non disponible', 'Météo temporairement indisponible'].includes(actu.meteo) && (
                 <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                   <span className="text-base">🌤️</span>
                   <span className="text-[11px] text-blue-700 font-medium">{actu.meteo}</span>
