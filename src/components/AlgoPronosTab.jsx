@@ -564,6 +564,7 @@ const ACTU_SECTIONS = [
 ];
 
 function ActuMatch({ match, isOpen, onToggle }) {
+  const championnatActu = match.isD2 ? 'prod2' : 'top14';
   const [actu, setActu] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -578,7 +579,7 @@ function ActuMatch({ match, isOpen, onToggle }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`${API_BASE}/api/actu`);
+        const res = await axios.get(`${API_BASE}/api/actu?championnat=${championnatActu}`);
         // Gère les deux formats : tableau direct (ancien) ou objet {actus, journee, disponible} (nouveau)
         const actus = Array.isArray(res.data) ? res.data : (res.data?.actus || []);
         const found = actus.find(a =>
@@ -1449,25 +1450,16 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
         </div>
       </div>
 
-      {/* Analyse historique + Actu match (masqués en Pro D2) */}
+      {/* Analyse historique (Top 14) + Insights (Pro D2) + Actu du match (les deux) */}
       <div className="px-4">
         {!match.isD2 && (
-          <>
-            <div ref={analyseRef}>
-              <AnalyseHistorique
-                match={match}
-                isOpen={openPanel === 'analyse'}
-                onToggle={() => handleTogglePanel('analyse')}
-              />
-            </div>
-            <div ref={actuRef}>
-              <ActuMatch
-                match={match}
-                isOpen={openPanel === 'actu'}
-                onToggle={() => handleTogglePanel('actu')}
-              />
-            </div>
-          </>
+          <div ref={analyseRef}>
+            <AnalyseHistorique
+              match={match}
+              isOpen={openPanel === 'analyse'}
+              onToggle={() => handleTogglePanel('analyse')}
+            />
+          </div>
         )}
         {/* Insights algorithmiques — Pro D2 uniquement */}
         {match.isD2 && (
@@ -1477,6 +1469,14 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
             onToggle={() => handleTogglePanel('insights')}
           />
         )}
+        {/* Actu du match — Top 14 ET Pro D2 */}
+        <div ref={actuRef}>
+          <ActuMatch
+            match={match}
+            isOpen={openPanel === 'actu'}
+            onToggle={() => handleTogglePanel('actu')}
+          />
+        </div>
         <HistoriqueConfrontations
           match={match}
           isOpen={openPanel === 'confrontations'}
