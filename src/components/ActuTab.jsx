@@ -141,7 +141,7 @@ export default function ActuTab() {
           {message || 'Les analyses IA seront disponibles prochainement.'}
         </p>
         <p className="text-gray-400 text-xs mt-1">
-          Générées le lundi à 18h et le vendredi à 18h.
+          Générées le lundi à 18h et le jeudi à 18h.
         </p>
       </div>
     );
