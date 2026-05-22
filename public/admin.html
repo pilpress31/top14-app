@@ -864,9 +864,10 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
           <div class="card-title">📰 Actualités IA</div>
         </div>
         <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
-          Génère automatiquement les synthèses d'actualité pour les matchs à venir via Gemini AI.<br>
-          Le cron tourne automatiquement le jeudi à 9h et vendredi à 18h. Vous pouvez aussi lancer manuellement.
+          Génère les synthèses d'actualité des matchs à venir via Gemini AI, pour les trois championnats.<br>
+          Les crons tournent automatiquement chaque semaine. Vous pouvez aussi lancer une génération manuelle ci-dessous.
         </p>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;font-weight:600">Top 14</p>
         <div class="btn-row">
           <button class="btn btn-gold" id="actuBtn" onclick="regenererActus()">
             <div class="spinner"></div>
@@ -879,6 +880,20 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
           <button class="btn" id="meteoBtn" onclick="regenererMeteo()" style="margin-left:8px;" title="Met à jour uniquement la météo de chaque match">
             <div class="spinner"></div>
             <span class="btn-text">🌤 Météo uniquement</span>
+          </button>
+        </div>
+
+        <p style="color:var(--muted2);font-size:13px;margin:18px 0 10px;line-height:1.6">
+          <strong>Autres championnats</strong> — actus générées sans compos ni blessés (pas de source fiable).
+        </p>
+        <div class="btn-row">
+          <button class="btn" id="actuD2Btn" onclick="regenererActusD2()" style="background:#00174D;color:#97C1FE;">
+            <div class="spinner"></div>
+            <span class="btn-text">🥈 Régénérer actus Pro D2</span>
+          </button>
+          <button class="btn" id="actuHcupBtn" onclick="regenererActusHcup()" style="margin-left:8px;background:#003E7E;color:#FFC72C;">
+            <div class="spinner"></div>
+            <span class="btn-text">⭐ Régénérer actus Champions Cup</span>
           </button>
         </div>
         <div class="result" id="actuResult"></div>
@@ -2732,6 +2747,44 @@ async function regenererMeteo() {
     const data = await api('/api/admin/actu/regenerer-meteo', { method: 'POST' });
     if (data.success) {
       showResult('actuResult', 'ok', '✅ Météo mise à jour pour tous les matchs de la prochaine journée !');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── ACTUS PRO D2 ──
+async function regenererActusD2() {
+  const btn = document.getElementById('actuD2Btn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Génération des actus Pro D2 en cours...');
+  try {
+    const data = await api('/api/admin/actu-d2/regenerer', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Génération actus Pro D2 lancée en arrière-plan !');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── ACTUS CHAMPIONS CUP ──
+async function regenererActusHcup() {
+  const btn = document.getElementById('actuHcupBtn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Génération des actus Champions Cup en cours...');
+  try {
+    const data = await api('/api/admin/actu-hcup/regenerer', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Génération actus Champions Cup lancée en arrière-plan !');
     } else {
       showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
     }
