@@ -1,5 +1,5 @@
 import ActuTab from '../components/ActuTab';
-import MainHeaderFull from '../components/MainHeaderFull';
+import ActuHeader from '../components/ActuHeader';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 export default function ActuPage() {
@@ -7,9 +7,9 @@ export default function ActuPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <MainHeaderFull />
+      <ActuHeader championnat={championnat} />
       <div className="pt-[120px] pb-24 px-3 max-w-lg mx-auto">
-        {/* ═══ Sélecteur de championnat (même style que la page Classement) ═══ */}
+        {/* ═══ Sélecteur de championnat ═══ */}
         <div className="flex justify-center mb-4">
           <div className="inline-flex rounded-lg shadow-md border-2 border-gray-200 overflow-hidden">
             <button
