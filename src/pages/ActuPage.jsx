@@ -1,11 +1,50 @@
 import ActuTab from '../components/ActuTab';
 import MainHeaderFull from '../components/MainHeaderFull';
+import { useChampionnat } from '../contexts/ChampionnatContext';
 
 export default function ActuPage() {
+  const { championnat, setChampionnat } = useChampionnat();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <MainHeaderFull />
       <div className="pt-[120px] pb-24 px-3 max-w-lg mx-auto">
+        {/* ═══ Sélecteur de championnat (même style que la page Classement) ═══ */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex rounded-lg shadow-md border-2 border-gray-200 overflow-hidden">
+            <button
+              onClick={() => setChampionnat('top14')}
+              className={`px-4 py-2 font-bold text-sm transition-colors ${
+                championnat === 'top14'
+                  ? 'bg-rugby-gold text-white'
+                  : 'bg-white text-rugby-gold hover:bg-rugby-gold/10'
+              }`}
+            >
+              🏆 TOP 14
+            </button>
+            <button
+              onClick={() => setChampionnat('prod2')}
+              className={`px-4 py-2 font-bold text-sm transition-colors ${
+                championnat === 'prod2'
+                  ? 'bg-[#00174D] text-white'
+                  : 'bg-white text-[#00174D] hover:bg-[#00174D]/10'
+              }`}
+            >
+              🥈 PRO D2
+            </button>
+            <button
+              onClick={() => setChampionnat('hcup')}
+              className={`px-4 py-2 font-bold text-sm transition-colors ${
+                championnat === 'hcup'
+                  ? 'bg-[#003E7E] text-[#FFC72C]'
+                  : 'bg-white text-[#003E7E] hover:bg-[#003E7E]/10'
+              }`}
+            >
+              ⭐ C.CUP
+            </button>
+          </div>
+        </div>
+
         <ActuTab />
       </div>
     </div>
