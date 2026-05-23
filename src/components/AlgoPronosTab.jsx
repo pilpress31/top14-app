@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
-import ActuMatchHeader, { ACTU_HEADER_THEMES } from './ActuMatchHeader';
+import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -420,28 +420,17 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-5 border-t border-gray-100 pt-4">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
+      <RubriqueHeader
+        theme={RUBRIQUE_THEMES.top14}
+        icon={BarChart2}
+        label="Analyse historique"
+        isOpen={isOpen}
+        loading={loading}
+        onToggle={handleToggle}
+        badge={data ? `${data.nb_matchs_filtres} matchs` : null}
       >
-        <div className="flex items-center gap-2">
-          <BarChart2 className="w-4 h-4 text-rugby-gold" />
-          <span className="text-xs font-semibold text-gray-700">Analyse historique</span>
-          <InfoPopup />
-          {data && (
-            <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
-              {data.nb_matchs_filtres} matchs
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 text-rugby-gold animate-spin" />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-rugby-gold transition-colors" />
-            : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-rugby-gold transition-colors" />
-          }
-        </div>
-      </button>
+        <InfoPopup />
+      </RubriqueHeader>
 
       {isOpen && (
         <div className="mt-3 space-y-4">
@@ -617,12 +606,14 @@ function ActuMatch({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      <ActuMatchHeader
-        theme={ACTU_HEADER_THEMES[championnatActu]}
+      <RubriqueHeader
+        theme={RUBRIQUE_THEMES[championnatActu]}
+        icon={Newspaper}
+        label="Actu du match"
         isOpen={isOpen}
         loading={loading}
-        majFormatted={actu ? majFormatted : null}
         onToggle={handleToggle}
+        badge={actu && majFormatted ? `màj ${majFormatted}` : null}
       />
 
       {isOpen && (
@@ -891,28 +882,15 @@ function InsightsD2({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-3 border-t pt-3" style={{ borderColor: '#97C1FE' }}>
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors group"
-        style={{ backgroundColor: '#EEF2FF', border: '1px solid #97C1FE' }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">📊</span>
-          <span className="text-xs font-semibold" style={{ color: '#00174D', fontWeight: 700 }}>Statistiques du duel</span>
-          {data && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ backgroundColor: '#97C1FE', color: '#00174D', fontWeight: 700 }}>
-              {data.h2h.nb_matchs} confrontations
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: '#97C1FE' }} />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4" style={{ color: '#97C1FE' }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: '#97C1FE' }} />
-          }
-        </div>
-      </button>
+      <RubriqueHeader
+        theme={RUBRIQUE_THEMES.prod2}
+        icon={BarChart2}
+        label="Statistiques du duel"
+        isOpen={isOpen}
+        loading={loading}
+        onToggle={handleToggle}
+        badge={data ? `${data.h2h.nb_matchs} confrontations` : null}
+      />
 
       {isOpen && (
         <div className="mt-3 space-y-3">
@@ -1087,27 +1065,15 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
   };
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">⚔️</span>
-          <span className="text-xs font-semibold text-gray-700">Historique des confrontations</span>
-          {confrontations && (
-            <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
-              {confrontations.length} matchs
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 text-teal-500 animate-spin" />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
-            : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-teal-500 transition-colors" />
-          }
-        </div>
-      </button>
+      <RubriqueHeader
+        theme={match.isD2 ? RUBRIQUE_THEMES.prod2 : RUBRIQUE_THEMES.top14}
+        icon={Swords}
+        label="Historique des confrontations"
+        isOpen={isOpen}
+        loading={loading}
+        onToggle={handleToggle}
+        badge={confrontations ? `${confrontations.length} matchs` : null}
+      />
 
       {isOpen && (
         <div className="mt-2">

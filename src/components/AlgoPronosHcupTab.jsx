@@ -15,10 +15,10 @@
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2, Newspaper, Swords, BarChart2 } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
-import ActuMatchHeader, { ACTU_HEADER_THEMES } from './ActuMatchHeader';
+import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -599,33 +599,15 @@ function InsightsHcup({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-3 border-t pt-3" style={{ borderColor: HCUP_BLEU_BORDER }}>
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors group"
-        style={{ backgroundColor: HCUP_BLEU_SOFT, border: `1px solid ${HCUP_BLEU_BORDER}` }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">📊</span>
-          <span className="text-xs font-semibold" style={{ color: HCUP_BLEU, fontWeight: 700 }}>
-            Duel & Forme
-          </span>
-          {data && nb_h2h > 0 && (
-            <span
-              className="text-[10px] px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: HCUP_OR, color: HCUP_BLEU, fontWeight: 700 }}
-            >
-              {nb_h2h} confrontations
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: HCUP_OR }} />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4" style={{ color: HCUP_OR }} />
-            : <ChevronDown className="w-4 h-4" style={{ color: HCUP_OR }} />
-          }
-        </div>
-      </button>
+      <RubriqueHeader
+        theme={RUBRIQUE_THEMES.hcup}
+        icon={BarChart2}
+        label="Duel & Forme"
+        isOpen={isOpen}
+        loading={loading}
+        onToggle={handleToggle}
+        badge={data && nb_h2h > 0 ? `${nb_h2h} confrontations` : null}
+      />
 
       {isOpen && (
         <div className="mt-3 space-y-3">
@@ -808,27 +790,15 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">⚔️</span>
-          <span className="text-xs font-semibold text-gray-700">Historique des confrontations</span>
-          {confrontations && (
-            <span className="text-[10px] text-gray-500 bg-gray-200 rounded-full px-2 py-0.5">
-              {confrontations.length} matchs
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: HCUP_OR }} />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4 text-gray-400" />
-            : <ChevronDown className="w-4 h-4 text-gray-400" />
-          }
-        </div>
-      </button>
+      <RubriqueHeader
+        theme={RUBRIQUE_THEMES.hcup}
+        icon={Swords}
+        label="Historique des confrontations"
+        isOpen={isOpen}
+        loading={loading}
+        onToggle={handleToggle}
+        badge={confrontations ? `${confrontations.length} matchs` : null}
+      />
 
       {isOpen && (
         <div className="mt-2">
@@ -938,12 +908,14 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      <ActuMatchHeader
-        theme={ACTU_HEADER_THEMES.hcup}
+      <RubriqueHeader
+        theme={RUBRIQUE_THEMES.hcup}
+        icon={Newspaper}
+        label="Actu du match"
         isOpen={isOpen}
         loading={loading}
-        majFormatted={actu ? majFormatted : null}
         onToggle={handleToggle}
+        badge={actu && majFormatted ? `màj ${majFormatted}` : null}
       />
 
       {isOpen && (
