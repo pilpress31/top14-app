@@ -9,7 +9,16 @@ import { Newspaper, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 //   text   : couleur du titre + texte du badge
 //   accent : icône Newspaper, chevron, loader
 //
-// Top 14  : charte or       (rugby-gold #CBA135 / rugby-bronze #8C6D3A)
+// Les couleurs sont appliquées en style inline (et non en classes
+// Tailwind) car les chartes D2 et HCup sont des hex bruts. Le thème
+// top14 porte donc lui aussi des hex — mais ils correspondent aux
+// couleurs nommées de tailwind.config.js, à garder synchronisés :
+//   bg     = rugby-gold-soft   (#FAF6EB)
+//   border = rugby-gold-border (#E4D29A)
+//   text   = rugby-bronze      (#8C6D3A)
+//   accent = rugby-gold        (#CBA135)
+//
+// Top 14  : charte or       (cf. couleurs rugby-* de tailwind.config.js)
 // Pro D2  : charte D2       (#00174D / #97C1FE)
 // C. Cup  : charte EPCR     (HCUP_BLEU #003E7E / HCUP_OR #FFC72C)
 // ─────────────────────────────────────────────────────────────

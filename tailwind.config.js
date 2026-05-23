@@ -7,11 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'rugby-black': '#000000',   // noir intense
-        'rugby-gold': '#CBA135',    // or métallisé
-        'rugby-bronze': '#8C6D3A',  // bronze foncé
-        'rugby-gray': '#D4CFC7',    // gris chaud
-        'rugby-white': '#FFFFFF',   // blanc pur
+        'rugby-black': '#000000',         // noir intense
+        'rugby-gold': '#CBA135',          // or métallisé
+        'rugby-gold-soft': '#FAF6EB',     // or très pâle — fonds d'en-têtes Top 14
+        'rugby-gold-border': '#E4D29A',   // or clair — bordures d'en-têtes Top 14
+        'rugby-bronze': '#8C6D3A',        // bronze foncé
+        'rugby-gray': '#D4CFC7',          // gris chaud
+        'rugby-white': '#FFFFFF',         // blanc pur
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',
