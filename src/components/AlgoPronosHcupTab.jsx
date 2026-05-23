@@ -938,7 +938,7 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
         className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm" style={{ color: "#003E7E" }}>📰</span>
+          <span className="text-sm">📰</span>
           <span className="text-xs font-semibold text-gray-700">Actu du match</span>
         </div>
         <div className="flex items-center gap-1.5">
