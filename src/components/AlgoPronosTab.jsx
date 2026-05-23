@@ -3,7 +3,7 @@ import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
-import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
+import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -547,10 +547,10 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
 // COMPOSANT : Bloc actu match expandable
 // ============================================
 const ACTU_SECTIONS = [
-  { key: 'pronostic_ia',    label: 'Pronostic IA',      icon: Bot,         color: 'text-purple-500',  bg: 'bg-purple-50',  border: 'border-purple-100' },
-  { key: 'forme_domicile',  label: 'Forme récente',     icon: Trophy,      color: 'text-rugby-gold',  bg: 'bg-yellow-50',  border: 'border-yellow-100', combine: 'forme_exterieure' },
-  { key: 'contexte_match',  label: 'Contexte & Enjeux', icon: Swords,      color: 'text-orange-500',  bg: 'bg-orange-50',  border: 'border-orange-100' },
-  { key: 'compo_domicile',  label: 'Compo probable & Absents', icon: ClipboardList, color: 'text-teal-500', bg: 'bg-teal-50', border: 'border-teal-100', combine: 'compo_exterieure', isCombo: true },
+  { key: 'pronostic_ia',    label: 'Pronostic IA',      icon: Bot },
+  { key: 'forme_domicile',  label: 'Forme récente',     icon: Trophy,      combine: 'forme_exterieure' },
+  { key: 'contexte_match',  label: 'Contexte & Enjeux', icon: Swords },
+  { key: 'compo_domicile',  label: 'Compo probable & Absents', icon: ClipboardList, combine: 'compo_exterieure', isCombo: true },
 ];
 
 function ActuMatch({ match, isOpen, onToggle }) {
@@ -640,6 +640,7 @@ function ActuMatch({ match, isOpen, onToggle }) {
               {/* 4 sections accordéon */}
               {ACTU_SECTIONS.map(section => {
                 const Icon = section.icon;
+                const colors = ACTU_SECTION_COLORS[section.key];
                 const isSectionOpen = openSection === section.key;
 
                 // Cas spécial : section compo fusionnée avec blessés
@@ -649,14 +650,14 @@ function ActuMatch({ match, isOpen, onToggle }) {
                                   || (actu.blesses_exterieure && actu.blesses_exterieure !== 'Aucune absence majeure signalée' && actu.blesses_exterieure !== 'Information non disponible');
                   if (!hasCompo && !hasBlesses) return null;
                   return (
-                    <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
+                    <div key={section.key} className={`rounded-lg border ${colors.border} overflow-hidden`}>
                       <button
                         onClick={() => toggleSection(section.key)}
-                        className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
+                        className={`w-full flex items-center justify-between px-3 py-2 ${colors.bg} hover:opacity-90 transition-opacity`}
                       >
                         <div className="flex items-center gap-2">
-                          <Icon className={`w-3.5 h-3.5 ${section.color}`} />
-                          <span className={`text-[11px] font-bold uppercase tracking-wide ${section.color}`}>
+                          <Icon className={`w-3.5 h-3.5 ${colors.color}`} />
+                          <span className={`text-[11px] font-bold uppercase tracking-wide ${colors.color}`}>
                             {section.label}
                           </span>
                         </div>
@@ -735,14 +736,14 @@ function ActuMatch({ match, isOpen, onToggle }) {
                   || /^(information non disponible|non disponible|aucune (information|d[ée]claration)|n\/?a)\.?$/i.test(String(contenu).trim());
                 if (contenuVide) return null;
                 return (
-                  <div key={section.key} className={`rounded-lg border ${section.border} overflow-hidden`}>
+                  <div key={section.key} className={`rounded-lg border ${colors.border} overflow-hidden`}>
                     <button
                       onClick={() => toggleSection(section.key)}
-                      className={`w-full flex items-center justify-between px-3 py-2 ${section.bg} hover:opacity-90 transition-opacity`}
+                      className={`w-full flex items-center justify-between px-3 py-2 ${colors.bg} hover:opacity-90 transition-opacity`}
                     >
                       <div className="flex items-center gap-2">
-                        <Icon className={`w-3.5 h-3.5 ${section.color}`} />
-                        <span className={`text-[11px] font-bold uppercase tracking-wide ${section.color}`}>
+                        <Icon className={`w-3.5 h-3.5 ${colors.color}`} />
+                        <span className={`text-[11px] font-bold uppercase tracking-wide ${colors.color}`}>
                           {section.label}
                         </span>
                       </div>

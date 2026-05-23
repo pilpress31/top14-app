@@ -15,10 +15,10 @@
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2, Newspaper, Swords, BarChart2 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2, Newspaper, Swords, BarChart2, Bot, MessageSquare } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
-import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
+import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -866,10 +866,10 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
 // COMPOSANT : ActuMatchHcup (rubrique "Actu du match" Champions Cup)
 // ============================================
 const ACTU_HCUP_SECTIONS = [
-  { key: 'forme_domicile',  label: 'Forme récente',     combine: 'forme_exterieure' },
-  { key: 'pronostic_ia',    label: 'Pronostic IA' },
-  { key: 'contexte_match',  label: 'Contexte & Enjeux' },
-  { key: 'declarations',    label: 'Déclarations' },
+  { key: 'forme_domicile',  label: 'Forme récente',     icon: Trophy,    combine: 'forme_exterieure' },
+  { key: 'pronostic_ia',    label: 'Pronostic IA',      icon: Bot },
+  { key: 'contexte_match',  label: 'Contexte & Enjeux', icon: Swords },
+  { key: 'declarations',    label: 'Déclarations',      icon: MessageSquare },
 ];
 
 function ActuMatchHcup({ match, isOpen, onToggle }) {
@@ -934,6 +934,8 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
                 </p>
               )}
               {ACTU_HCUP_SECTIONS.map(section => {
+                const Icon = section.icon;
+                const colors = ACTU_SECTION_COLORS[section.key];
                 const isSectionOpen = openSection === section.key;
                 const contenu = section.key === 'forme_domicile'
                   ? `🏠 ${match.equipe_domicile}\n${actu.forme_domicile || ''}\n\n🚌 ${match.equipe_exterieure}\n${actu.forme_exterieure || ''}`
@@ -942,16 +944,17 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
                   || /^(information non disponible|non disponible|aucune (information|d[ée]claration)|n\/?a)\.?$/i.test(contenu.trim());
                 if (contenuVide) return null;
                 return (
-                  <div key={section.key} className="rounded-lg overflow-hidden"
-                    style={{ border: `1px solid ${HCUP_BLEU_BORDER}` }}>
+                  <div key={section.key} className={`rounded-lg border ${colors.border} overflow-hidden`}>
                     <button
                       onClick={() => toggleSection(section.key)}
-                      className="w-full flex items-center justify-between px-3 py-2 transition-opacity hover:opacity-90"
-                      style={{ backgroundColor: HCUP_BLEU_SOFT }}
+                      className={`w-full flex items-center justify-between px-3 py-2 ${colors.bg} hover:opacity-90 transition-opacity`}
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: HCUP_BLEU }}>
-                        {section.label}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-3.5 h-3.5 ${colors.color}`} />
+                        <span className={`text-[11px] font-bold uppercase tracking-wide ${colors.color}`}>
+                          {section.label}
+                        </span>
+                      </div>
                       {isSectionOpen
                         ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" />
                         : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />

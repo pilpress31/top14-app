@@ -30,6 +30,28 @@ export const RUBRIQUE_THEMES = {
   hcup:  { bg: '#EEF5FF', border: '#B0CFE8', text: '#003E7E', accent: '#FFC72C' },
 };
 
+// ─────────────────────────────────────────────────────────────
+// Couleurs des SOUS-RUBRIQUES de « Actu du match » — palette par
+// TYPE de section, identique sur les trois championnats (Direction B).
+//
+// La clé correspond au champ `key` des sections (cf. ACTU_SECTIONS
+// dans AlgoPronosTab.jsx et ACTU_HCUP_SECTIONS dans AlgoPronosHcupTab.jsx).
+// Les noms de classes sont des classes Tailwind statiques — ne PAS
+// les construire dynamiquement (le JIT Tailwind ne les détecterait pas).
+//
+//   color  : couleur du texte/icône du libellé
+//   bg     : fond de la sous-rubrique
+//   border : bordure de la sous-rubrique
+// ─────────────────────────────────────────────────────────────
+export const ACTU_SECTION_COLORS = {
+  pronostic_ia:   { color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-100' },
+  forme_domicile: { color: 'text-rugby-gold', bg: 'bg-yellow-50', border: 'border-yellow-100' },
+  contexte_match: { color: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-100' },
+  compo_domicile: { color: 'text-teal-500',   bg: 'bg-teal-50',   border: 'border-teal-100'   },
+  declarations:   { color: 'text-slate-500',  bg: 'bg-slate-50',  border: 'border-slate-200'  },
+};
+
+
 /**
  * En-tête cliquable générique d'une rubrique d'accordéon.
  * Partagé à l'identique par les en-têtes de rubrique des trois
