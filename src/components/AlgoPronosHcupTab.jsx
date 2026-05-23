@@ -18,6 +18,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
+import ActuMatchHeader, { ACTU_HEADER_THEMES } from './ActuMatchHeader';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -931,24 +932,19 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
 
   const toggleSection = (key) => setOpenSection(prev => prev === key ? null : key);
 
+  const majFormatted = actu?.updated_at
+    ? new Date(actu.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : null;
+
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">📰</span>
-          <span className="text-xs font-semibold text-gray-700">Actu du match</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 animate-spin" style={{ color: HCUP_OR }} />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4 text-gray-400" />
-            : <ChevronDown className="w-4 h-4 text-gray-400" />
-          }
-        </div>
-      </button>
+      <ActuMatchHeader
+        theme={ACTU_HEADER_THEMES.hcup}
+        isOpen={isOpen}
+        loading={loading}
+        majFormatted={actu ? majFormatted : null}
+        onToggle={handleToggle}
+      />
 
       {isOpen && (
         <div className="mt-2 space-y-2">

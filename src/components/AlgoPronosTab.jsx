@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Newspaper, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, BarChart2, TrendingUp, Clock, Loader2, Bot, Trophy, Swords, Stethoscope, ClipboardList} from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
+import ActuMatchHeader, { ACTU_HEADER_THEMES } from './ActuMatchHeader';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -616,27 +617,13 @@ function ActuMatch({ match, isOpen, onToggle }) {
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 group"
-      >
-        <div className="flex items-center gap-2">
-          <Newspaper className="w-4 h-4 text-purple-400" />
-          <span className="text-xs font-semibold text-gray-700">Actu du match</span>
-          {actu && majFormatted && (
-            <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
-              màj {majFormatted}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {loading && <Loader2 className="w-3 h-3 text-purple-400 animate-spin" />}
-          {isOpen
-            ? <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
-            : <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors" />
-          }
-        </div>
-      </button>
+      <ActuMatchHeader
+        theme={ACTU_HEADER_THEMES[championnatActu]}
+        isOpen={isOpen}
+        loading={loading}
+        majFormatted={actu ? majFormatted : null}
+        onToggle={handleToggle}
+      />
 
       {isOpen && (
         <div className="mt-2 space-y-2">
