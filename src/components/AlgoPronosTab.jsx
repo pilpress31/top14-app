@@ -1389,7 +1389,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
           </div>
           <span className="font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>{confidencePct}%</span>
         </div>
-        <div className="relative w-full bg-gray-200 rounded-full h-[7px]">
+        <div className="relative w-full bg-gray-200 rounded-full h-[4px]">
           <div className="absolute top-0 left-1/4 w-px h-full bg-gray-300"></div>
           <div className="absolute top-0 left-1/2 w-px h-full bg-gray-300"></div>
           <div className="absolute top-0 left-3/4 w-px h-full bg-gray-300"></div>
