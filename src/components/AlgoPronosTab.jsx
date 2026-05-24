@@ -1336,13 +1336,13 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
         </button>
 
         <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-xs font-medium mb-1" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score final</div>
+          <div className="text-xs font-medium mb-1" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score FT prédit</div>
           <div className="flex items-center gap-2 text-[1.65rem] font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>
             {scoreDom} - {scoreExt}
           </div>
           {scoreHtText && (
             <>
-              <div className="text-xs font-medium mt-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score M-T</div>
+              <div className="text-xs font-medium mt-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score MT prédit</div>
               <div className="text-sm text-rugby-black font-semibold">{scoreHtText}</div>
               <div className="mt-1 flex items-center gap-2 w-full">
                 <div className="flex-1 bg-gray-200 h-1 rounded-full overflow-hidden">

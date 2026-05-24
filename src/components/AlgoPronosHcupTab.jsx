@@ -1051,7 +1051,7 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
         </div>
 
         <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-xs font-medium mb-1" style={{ color: '#9a7d3a' }}>Score prédit</div>
+          <div className="text-xs font-medium mb-1" style={{ color: '#9a7d3a' }}>Score FT prédit</div>
           <div className="flex items-center gap-2 text-[1.65rem] font-bold" style={{ color: HCUP_OR }}>
             {scoreDom} - {scoreExt}
           </div>
