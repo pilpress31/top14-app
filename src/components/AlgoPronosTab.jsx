@@ -1302,17 +1302,33 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
         )}
       </div>
 
-      {/* Badge Barrage / Accession (Pro D2 uniquement) */}
-      {match.isD2 && match.round && match.round !== 'Journée' && (
-        <div className="flex justify-center mb-3">
-          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
-            style={match.round === 'Accession'
-              ? { backgroundColor: '#7c3aed', color: '#fff' }
-              : { backgroundColor: '#00174D', color: '#97C1FE' }}>
-            {match.round === 'Accession' ? '⚡ Match d\'accession' : '🏆 Barrage'}
-          </span>
-        </div>
-      )}
+      {/* Badge phase de playoffs (Pro D2 uniquement) — affiche la vraie phase */}
+      {match.isD2 && match.round && match.round !== 'Journée' && (() => {
+        // Mapping phase → { libellé affiché, style }. Conserve le détail
+        // ("Demi-finale 1" reste "Demi-finale 1", contrairement au titre d'accordéon).
+        const NAVY   = { backgroundColor: '#00174D', color: '#97C1FE' };
+        const PURPLE = { backgroundColor: '#7c3aed', color: '#fff' };
+        const D2_BADGE = {
+          'Demi-finale 1':       { label: '🏉 Demi-finale 1',          style: NAVY },
+          'Demi-finale 2':       { label: '🏉 Demi-finale 2',          style: NAVY },
+          'Barrage 1':           { label: '🏆 Barrage 1',              style: NAVY },
+          'Barrage 2':           { label: '🏆 Barrage 2',              style: NAVY },
+          'Barrage':             { label: '🏆 Barrage',                style: NAVY },
+          'Finale':              { label: '🏆 Finale',                 style: NAVY },
+          'Accession':           { label: "⚡ Match d'accession",       style: PURPLE },
+          'Access Match Pro D2': { label: "⚡ Match d'accession Pro D2", style: PURPLE },
+          'Access Match Top 14': { label: "⚡ Match d'accession Top 14", style: PURPLE },
+        };
+        const badge = D2_BADGE[match.round] || { label: match.round, style: NAVY };
+        return (
+          <div className="flex justify-center mb-3">
+            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+              style={badge.style}>
+              {badge.label}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Équipes + scores */}
       <div className="grid grid-cols-3 items-start px-4 mb-2">
@@ -1336,13 +1352,13 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
         </button>
 
         <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-xs font-medium mb-1" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score FT prédit</div>
+          <div className="text-xs font-medium mb-1" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score final</div>
           <div className="flex items-center gap-2 text-[1.65rem] font-bold" style={match.isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>
             {scoreDom} - {scoreExt}
           </div>
           {scoreHtText && (
             <>
-              <div className="text-xs font-medium mt-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score MT prédit</div>
+              <div className="text-xs font-medium mt-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>Score M-T</div>
               <div className="text-sm text-rugby-black font-semibold">{scoreHtText}</div>
               <div className="mt-1 flex items-center gap-2 w-full">
                 <div className="flex-1 bg-gray-200 h-1 rounded-full overflow-hidden">
