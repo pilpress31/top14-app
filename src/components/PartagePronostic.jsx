@@ -80,7 +80,11 @@ export default function PartagePronostic({
         backgroundColor: charte.fond2,
       });
       const blob = await (await fetch(dataUrl)).blob();
-      const fichier = new File([blob], 'mon-prono.png', { type: 'image/png' });
+
+      // Nom de fichier précis : prono-<championnat>-<INIT.DOM>-<INIT.EXT>.png
+      const nomFichier = `prono-${championnat}-${initiales(equipeDomicile)}-${initiales(equipeExterieure)}.png`;
+
+      const fichier = new File([blob], nomFichier, { type: 'image/png' });
       const texte = `Mon prono ${equipeDomicile} vs ${equipeExterieure} sur Top14 Pronos. Et toi, tu paries quoi ?`;
 
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
@@ -92,7 +96,7 @@ export default function PartagePronostic({
       } else {
         const lien = document.createElement('a');
         lien.href = dataUrl;
-        lien.download = 'mon-prono.png';
+        lien.download = nomFichier;
         lien.click();
         setMessage('Image téléchargée.');
       }
