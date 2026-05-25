@@ -27,6 +27,7 @@ export default function MesParisTab() {
   const [filter, setFilter] = useState('pending');
   const [showReglementModal, setShowReglementModal] = useState(false);
   const [matchResults, setMatchResults] = useState({});
+  const [pronosAlgo, setPronosAlgo] = useState({}); // prono algo par match_id (carte « duel »)
 
   const [targetMatchId, setTargetMatchId] = useState(null);
   const betRefs = useRef({});
@@ -137,14 +138,51 @@ export default function MesParisTab() {
         ? `${API_BASE}/api/d2/user/bets/detailed`
         : `${API_BASE}/api/user/bets/detailed`;
 
+      let betsLoaded = [];
       try {
         const parisResponse = await axios.get(parisUrl, {
           headers: { 'x-user-id': user.id }
         });
-        setParis(parisResponse.data.bets || []);
+        betsLoaded = parisResponse.data.bets || [];
+        setParis(betsLoaded);
       } catch (error) {
         console.error('Erreur chargement paris:', error);
         setParis([]);
+      }
+
+      // ✅ Pronos algo des paris en cours — alimente la carte « duel » du partage.
+      // Lecture directe de match_cotes / match_cotes_d2 (même pattern que le reste
+      // du fichier). En cas d'échec (ex. RLS), on dégrade proprement : la carte de
+      // partage retombe sur le mode simple « Mon pronostic ».
+      try {
+        const pendingIds = betsLoaded
+          .filter(b => b.status === 'pending')
+          .map(b => b.match_id)
+          .filter(Boolean);
+        if (pendingIds.length > 0) {
+          const cotesTable = useD2 ? 'match_cotes_d2' : 'match_cotes';
+          // D2 : pronostic FT seul. Top 14 : FT + MT.
+          const cotesCols = useD2
+            ? 'match_id, score_predit_dom, score_predit_ext'
+            : 'match_id, score_predit_dom, score_predit_ext, score_predit_mt_dom, score_predit_mt_ext, confiance_algo, confiance_mt_algo';
+          const { data: cotesData, error: cotesError } = await supabase
+            .from(cotesTable)
+            .select(cotesCols)
+            .in('match_id', pendingIds);
+          if (cotesError) {
+            console.warn('Pronos algo indisponibles (partage duel) :', cotesError.message);
+            setPronosAlgo({});
+          } else {
+            const algoMap = {};
+            (cotesData || []).forEach(r => { algoMap[r.match_id] = r; });
+            setPronosAlgo(algoMap);
+          }
+        } else {
+          setPronosAlgo({});
+        }
+      } catch (e) {
+        console.warn('Pronos algo indisponibles (partage duel) :', e?.message || e);
+        setPronosAlgo({});
       }
 
       if (!useD2) {
@@ -333,6 +371,24 @@ export default function MesParisTab() {
               const extracted = extractTeamsFromMatchId(bet.match_id);
               teamDom = teamDom || extracted.home;
               teamExt = teamExt || extracted.away;
+            }
+
+            // Prono algo correspondant — carte « duel » du partage.
+            // On choisit les scores prédits FT ou MT selon le type de pari.
+            let algoProno = null;
+            const coteAlgo = pronosAlgo[bet.match_id];
+            if (coteAlgo) {
+              const estPariMT = bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT';
+              const algoDom = estPariMT ? coteAlgo.score_predit_mt_dom : coteAlgo.score_predit_dom;
+              const algoExt = estPariMT ? coteAlgo.score_predit_mt_ext : coteAlgo.score_predit_ext;
+              if (algoDom != null || algoExt != null) {
+                const algoConf = estPariMT ? coteAlgo.confiance_mt_algo : coteAlgo.confiance_algo;
+                algoProno = {
+                  scoreDom: algoDom,
+                  scoreExt: algoExt,
+                  confiance: algoConf != null ? Math.round(algoConf * 100) : null,
+                };
+              }
             }
 
             const potentialWin = Math.floor(bet.stake * (bet.odds || 1));
@@ -599,6 +655,7 @@ export default function MesParisTab() {
                       scoreExt={bet.score_exterieur}
                       betType={bet.bet_type}
                       winnerPredit={bet.winner_predit}
+                      algo={algoProno}
                     />
                   )}
                 </div>
