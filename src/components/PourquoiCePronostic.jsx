@@ -135,12 +135,26 @@ export default function PourquoiCePronostic({ match, isOpen, onToggle }) {
   const facteursPrincipaux = (data?.facteurs || []).filter(f => f.principal);
   const facteursSecondaires = (data?.facteurs || []).filter(f => !f.principal);
 
-  // Conviction de l'algo : probabilités en pourcentage
+  // Conviction de l'algo : on affiche la confiance_algo — la MÊME mesure
+  // que l'« Indice favori » de la carte, pour ne pas afficher deux
+  // pourcentages différents pour un même match.
   const pred = data?.prediction;
-  const pctDom = pred?.proba_domicile != null
-    ? Math.round(Number(pred.proba_domicile) * 100) : null;
-  const pctExt = pred?.proba_exterieur != null
-    ? Math.round(Number(pred.proba_exterieur) * 100) : null;
+  const confiancePct = pred?.confiance_algo != null
+    ? Math.round(Number(pred.confiance_algo) <= 1
+        ? Number(pred.confiance_algo) * 100
+        : Number(pred.confiance_algo))
+    : null;
+  // Favori = équipe avec le meilleur score prédit
+  const favori = (() => {
+    const sp = pred?.score_predit;
+    if (sp && sp.includes('-')) {
+      const [d, e] = sp.split('-').map(s => parseInt(s.trim(), 10));
+      if (!isNaN(d) && !isNaN(e)) {
+        return d >= e ? match.equipe_domicile : match.equipe_exterieure;
+      }
+    }
+    return match.equipe_domicile;
+  })();
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-3">
@@ -166,30 +180,37 @@ export default function PourquoiCePronostic({ match, isOpen, onToggle }) {
 
           {data && !loading && (
             <>
-              {/* Conviction de l'algo */}
-              {pctDom != null && pctExt != null && (
+              {/* Conviction de l'algo — même mesure que l'Indice favori de la carte */}
+              {confiancePct != null && (
                 <div className="mb-4">
                   <div className="text-center text-[11px] text-gray-500 mb-1">
                     L'algo penche pour
                   </div>
-                  <div className="flex items-baseline justify-center gap-2 mb-1.5">
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
                     <span className="text-sm font-bold text-gray-800">
-                      {pctDom >= pctExt ? match.equipe_domicile : match.equipe_exterieure}
+                      {favori}
                     </span>
                     <span
                       className="text-xl font-bold"
                       style={{ color: theme.accent }}
                     >
-                      {Math.max(pctDom, pctExt)}%
+                      {confiancePct}%
                     </span>
                   </div>
-                  <div className="flex h-3 rounded-full overflow-hidden">
-                    <div style={{ width: `${pctDom}%`, backgroundColor: theme.accent }} />
-                    <div style={{ width: `${pctExt}%`, backgroundColor: '#D3D1C7' }} />
+                  <div
+                    className="w-full rounded-full h-2.5 overflow-hidden"
+                    style={{ backgroundColor: '#F1EFE8' }}
+                  >
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${confiancePct}%`,
+                        background: 'linear-gradient(to right, #ef4444, #f59e0b, #22c55e)',
+                      }}
+                    />
                   </div>
-                  <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
-                    <span>{match.equipe_domicile} {pctDom}%</span>
-                    <span>{match.equipe_exterieure} {pctExt}%</span>
+                  <div className="text-center text-[10px] text-gray-400 mt-1">
+                    Indice de confiance de l'algo
                   </div>
                 </div>
               )}
