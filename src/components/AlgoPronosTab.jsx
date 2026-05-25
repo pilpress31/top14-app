@@ -420,7 +420,7 @@ function AnalyseHistorique({ match, isOpen, onToggle }) {
   const signeMT = ecartMT >= 0 ? `+${ecartMT}` : `${ecartMT}`;
 
   return (
-    <div className="mt-5 border-t border-gray-100 pt-4">
+    <div className="mt-3 border-t border-gray-100 pt-3">
       <RubriqueHeader
         theme={RUBRIQUE_THEMES.top14}
         icon={BarChart2}
