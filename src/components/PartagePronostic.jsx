@@ -189,7 +189,7 @@ export default function PartagePronostic({
           <div style={{ background: charte.fond2, padding: '4px 20px 20px' }}>
             <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 16px' }}>
               <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: charte.accent }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: charte.accentVif }}>
                   {titreBloc}
                 </span>
               </div>
