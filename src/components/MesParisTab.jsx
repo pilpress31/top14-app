@@ -16,6 +16,21 @@ import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
+// Niveau d'un pari : 0 = temps réglementaire (FT), 1 = mi-temps (MT).
+const niveauPari = (bt) => (bt === 'MT' || bt === 'WINNER_MT') ? 1 : 0;
+
+// Construit le prono algo { scoreDom, scoreExt, confiance } à partir d'une
+// ligne match_cotes / match_cotes_d2, selon le type de pari (FT ou MT).
+function algoDepuisCote(cote, betType) {
+  if (!cote) return null;
+  const estMT = betType === 'MT' || betType === 'WINNER_MT';
+  const d = estMT ? cote.score_predit_mt_dom : cote.score_predit_dom;
+  const e = estMT ? cote.score_predit_mt_ext : cote.score_predit_ext;
+  if (d == null && e == null) return null;
+  const c = estMT ? cote.confiance_mt_algo : cote.confiance_algo;
+  return { scoreDom: d, scoreExt: e, confiance: c != null ? Math.round(c * 100) : null };
+}
+
 export default function MesParisTab() {
   const { isD2 } = useChampionnat();
 
@@ -234,6 +249,16 @@ export default function MesParisTab() {
     return true;
   });
 
+  // Paris en cours regroupés par match : un match Top 14 peut porter deux
+  // paris (FT-niveau + MT-niveau). Sert à n'afficher qu'UN bouton de partage
+  // par match, sur sa première carte, avec une carte fusionnée.
+  const parisEnCoursParMatch = {};
+  parisFiltered.forEach(b => {
+    if (b.status === 'pending' && b.match_id) {
+      (parisEnCoursParMatch[b.match_id] = parisEnCoursParMatch[b.match_id] || []).push(b);
+    }
+  });
+
   const parisPending = paris.filter(p => p.status === 'pending').length;
   const parisWon = paris.filter(p => p.status === 'won').length;
   const parisLost = paris.filter(p => p.status === 'lost').length;
@@ -373,23 +398,22 @@ export default function MesParisTab() {
               teamExt = teamExt || extracted.away;
             }
 
-            // Prono algo correspondant — carte « duel » du partage.
-            // On choisit les scores prédits FT ou MT selon le type de pari.
-            let algoProno = null;
-            const coteAlgo = pronosAlgo[bet.match_id];
-            if (coteAlgo) {
-              const estPariMT = bet.bet_type === 'MT' || bet.bet_type === 'WINNER_MT';
-              const algoDom = estPariMT ? coteAlgo.score_predit_mt_dom : coteAlgo.score_predit_dom;
-              const algoExt = estPariMT ? coteAlgo.score_predit_mt_ext : coteAlgo.score_predit_ext;
-              if (algoDom != null || algoExt != null) {
-                const algoConf = estPariMT ? coteAlgo.confiance_mt_algo : coteAlgo.confiance_algo;
-                algoProno = {
-                  scoreDom: algoDom,
-                  scoreExt: algoExt,
-                  confiance: algoConf != null ? Math.round(algoConf * 100) : null,
-                };
-              }
-            }
+            // Partage : on regroupe les paris du match. Le bouton n'est rendu
+            // que sur la PREMIÈRE carte du match (carte fusionnée si double pari).
+            const parisDuMatch = parisEnCoursParMatch[bet.match_id] || [];
+            const estCartePrincipalePartage =
+              parisDuMatch.length > 0 && parisDuMatch[0].id === bet.id;
+            const pronosPartage = estCartePrincipalePartage
+              ? [...parisDuMatch]
+                  .sort((a, b) => niveauPari(a.bet_type) - niveauPari(b.bet_type))
+                  .map(b => ({
+                    betType: b.bet_type,
+                    scoreDom: b.score_domicile,
+                    scoreExt: b.score_exterieur,
+                    winnerPredit: b.winner_predit,
+                    algo: algoDepuisCote(pronosAlgo[b.match_id], b.bet_type),
+                  }))
+              : [];
 
             const potentialWin = Math.floor(bet.stake * (bet.odds || 1));
             const isWon = bet.status === 'won';
@@ -641,7 +665,7 @@ export default function MesParisTab() {
                       minute: '2-digit'
                     })}
                   </p>
-                  {isPending && teamDom && teamExt && (
+                  {isPending && estCartePrincipalePartage && teamDom && teamExt && (
                     <PartagePronostic
                       equipeDomicile={isD2
                         ? bet.equipe_domicile
@@ -650,12 +674,7 @@ export default function MesParisTab() {
                         ? bet.equipe_exterieure
                         : (pronos || []).find(p => p.match_id === bet.match_id)?.equipe_exterieure}
                       championnat={isD2 ? 'prod2' : 'top14'}
-                      mode="perso"
-                      scoreDom={bet.score_domicile}
-                      scoreExt={bet.score_exterieur}
-                      betType={bet.bet_type}
-                      winnerPredit={bet.winner_predit}
-                      algo={algoProno}
+                      pronos={pronosPartage}
                     />
                   )}
                 </div>

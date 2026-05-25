@@ -1,18 +1,21 @@
 // ============================================
 // COMPOSANT : PartagePronostic
-// Bouton « Partager mon prono » + génération d'une image (carte) du
-// pronostic, partagée via l'API native du téléphone.
+// Bouton « Partager mon prono » + génération d'une image (carte) du / des
+// pronostic(s) d'un match, partagée via l'API native du téléphone.
 //
-// Modes d'affichage de la carte :
-//   - Carte SIMPLE  : un seul bloc pronostic.
-//       mode="perso" (défaut) : « Mon pronostic »
-//       mode="algo"           : « La prédiction de l'IA »
-//   - Carte DUEL (V1.1) : deux colonnes « Prédiction de l'IA » vs
-//       « Mon pronostic ». Activée dès que le prop `algo` est fourni
-//       avec des scores. Le prono perso vient des props scoreDom/scoreExt
-//       /winnerPredit, le prono algo de l'objet `algo`.
+// API : le composant reçoit `pronos`, un tableau de 1 ou 2 pronostics
+//       (un match Top 14 peut porter un pari FT-niveau ET un pari MT-niveau).
+//       Chaque entrée : { betType, scoreDom, scoreExt, winnerPredit, algo }
+//       où `algo` = { scoreDom, scoreExt, confiance } | null.
 //
-// Rétrocompatible : sans prop `algo`, comportement identique à la V1.
+// Rendu :
+//   - 1 prono            : carte « duel » (Prédiction IA vs Mon pronostic),
+//                          ou carte simple si aucun prono algo.
+//   - 2 pronos (double)  : carte fusionnée — deux blocs « Temps réglementaire »
+//                          et « Mi-temps », chacun en duel IA / perso.
+//
+// Les props « à plat » (scoreDom, betType, algo…) restent acceptées pour
+// rétrocompatibilité : elles forment alors un tableau `pronos` d'un élément.
 //
 // Dépendance requise : npm install html-to-image
 // ============================================
@@ -40,8 +43,51 @@ function initiales(nom) {
 }
 
 // ---------------------------------------------------------------
-// Une colonne de la carte « duel » : un titre + un pronostic
-// (score OU vainqueur) + un sous-titre optionnel.
+// Prépare un pronostic (perso + algo) pour l'affichage.
+// ---------------------------------------------------------------
+function preparerProno(p, dataDom, dataExt, equipeDomicile, equipeExterieure) {
+  const betType = p.betType || 'FT';
+  const estPariVainqueur = betType === 'WINNER_FT' || betType === 'WINNER_MT';
+  const estMiTemps = betType === 'MT' || betType === 'WINNER_MT';
+
+  const nomEquipe = (key) => key === 'domicile'
+    ? (dataDom?.name || equipeDomicile)
+    : key === 'exterieur'
+      ? (dataExt?.name || equipeExterieure)
+      : 'Match nul';
+
+  // Prono algo exploitable uniquement s'il porte au moins un score
+  const algoSrc = p.algo && (p.algo.scoreDom != null || p.algo.scoreExt != null)
+    ? p.algo : null;
+
+  let nomVainqueurAlgo = 'Match nul';
+  if (algoSrc && estPariVainqueur) {
+    const k = algoSrc.scoreDom > algoSrc.scoreExt ? 'domicile'
+      : algoSrc.scoreExt > algoSrc.scoreDom ? 'exterieur' : 'nul';
+    nomVainqueurAlgo = nomEquipe(k);
+  }
+
+  return {
+    betType, estPariVainqueur, estMiTemps,
+    perso: {
+      scoreDom: p.scoreDom, scoreExt: p.scoreExt,
+      nomVainqueur: nomEquipe(p.winnerPredit),
+    },
+    algo: algoSrc
+      ? { scoreDom: algoSrc.scoreDom, scoreExt: algoSrc.scoreExt,
+          nomVainqueur: nomVainqueurAlgo, confiance: algoSrc.confiance }
+      : null,
+    legendeTemps: estMiTemps ? 'Mi-temps' : 'Temps réglementaire',
+    legendeType: estPariVainqueur ? 'Vainqueur' : 'Score',
+    legendeComplete: estPariVainqueur
+      ? (estMiTemps ? 'Vainqueur à la mi-temps' : 'Vainqueur du match')
+      : (estMiTemps ? 'Score à la mi-temps' : 'Score final'),
+  };
+}
+
+// ---------------------------------------------------------------
+// Une colonne de duel : un titre optionnel + un pronostic (score OU
+// vainqueur) + un sous-titre optionnel.
 // ---------------------------------------------------------------
 function ColonneDuel({
   titre, couleurTitre, estPariVainqueur, nomVainqueur,
@@ -49,12 +95,14 @@ function ColonneDuel({
 }) {
   return (
     <div style={{ flex: 1, textAlign: 'center', padding: '0 6px' }}>
-      <div style={{
-        fontSize: '9px', fontWeight: 700, color: couleurTitre,
-        letterSpacing: '0.3px', textTransform: 'uppercase', marginBottom: '7px',
-      }}>
-        {titre}
-      </div>
+      {titre && (
+        <div style={{
+          fontSize: '9px', fontWeight: 700, color: couleurTitre,
+          letterSpacing: '0.3px', textTransform: 'uppercase', marginBottom: '7px',
+        }}>
+          {titre}
+        </div>
+      )}
 
       {estPariVainqueur ? (
         <div style={{
@@ -93,17 +141,15 @@ export default function PartagePronostic({
   equipeDomicile,
   equipeExterieure,
   championnat = 'top14',
-  // Pronostic perso à afficher
-  mode = 'perso',          // 'perso' | 'algo' (carte simple uniquement)
-  scoreDom = null,         // pari de score
+  // Pronostics (API recommandée) — tableau de 1 ou 2 entrées
+  pronos = null,
+  // Props « à plat » — rétrocompatibilité (un seul prono)
+  mode = 'perso',          // 'perso' | 'algo' (carte simple sans algo)
+  scoreDom = null,
   scoreExt = null,
-  betType = 'FT',          // 'FT' | 'MT' | 'WINNER_FT' | 'WINNER_MT'
-  winnerPredit = null,     // pari de vainqueur : 'domicile' | 'exterieur' | 'nul'
+  betType = 'FT',
+  winnerPredit = null,
   confiance = null,        // mode 'algo' (carte simple) uniquement
-  // Pronostic algo (V1.1) — si fourni avec des scores -> carte « duel »
-  // Forme attendue : { scoreDom, scoreExt, confiance }
-  // Les scores doivent correspondre au betType (FT ou MT). Pour un pari
-  // de type vainqueur, le vainqueur algo est déduit de ces scores.
   algo = null,
 }) {
   const carteRef = useRef(null);
@@ -118,37 +164,21 @@ export default function PartagePronostic({
   const dataDom = getTeamData(equipeDomicile);
   const dataExt = getTeamData(equipeExterieure);
 
-  const estPariVainqueur = betType === 'WINNER_FT' || betType === 'WINNER_MT';
-  const estMiTemps = betType === 'MT' || betType === 'WINNER_MT';
+  // Liste normalisée des pronostics (1 ou 2). Si `pronos` n'est pas fourni,
+  // on reconstruit un tableau d'un élément à partir des props à plat.
+  const listeBrute = (Array.isArray(pronos) && pronos.length > 0)
+    ? pronos
+    : [{ betType, scoreDom, scoreExt, winnerPredit, algo }];
+  const liste = listeBrute.map(p =>
+    preparerProno(p, dataDom, dataExt, equipeDomicile, equipeExterieure));
 
-  // Carte « duel » : activée dès qu'on a un prono algo exploitable.
-  const estDuel = !!algo &&
-    (algo.scoreDom != null || algo.scoreExt != null);
+  const estMulti = liste.length > 1;
+  const pr0 = liste[0];
+  const estDuelSimple = !estMulti && !!pr0.algo;
 
-  // Libellé du vainqueur prédit — pari de type vainqueur, côté perso
-  const nomVainqueur = winnerPredit === 'domicile'
-    ? (dataDom?.name || equipeDomicile)
-    : winnerPredit === 'exterieur'
-      ? (dataExt?.name || equipeExterieure)
-      : 'Match nul';
-
-  // Vainqueur algo déduit des scores prédits (pari de type vainqueur)
-  const algoWinnerKey = estDuel && estPariVainqueur
-    ? (algo.scoreDom > algo.scoreExt ? 'domicile'
-        : algo.scoreExt > algo.scoreDom ? 'exterieur' : 'nul')
-    : null;
-  const nomVainqueurAlgo = algoWinnerKey === 'domicile'
-    ? (dataDom?.name || equipeDomicile)
-    : algoWinnerKey === 'exterieur'
-      ? (dataExt?.name || equipeExterieure)
-      : 'Match nul';
-
-  const titreBloc = mode === 'algo' ? "LA PRÉDICTION DE L'IA" : 'MON PRONOSTIC';
-
-  // Légende du type de pari (commune aux deux colonnes en mode duel)
-  const legendeType = estPariVainqueur
-    ? (estMiTemps ? 'Vainqueur à la mi-temps' : 'Vainqueur du match')
-    : (estMiTemps ? 'Score à la mi-temps' : 'Score final');
+  const labelBouton = estMulti ? 'Partager mes pronos' : 'Partager mon prono';
+  const titreBlocSimple = mode === 'algo'
+    ? "LA PRÉDICTION DE L'IA" : 'MON PRONOSTIC';
 
   const handlePartage = async () => {
     if (!carteRef.current || generation) return;
@@ -166,8 +196,8 @@ export default function PartagePronostic({
       const nomFichier = `prono-${championnat}-${initiales(equipeDomicile)}-${initiales(equipeExterieure)}.png`;
 
       const fichier = new File([blob], nomFichier, { type: 'image/png' });
-      const texte = estDuel
-        ? `Mon prono face à l'IA — ${equipeDomicile} vs ${equipeExterieure}. Et toi, tu paries quoi ?`
+      const texte = (estMulti || estDuelSimple)
+        ? `Mes pronos face à l'IA — ${equipeDomicile} vs ${equipeExterieure}. Et toi, tu paries quoi ?`
         : `Mon prono ${equipeDomicile} vs ${equipeExterieure} sur Top14 Pronos. Et toi, tu paries quoi ?`;
 
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
@@ -204,7 +234,7 @@ export default function PartagePronostic({
           {generation
             ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
             : <Share2 className="w-3.5 h-3.5" />}
-          {generation ? 'Génération…' : 'Partager mon prono'}
+          {generation ? 'Génération…' : labelBouton}
         </button>
         {message && (
           <p className="text-[10px] text-gray-400 mt-1">{message}</p>
@@ -275,27 +305,84 @@ export default function PartagePronostic({
           {/* Bloc pronostic */}
           <div style={{ background: charte.fond2, padding: '4px 20px 20px' }}>
 
-            {estDuel ? (
-              /* ---- Carte DUEL : Prédiction IA vs Mon pronostic ---- */
+            {estMulti ? (
+              /* ---- Carte FUSIONNÉE : Temps réglementaire + Mi-temps ---- */
+              <div style={{ background: charte.fond1, borderRadius: '12px', padding: '12px 10px' }}>
+                {/* En-têtes de colonnes (une seule fois) */}
+                <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '4px' }}>
+                  <div style={{
+                    flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700,
+                    color: charte.accent, letterSpacing: '0.3px', textTransform: 'uppercase',
+                  }}>
+                    Prédiction de l'IA
+                  </div>
+                  <div style={{ width: '1px', background: charte.fond3 }} />
+                  <div style={{
+                    flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700,
+                    color: charte.accentVif, letterSpacing: '0.3px', textTransform: 'uppercase',
+                  }}>
+                    Mon pronostic
+                  </div>
+                </div>
+
+                {liste.map((pr, i) => (
+                  <div key={i}>
+                    {i > 0 && (
+                      <div style={{ height: '1px', background: charte.fond3, margin: '8px 0' }} />
+                    )}
+                    <div style={{
+                      textAlign: 'center', fontSize: '9px', fontWeight: 700,
+                      color: '#8Fa8c4', letterSpacing: '0.4px', textTransform: 'uppercase',
+                      margin: '8px 0 6px',
+                    }}>
+                      {pr.legendeTemps} · {pr.legendeType}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                      <ColonneDuel
+                        couleurTitre={charte.accent}
+                        estPariVainqueur={pr.estPariVainqueur}
+                        nomVainqueur={pr.algo ? pr.algo.nomVainqueur : '–'}
+                        scoreDom={pr.algo ? pr.algo.scoreDom : null}
+                        scoreExt={pr.algo ? pr.algo.scoreExt : null}
+                        sousTitre={pr.algo && pr.algo.confiance != null
+                          ? `Confiance ${pr.algo.confiance}%` : null}
+                      />
+                      <div style={{ width: '1px', background: charte.fond3, margin: '2px 0' }} />
+                      <ColonneDuel
+                        couleurTitre={charte.accentVif}
+                        estPariVainqueur={pr.estPariVainqueur}
+                        nomVainqueur={pr.perso.nomVainqueur}
+                        scoreDom={pr.perso.scoreDom}
+                        scoreExt={pr.perso.scoreExt}
+                        sousTitre={null}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            ) : estDuelSimple ? (
+              /* ---- Carte DUEL simple : Prédiction IA vs Mon pronostic ---- */
               <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 10px' }}>
                 <div style={{ display: 'flex', alignItems: 'stretch' }}>
                   <ColonneDuel
                     titre="Prédiction de l'IA"
                     couleurTitre={charte.accent}
-                    estPariVainqueur={estPariVainqueur}
-                    nomVainqueur={nomVainqueurAlgo}
-                    scoreDom={algo?.scoreDom}
-                    scoreExt={algo?.scoreExt}
-                    sousTitre={algo?.confiance != null ? `Confiance ${algo.confiance}%` : null}
+                    estPariVainqueur={pr0.estPariVainqueur}
+                    nomVainqueur={pr0.algo.nomVainqueur}
+                    scoreDom={pr0.algo.scoreDom}
+                    scoreExt={pr0.algo.scoreExt}
+                    sousTitre={pr0.algo.confiance != null
+                      ? `Confiance ${pr0.algo.confiance}%` : null}
                   />
                   <div style={{ width: '1px', background: charte.fond3, margin: '2px 0' }} />
                   <ColonneDuel
                     titre="Mon pronostic"
                     couleurTitre={charte.accentVif}
-                    estPariVainqueur={estPariVainqueur}
-                    nomVainqueur={nomVainqueur}
-                    scoreDom={scoreDom}
-                    scoreExt={scoreExt}
+                    estPariVainqueur={pr0.estPariVainqueur}
+                    nomVainqueur={pr0.perso.nomVainqueur}
+                    scoreDom={pr0.perso.scoreDom}
+                    scoreExt={pr0.perso.scoreExt}
                     sousTitre={null}
                   />
                 </div>
@@ -304,32 +391,33 @@ export default function PartagePronostic({
                   marginTop: '10px', paddingTop: '8px',
                   borderTop: `1px solid ${charte.fond3}`,
                 }}>
-                  {legendeType}
+                  {pr0.legendeComplete}
                 </div>
               </div>
+
             ) : (
-              /* ---- Carte SIMPLE : un seul bloc pronostic ---- */
+              /* ---- Carte SIMPLE : un seul bloc pronostic, sans algo ---- */
               <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 16px' }}>
                 <div style={{ textAlign: 'center', marginBottom: '8px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 600, color: charte.accentVif }}>
-                    {titreBloc}
+                    {titreBlocSimple}
                   </span>
                 </div>
 
-                {estPariVainqueur ? (
+                {pr0.estPariVainqueur ? (
                   <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff' }}>
-                      {nomVainqueur}
+                      {pr0.perso.nomVainqueur}
                     </span>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '34px', fontWeight: 700, color: '#ffffff' }}>
-                      {scoreDom ?? '–'}
+                      {pr0.perso.scoreDom ?? '–'}
                     </span>
                     <span style={{ fontSize: '18px', color: '#8Fa8c4' }}>–</span>
                     <span style={{ fontSize: '34px', fontWeight: 700, color: '#ffffff' }}>
-                      {scoreExt ?? '–'}
+                      {pr0.perso.scoreExt ?? '–'}
                     </span>
                   </div>
                 )}
@@ -337,7 +425,7 @@ export default function PartagePronostic({
                 <div style={{ textAlign: 'center', fontSize: '11px', color: '#8Fa8c4', marginTop: '4px' }}>
                   {mode === 'algo' && confiance != null
                     ? `Indice de confiance ${confiance}%`
-                    : legendeType}
+                    : pr0.legendeComplete}
                 </div>
               </div>
             )}
