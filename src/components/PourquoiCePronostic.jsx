@@ -143,7 +143,7 @@ export default function PourquoiCePronostic({ match, isOpen, onToggle }) {
     ? Math.round(Number(pred.proba_exterieur) * 100) : null;
 
   return (
-    <div className="mt-3 border-t border-gray-100 pt-4">
+    <div className="border-t border-gray-100 pt-4">
       <RubriqueHeader
         theme={theme}
         icon={Lightbulb}
