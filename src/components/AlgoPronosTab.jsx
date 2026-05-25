@@ -1458,15 +1458,12 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
             onToggle={() => handleTogglePanel('actu')}
           />
         </div>
-          <HistoriqueConfrontations
-            match={match}
-            isOpen={openPanel === 'confrontations'}
-            onToggle={() => handleTogglePanel('confrontations')}
-          />
-          {!match.isD2 && (
-            <PartagePronostic match={match} championnat="top14" />
-          )}
-        </div>
+        <HistoriqueConfrontations
+          match={match}
+          isOpen={openPanel === 'confrontations'}
+          onToggle={() => handleTogglePanel('confrontations')}
+        />
+      </div>
 
       {/* Popup fiche équipe */}
       {teamPopup && (
