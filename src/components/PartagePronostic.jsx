@@ -15,9 +15,15 @@ import { toPng } from 'html-to-image';
 import { getTeamData } from '../utils/teams';
 
 const CHARTE = {
-  top14: { accent: '#CBA135', label: 'TOP 14',        fond1: '#143a6b', fond2: '#0C2340', fond3: '#07182e' },
-  prod2: { accent: '#97C1FE', label: 'PRO D2',        fond1: '#0a2c66', fond2: '#00174D', fond3: '#000f33' },
-  hcup:  { accent: '#FFC72C', label: 'CHAMPIONS CUP', fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
+  // Top 14 — charte or (#C9A84C / #FFD700) sur fond bleu nuit
+  top14: { accent: '#C9A84C', accentVif: '#FFD700', label: 'TOP 14',
+           fond1: '#1a2740', fond2: '#101a2e', fond3: '#0a111f' },
+  // Pro D2 — charte bleu marine #00174D + argent #C0C0C0 + bleu clair #97C1FE
+  prod2: { accent: '#C0C0C0', accentVif: '#97C1FE', label: 'PRO D2',
+           fond1: '#0a2c66', fond2: '#00174D', fond3: '#000f33' },
+  // Champions Cup — charte EPCR bleu #003E7E + or #FFC72C
+  hcup:  { accent: '#FFC72C', accentVif: '#FFC72C', label: 'CHAMPIONS CUP',
+           fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
 };
 
 function initiales(nom) {
@@ -139,7 +145,7 @@ export default function PartagePronostic({
             padding: '20px 20px 24px',
           }}>
             <div style={{ textAlign: 'center', marginBottom: '18px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: charte.accent, letterSpacing: '0.5px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: charte.accentVif, letterSpacing: '0.5px' }}>
                 {charte.label}
               </span>
             </div>
