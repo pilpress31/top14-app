@@ -209,7 +209,9 @@ export default function PartagePronostic({
               <div style={{ textAlign: 'center', fontSize: '11px', color: '#8Fa8c4', marginTop: '4px' }}>
                 {mode === 'algo' && confiance != null
                   ? `Indice de confiance ${confiance}%`
-                  : estMiTemps ? 'Score à la mi-temps' : 'Score final'}
+                  : estPariVainqueur
+                    ? (estMiTemps ? 'Vainqueur à la mi-temps' : 'Vainqueur prédit')
+                    : (estMiTemps ? 'Score à la mi-temps' : 'Score final')}
               </div>
             </div>
 
