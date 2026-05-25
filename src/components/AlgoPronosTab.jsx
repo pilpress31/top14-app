@@ -5,6 +5,7 @@ import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
 import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
 import PourquoiCePronostic from './PourquoiCePronostic';
+import PartagePronostic from './PartagePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -1457,12 +1458,15 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
             onToggle={() => handleTogglePanel('actu')}
           />
         </div>
-        <HistoriqueConfrontations
-          match={match}
-          isOpen={openPanel === 'confrontations'}
-          onToggle={() => handleTogglePanel('confrontations')}
-        />
-      </div>
+          <HistoriqueConfrontations
+            match={match}
+            isOpen={openPanel === 'confrontations'}
+            onToggle={() => handleTogglePanel('confrontations')}
+          />
+          {!match.isD2 && (
+            <PartagePronostic match={match} championnat="top14" />
+          )}
+        </div>
 
       {/* Popup fiche équipe */}
       {teamPopup && (
