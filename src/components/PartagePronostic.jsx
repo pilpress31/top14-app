@@ -3,13 +3,11 @@
 // Bouton « Partager » + génération d'une image du / des pronostic(s) d'un
 // match, partagée via l'API native du téléphone.
 //
-// Au clic sur le bouton, l'utilisateur choisit le FORMAT :
-//   - « Carte »  : visuel compact (320 px), idéal messagerie (WhatsApp, SMS).
-//   - « Story »  : visuel vertical 9:16 (1080×1920), pensé pour les stories.
-// Les deux formats partagent la même identité (3 chartes, mêmes blocs).
+// Sortie unique : story Instagram, visuel vertical 9:16 (1080×1920).
+// Canvas 360×640 capturé en pixelRatio 3.
 //
 // API : `pronos` = tableau de 1 ou 2 pronostics. Un match Top 14 peut porter
-//       un pari FT-niveau ET un pari MT-niveau -> carte fusionnée.
+//       un pari FT-niveau ET un pari MT-niveau -> bloc fusionné.
 //       Chaque entrée : { betType, scoreDom, scoreExt, winnerPredit, algo }
 //       avec `algo` = { scoreDom, scoreExt, confiance } | null.
 // Les props « à plat » restent acceptées (rétrocompatibilité, un prono).
@@ -17,7 +15,7 @@
 // Dépendance requise : npm install html-to-image
 // ============================================
 import { useRef, useState } from 'react';
-import { Share2, Loader2, Image as ImageIcon, Smartphone } from 'lucide-react';
+import { Share2, Loader2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { getTeamData } from '../utils/teams';
 
@@ -33,10 +31,9 @@ const CHARTE = {
            fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
 };
 
-// Tailles de l'en-tête match selon le format de carte.
+// Tailles de l'en-tête match pour le visuel story.
 const TAILLES_ENTETE = {
-  compact: { cercle: 56, logo: 42, initiale: 16, nom: 13, label: 13, labelMb: 18, vs: 14, col: 110 },
-  story:   { cercle: 74, logo: 56, initiale: 21, nom: 15, label: 14, labelMb: 16, vs: 15, col: 132 },
+  story: { cercle: 74, logo: 56, initiale: 21, nom: 15, label: 14, labelMb: 16, vs: 15, col: 132 },
 };
 
 function initiales(nom) {
@@ -140,12 +137,12 @@ function ColonneDuel({
 
 // ---------------------------------------------------------------
 // En-tête du match : libellé championnat + les deux équipes.
-// Partagé entre la carte compacte et la story (tailles différentes).
+// Utilisé dans le visuel story.
 // ---------------------------------------------------------------
 function EnTeteMatch({
   charte, dataDom, dataExt, equipeDomicile, equipeExterieure, taille,
 }) {
-  const t = TAILLES_ENTETE[taille] || TAILLES_ENTETE.compact;
+  const t = TAILLES_ENTETE[taille] || TAILLES_ENTETE.story;
   return (
     <>
       <div style={{ textAlign: 'center', marginBottom: `${t.labelMb}px` }}>
@@ -196,7 +193,6 @@ function EnTeteMatch({
 
 // ---------------------------------------------------------------
 // Bloc pronostic : la boîte centrale (duel, fusion ou simple).
-// Partagé entre la carte compacte et la story.
 // ---------------------------------------------------------------
 function BlocPronostic({ charte, liste, mode, confiance }) {
   const estMulti = liste.length > 1;
@@ -353,10 +349,8 @@ export default function PartagePronostic({
   confiance = null,
   algo = null,
 }) {
-  const carteRef = useRef(null);
   const storyRef = useRef(null);
-  const [generation, setGeneration] = useState(null); // null | 'carte' | 'story'
-  const [choixOuvert, setChoixOuvert] = useState(false);
+  const [generation, setGeneration] = useState(false);
   const [message, setMessage] = useState(null);
 
   const charte = CHARTE[championnat] || CHARTE.top14;
@@ -383,22 +377,20 @@ export default function PartagePronostic({
     border: `1px solid ${charte.accent}`,
   };
 
-  const lancerPartage = async (format) => {
-    if (generation) return;
-    const node = format === 'story' ? storyRef.current : carteRef.current;
-    if (!node) return;
-    setGeneration(format);
+  const handlePartage = async () => {
+    if (generation || !storyRef.current) return;
+    setGeneration(true);
     setMessage(null);
     try {
-      const dataUrl = await toPng(node, {
-        pixelRatio: format === 'story' ? 3 : 2, // story 360×640 -> 1080×1920
+      // Story Instagram : canvas 360×640 capturé en pixelRatio 3 -> 1080×1920.
+      const dataUrl = await toPng(storyRef.current, {
+        pixelRatio: 3,
         cacheBust: true,
         backgroundColor: charte.fond2,
       });
       const blob = await (await fetch(dataUrl)).blob();
 
-      const suffixe = format === 'story' ? '-story' : '';
-      const nomFichier = `prono-${championnat}-${initiales(equipeDomicile)}-${initiales(equipeExterieure)}${suffixe}.png`;
+      const nomFichier = `prono-${championnat}-${initiales(equipeDomicile)}-${initiales(equipeExterieure)}-story.png`;
 
       const fichier = new File([blob], nomFichier, { type: 'image/png' });
       const texte = aDuel
@@ -423,110 +415,36 @@ export default function PartagePronostic({
         setMessage("Le partage n'a pas pu aboutir.");
       }
     } finally {
-      setGeneration(null);
-      setChoixOuvert(false);
+      setGeneration(false);
     }
   };
 
   return (
     <>
-      {/* Bouton + choix du format */}
+      {/* Bouton de partage — sortie unique : story Instagram 9:16 */}
       <div className="flex flex-col items-center mt-3">
-        {!choixOuvert ? (
-          <button
-            onClick={() => { setMessage(null); setChoixOuvert(true); }}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
-            style={styleBouton}
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            {labelBouton}
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-[10px] text-gray-400 font-medium">Choisir un format</span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => lancerPartage('carte')}
-                disabled={!!generation}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-60"
-                style={styleBouton}
-              >
-                {generation === 'carte'
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <ImageIcon className="w-3.5 h-3.5" />}
-                Carte
-              </button>
-              <button
-                onClick={() => lancerPartage('story')}
-                disabled={!!generation}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-60"
-                style={styleBouton}
-              >
-                {generation === 'story'
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <Smartphone className="w-3.5 h-3.5" />}
-                Story
-              </button>
-            </div>
-            {!generation && (
-              <button
-                onClick={() => setChoixOuvert(false)}
-                className="text-[10px] text-gray-400 underline"
-              >
-                Annuler
-              </button>
-            )}
-          </div>
-        )}
+        <button
+          onClick={handlePartage}
+          disabled={generation}
+          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-60"
+          style={styleBouton}
+        >
+          {generation
+            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            : <Share2 className="w-3.5 h-3.5" />}
+          {generation ? 'Génération…' : labelBouton}
+        </button>
         {message && (
           <p className="text-[10px] text-gray-400 mt-1">{message}</p>
         )}
       </div>
 
-      {/* Visuels à capturer — rendus hors écran */}
+      {/* Visuel à capturer — rendu hors écran */}
       <div
         style={{ position: 'absolute', left: '-9999px', top: 0, pointerEvents: 'none' }}
         aria-hidden="true"
       >
-        {/* ---- FORMAT CARTE (compact 320 px) ---- */}
-        <div
-          ref={carteRef}
-          style={{
-            width: '320px',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            background: charte.fond2,
-            borderRadius: '18px',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{
-            background: `linear-gradient(160deg, ${charte.fond1} 0%, ${charte.fond2} 60%, ${charte.fond3} 100%)`,
-            padding: '20px 20px 24px',
-          }}>
-            <EnTeteMatch
-              charte={charte}
-              dataDom={dataDom}
-              dataExt={dataExt}
-              equipeDomicile={equipeDomicile}
-              equipeExterieure={equipeExterieure}
-              taille="compact"
-            />
-          </div>
-
-          <div style={{ background: charte.fond2, padding: '4px 20px 20px' }}>
-            <BlocPronostic charte={charte} liste={liste} mode={mode} confiance={confiance} />
-            <div style={{ textAlign: 'center', fontSize: '12px', color: '#8Fa8c4', marginTop: '12px' }}>
-              Et toi, tu paries quoi ?
-            </div>
-          </div>
-
-          <div style={{ background: charte.fond3, padding: '12px 20px', textAlign: 'center' }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>Top14 Pronos</span>
-            <span style={{ fontSize: '11px', color: '#8Fa8c4' }}>{' · '}app.top14pronos.fr</span>
-          </div>
-        </div>
-
-        {/* ---- FORMAT STORY (vertical 9:16, 360×640 -> 1080×1920) ---- */}
+        {/* ---- STORY Instagram (vertical 9:16, 360×640 -> 1080×1920) ---- */}
         <div
           ref={storyRef}
           style={{
