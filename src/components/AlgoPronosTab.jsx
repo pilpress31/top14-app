@@ -1397,7 +1397,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
       </div>
 
       {/* Barre FT */}
-      <div className="mt-4 px-4">
+      <div className="mt-4 mb-5 px-4">
         <div className="flex justify-between text-xs mb-2" style={match.isD2 ? { color: '#97C1FE' } : { color: '#9a7d3a' }}>
           <div className="flex items-center gap-1.5">
             <span className="font-medium">Indice favori</span>
