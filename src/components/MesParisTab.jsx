@@ -589,10 +589,10 @@ export default function MesParisTab() {
                     <PartagePronostic
                       equipeDomicile={isD2
                         ? bet.equipe_domicile
-                        : pronos.find(p => p.match_id === bet.match_id)?.equipe_domicile}
+                        : (pronos || []).find(p => p.match_id === bet.match_id)?.equipe_domicile}
                       equipeExterieure={isD2
                         ? bet.equipe_exterieure
-                        : pronos.find(p => p.match_id === bet.match_id)?.equipe_exterieure}
+                        : (pronos || []).find(p => p.match_id === bet.match_id)?.equipe_exterieure}
                       championnat={isD2 ? 'prod2' : 'top14'}
                       mode="perso"
                       scoreDom={bet.score_domicile}
