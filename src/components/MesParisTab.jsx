@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import ReglementModal from './ReglementModal';
+import PartagePronostic from './PartagePronostic';
 import { useLocation } from 'react-router-dom';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { useChampionnat } from '../contexts/ChampionnatContext';
@@ -584,6 +585,22 @@ export default function MesParisTab() {
                       minute: '2-digit'
                     })}
                   </p>
+                  {isPending && teamDom && teamExt && (
+                    <PartagePronostic
+                      equipeDomicile={isD2
+                        ? bet.equipe_domicile
+                        : pronos.find(p => p.match_id === bet.match_id)?.equipe_domicile}
+                      equipeExterieure={isD2
+                        ? bet.equipe_exterieure
+                        : pronos.find(p => p.match_id === bet.match_id)?.equipe_exterieure}
+                      championnat={isD2 ? 'prod2' : 'top14'}
+                      mode="perso"
+                      scoreDom={bet.score_domicile}
+                      scoreExt={bet.score_exterieur}
+                      betType={bet.bet_type}
+                      winnerPredit={bet.winner_predit}
+                    />
+                  )}
                 </div>
               </div>
             );
