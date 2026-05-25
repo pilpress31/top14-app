@@ -1,26 +1,23 @@
 // ============================================
 // COMPOSANT : PartagePronostic
-// Bouton « Partager mon prono » + génération d'une image (carte) du / des
-// pronostic(s) d'un match, partagée via l'API native du téléphone.
+// Bouton « Partager » + génération d'une image du / des pronostic(s) d'un
+// match, partagée via l'API native du téléphone.
 //
-// API : le composant reçoit `pronos`, un tableau de 1 ou 2 pronostics
-//       (un match Top 14 peut porter un pari FT-niveau ET un pari MT-niveau).
+// Au clic sur le bouton, l'utilisateur choisit le FORMAT :
+//   - « Carte »  : visuel compact (320 px), idéal messagerie (WhatsApp, SMS).
+//   - « Story »  : visuel vertical 9:16 (1080×1920), pensé pour les stories.
+// Les deux formats partagent la même identité (3 chartes, mêmes blocs).
+//
+// API : `pronos` = tableau de 1 ou 2 pronostics. Un match Top 14 peut porter
+//       un pari FT-niveau ET un pari MT-niveau -> carte fusionnée.
 //       Chaque entrée : { betType, scoreDom, scoreExt, winnerPredit, algo }
-//       où `algo` = { scoreDom, scoreExt, confiance } | null.
-//
-// Rendu :
-//   - 1 prono            : carte « duel » (Prédiction IA vs Mon pronostic),
-//                          ou carte simple si aucun prono algo.
-//   - 2 pronos (double)  : carte fusionnée — deux blocs « Temps réglementaire »
-//                          et « Mi-temps », chacun en duel IA / perso.
-//
-// Les props « à plat » (scoreDom, betType, algo…) restent acceptées pour
-// rétrocompatibilité : elles forment alors un tableau `pronos` d'un élément.
+//       avec `algo` = { scoreDom, scoreExt, confiance } | null.
+// Les props « à plat » restent acceptées (rétrocompatibilité, un prono).
 //
 // Dépendance requise : npm install html-to-image
 // ============================================
 import { useRef, useState } from 'react';
-import { Share2, Loader2 } from 'lucide-react';
+import { Share2, Loader2, Image as ImageIcon, Smartphone } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { getTeamData } from '../utils/teams';
 
@@ -34,6 +31,12 @@ const CHARTE = {
   // Champions Cup — charte EPCR bleu #003E7E + or #FFC72C
   hcup:  { accent: '#FFC72C', accentVif: '#FFC72C', label: 'CHAMPIONS CUP',
            fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
+};
+
+// Tailles de l'en-tête match selon le format de carte.
+const TAILLES_ENTETE = {
+  compact: { cercle: 56, logo: 42, initiale: 16, nom: 13, label: 13, labelMb: 18, vs: 14, col: 110 },
+  story:   { cercle: 74, logo: 56, initiale: 21, nom: 15, label: 14, labelMb: 16, vs: 15, col: 132 },
 };
 
 function initiales(nom) {
@@ -56,7 +59,6 @@ function preparerProno(p, dataDom, dataExt, equipeDomicile, equipeExterieure) {
       ? (dataExt?.name || equipeExterieure)
       : 'Match nul';
 
-  // Prono algo exploitable uniquement s'il porte au moins un score
   const algoSrc = p.algo && (p.algo.scoreDom != null || p.algo.scoreExt != null)
     ? p.algo : null;
 
@@ -136,6 +138,205 @@ function ColonneDuel({
   );
 }
 
+// ---------------------------------------------------------------
+// En-tête du match : libellé championnat + les deux équipes.
+// Partagé entre la carte compacte et la story (tailles différentes).
+// ---------------------------------------------------------------
+function EnTeteMatch({
+  charte, dataDom, dataExt, equipeDomicile, equipeExterieure, taille,
+}) {
+  const t = TAILLES_ENTETE[taille] || TAILLES_ENTETE.compact;
+  return (
+    <>
+      <div style={{ textAlign: 'center', marginBottom: `${t.labelMb}px` }}>
+        <span style={{
+          fontSize: `${t.label}px`, fontWeight: 600, color: charte.accentVif,
+          letterSpacing: '0.5px',
+        }}>
+          {charte.label}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ textAlign: 'center', width: `${t.col}px` }}>
+          <div style={{
+            width: `${t.cercle}px`, height: `${t.cercle}px`, borderRadius: '50%',
+            background: '#ffffff', margin: '0 auto 8px', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+          }}>
+            {dataDom?.logo
+              ? <img src={dataDom.logo} alt="" style={{ width: `${t.logo}px`, height: `${t.logo}px`, objectFit: 'contain' }} />
+              : <span style={{ fontSize: `${t.initiale}px`, fontWeight: 600, color: charte.fond2 }}>{initiales(equipeDomicile)}</span>}
+          </div>
+          <div style={{ fontSize: `${t.nom}px`, fontWeight: 600, color: '#ffffff', lineHeight: 1.25 }}>
+            {dataDom?.name || equipeDomicile}
+          </div>
+        </div>
+
+        <div style={{ fontSize: `${t.vs}px`, color: '#8Fa8c4', fontWeight: 600 }}>VS</div>
+
+        <div style={{ textAlign: 'center', width: `${t.col}px` }}>
+          <div style={{
+            width: `${t.cercle}px`, height: `${t.cercle}px`, borderRadius: '50%',
+            background: '#ffffff', margin: '0 auto 8px', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+          }}>
+            {dataExt?.logo
+              ? <img src={dataExt.logo} alt="" style={{ width: `${t.logo}px`, height: `${t.logo}px`, objectFit: 'contain' }} />
+              : <span style={{ fontSize: `${t.initiale}px`, fontWeight: 600, color: charte.fond2 }}>{initiales(equipeExterieure)}</span>}
+          </div>
+          <div style={{ fontSize: `${t.nom}px`, fontWeight: 600, color: '#ffffff', lineHeight: 1.25 }}>
+            {dataExt?.name || equipeExterieure}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------
+// Bloc pronostic : la boîte centrale (duel, fusion ou simple).
+// Partagé entre la carte compacte et la story.
+// ---------------------------------------------------------------
+function BlocPronostic({ charte, liste, mode, confiance }) {
+  const estMulti = liste.length > 1;
+  const pr0 = liste[0];
+  const estDuelSimple = !estMulti && !!pr0.algo;
+  const titreBlocSimple = mode === 'algo'
+    ? "LA PRÉDICTION DE L'IA" : 'MON PRONOSTIC';
+
+  if (estMulti) {
+    /* ---- Carte FUSIONNÉE : Temps réglementaire + Mi-temps ---- */
+    return (
+      <div style={{ background: charte.fond1, borderRadius: '12px', padding: '12px 10px' }}>
+        {/* En-têtes de colonnes (une seule fois) */}
+        <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '4px' }}>
+          <div style={{
+            flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700,
+            color: charte.accent, letterSpacing: '0.3px', textTransform: 'uppercase',
+          }}>
+            Prédiction de l'IA
+          </div>
+          <div style={{ width: '1px', background: charte.fond3 }} />
+          <div style={{
+            flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700,
+            color: charte.accentVif, letterSpacing: '0.3px', textTransform: 'uppercase',
+          }}>
+            Mon pronostic
+          </div>
+        </div>
+
+        {liste.map((pr, i) => (
+          <div key={i}>
+            {i > 0 && (
+              <div style={{ height: '1px', background: charte.fond3, margin: '8px 0' }} />
+            )}
+            <div style={{
+              textAlign: 'center', fontSize: '9px', fontWeight: 700,
+              color: '#8Fa8c4', letterSpacing: '0.4px', textTransform: 'uppercase',
+              margin: '8px 0 6px',
+            }}>
+              {pr.legendeTemps} · {pr.legendeType}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'stretch' }}>
+              <ColonneDuel
+                couleurTitre={charte.accent}
+                estPariVainqueur={pr.estPariVainqueur}
+                nomVainqueur={pr.algo ? pr.algo.nomVainqueur : '–'}
+                scoreDom={pr.algo ? pr.algo.scoreDom : null}
+                scoreExt={pr.algo ? pr.algo.scoreExt : null}
+                sousTitre={pr.algo && pr.algo.confiance != null
+                  ? `Confiance ${pr.algo.confiance}%` : null}
+              />
+              <div style={{ width: '1px', background: charte.fond3, margin: '2px 0' }} />
+              <ColonneDuel
+                couleurTitre={charte.accentVif}
+                estPariVainqueur={pr.estPariVainqueur}
+                nomVainqueur={pr.perso.nomVainqueur}
+                scoreDom={pr.perso.scoreDom}
+                scoreExt={pr.perso.scoreExt}
+                sousTitre={null}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (estDuelSimple) {
+    /* ---- Carte DUEL simple : Prédiction IA vs Mon pronostic ---- */
+    return (
+      <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 10px' }}>
+        <div style={{ display: 'flex', alignItems: 'stretch' }}>
+          <ColonneDuel
+            titre="Prédiction de l'IA"
+            couleurTitre={charte.accent}
+            estPariVainqueur={pr0.estPariVainqueur}
+            nomVainqueur={pr0.algo.nomVainqueur}
+            scoreDom={pr0.algo.scoreDom}
+            scoreExt={pr0.algo.scoreExt}
+            sousTitre={pr0.algo.confiance != null
+              ? `Confiance ${pr0.algo.confiance}%` : null}
+          />
+          <div style={{ width: '1px', background: charte.fond3, margin: '2px 0' }} />
+          <ColonneDuel
+            titre="Mon pronostic"
+            couleurTitre={charte.accentVif}
+            estPariVainqueur={pr0.estPariVainqueur}
+            nomVainqueur={pr0.perso.nomVainqueur}
+            scoreDom={pr0.perso.scoreDom}
+            scoreExt={pr0.perso.scoreExt}
+            sousTitre={null}
+          />
+        </div>
+        <div style={{
+          textAlign: 'center', fontSize: '10px', color: '#8Fa8c4',
+          marginTop: '10px', paddingTop: '8px',
+          borderTop: `1px solid ${charte.fond3}`,
+        }}>
+          {pr0.legendeComplete}
+        </div>
+      </div>
+    );
+  }
+
+  /* ---- Carte SIMPLE : un seul bloc pronostic, sans algo ---- */
+  return (
+    <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 16px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+        <span style={{ fontSize: '11px', fontWeight: 600, color: charte.accentVif }}>
+          {titreBlocSimple}
+        </span>
+      </div>
+
+      {pr0.estPariVainqueur ? (
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff' }}>
+            {pr0.perso.nomVainqueur}
+          </span>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '34px', fontWeight: 700, color: '#ffffff' }}>
+            {pr0.perso.scoreDom ?? '–'}
+          </span>
+          <span style={{ fontSize: '18px', color: '#8Fa8c4' }}>–</span>
+          <span style={{ fontSize: '34px', fontWeight: 700, color: '#ffffff' }}>
+            {pr0.perso.scoreExt ?? '–'}
+          </span>
+        </div>
+      )}
+
+      <div style={{ textAlign: 'center', fontSize: '11px', color: '#8Fa8c4', marginTop: '4px' }}>
+        {mode === 'algo' && confiance != null
+          ? `Indice de confiance ${confiance}%`
+          : pr0.legendeComplete}
+      </div>
+    </div>
+  );
+}
+
 export default function PartagePronostic({
   // Données du match
   equipeDomicile,
@@ -144,16 +345,18 @@ export default function PartagePronostic({
   // Pronostics (API recommandée) — tableau de 1 ou 2 entrées
   pronos = null,
   // Props « à plat » — rétrocompatibilité (un seul prono)
-  mode = 'perso',          // 'perso' | 'algo' (carte simple sans algo)
+  mode = 'perso',
   scoreDom = null,
   scoreExt = null,
   betType = 'FT',
   winnerPredit = null,
-  confiance = null,        // mode 'algo' (carte simple) uniquement
+  confiance = null,
   algo = null,
 }) {
   const carteRef = useRef(null);
-  const [generation, setGeneration] = useState(false);
+  const storyRef = useRef(null);
+  const [generation, setGeneration] = useState(null); // null | 'carte' | 'story'
+  const [choixOuvert, setChoixOuvert] = useState(false);
   const [message, setMessage] = useState(null);
 
   const charte = CHARTE[championnat] || CHARTE.top14;
@@ -164,8 +367,7 @@ export default function PartagePronostic({
   const dataDom = getTeamData(equipeDomicile);
   const dataExt = getTeamData(equipeExterieure);
 
-  // Liste normalisée des pronostics (1 ou 2). Si `pronos` n'est pas fourni,
-  // on reconstruit un tableau d'un élément à partir des props à plat.
+  // Liste normalisée des pronostics (1 ou 2).
   const listeBrute = (Array.isArray(pronos) && pronos.length > 0)
     ? pronos
     : [{ betType, scoreDom, scoreExt, winnerPredit, algo }];
@@ -173,31 +375,34 @@ export default function PartagePronostic({
     preparerProno(p, dataDom, dataExt, equipeDomicile, equipeExterieure));
 
   const estMulti = liste.length > 1;
-  const pr0 = liste[0];
-  const estDuelSimple = !estMulti && !!pr0.algo;
-
+  const aDuel = estMulti || !!liste[0].algo;
   const labelBouton = estMulti ? 'Partager mes pronos' : 'Partager mon prono';
-  const titreBlocSimple = mode === 'algo'
-    ? "LA PRÉDICTION DE L'IA" : 'MON PRONOSTIC';
 
-  const handlePartage = async () => {
-    if (!carteRef.current || generation) return;
-    setGeneration(true);
+  const styleBouton = {
+    color: charte.accent,
+    border: `1px solid ${charte.accent}`,
+  };
+
+  const lancerPartage = async (format) => {
+    if (generation) return;
+    const node = format === 'story' ? storyRef.current : carteRef.current;
+    if (!node) return;
+    setGeneration(format);
     setMessage(null);
     try {
-      const dataUrl = await toPng(carteRef.current, {
-        pixelRatio: 2,
+      const dataUrl = await toPng(node, {
+        pixelRatio: format === 'story' ? 3 : 2, // story 360×640 -> 1080×1920
         cacheBust: true,
         backgroundColor: charte.fond2,
       });
       const blob = await (await fetch(dataUrl)).blob();
 
-      // Nom de fichier précis : prono-<championnat>-<INIT.DOM>-<INIT.EXT>.png
-      const nomFichier = `prono-${championnat}-${initiales(equipeDomicile)}-${initiales(equipeExterieure)}.png`;
+      const suffixe = format === 'story' ? '-story' : '';
+      const nomFichier = `prono-${championnat}-${initiales(equipeDomicile)}-${initiales(equipeExterieure)}${suffixe}.png`;
 
       const fichier = new File([blob], nomFichier, { type: 'image/png' });
-      const texte = (estMulti || estDuelSimple)
-        ? `Mes pronos face à l'IA — ${equipeDomicile} vs ${equipeExterieure}. Et toi, tu paries quoi ?`
+      const texte = aDuel
+        ? `Mon prono face à l'IA — ${equipeDomicile} vs ${equipeExterieure}. Et toi, tu paries quoi ?`
         : `Mon prono ${equipeDomicile} vs ${equipeExterieure} sur Top14 Pronos. Et toi, tu paries quoi ?`;
 
       if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
@@ -218,34 +423,72 @@ export default function PartagePronostic({
         setMessage("Le partage n'a pas pu aboutir.");
       }
     } finally {
-      setGeneration(false);
+      setGeneration(null);
+      setChoixOuvert(false);
     }
   };
 
   return (
     <>
+      {/* Bouton + choix du format */}
       <div className="flex flex-col items-center mt-3">
-        <button
-          onClick={handlePartage}
-          disabled={generation}
-          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
-          style={{ color: charte.accent, border: `1px solid ${charte.accent}` }}
-        >
-          {generation
-            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            : <Share2 className="w-3.5 h-3.5" />}
-          {generation ? 'Génération…' : labelBouton}
-        </button>
+        {!choixOuvert ? (
+          <button
+            onClick={() => { setMessage(null); setChoixOuvert(true); }}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+            style={styleBouton}
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            {labelBouton}
+          </button>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-[10px] text-gray-400 font-medium">Choisir un format</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => lancerPartage('carte')}
+                disabled={!!generation}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-60"
+                style={styleBouton}
+              >
+                {generation === 'carte'
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <ImageIcon className="w-3.5 h-3.5" />}
+                Carte
+              </button>
+              <button
+                onClick={() => lancerPartage('story')}
+                disabled={!!generation}
+                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-60"
+                style={styleBouton}
+              >
+                {generation === 'story'
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <Smartphone className="w-3.5 h-3.5" />}
+                Story
+              </button>
+            </div>
+            {!generation && (
+              <button
+                onClick={() => setChoixOuvert(false)}
+                className="text-[10px] text-gray-400 underline"
+              >
+                Annuler
+              </button>
+            )}
+          </div>
+        )}
         {message && (
           <p className="text-[10px] text-gray-400 mt-1">{message}</p>
         )}
       </div>
 
-      {/* Carte à capturer — rendue hors écran */}
+      {/* Visuels à capturer — rendus hors écran */}
       <div
         style={{ position: 'absolute', left: '-9999px', top: 0, pointerEvents: 'none' }}
         aria-hidden="true"
       >
+        {/* ---- FORMAT CARTE (compact 320 px) ---- */}
         <div
           ref={carteRef}
           style={{
@@ -256,189 +499,77 @@ export default function PartagePronostic({
             overflow: 'hidden',
           }}
         >
-          {/* Bandeau ambiance match */}
           <div style={{
             background: `linear-gradient(160deg, ${charte.fond1} 0%, ${charte.fond2} 60%, ${charte.fond3} 100%)`,
             padding: '20px 20px 24px',
           }}>
-            <div style={{ textAlign: 'center', marginBottom: '18px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: charte.accentVif, letterSpacing: '0.5px' }}>
-                {charte.label}
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ textAlign: 'center', width: '110px' }}>
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '50%', background: '#ffffff',
-                  margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  overflow: 'hidden',
-                }}>
-                  {dataDom?.logo
-                    ? <img src={dataDom.logo} alt="" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
-                    : <span style={{ fontSize: '16px', fontWeight: 600, color: charte.fond2 }}>{initiales(equipeDomicile)}</span>}
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', lineHeight: 1.25 }}>
-                  {dataDom?.name || equipeDomicile}
-                </div>
-              </div>
-
-              <div style={{ fontSize: '14px', color: '#8Fa8c4', fontWeight: 600 }}>VS</div>
-
-              <div style={{ textAlign: 'center', width: '110px' }}>
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '50%', background: '#ffffff',
-                  margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  overflow: 'hidden',
-                }}>
-                  {dataExt?.logo
-                    ? <img src={dataExt.logo} alt="" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
-                    : <span style={{ fontSize: '16px', fontWeight: 600, color: charte.fond2 }}>{initiales(equipeExterieure)}</span>}
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', lineHeight: 1.25 }}>
-                  {dataExt?.name || equipeExterieure}
-                </div>
-              </div>
-            </div>
+            <EnTeteMatch
+              charte={charte}
+              dataDom={dataDom}
+              dataExt={dataExt}
+              equipeDomicile={equipeDomicile}
+              equipeExterieure={equipeExterieure}
+              taille="compact"
+            />
           </div>
 
-          {/* Bloc pronostic */}
           <div style={{ background: charte.fond2, padding: '4px 20px 20px' }}>
-
-            {estMulti ? (
-              /* ---- Carte FUSIONNÉE : Temps réglementaire + Mi-temps ---- */
-              <div style={{ background: charte.fond1, borderRadius: '12px', padding: '12px 10px' }}>
-                {/* En-têtes de colonnes (une seule fois) */}
-                <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: '4px' }}>
-                  <div style={{
-                    flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700,
-                    color: charte.accent, letterSpacing: '0.3px', textTransform: 'uppercase',
-                  }}>
-                    Prédiction de l'IA
-                  </div>
-                  <div style={{ width: '1px', background: charte.fond3 }} />
-                  <div style={{
-                    flex: 1, textAlign: 'center', fontSize: '9px', fontWeight: 700,
-                    color: charte.accentVif, letterSpacing: '0.3px', textTransform: 'uppercase',
-                  }}>
-                    Mon pronostic
-                  </div>
-                </div>
-
-                {liste.map((pr, i) => (
-                  <div key={i}>
-                    {i > 0 && (
-                      <div style={{ height: '1px', background: charte.fond3, margin: '8px 0' }} />
-                    )}
-                    <div style={{
-                      textAlign: 'center', fontSize: '9px', fontWeight: 700,
-                      color: '#8Fa8c4', letterSpacing: '0.4px', textTransform: 'uppercase',
-                      margin: '8px 0 6px',
-                    }}>
-                      {pr.legendeTemps} · {pr.legendeType}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'stretch' }}>
-                      <ColonneDuel
-                        couleurTitre={charte.accent}
-                        estPariVainqueur={pr.estPariVainqueur}
-                        nomVainqueur={pr.algo ? pr.algo.nomVainqueur : '–'}
-                        scoreDom={pr.algo ? pr.algo.scoreDom : null}
-                        scoreExt={pr.algo ? pr.algo.scoreExt : null}
-                        sousTitre={pr.algo && pr.algo.confiance != null
-                          ? `Confiance ${pr.algo.confiance}%` : null}
-                      />
-                      <div style={{ width: '1px', background: charte.fond3, margin: '2px 0' }} />
-                      <ColonneDuel
-                        couleurTitre={charte.accentVif}
-                        estPariVainqueur={pr.estPariVainqueur}
-                        nomVainqueur={pr.perso.nomVainqueur}
-                        scoreDom={pr.perso.scoreDom}
-                        scoreExt={pr.perso.scoreExt}
-                        sousTitre={null}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            ) : estDuelSimple ? (
-              /* ---- Carte DUEL simple : Prédiction IA vs Mon pronostic ---- */
-              <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 10px' }}>
-                <div style={{ display: 'flex', alignItems: 'stretch' }}>
-                  <ColonneDuel
-                    titre="Prédiction de l'IA"
-                    couleurTitre={charte.accent}
-                    estPariVainqueur={pr0.estPariVainqueur}
-                    nomVainqueur={pr0.algo.nomVainqueur}
-                    scoreDom={pr0.algo.scoreDom}
-                    scoreExt={pr0.algo.scoreExt}
-                    sousTitre={pr0.algo.confiance != null
-                      ? `Confiance ${pr0.algo.confiance}%` : null}
-                  />
-                  <div style={{ width: '1px', background: charte.fond3, margin: '2px 0' }} />
-                  <ColonneDuel
-                    titre="Mon pronostic"
-                    couleurTitre={charte.accentVif}
-                    estPariVainqueur={pr0.estPariVainqueur}
-                    nomVainqueur={pr0.perso.nomVainqueur}
-                    scoreDom={pr0.perso.scoreDom}
-                    scoreExt={pr0.perso.scoreExt}
-                    sousTitre={null}
-                  />
-                </div>
-                <div style={{
-                  textAlign: 'center', fontSize: '10px', color: '#8Fa8c4',
-                  marginTop: '10px', paddingTop: '8px',
-                  borderTop: `1px solid ${charte.fond3}`,
-                }}>
-                  {pr0.legendeComplete}
-                </div>
-              </div>
-
-            ) : (
-              /* ---- Carte SIMPLE : un seul bloc pronostic, sans algo ---- */
-              <div style={{ background: charte.fond1, borderRadius: '12px', padding: '14px 16px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: charte.accentVif }}>
-                    {titreBlocSimple}
-                  </span>
-                </div>
-
-                {pr0.estPariVainqueur ? (
-                  <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff' }}>
-                      {pr0.perso.nomVainqueur}
-                    </span>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '34px', fontWeight: 700, color: '#ffffff' }}>
-                      {pr0.perso.scoreDom ?? '–'}
-                    </span>
-                    <span style={{ fontSize: '18px', color: '#8Fa8c4' }}>–</span>
-                    <span style={{ fontSize: '34px', fontWeight: 700, color: '#ffffff' }}>
-                      {pr0.perso.scoreExt ?? '–'}
-                    </span>
-                  </div>
-                )}
-
-                <div style={{ textAlign: 'center', fontSize: '11px', color: '#8Fa8c4', marginTop: '4px' }}>
-                  {mode === 'algo' && confiance != null
-                    ? `Indice de confiance ${confiance}%`
-                    : pr0.legendeComplete}
-                </div>
-              </div>
-            )}
-
+            <BlocPronostic charte={charte} liste={liste} mode={mode} confiance={confiance} />
             <div style={{ textAlign: 'center', fontSize: '12px', color: '#8Fa8c4', marginTop: '12px' }}>
               Et toi, tu paries quoi ?
             </div>
           </div>
 
-          {/* Branding */}
           <div style={{ background: charte.fond3, padding: '12px 20px', textAlign: 'center' }}>
             <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>Top14 Pronos</span>
             <span style={{ fontSize: '11px', color: '#8Fa8c4' }}>{' · '}app.top14pronos.fr</span>
+          </div>
+        </div>
+
+        {/* ---- FORMAT STORY (vertical 9:16, 360×640 -> 1080×1920) ---- */}
+        <div
+          ref={storyRef}
+          style={{
+            width: '360px',
+            height: '640px',
+            boxSizing: 'border-box',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            background: `linear-gradient(180deg, ${charte.fond1} 0%, ${charte.fond2} 48%, ${charte.fond3} 100%)`,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '38px 26px 30px',
+          }}
+        >
+          {/* Haut : championnat + équipes */}
+          <div>
+            <EnTeteMatch
+              charte={charte}
+              dataDom={dataDom}
+              dataExt={dataExt}
+              equipeDomicile={equipeDomicile}
+              equipeExterieure={equipeExterieure}
+              taille="story"
+            />
+          </div>
+
+          {/* Milieu : bloc pronostic + accroche */}
+          <div>
+            <BlocPronostic charte={charte} liste={liste} mode={mode} confiance={confiance} />
+            <div style={{
+              textAlign: 'center', fontSize: '13px', fontWeight: 600,
+              color: charte.accentVif, marginTop: '18px',
+            }}>
+              Et toi, tu paries quoi ?
+            </div>
+          </div>
+
+          {/* Bas : branding */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '17px', fontWeight: 700, color: '#ffffff' }}>Top14 Pronos</div>
+            <div style={{ fontSize: '11px', color: '#8Fa8c4', marginTop: '3px', letterSpacing: '0.3px' }}>
+              app.top14pronos.fr
+            </div>
           </div>
         </div>
       </div>
