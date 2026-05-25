@@ -130,7 +130,8 @@ export default function MesParisTab() {
       // Crédits + total gagné GLOBAL (Top 14 + Pro D2) — indépendant du championnat affiché
       try {
         const creditsResponse = await axios.get(`${API_BASE}/api/user/credits`, {
-          headers: { 'x-user-id': user.id }
+          headers: { 'x-user-id': user.id },
+          params: { _: Date.now() }, // anti-cache navigateur (donnée live par utilisateur)
         });
 
         // Agrégation totale des gains sur les deux championnats
@@ -156,7 +157,8 @@ export default function MesParisTab() {
       let betsLoaded = [];
       try {
         const parisResponse = await axios.get(parisUrl, {
-          headers: { 'x-user-id': user.id }
+          headers: { 'x-user-id': user.id },
+          params: { _: Date.now() }, // anti-cache navigateur : la liste des paris doit être à jour
         });
         betsLoaded = parisResponse.data.bets || [];
         setParis(betsLoaded);
