@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
 import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
+import PourquoiCePronostic from './PourquoiCePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -1424,6 +1425,13 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Analyse historique (Top 14) + Insights (Pro D2) + Actu du match (les deux) */}
       <div className="px-4">
+        {!match.isD2 && (
+          <PourquoiCePronostic
+            match={match}
+            isOpen={openPanel === 'pourquoi'}
+            onToggle={() => handleTogglePanel('pourquoi')}
+          />
+        )}
         {!match.isD2 && (
           <div ref={analyseRef}>
             <AnalyseHistorique
