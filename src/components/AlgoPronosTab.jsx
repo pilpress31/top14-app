@@ -1409,9 +1409,9 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
           <div className="absolute top-0 left-1/4 w-px h-full bg-gray-300"></div>
           <div className="absolute top-0 left-1/2 w-px h-full bg-gray-300"></div>
           <div className="absolute top-0 left-3/4 w-px h-full bg-gray-300"></div>
-          <div className="absolute -bottom-3 left-1/4 text-[10px] text-gray-500 transform -translate-x-1/2">25%</div>
-          <div className="absolute -bottom-3 left-1/2 text-[10px] text-gray-500 transform -translate-x-1/2">50%</div>
-          <div className="absolute -bottom-3 left-3/4 text-[10px] text-gray-500 transform -translate-x-1/2">75%</div>
+          <div className="absolute left-1/4 text-[9px] text-gray-500 transform -translate-x-1/2" style={{ bottom: '-14px' }}>25%</div>
+          <div className="absolute left-1/2 text-[9px] text-gray-500 transform -translate-x-1/2" style={{ bottom: '-14px' }}>50%</div>
+          <div className="absolute left-3/4 text-[9px] text-gray-500 transform -translate-x-1/2" style={{ bottom: '-14px' }}>75%</div>
           <div
             className="h-full rounded-full transition-all duration-700 ease-out"
             style={{
