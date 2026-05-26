@@ -1,10 +1,40 @@
-import { useState } from 'react';
-import { Trophy, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Trophy, Users, Shield } from 'lucide-react';
 import ClassementTop14Tab from "../components/ClassementTop14Tab";
 import ClassementCommunauteTab from "../components/ClassementCommunauteTab";
+import MesLiguesTab from "../components/MesLiguesTab";
+
+type TabKey = 'top14' | 'communaute' | 'ligues';
 
 export default function ClassementPageWithTabs() {
-  const [activeTab, setActiveTab] = useState<'top14' | 'communaute'>('top14');
+  const [activeTab, setActiveTab] = useState<TabKey>('top14');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Lien d'invitation : /classement?ligue=CODE -> ouvre l'onglet Mes Ligues.
+  // Le code est transmis à MesLiguesTab qui pré-remplit le champ « rejoindre ».
+  const codeInvitation = searchParams.get('ligue');
+
+  useEffect(() => {
+    if (codeInvitation) {
+      setActiveTab('ligues');
+    }
+  }, [codeInvitation]);
+
+  // Une fois le code consommé par MesLiguesTab, on nettoie l'URL.
+  const consommerCodeInvitation = () => {
+    if (searchParams.has('ligue')) {
+      searchParams.delete('ligue');
+      setSearchParams(searchParams, { replace: true });
+    }
+  };
+
+  const ongletClass = (key: TabKey) =>
+    `flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
+      activeTab === key
+        ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
+        : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20'
+    }`;
 
   return (
     <div className="min-h-screen bg-rugby-white pb-24">
@@ -13,14 +43,7 @@ export default function ClassementPageWithTabs() {
         <div className="container mx-auto">
           <div className="flex">
             {/* Onglet Top 14 */}
-            <button
-              onClick={() => setActiveTab('top14')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
-                activeTab === 'top14'
-                  ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
-                  : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20'
-              }`}
-            >
+            <button onClick={() => setActiveTab('top14')} className={ongletClass('top14')}>
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5" />
                 <span className="font-bold">Top 14</span>
@@ -31,20 +54,24 @@ export default function ClassementPageWithTabs() {
             </button>
 
             {/* Onglet Communauté */}
-            <button
-              onClick={() => setActiveTab('communaute')}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
-                activeTab === 'communaute'
-                  ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
-                  : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20'
-              }`}
-            >
+            <button onClick={() => setActiveTab('communaute')} className={ongletClass('communaute')}>
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 <span className="font-bold">Communauté</span>
               </div>
               <span className="text-xs font-normal text-rugby-bronze">
-                Classement des utilisateurs
+                Tous les joueurs
+              </span>
+            </button>
+
+            {/* Onglet Mes Ligues */}
+            <button onClick={() => setActiveTab('ligues')} className={ongletClass('ligues')}>
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                <span className="font-bold">Mes Ligues</span>
+              </div>
+              <span className="text-xs font-normal text-rugby-bronze">
+                Entre amis
               </span>
             </button>
           </div>
@@ -53,10 +80,13 @@ export default function ClassementPageWithTabs() {
 
       {/* Contenu */}
       <div className="container mx-auto px-4 py-6">
-        {activeTab === 'top14' ? (
-          <ClassementTop14Tab />
-        ) : (
-          <ClassementCommunauteTab />
+        {activeTab === 'top14' && <ClassementTop14Tab />}
+        {activeTab === 'communaute' && <ClassementCommunauteTab />}
+        {activeTab === 'ligues' && (
+          <MesLiguesTab
+            codeInvitation={codeInvitation}
+            onCodeConsomme={consommerCodeInvitation}
+          />
         )}
       </div>
     </div>
