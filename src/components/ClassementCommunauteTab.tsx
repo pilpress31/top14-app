@@ -7,25 +7,28 @@ import { useState, useEffect } from "react";
 const IA_USER_ID = "00000000-0000-0000-0000-000000000001";
 const IA_D2_USER_ID = "00000000-0000-0000-0000-000000000002";
 const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID];
-import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X } from 'lucide-react';
+import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X,
+         Star, Medal, Crown, Gem, Flame, Zap, Sparkles } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 import { getSaisonCourante } from '../utils/season';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 // ─── Catalogue des badges (miroir de top14-api/lib/gamification.js) ───
-// emoji : pictogramme affiché dans le classement.
-const BADGES: Record<string, { label: string; emoji: string }> = {
-  wins_1:    { label: 'Première victoire', emoji: '🎯' },
-  wins_10:   { label: 'Apprenti parieur',  emoji: '🥉' },
-  wins_25:   { label: 'Parieur confirmé',  emoji: '🥈' },
-  wins_50:   { label: 'Fin connaisseur',   emoji: '🥇' },
-  wins_100:  { label: 'Expert du pari',    emoji: '💎' },
-  wins_250:  { label: 'Légende',           emoji: '👑' },
-  streak_3:  { label: 'Sur sa lancée',     emoji: '🔥' },
-  streak_5:  { label: 'En feu',            emoji: '⚡' },
-  streak_10: { label: 'Série royale',      emoji: '🌟' },
-  streak_20: { label: 'Intouchable',       emoji: '🏆' },
+// icon  : composant Lucide (rendu identique sur tous les appareils).
+// color : couleur de l'icône.
+const BADGES: Record<string, { label: string; icon: LucideIcon; color: string }> = {
+  wins_1:    { label: 'Première victoire', icon: Star,     color: '#3B82F6' },
+  wins_10:   { label: 'Apprenti parieur',  icon: Medal,    color: '#CD7F32' },
+  wins_25:   { label: 'Parieur confirmé',  icon: Medal,    color: '#9CA3AF' },
+  wins_50:   { label: 'Fin connaisseur',   icon: Medal,    color: '#D4A017' },
+  wins_100:  { label: 'Expert du pari',    icon: Gem,      color: '#06B6D4' },
+  wins_250:  { label: 'Légende',           icon: Crown,    color: '#D4A017' },
+  streak_3:  { label: 'Sur sa lancée',     icon: Flame,    color: '#F97316' },
+  streak_5:  { label: 'En feu',            icon: Zap,      color: '#EAB308' },
+  streak_10: { label: 'Série royale',      icon: Sparkles, color: '#A855F7' },
+  streak_20: { label: 'Intouchable',       icon: Trophy,   color: '#D4A017' },
 };
 
 // Un badge tel que stocké : code + date de déblocage (pour le tri « récents »).
@@ -60,23 +63,25 @@ function GamificationLigne({ streak, badges }: { streak?: number; badges?: UserB
   if (!afficheStreak && badgesRecents.length === 0) return null;
 
   return (
-    <div className="flex items-center gap-1.5 mt-1">
+    <div className="flex items-center gap-2 mt-1">
       {afficheStreak && (
         <span
           className="inline-flex items-center gap-0.5 text-xs font-bold text-orange-600"
           title={`Série en cours : ${streak} paris gagnés`}
         >
-          🔥 {streak}
+          <Flame className="w-3.5 h-3.5" fill="currentColor" />
+          {streak}
         </span>
       )}
       {badgesRecents.length > 0 && (
-        <span className="inline-flex items-center gap-0.5">
+        <span className="inline-flex items-center gap-1">
           {badgesRecents.map(b => {
             const def = BADGES[b.badge_code];
             if (!def) return null;
+            const Icone = def.icon;
             return (
-              <span key={b.badge_code} className="text-sm leading-none" title={def.label}>
-                {def.emoji}
+              <span key={b.badge_code} title={def.label} className="inline-flex">
+                <Icone className="w-4 h-4" style={{ color: def.color }} aria-label={def.label} />
               </span>
             );
           })}
