@@ -14,12 +14,25 @@ export default function ClassementPageWithTabs() {
   // Lien d'invitation : /classement?ligue=CODE -> ouvre l'onglet Mes Ligues.
   // Le code est transmis à MesLiguesTab qui pré-remplit le champ « rejoindre ».
   const codeInvitation = searchParams.get('ligue');
+  // Lien direct vers un onglet : /classement?tab=ligues (depuis la page Plus).
+  const tabDemande = searchParams.get('tab');
 
   useEffect(() => {
-    if (codeInvitation) {
+    if (codeInvitation || tabDemande === 'ligues') {
       setActiveTab('ligues');
+    } else if (tabDemande === 'communaute') {
+      setActiveTab('communaute');
+    } else if (tabDemande === 'top14') {
+      setActiveTab('top14');
     }
-  }, [codeInvitation]);
+    // Le paramètre tab a été appliqué -> on le retire de l'URL (sans toucher
+    // à « ligue », encore nécessaire à MesLiguesTab).
+    if (tabDemande) {
+      searchParams.delete('tab');
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [codeInvitation, tabDemande]);
 
   // Une fois le code consommé par MesLiguesTab, on nettoie l'URL.
   const consommerCodeInvitation = () => {

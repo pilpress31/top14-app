@@ -215,6 +215,16 @@ Résultats du diagnostic :
           <span className="flex-1 text-left text-gray-800 font-medium">Mes équipes favorites</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
+
+        {/* Mes ligues */}
+        <button
+          onClick={() => navigate('/classement?tab=ligues')}
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
+        >
+          <Shield className="h-5 w-5 text-rugby-gold" />
+          <span className="flex-1 text-left text-gray-800 font-medium">Mes ligues</span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+        </button>
       </div>
 
       {/* Notifications */}
