@@ -272,6 +272,53 @@ const SLIDES = [
     ),
   },
   {
+    id: 'ligues',
+    emoji: '🛡️',
+    title: 'Tes ligues privées',
+    color: '#0d9488',
+    bg: 'from-teal-50 to-emerald-50',
+    border: 'border-teal-200',
+    content: (
+      <div className="space-y-4">
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Envie d'un classement rien qu'entre amis ? Crée ta <strong>ligue privée</strong>
+          {' '}et défie tes proches sur les points de la saison.
+        </p>
+        <div className="bg-white rounded-xl border border-teal-200 shadow-sm p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🛡️</span>
+            <div>
+              <p className="font-bold text-sm text-gray-800">Crée ou rejoins</p>
+              <p className="text-xs text-gray-500">Chaque ligue a un code · jusqu'à 5 ligues par joueur</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">✉️</span>
+            <div>
+              <p className="font-bold text-sm text-gray-800">Invite tes amis</p>
+              <p className="text-xs text-gray-500">Par code, par lien, ou par pseudo s'ils ont déjà l'app</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🏆</span>
+            <div>
+              <p className="font-bold text-sm text-gray-800">Votre classement</p>
+              <p className="text-xs text-gray-500">Le classement par points, limité aux membres de la ligue</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-teal-50 rounded-xl border border-teal-200 p-3 text-center">
+          <p className="text-xs text-teal-700 font-semibold">
+            💡 Onglet « Mes Ligues »
+          </p>
+          <p className="text-xs text-teal-600 mt-1">
+            Dans le Classement, ou depuis la page Plus → Mon compte
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
     id: 'favoris',
     emoji: '⭐',
     title: 'Tes équipes favorites',
