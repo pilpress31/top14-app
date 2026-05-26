@@ -463,6 +463,72 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
       </div>
 
 
+      <!-- RELANCE JOUEURS INACTIFS -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <div class="card-title">😴 Relancer les joueurs inactifs</div>
+        </div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.5">
+          Les joueurs <strong>sans aucun pari sur les matchs à venir</strong>
+          (jamais parié, endormis, ou pas encore passés à l'acte ce week-end).
+          Envoie un <strong>push uniquement</strong> — pas de notification in-app.
+        </p>
+
+        <div style="margin-bottom:12px;">
+          <button class="btn" id="inactifsLoadBtn" onclick="chargerInactifs()"
+                  style="background:#7c3aed;color:#fff;border:none;">
+            <div class="spinner"></div>
+            <span class="btn-text">📥 Charger la liste</span>
+          </button>
+        </div>
+
+        <div id="inactifsResult" style="color:var(--muted);font-size:13px;padding:4px 0;"></div>
+
+        <!-- Liste + envoi (caché tant que pas chargé) -->
+        <div id="inactifsWrap" style="display:none;">
+          <!-- Compteurs -->
+          <div id="inactifsKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0;">
+            <div class="stat-box"><div class="stat-val" id="inacTotal">—</div><div class="stat-lbl">Inactifs</div></div>
+            <div class="stat-box"><div class="stat-val green" id="inacJoignables">—</div><div class="stat-lbl">Joignables push</div></div>
+            <div class="stat-box"><div class="stat-val" id="inacMatchs">—</div><div class="stat-lbl">Matchs à venir</div></div>
+          </div>
+
+          <!-- Tableau -->
+          <div class="table-wrap" style="max-height:320px;overflow-y:auto;">
+            <table>
+              <thead>
+                <tr><th>Pseudo</th><th>Statut</th><th>Push</th></tr>
+              </thead>
+              <tbody id="inactifsBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Message éditable -->
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Message du push</div>
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-bottom:4px;">Titre</label>
+            <input type="text" id="inactifsTitle" maxlength="100"
+                   style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Corps</label>
+            <textarea id="inactifsBody2" rows="2" maxlength="200"
+                      style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">URL cible</label>
+            <input type="text" id="inactifsUrl" value="https://app.top14pronos.fr/pronos"
+                   style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+          </div>
+
+          <div style="margin-top:14px;">
+            <button class="btn btn-gold" id="inactifsSendBtn" onclick="envoyerPushInactifs()" style="width:100%;">
+              <div class="spinner"></div>
+              <span class="btn-text">📣 Envoyer le push aux joueurs joignables</span>
+            </button>
+          </div>
+
+          <div class="result" id="inactifsSendResult"></div>
+        </div>
+      </div>
+
+
 
 
       <div class="card" style="margin-top:16px;">
@@ -1870,6 +1936,92 @@ async function sendHcupNewMatchesNotif() {
     }
   } catch (e) {
     showResult('hcupNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
+// ── RELANCE JOUEURS INACTIFS ──
+const INACTIFS_TAG_LABEL = {
+  jamais: '🆕 Jamais parié',
+  endormi: '😴 Endormi',
+  pas_ce_week_end: '⏳ Pas ce week-end',
+};
+
+async function chargerInactifs() {
+  const btn = document.getElementById('inactifsLoadBtn');
+  setLoading(btn, true);
+  document.getElementById('inactifsResult').textContent = 'Calcul en cours…';
+  try {
+    const data = await api('/api/admin/inactifs');
+    if (!data.success) {
+      document.getElementById('inactifsResult').textContent = `❌ ${data.error || 'Erreur'}`;
+      return;
+    }
+
+    document.getElementById('inacTotal').textContent = data.total;
+    document.getElementById('inacJoignables').textContent = data.joignables;
+    document.getElementById('inacMatchs').textContent = data.matchs_a_venir;
+
+    const tbody = document.getElementById('inactifsBody');
+    tbody.innerHTML = (data.inactifs || []).map(u => {
+      const pseudo = (u.pseudo || '').replace(/</g, '&lt;');
+      const tag = INACTIFS_TAG_LABEL[u.tag] || u.tag;
+      const push = u.joignable
+        ? '<span style="color:#15803d;">✓ oui</span>'
+        : '<span style="color:var(--muted);">— non</span>';
+      return `<tr><td>${pseudo}</td><td>${tag}</td><td>${push}</td></tr>`;
+    }).join('');
+
+    // Message pré-rempli, éditable
+    document.getElementById('inactifsTitle').value = '🏉 Le week-end arrive !';
+    document.getElementById('inactifsBody2').value =
+      `${data.matchs_a_venir} matchs à parier ce week-end. Tente ta chance et grimpe au classement !`;
+
+    document.getElementById('inactifsResult').textContent = '';
+    document.getElementById('inactifsWrap').style.display = 'block';
+
+    if (data.joignables === 0) {
+      showResult('inactifsSendResult', 'warn',
+        '⚠️ Aucun joueur inactif n\'est joignable par push (aucun abonnement).');
+    }
+  } catch (e) {
+    document.getElementById('inactifsResult').textContent = `❌ ${e.message}`;
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+async function envoyerPushInactifs() {
+  const title = document.getElementById('inactifsTitle').value.trim();
+  const body = document.getElementById('inactifsBody2').value.trim();
+  const url = document.getElementById('inactifsUrl').value.trim();
+  const joignables = document.getElementById('inacJoignables').textContent;
+
+  if (!title || !body) {
+    showResult('inactifsSendResult', 'err', '❌ Titre et message requis');
+    return;
+  }
+  if (!confirm(`Envoyer ce push aux ${joignables} joueur(s) inactif(s) joignable(s) ?`)) {
+    return;
+  }
+
+  const btn = document.getElementById('inactifsSendBtn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/admin/inactifs/notify', {
+      method: 'POST',
+      body: JSON.stringify({ title, body, url: url || 'https://app.top14pronos.fr/pronos' }),
+    });
+    if (data.success) {
+      showResult('inactifsSendResult', 'ok',
+        `✅ ${data.sent} push envoyé(s)${data.failed ? `, ${data.failed} échec(s)` : ''}.`);
+    } else {
+      showResult('inactifsSendResult', 'err', `❌ ${data.error || 'Erreur inconnue'}`);
+    }
+  } catch (e) {
+    showResult('inactifsSendResult', 'err', `❌ ${e.message}`);
   } finally {
     setLoading(btn, false);
   }
