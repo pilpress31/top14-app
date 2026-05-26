@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Plus, LogIn, Trophy, Users, Share2, Copy, Trash2,
-  UserMinus, Pencil, ArrowLeft, X, Loader2,
+  UserMinus, Pencil, ArrowLeft, X, Loader2, UserPlus, Mail, Check,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -35,12 +35,21 @@ interface LigneClassement {
   taux_reussite: number;
 }
 
+interface InvitationRecue {
+  id: string;
+  league_id: string;
+  league_nom: string;
+  invited_by_pseudo: string;
+  created_at: string;
+}
+
 interface Props {
   codeInvitation?: string | null;   // code transmis par un lien d'invitation
   onCodeConsomme?: () => void;       // appelé une fois le code traité (nettoie l'URL)
+  onInvitationsChange?: () => void;  // notifie le parent (pastille de l'onglet)
 }
 
-export default function MesLiguesTab({ codeInvitation, onCodeConsomme }: Props) {
+export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitationsChange }: Props) {
   const [userId, setUserId] = useState<string | null>(null);
   const [leagues, setLeagues] = useState<League[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,9 +69,17 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme }: Props) 
   // Édition du nom (créateur)
   const [editionNom, setEditionNom] = useState<string | null>(null);
 
+  // Invitations reçues
+  const [invitations, setInvitations] = useState<InvitationRecue[]>([]);
+
+  // Inviter un joueur par pseudo (créateur) : id de la ligue en cours d'invitation
+  const [inviteLigueId, setInviteLigueId] = useState<string | null>(null);
+  const [pseudoInvite, setPseudoInvite] = useState('');
+
   useRealtimeSync([
     { table: 'league_members', onUpdate: () => chargerLigues() },
     { table: 'private_leagues', onUpdate: () => chargerLigues() },
+    { table: 'league_invitations', onUpdate: () => chargerInvitations() },
   ]);
 
   // ─── Chargement des ligues du joueur ───
@@ -87,6 +104,78 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme }: Props) 
   }, []);
 
   useEffect(() => { chargerLigues(); }, [chargerLigues]);
+
+  // ─── Chargement des invitations reçues ───
+  const chargerInvitations = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) { setInvitations([]); return; }
+      const res = await axios.get(`${API_BASE}/api/leagues/invitations`, {
+        headers: { 'x-user-id': user.id },
+        params: { _: Date.now() },
+      });
+      setInvitations(res.data || []);
+    } catch (e) {
+      console.error('Erreur chargement invitations:', e);
+      setInvitations([]);
+    } finally {
+      onInvitationsChange?.();
+    }
+  }, [onInvitationsChange]);
+
+  useEffect(() => { chargerInvitations(); }, [chargerInvitations]);
+
+  // ─── Accepter une invitation ───
+  const accepterInvitation = async (inv: InvitationRecue) => {
+    if (busy || !userId) return;
+    setBusy(true);
+    try {
+      await axios.post(`${API_BASE}/api/leagues/invitations/${inv.id}/accept`, {},
+        { headers: { 'x-user-id': userId } });
+      afficherMessage(`Vous avez rejoint « ${inv.league_nom} » !`, 'ok');
+      await chargerInvitations();
+      await chargerLigues();
+    } catch (e: any) {
+      afficherMessage(e?.response?.data?.error || 'Action impossible', 'err');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ─── Refuser une invitation ───
+  const refuserInvitation = async (inv: InvitationRecue) => {
+    if (busy || !userId) return;
+    setBusy(true);
+    try {
+      await axios.post(`${API_BASE}/api/leagues/invitations/${inv.id}/decline`, {},
+        { headers: { 'x-user-id': userId } });
+      afficherMessage('Invitation refusée', 'ok');
+      await chargerInvitations();
+    } catch (e: any) {
+      afficherMessage(e?.response?.data?.error || 'Action impossible', 'err');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ─── Inviter un joueur par pseudo (créateur) ───
+  const inviterJoueur = async (leagueId: string) => {
+    if (busy || !userId) return;
+    const pseudo = pseudoInvite.trim();
+    if (pseudo.length < 3) { afficherMessage('Pseudo invalide', 'err'); return; }
+    setBusy(true);
+    try {
+      const res = await axios.post(`${API_BASE}/api/leagues/${leagueId}/invite`,
+        { pseudo }, { headers: { 'x-user-id': userId } });
+      setPseudoInvite('');
+      setInviteLigueId(null);
+      afficherMessage(`Invitation envoyée à ${res.data?.invited_pseudo || pseudo}`, 'ok');
+    } catch (e: any) {
+      afficherMessage(e?.response?.data?.error || 'Invitation impossible', 'err');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   // ─── Code reçu par lien d'invitation : pré-remplit « rejoindre » ───
   useEffect(() => {
@@ -348,6 +437,45 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme }: Props) 
         </div>
       )}
 
+      {/* Invitations reçues */}
+      {invitations.length > 0 && (
+        <div className="bg-blue-50 rounded-lg border border-blue-200 overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-blue-200 flex items-center gap-2">
+            <Mail className="w-4 h-4 text-blue-700" />
+            <span className="text-sm font-bold text-blue-900">
+              Invitation{invitations.length > 1 ? 's' : ''} en attente
+            </span>
+          </div>
+          <div className="divide-y divide-blue-100">
+            {invitations.map((inv) => (
+              <div key={inv.id} className="p-3 flex items-center gap-3">
+                <Shield className="w-5 h-5 text-rugby-gold flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{inv.league_nom}</p>
+                  <p className="text-xs text-gray-500">Invité par {inv.invited_by_pseudo}</p>
+                </div>
+                <button
+                  onClick={() => accepterInvitation(inv)}
+                  disabled={busy}
+                  className="flex items-center gap-1 text-xs font-semibold bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 transition-colors disabled:opacity-60"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  Accepter
+                </button>
+                <button
+                  onClick={() => refuserInvitation(inv)}
+                  disabled={busy}
+                  className="flex items-center gap-1 text-xs font-medium border border-gray-300 text-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-60"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Refuser
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Actions : créer / rejoindre */}
       <div className="grid grid-cols-2 gap-2">
         <button
@@ -487,8 +615,20 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme }: Props) 
                     className="flex items-center gap-1.5 text-xs font-medium border border-rugby-gold text-rugby-gold px-3 py-1.5 rounded-full hover:bg-rugby-gold/5 transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    Inviter
+                    Partager le lien
                   </button>
+                  {league.est_createur && (
+                    <button
+                      onClick={() => {
+                        setPseudoInvite('');
+                        setInviteLigueId(inviteLigueId === league.id ? null : league.id);
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-medium border border-rugby-gold text-rugby-gold px-3 py-1.5 rounded-full hover:bg-rugby-gold/5 transition-colors"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Inviter un joueur
+                    </button>
+                  )}
                   {league.est_createur ? (
                     <>
                       <button
@@ -516,6 +656,35 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme }: Props) 
                     </button>
                   )}
                 </div>
+
+                {/* Formulaire : inviter un joueur par pseudo */}
+                {league.est_createur && inviteLigueId === league.id && (
+                  <div className="mt-3 bg-rugby-gold/5 rounded-lg p-3 border border-rugby-gold/30">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">
+                      Inviter un joueur par son pseudo
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={pseudoInvite}
+                        onChange={(e) => setPseudoInvite(e.target.value)}
+                        placeholder="Pseudo exact"
+                        maxLength={20}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rugby-gold"
+                      />
+                      <button
+                        onClick={() => inviterJoueur(league.id)}
+                        disabled={busy}
+                        className="bg-rugby-gold text-white font-semibold px-4 py-2 rounded-lg text-sm hover:bg-rugby-bronze transition-colors disabled:opacity-60"
+                      >
+                        {busy ? '…' : 'Inviter'}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-1.5">
+                      Le joueur recevra une invitation à accepter.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ))}

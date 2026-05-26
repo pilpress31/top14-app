@@ -1,15 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Trophy, Users, Shield } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import axios from 'axios';
 import ClassementTop14Tab from "../components/ClassementTop14Tab";
 import ClassementCommunauteTab from "../components/ClassementCommunauteTab";
 import MesLiguesTab from "../components/MesLiguesTab";
+
+const API_BASE = 'https://top14-api-production.up.railway.app';
 
 type TabKey = 'top14' | 'communaute' | 'ligues';
 
 export default function ClassementPageWithTabs() {
   const [activeTab, setActiveTab] = useState<TabKey>('top14');
   const [searchParams, setSearchParams] = useSearchParams();
+  const [nbInvitations, setNbInvitations] = useState(0);
+
+  // Compte des invitations de ligue en attente — alimente la pastille
+  // de l'onglet « Mes Ligues ». Source de vérité unique, partagée avec
+  // MesLiguesTab (qui appelle rafraichirInvitations après accept/refus).
+  const rafraichirInvitations = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) { setNbInvitations(0); return; }
+      const res = await axios.get(`${API_BASE}/api/leagues/invitations`, {
+        headers: { 'x-user-id': user.id },
+        params: { _: Date.now() },
+      });
+      setNbInvitations(Array.isArray(res.data) ? res.data.length : 0);
+    } catch {
+      setNbInvitations(0);
+    }
+  }, []);
+
+  useEffect(() => { rafraichirInvitations(); }, [rafraichirInvitations]);
 
   // Lien d'invitation : /classement?ligue=CODE -> ouvre l'onglet Mes Ligues.
   // Le code est transmis à MesLiguesTab qui pré-remplit le champ « rejoindre ».
@@ -79,9 +103,17 @@ export default function ClassementPageWithTabs() {
 
             {/* Onglet Mes Ligues */}
             <button onClick={() => setActiveTab('ligues')} className={ongletClass('ligues')}>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative">
                 <Shield className="w-5 h-5" />
                 <span className="font-bold">Mes Ligues</span>
+                {nbInvitations > 0 && (
+                  <span
+                    className="absolute -top-2 -right-3 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold"
+                    title={`${nbInvitations} invitation${nbInvitations > 1 ? 's' : ''} en attente`}
+                  >
+                    {nbInvitations}
+                  </span>
+                )}
               </div>
               <span className="text-xs font-normal text-rugby-bronze">
                 Entre amis
@@ -99,6 +131,7 @@ export default function ClassementPageWithTabs() {
           <MesLiguesTab
             codeInvitation={codeInvitation}
             onCodeConsomme={consommerCodeInvitation}
+            onInvitationsChange={rafraichirInvitations}
           />
         )}
       </div>
