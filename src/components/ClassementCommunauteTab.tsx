@@ -31,6 +31,20 @@ const BADGES: Record<string, { label: string; icon: LucideIcon; color: string }>
   streak_20: { label: 'Intouchable',       icon: Trophy,   color: '#D4A017' },
 };
 
+// Condition de déblocage, en clair (pour la modale d'explication).
+const BADGE_CONDITIONS: Record<string, string> = {
+  wins_1:    '1 pari gagné',
+  wins_10:   '10 paris gagnés',
+  wins_25:   '25 paris gagnés',
+  wins_50:   '50 paris gagnés',
+  wins_100:  '100 paris gagnés',
+  wins_250:  '250 paris gagnés',
+  streak_3:  'série de 3',
+  streak_5:  'série de 5',
+  streak_10: 'série de 10',
+  streak_20: 'série de 20',
+};
+
 // Un badge tel que stocké : code + date de déblocage (pour le tri « récents »).
 interface UserBadge {
   badge_code: string;
@@ -100,6 +114,7 @@ export default function ClassementCommunauteTab() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [showReglementPoints, setShowReglementPoints] = useState(false);
+  const [showBadgesInfo, setShowBadgesInfo] = useState(false);
 
   // ✅ Realtime
   useRealtimeSync([
@@ -511,6 +526,20 @@ export default function ClassementCommunauteTab() {
 
       {/* Liste classement */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {/* En-tête : accès à l'explication des séries & badges */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 bg-gray-50">
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            Classement
+          </span>
+          <button
+            onClick={() => setShowBadgesInfo(true)}
+            className="flex items-center gap-1 text-xs font-medium text-rugby-gold hover:text-rugby-bronze transition-colors"
+          >
+            <Flame className="w-3.5 h-3.5" fill="currentColor" />
+            Séries &amp; badges
+            <HelpCircle className="w-3.5 h-3.5" />
+          </button>
+        </div>
         {displayedUsers.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             Aucun utilisateur trouvé
@@ -721,6 +750,106 @@ export default function ClassementCommunauteTab() {
               <div className="sticky bottom-0 bg-gray-50 p-4 border-t">
                 <button
                   onClick={() => setShowReglementPoints(false)}
+                  className="w-full bg-rugby-gold hover:bg-rugby-bronze text-white font-semibold py-3 rounded-lg transition-colors"
+                >
+                  Compris !
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal Explication Séries & Badges */}
+      {showBadgesInfo && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-50"
+            onClick={() => setShowBadgesInfo(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+            <div
+              className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-rugby-gold text-white p-4 flex items-center justify-between z-10">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <Award className="w-5 h-5" />
+                  Séries &amp; Badges
+                </h3>
+                <button
+                  onClick={() => setShowBadgesInfo(false)}
+                  className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <p className="text-sm text-gray-700">
+                  Chaque pari gagné fait grimper votre <strong>série</strong> et vous
+                  rapproche de nouveaux <strong>badges</strong>. Ils sont affichés à
+                  côté de votre pseudo dans le classement.
+                </p>
+
+                {/* La série */}
+                <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                  <h4 className="font-bold text-orange-900 mb-2 flex items-center gap-1.5">
+                    <Flame className="w-4 h-4 text-orange-600" fill="currentColor" />
+                    La série
+                  </h4>
+                  <p className="text-sm text-gray-700">
+                    Le nombre de paris gagnés <strong>d'affilée</strong>, toutes
+                    compétitions confondues. Un pari perdu la remet à zéro. Elle
+                    s'affiche dès 2 paris gagnés consécutifs.
+                  </p>
+                </div>
+
+                {/* Badges de volume */}
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <h4 className="font-bold text-blue-900 mb-3">🎖️ Badges de paris gagnés</h4>
+                  <div className="space-y-2.5 text-sm">
+                    {['wins_1','wins_10','wins_25','wins_50','wins_100','wins_250'].map(code => {
+                      const def = BADGES[code];
+                      const Icone = def.icon;
+                      return (
+                        <div key={code} className="flex items-center gap-2.5">
+                          <Icone className="w-5 h-5 flex-shrink-0" style={{ color: def.color }} />
+                          <span className="font-semibold text-gray-800">{def.label}</span>
+                          <span className="text-gray-500 ml-auto">{BADGE_CONDITIONS[code]}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Badges de série */}
+                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                  <h4 className="font-bold text-purple-900 mb-3">🔥 Badges de série</h4>
+                  <div className="space-y-2.5 text-sm">
+                    {['streak_3','streak_5','streak_10','streak_20'].map(code => {
+                      const def = BADGES[code];
+                      const Icone = def.icon;
+                      return (
+                        <div key={code} className="flex items-center gap-2.5">
+                          <Icone className="w-5 h-5 flex-shrink-0" style={{ color: def.color }} />
+                          <span className="font-semibold text-gray-800">{def.label}</span>
+                          <span className="text-gray-500 ml-auto">{BADGE_CONDITIONS[code]}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-600 bg-gray-50 rounded p-3">
+                  💡 Le classement affiche vos 3 badges les plus récents. Un badge
+                  débloqué est acquis définitivement.
+                </p>
+              </div>
+
+              <div className="sticky bottom-0 bg-gray-50 p-4 border-t">
+                <button
+                  onClick={() => setShowBadgesInfo(false)}
                   className="w-full bg-rugby-gold hover:bg-rugby-bronze text-white font-semibold py-3 rounded-lg transition-colors"
                 >
                   Compris !
