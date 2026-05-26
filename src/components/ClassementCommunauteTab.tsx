@@ -13,6 +13,27 @@ import axios from 'axios';
 import { getSaisonCourante } from '../utils/season';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
+// ─── Catalogue des badges (miroir de top14-api/lib/gamification.js) ───
+// emoji : pictogramme affiché dans le classement.
+const BADGES: Record<string, { label: string; emoji: string }> = {
+  wins_1:    { label: 'Première victoire', emoji: '🎯' },
+  wins_10:   { label: 'Apprenti parieur',  emoji: '🥉' },
+  wins_25:   { label: 'Parieur confirmé',  emoji: '🥈' },
+  wins_50:   { label: 'Fin connaisseur',   emoji: '🥇' },
+  wins_100:  { label: 'Expert du pari',    emoji: '💎' },
+  wins_250:  { label: 'Légende',           emoji: '👑' },
+  streak_3:  { label: 'Sur sa lancée',     emoji: '🔥' },
+  streak_5:  { label: 'En feu',            emoji: '⚡' },
+  streak_10: { label: 'Série royale',      emoji: '🌟' },
+  streak_20: { label: 'Intouchable',       emoji: '🏆' },
+};
+
+// Un badge tel que stocké : code + date de déblocage (pour le tri « récents »).
+interface UserBadge {
+  badge_code: string;
+  unlocked_at: string;
+}
+
 interface UserRanking {
   rang: number;
   user_id: string;
@@ -25,6 +46,44 @@ interface UserRanking {
   points?: number;
   matchsPronostiques?: number;
   tauxReussite?: number;
+  // ─── Gamification (peut être absent tant que le backend n'a pas tourné) ───
+  streak?: number;          // streak_courante
+  badges?: UserBadge[];     // badges débloqués, triés du plus récent au plus ancien
+}
+
+// ─── Affichage gamification d'une ligne : streak 🔥 + 3 badges récents ───
+// Ne rend rien si le joueur n'a ni série (>= 2) ni badge -> dégradation
+// propre tant que le backend n'a pas alimenté les tables.
+function GamificationLigne({ streak, badges }: { streak?: number; badges?: UserBadge[] }) {
+  const afficheStreak = (streak || 0) >= 2;
+  const badgesRecents = (badges || []).slice(0, 3);
+  if (!afficheStreak && badgesRecents.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-1.5 mt-1">
+      {afficheStreak && (
+        <span
+          className="inline-flex items-center gap-0.5 text-xs font-bold text-orange-600"
+          title={`Série en cours : ${streak} paris gagnés`}
+        >
+          🔥 {streak}
+        </span>
+      )}
+      {badgesRecents.length > 0 && (
+        <span className="inline-flex items-center gap-0.5">
+          {badgesRecents.map(b => {
+            const def = BADGES[b.badge_code];
+            if (!def) return null;
+            return (
+              <span key={b.badge_code} className="text-sm leading-none" title={def.label}>
+                {def.emoji}
+              </span>
+            );
+          })}
+        </span>
+      )}
+    </div>
+  );
 }
 
 export default function ClassementCommunauteTab() {
@@ -41,6 +100,8 @@ export default function ClassementCommunauteTab() {
   useRealtimeSync([
     { table: 'user_credits', onUpdate: () => loadAll() },
     { table: 'user_stats', onUpdate: () => loadAll() },
+    { table: 'user_gamification', onUpdate: () => loadAll() },
+    { table: 'user_badges', onUpdate: () => loadAll() },
   ]);
 
   // ✅ Un seul useEffect — charge le user EN PREMIER puis le classement
@@ -86,6 +147,54 @@ export default function ClassementCommunauteTab() {
     }
   }
 
+  // ─── Récupère streak + badges pour une liste d'users et les fusionne ───
+  // dans les lignes du classement. Lecture directe Supabase (même pattern
+  // que get_public_profiles pour les avatars). En cas d'échec, on renvoie
+  // les lignes inchangées : le classement s'affiche sans la gamification.
+  async function enrichirAvecGamification(rows: UserRanking[]): Promise<UserRanking[]> {
+    const ids = rows.map(r => r.user_id);
+    if (ids.length === 0) return rows;
+    try {
+      const [gamRes, badgesRes] = await Promise.all([
+        supabase
+          .from('user_gamification')
+          .select('user_id, streak_courante')
+          .in('user_id', ids),
+        supabase
+          .from('user_badges')
+          .select('user_id, badge_code, unlocked_at')
+          .in('user_id', ids),
+      ]);
+
+      const streakParUser: Record<string, number> = {};
+      for (const g of gamRes.data || []) {
+        streakParUser[g.user_id] = g.streak_courante || 0;
+      }
+
+      const badgesParUser: Record<string, UserBadge[]> = {};
+      for (const b of badgesRes.data || []) {
+        (badgesParUser[b.user_id] = badgesParUser[b.user_id] || []).push({
+          badge_code: b.badge_code,
+          unlocked_at: b.unlocked_at,
+        });
+      }
+      // Tri du plus récent au plus ancien -> on affichera les 3 premiers.
+      for (const uid of Object.keys(badgesParUser)) {
+        badgesParUser[uid].sort((a, b) =>
+          (b.unlocked_at || '').localeCompare(a.unlocked_at || ''));
+      }
+
+      return rows.map(r => ({
+        ...r,
+        streak: streakParUser[r.user_id] || 0,
+        badges: badgesParUser[r.user_id] || [],
+      }));
+    } catch (e) {
+      console.warn('Gamification indisponible (classement) :', e);
+      return rows;
+    }
+  }
+
   async function loadClassementJetons(userId: string | null) {
     try {
       const response = await axios.get('https://top14-api-production.up.railway.app/api/classement/jetons?limit=100');
@@ -100,10 +209,11 @@ export default function ClassementCommunauteTab() {
             avatar: profiles.find((p: any) => p.user_id === u.user_id)?.avatar_url || null
           }))
         : data;
-      setUsers(dataWithAvatars);
-      setFilteredUsers(dataWithAvatars);
+      const dataEnrichie = await enrichirAvecGamification(dataWithAvatars);
+      setUsers(dataEnrichie);
+      setFilteredUsers(dataEnrichie);
       if (userId) {
-        const userRank = dataWithAvatars.find((u: UserRanking) => u.user_id === userId);
+        const userRank = dataEnrichie.find((u: UserRanking) => u.user_id === userId);
         setCurrentUserRank(userRank ? userRank.rang : null);
       }
     } catch (error) {
@@ -143,10 +253,12 @@ export default function ClassementCommunauteTab() {
         };
       });
 
-      setUsers(formattedData);
-      setFilteredUsers(formattedData);
+      const formattedDataEnrichie = await enrichirAvecGamification(formattedData);
+
+      setUsers(formattedDataEnrichie);
+      setFilteredUsers(formattedDataEnrichie);
       if (userId) {
-        const userRank = formattedData.find((u: UserRanking) => u.user_id === userId);
+        const userRank = formattedDataEnrichie.find((u: UserRanking) => u.user_id === userId);
         setCurrentUserRank(userRank ? userRank.rang : null);
       }
     } catch (error) {
@@ -500,6 +612,7 @@ export default function ClassementCommunauteTab() {
                       {user.benefice_net >= 0 ? '+' : ''}{user.benefice_net} net
                     </p>
                   )}
+                  <GamificationLigne streak={user.streak} badges={user.badges} />
                 </div>
 
                 {/* Valeur principale */}
