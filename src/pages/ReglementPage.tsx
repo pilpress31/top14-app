@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Coins, Gift, Calendar, TrendingUp, Zap, Award, Flame, Share2 } from 'lucide-react';
+import { ArrowLeft, Trophy, Coins, Gift, Calendar, TrendingUp, Zap, Award, Flame, Share2, Shield } from 'lucide-react';
 
 export default function ReglementPage() {
   const navigate = useNavigate();
@@ -432,6 +432,54 @@ export default function ReglementPage() {
             pari en cours en image et la partager sur vos réseaux. La carte met en
             regard <strong>votre pronostic</strong> et celui de <strong>l'IA</strong>,
             au format story. Une bonne façon de défier vos amis !
+          </p>
+        </section>
+
+        {/* Ligues privées */}
+        <section className="bg-white rounded-lg shadow-sm p-6 border border-rugby-gray">
+          <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Ligues privées
+          </h3>
+          <p className="text-sm text-gray-700 leading-relaxed mb-4">
+            Créez votre propre ligue et affrontez vos amis sur un classement
+            rien qu'à vous. Le classement d'une ligue reprend le
+            <strong> classement par points</strong> de la saison en cours,
+            limité à ses membres.
+          </p>
+
+          <div className="space-y-3">
+            <div className="bg-rugby-gold/5 rounded-lg p-3 border border-rugby-gold/20">
+              <p className="font-semibold text-sm mb-1">🛡️ Créer &amp; rejoindre</p>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Chaque ligue a un code d'invitation. Partagez-le (ou son lien)
+                pour qu'on vous rejoigne, ou saisissez le code d'un ami. Un
+                joueur peut appartenir à <strong>5 ligues maximum</strong>.
+              </p>
+            </div>
+
+            <div className="bg-rugby-gold/5 rounded-lg p-3 border border-rugby-gold/20">
+              <p className="font-semibold text-sm mb-1">✉️ Inviter un joueur</p>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Le créateur d'une ligue peut aussi inviter un joueur déjà
+                inscrit par son pseudo. L'invité reçoit une notification et
+                choisit de l'accepter ou non.
+              </p>
+            </div>
+
+            <div className="bg-rugby-gold/5 rounded-lg p-3 border border-rugby-gold/20">
+              <p className="font-semibold text-sm mb-1">⚙️ Administration</p>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Le créateur gère sa ligue : la renommer, en exclure un membre
+                ou la supprimer. Les autres membres peuvent la quitter à tout
+                moment.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 mt-3 italic">
+            💡 Vos ligues sont accessibles depuis l'onglet « Mes Ligues » du
+            Classement, et depuis la page Plus.
           </p>
         </section>
 

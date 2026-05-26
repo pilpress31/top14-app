@@ -1,4 +1,4 @@
-import { X, Trophy, Coins, Calendar, TrendingUp, Zap, Award, Target, Hash, RefreshCw, ExternalLink, Flame } from 'lucide-react';
+import { X, Trophy, Coins, Calendar, TrendingUp, Zap, Award, Target, Hash, RefreshCw, ExternalLink, Flame, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ReglementModal({ isOpen, onClose }) {
@@ -286,6 +286,23 @@ export default function ReglementModal({ isOpen, onClose }) {
               </p>
               <p className="text-xs text-gray-500 mt-2 italic">
                 Détail des 10 badges dans le règlement complet.
+              </p>
+            </section>
+
+            {/* Ligues privées */}
+            <section>
+              <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Ligues privées
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Créez une ligue et affrontez vos amis sur un classement par
+                points rien qu'à vous. Invitez-les par code, par lien, ou
+                directement par leur pseudo. Jusqu'à <strong>5 ligues</strong>
+                {' '}par joueur.
+              </p>
+              <p className="text-xs text-gray-500 mt-2 italic">
+                Onglet « Mes Ligues » du Classement — détails dans le règlement complet.
               </p>
             </section>
 
