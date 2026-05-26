@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Coins, Gift, Calendar, TrendingUp, Zap, Award } from 'lucide-react';
+import { ArrowLeft, Trophy, Coins, Gift, Calendar, TrendingUp, Zap, Award, Flame, Share2 } from 'lucide-react';
 
 export default function ReglementPage() {
   const navigate = useNavigate();
@@ -34,7 +34,15 @@ export default function ReglementPage() {
             Chaque utilisateur commence avec <strong className="text-rugby-gold">1000 jetons virtuels</strong>. 
             Pronostiquez les scores, misez des jetons sur vos prédictions, et gagnez selon les résultats réels des matchs !
           </p>
-          <div className="mt-4 bg-rugby-gold/10 rounded-lg p-3 border border-rugby-gold/30">
+          <div className="mt-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
+            <p className="text-xs text-gray-700">
+              🏉 <strong>3 compétitions disponibles :</strong> Top 14, Pro D2 et Champions Cup.
+              En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la
+              <strong> mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2 et Champions Cup,
+              les paris portent uniquement sur le temps plein.
+            </p>
+          </div>
+          <div className="mt-3 bg-rugby-gold/10 rounded-lg p-3 border border-rugby-gold/30">
             <p className="text-xs text-gray-700">
               ⚠️ <strong>Important :</strong> Les jetons sont virtuels et n'ont aucune valeur monétaire.
             </p>
@@ -145,7 +153,7 @@ export default function ReglementPage() {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm">Score Exact Temps Plein</p>
-                <p className="text-xs text-gray-600">Trouvez le score final exact</p>
+                <p className="text-xs text-gray-600">Trouvez le score final exact — Top 14, Pro D2 et Champions Cup</p>
               </div>
             </div>
 
@@ -155,7 +163,7 @@ export default function ReglementPage() {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm">Score Exact Mi-Temps</p>
-                <p className="text-xs text-gray-600">Trouvez le score MT exact</p>
+                <p className="text-xs text-gray-600">Trouvez le score MT exact — Top 14 uniquement</p>
               </div>
             </div>
 
@@ -163,7 +171,7 @@ export default function ReglementPage() {
               <Award className="w-14 h-14 flex-shrink-0" />
               <div className="flex-1">
                 <p className="font-bold">Super Bonus : +1000</p>
-                <p className="text-xs">Les 2 scores exacts (FT + MT)</p>
+                <p className="text-xs">Les 2 scores exacts (FT + MT) — Top 14 uniquement</p>
               </div>
             </div>
           </div>
@@ -358,6 +366,73 @@ export default function ReglementPage() {
               ⚠️ <strong>Important :</strong> Cette fonctionnalité n'est pas encore active. Les dates et modalités seront communiquées ultérieurement.
             </p>
           </div>
+        </section>
+
+        {/* Séries & Badges */}
+        <section className="bg-white rounded-lg shadow-sm p-6 border border-rugby-gray">
+          <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+            <Flame className="w-5 h-5" />
+            Séries &amp; Badges
+          </h3>
+
+          <p className="text-sm text-gray-700 leading-relaxed mb-4">
+            Chaque pari gagné fait grimper votre <strong>série</strong> et vous
+            rapproche de nouveaux <strong>badges</strong>. Ils s'affichent à côté
+            de votre pseudo dans le classement de la Communauté.
+          </p>
+
+          <div className="bg-orange-50 rounded-lg p-4 border border-orange-200 mb-4">
+            <p className="font-bold text-orange-900 mb-2 text-sm flex items-center gap-2">
+              <Flame className="w-4 h-4" />
+              La série
+            </p>
+            <p className="text-xs text-gray-700 leading-relaxed">
+              C'est le nombre de paris gagnés <strong>d'affilée</strong>, toutes
+              compétitions confondues. Un pari perdu remet la série à zéro. Elle
+              apparaît dans le classement dès 2 paris gagnés consécutifs.
+            </p>
+          </div>
+
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mb-3">
+            <p className="font-bold text-blue-900 mb-3 text-sm">🎖️ Badges de paris gagnés</p>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between"><span>Première victoire</span><strong className="text-blue-700">1 pari gagné</strong></div>
+              <div className="flex justify-between"><span>Apprenti parieur</span><strong className="text-blue-700">10 paris gagnés</strong></div>
+              <div className="flex justify-between"><span>Parieur confirmé</span><strong className="text-blue-700">25 paris gagnés</strong></div>
+              <div className="flex justify-between"><span>Fin connaisseur</span><strong className="text-blue-700">50 paris gagnés</strong></div>
+              <div className="flex justify-between"><span>Expert du pari</span><strong className="text-blue-700">100 paris gagnés</strong></div>
+              <div className="flex justify-between"><span>Légende</span><strong className="text-blue-700">250 paris gagnés</strong></div>
+            </div>
+          </div>
+
+          <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+            <p className="font-bold text-purple-900 mb-3 text-sm">🔥 Badges de série</p>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between"><span>Sur sa lancée</span><strong className="text-purple-700">série de 3</strong></div>
+              <div className="flex justify-between"><span>En feu</span><strong className="text-purple-700">série de 5</strong></div>
+              <div className="flex justify-between"><span>Série royale</span><strong className="text-purple-700">série de 10</strong></div>
+              <div className="flex justify-between"><span>Intouchable</span><strong className="text-purple-700">série de 20</strong></div>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-600 mt-3 italic">
+            💡 Un badge débloqué est acquis définitivement. Le classement affiche
+            vos 3 badges les plus récents.
+          </p>
+        </section>
+
+        {/* Partager mon prono */}
+        <section className="bg-white rounded-lg shadow-sm p-6 border border-rugby-gray">
+          <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+            <Share2 className="w-5 h-5" />
+            Partager mon prono
+          </h3>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            Depuis la page <strong>Mes Paris</strong>, vous pouvez transformer un
+            pari en cours en image et la partager sur vos réseaux. La carte met en
+            regard <strong>votre pronostic</strong> et celui de <strong>l'IA</strong>,
+            au format story. Une bonne façon de défier vos amis !
+          </p>
         </section>
 
         {/* Règles importantes */}

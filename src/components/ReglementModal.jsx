@@ -1,4 +1,4 @@
-import { X, Trophy, Coins, Calendar, TrendingUp, Zap, Award, Target, Hash, RefreshCw, ExternalLink } from 'lucide-react';
+import { X, Trophy, Coins, Calendar, TrendingUp, Zap, Award, Target, Hash, RefreshCw, ExternalLink, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ReglementModal({ isOpen, onClose }) {
@@ -49,7 +49,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                 Système de jeu
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed mb-2">
-                Chaque utilisateur démarre avec <strong>1000 jetons virtuels</strong>. Pronostiquez les matchs du <strong>Top 14</strong> et du <strong>Pro D2</strong>, misez vos jetons et gagnez selon les résultats !
+                Chaque utilisateur démarre avec <strong>1000 jetons virtuels</strong>. Pronostiquez les matchs du <strong>Top 14</strong>, de la <strong>Pro D2</strong> et de la <strong>Champions Cup</strong>, misez vos jetons et gagnez selon les résultats !
               </p>
               <p className="text-sm text-gray-700 leading-relaxed">
                 Vous accumulez aussi des <strong>points de classement</strong> qui récompensent la précision de vos pronostics, indépendamment des mises.
@@ -86,7 +86,7 @@ export default function ReglementModal({ isOpen, onClose }) {
               </div>
 
               <p className="text-xs text-gray-600 mt-3 italic">
-                💡 En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la <strong>mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2, uniquement sur le temps plein.
+                💡 En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la <strong>mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2 et Champions Cup, uniquement sur le temps plein.
               </p>
             </section>
 
@@ -115,11 +115,11 @@ export default function ReglementModal({ isOpen, onClose }) {
             <section className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-4 border border-orange-300">
               <h3 className="text-lg font-bold text-orange-800 mb-3 flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                Bonus scores exacts (Top 14 uniquement)
+                Bonus scores exacts
               </h3>
 
               <p className="text-xs text-gray-700 mb-3">
-                Réservé aux paris <strong>Score exact</strong>. Les paris Vainqueur ne donnent pas de bonus mais ne nécessitent pas de deviner le score.
+                Réservé aux paris <strong>Score exact</strong>, dans les 3 compétitions. Les paris Vainqueur ne donnent pas de bonus mais ne nécessitent pas de deviner le score.
               </p>
 
               <div className="space-y-2">
@@ -129,7 +129,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-sm">Score exact Temps Plein</p>
-                    <p className="text-xs text-gray-600">Vous trouvez le score final exact</p>
+                    <p className="text-xs text-gray-600">Vous trouvez le score final exact — Top 14, Pro D2 et Champions Cup</p>
                   </div>
                 </div>
 
@@ -139,7 +139,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-sm">Score exact Mi-Temps</p>
-                    <p className="text-xs text-gray-600">Vous trouvez le score MT exact</p>
+                    <p className="text-xs text-gray-600">Vous trouvez le score MT exact — Top 14 uniquement</p>
                   </div>
                 </div>
 
@@ -147,7 +147,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                   <Award className="w-12 h-12 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-bold">Super Bonus : +1000</p>
-                    <p className="text-xs">Les 2 scores exacts (FT + MT) sur le même match</p>
+                    <p className="text-xs">Les 2 scores exacts (FT + MT) sur le même match — Top 14 uniquement</p>
                   </div>
                 </div>
               </div>
@@ -271,6 +271,22 @@ export default function ReglementModal({ isOpen, onClose }) {
                   <span>👑 Tous les paris du mois</span>
                 </div>
               </div>
+            </section>
+
+            {/* Séries & Badges */}
+            <section>
+              <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+                <Flame className="w-5 h-5" />
+                Séries &amp; badges
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Enchaînez les paris gagnés pour faire grimper votre <strong>série</strong> 🔥
+                et débloquer des <strong>badges</strong>, affichés à côté de votre pseudo
+                dans le classement Communauté. Un pari perdu remet la série à zéro.
+              </p>
+              <p className="text-xs text-gray-500 mt-2 italic">
+                Détail des 10 badges dans le règlement complet.
+              </p>
             </section>
 
             {/* Règles importantes */}
