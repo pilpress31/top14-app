@@ -34,6 +34,7 @@ import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 
 // Pages Auth
 import ParametresPage from './pages/ParametresPage';
+import InviterAmisPage from './pages/InviterAmisPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilPage from './pages/ProfilPage';
@@ -193,6 +194,7 @@ function AppContent() {
         <Route path="/plus" element={<ProtectedRoute><ParametresPage /></ProtectedRoute>} />
         <Route path="/profil" element={<ProtectedRoute><ProfilPage /></ProtectedRoute>} />
         <Route path="/ma-cagnotte" element={<ProtectedRoute><MaCagnotte /></ProtectedRoute>} />
+        <Route path="/inviter-amis" element={<ProtectedRoute><InviterAmisPage /></ProtectedRoute>} />
         <Route path="/mes-points" element={<ProtectedRoute><MesPoints /></ProtectedRoute>} />
         <Route path="/favoris" element={<ProtectedRoute><FavorisPage /></ProtectedRoute>} />
         <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
