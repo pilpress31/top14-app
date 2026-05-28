@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { ChevronRight, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X, AlertCircle, CheckCircle, Loader, Shield, Star } from "lucide-react";
+import { ChevronRight, User, Mail, MessageSquare, Flag, FileText, Bell, Coins, BookOpen, Check, X, AlertCircle, CheckCircle, Loader, Shield, Star, UserPlus } from "lucide-react";
 import AvisModal from "../components/AvisModal";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { supabase } from "../lib/supabaseClient";
@@ -223,6 +223,16 @@ Résultats du diagnostic :
         >
           <Shield className="h-5 w-5 text-rugby-gold" />
           <span className="flex-1 text-left text-gray-800 font-medium">Mes ligues</span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+        </button>
+
+        {/* Inviter des amis */}
+        <button
+          onClick={() => navigate('/inviter-amis')}
+          className="w-full px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-t border-gray-100"
+        >
+          <UserPlus className="h-5 w-5 text-rugby-gold" />
+          <span className="flex-1 text-left text-gray-800 font-medium">Inviter des amis</span>
           <ChevronRight className="h-5 w-5 text-gray-400" />
         </button>
       </div>
