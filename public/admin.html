@@ -2503,10 +2503,23 @@ async function loadCommAlgoJournees() {
     if (isHcup) {
       options += items.map(r => `<option value="${r}">${r}</option>`).join('');
     } else {
-      options += items.map(j => `<option value="${j}">J${j}</option>`).join('');
+      // Top14 : items = nombres. Pro D2 : items = { journee, round_label }.
+      // La value reste TOUJOURS le numéro de journée (le calcul filtre dessus) ;
+      // le libellé affiché est round_label si présent (phases finales), sinon J{n}.
+      options += items.map(it => {
+        const j = (typeof it === 'object' && it !== null) ? it.journee : it;
+        const label = (typeof it === 'object' && it !== null && it.round_label)
+          ? it.round_label
+          : ('J' + j);
+        return `<option value="${j}">${label}</option>`;
+      }).join('');
     }
     selJournee.innerHTML = options;
-    if (items.length > 0) selJournee.value = String(items[0]);
+    if (items.length > 0) {
+      const first = items[0];
+      const firstVal = (typeof first === 'object' && first !== null) ? first.journee : first;
+      selJournee.value = String(firstVal);
+    }
   } catch (e) {
     selJournee.innerHTML = '<option value="">❌ Erreur</option>';
     console.error('loadCommAlgoJournees:', e);
