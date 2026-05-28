@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, User, AlertCircle, CheckCircle, AtSign, Loader2, Ticket } from 'lucide-react'
 import axios from 'axios'
 
@@ -28,8 +28,38 @@ function RegisterPage() {
   const [codeValid, setCodeValid] = useState(null)
   const [codeMessage, setCodeMessage] = useState('')
 
+  // ── Parrainage : lien ?ref=<token> ──
+  const [searchParams] = useSearchParams()
+  const refToken = searchParams.get('ref') || ''
+  // null = pas vérifié ; true/false = résultat ; objet pour le pseudo du parrain
+  const [parrainageValide, setParrainageValide] = useState(false)
+  const [pseudoParrain, setPseudoParrain] = useState('')
+
   const { signUp } = useAuth()
   const navigate = useNavigate()
+
+  // ── Vérification du token de parrainage (?ref=) au chargement ──
+  useEffect(() => {
+    if (!refToken) return
+    let annule = false
+    ;(async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/referral/check`, {
+          params: { ref: refToken },
+        })
+        if (annule) return
+        if (res.data?.valid) {
+          setParrainageValide(true)
+          setPseudoParrain(res.data.pseudo_parrain || '')
+        } else {
+          setParrainageValide(false)
+        }
+      } catch {
+        if (!annule) setParrainageValide(false)
+      }
+    })()
+    return () => { annule = true }
+  }, [refToken])
 
   // ── Vérification pseudo en temps réel (debounced) ──
   useEffect(() => {
@@ -117,8 +147,10 @@ function RegisterPage() {
     setLoading(true)
 
     // Validations
-    if (!email || !password || !nom || !prenom || !pseudo || !invitationCode) {
-      setError('Veuillez remplir tous les champs, y compris le code d\'invitation')
+    if (!email || !password || !nom || !prenom || !pseudo || (!invitationCode && !parrainageValide)) {
+      setError(parrainageValide
+        ? 'Veuillez remplir tous les champs'
+        : 'Veuillez remplir tous les champs, y compris le code d\'invitation')
       setLoading(false)
       return
     }
@@ -136,7 +168,7 @@ function RegisterPage() {
       return
     }
 
-    if (!codeValid) {
+    if (!parrainageValide && !codeValid) {
       setError('Le code d\'invitation est invalide ou déjà utilisé')
       setLoading(false)
       return
@@ -182,7 +214,10 @@ function RegisterPage() {
         user_id: userId,
         pseudo,
         nom,
-        prenom
+        prenom,
+        // Parrainage : transmet le token si présent. Le backend valide à
+        // nouveau et, si OK, crée le compte en 'early' + parrain_id.
+        ...(parrainageValide && refToken ? { ref: refToken } : {})
       })
     } catch (profileError) {
       console.error('Erreur création profil:', profileError)
@@ -190,15 +225,18 @@ function RegisterPage() {
     }
 
     // ── Consommer le code d'invitation → marque is_beta = true ──
-    try {
-      await axios.post(`${API_URL}/api/invitations/consume`, {
-        code: invitationCode.trim().toUpperCase(),
-        user_id: userId
-      })
-      console.log('✅ Code d\'invitation consommé — accès bêta accordé')
-    } catch (codeError) {
-      console.error('Erreur consommation code:', codeError)
-      // On continue — l'utilisateur est créé, on gérera le code manuellement si besoin
+    // (sauté en cas de parrainage : aucun code à consommer)
+    if (!parrainageValide) {
+      try {
+        await axios.post(`${API_URL}/api/invitations/consume`, {
+          code: invitationCode.trim().toUpperCase(),
+          user_id: userId
+        })
+        console.log('✅ Code d\'invitation consommé — accès bêta accordé')
+      } catch (codeError) {
+        console.error('Erreur consommation code:', codeError)
+        // On continue — l'utilisateur est créé, on gérera le code manuellement si besoin
+      }
     }
 
     setSuccess(true)
@@ -251,57 +289,71 @@ function RegisterPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
 
-              {/* Encart bêta */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
-                <p className="text-xs text-green-800">
-                  🎟️ <strong>Phase bêta</strong> — Un code d'invitation est requis pour s'inscrire.
-                  Contactez <a href="mailto:contact@top14pronos.fr" className="underline">contact@top14pronos.fr</a> pour en obtenir un.
-                </p>
-              </div>
+              {parrainageValide ? (
+                /* Parrainage valide : pas de code requis */
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+                  <p className="text-sm text-green-800 font-semibold flex items-center gap-1">
+                    🎉 Invitation acceptée{pseudoParrain ? ` — parrainé par ${pseudoParrain}` : ''}
+                  </p>
+                  <p className="text-xs text-green-700 mt-1">
+                    Pas besoin de code : ton accès est offert jusqu'au 30 septembre 2026. Crée ton compte ci-dessous !
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Encart bêta */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+                    <p className="text-xs text-green-800">
+                      🎟️ <strong>Phase bêta</strong> — Un code d'invitation est requis pour s'inscrire.
+                      Contactez <a href="mailto:contact@top14pronos.fr" className="underline">contact@top14pronos.fr</a> pour en obtenir un.
+                    </p>
+                  </div>
 
-              {/* Code d'invitation — en premier pour l'aspect "sésame" */}
-              <div>
-                <label htmlFor="invitationCode" className="block text-sm font-medium text-gray-700 mb-2">
-                  Code d'invitation <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Ticket className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <input
-                    id="invitationCode"
-                    type="text"
-                    value={invitationCode}
-                    onChange={(e) => setInvitationCode(e.target.value.toUpperCase())}
-                    className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 transition-colors font-mono tracking-wider ${
-                      invitationCode && codeValid === true
-                        ? 'border-green-500 focus:ring-green-500 bg-green-50'
-                        : invitationCode && codeValid === false
-                        ? 'border-red-500 focus:ring-red-500 bg-red-50'
-                        : 'border-gray-300 focus:ring-rugby-gold'
-                    }`}
-                    placeholder="TOP14-XXXX-XXXX"
-                    disabled={loading}
-                    maxLength={16}
-                  />
-                  <div className="absolute right-3 top-3">
-                    {checkingCode && <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />}
-                    {!checkingCode && invitationCode && codeValid === true && (
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    )}
-                    {!checkingCode && invitationCode && codeValid === false && (
-                      <AlertCircle className="h-5 w-5 text-red-500" />
+                  {/* Code d'invitation — en premier pour l'aspect "sésame" */}
+                  <div>
+                    <label htmlFor="invitationCode" className="block text-sm font-medium text-gray-700 mb-2">
+                      Code d'invitation <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Ticket className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <input
+                        id="invitationCode"
+                        type="text"
+                        value={invitationCode}
+                        onChange={(e) => setInvitationCode(e.target.value.toUpperCase())}
+                        className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 transition-colors font-mono tracking-wider ${
+                          invitationCode && codeValid === true
+                            ? 'border-green-500 focus:ring-green-500 bg-green-50'
+                            : invitationCode && codeValid === false
+                            ? 'border-red-500 focus:ring-red-500 bg-red-50'
+                            : 'border-gray-300 focus:ring-rugby-gold'
+                        }`}
+                        placeholder="TOP14-XXXX-XXXX"
+                        disabled={loading}
+                        maxLength={16}
+                      />
+                      <div className="absolute right-3 top-3">
+                        {checkingCode && <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />}
+                        {!checkingCode && invitationCode && codeValid === true && (
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        )}
+                        {!checkingCode && invitationCode && codeValid === false && (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                    {codeMessage && (
+                      <p className={`text-xs mt-1 flex items-center gap-1 ${codeValid ? 'text-green-600' : 'text-red-600'}`}>
+                        {codeValid
+                          ? <CheckCircle className="h-3 w-3" />
+                          : <AlertCircle className="h-3 w-3" />
+                        }
+                        {codeMessage}
+                      </p>
                     )}
                   </div>
-                </div>
-                {codeMessage && (
-                  <p className={`text-xs mt-1 flex items-center gap-1 ${codeValid ? 'text-green-600' : 'text-red-600'}`}>
-                    {codeValid
-                      ? <CheckCircle className="h-3 w-3" />
-                      : <AlertCircle className="h-3 w-3" />
-                    }
-                    {codeMessage}
-                  </p>
-                )}
-              </div>
+                </>
+              )}
 
               {/* Pseudo */}
               <div>
@@ -456,7 +508,7 @@ function RegisterPage() {
               {/* Bouton d'inscription */}
               <button
                 type="submit"
-                disabled={loading || checkingPseudo || checkingCode || pseudoAvailable !== true || codeValid !== true}
+                disabled={loading || checkingPseudo || checkingCode || pseudoAvailable !== true || (!parrainageValide && codeValid !== true)}
                 className="w-full bg-rugby-gold hover:bg-rugby-orange text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Création...' : 'Créer mon compte'}
