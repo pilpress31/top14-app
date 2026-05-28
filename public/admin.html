@@ -1368,13 +1368,19 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
 
       <!-- Bloc Engagement -->
       <div class="card" id="commEngagementCard">
-        <div class="card-title">👥 Engagement communauté</div>
+        <div class="card-header">
+          <div class="card-title">👥 Engagement communauté</div>
+          <button class="btn" onclick="loadCommEngagement()">↻ Actualiser</button>
+        </div>
         <div id="commEngagementContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
       </div>
 
       <!-- Bloc Leaderboard -->
       <div class="card" id="commLeaderboardCard">
-        <div class="card-title">🏆 Leaderboard saison</div>
+        <div class="card-header">
+          <div class="card-title">🏆 Leaderboard saison</div>
+          <button class="btn" onclick="loadCommLeaderboard()">↻ Actualiser</button>
+        </div>
         <div id="commLeaderboardContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
       </div>
 
@@ -1449,7 +1455,10 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
 
       <!-- Bloc Teaser -->
       <div class="card" id="commTeaserCard">
-        <div class="card-title">🔮 Prochains matchs — Prédictions IA</div>
+        <div class="card-header">
+          <div class="card-title">🔮 Prochains matchs — Prédictions IA</div>
+          <button class="btn" onclick="loadCommTeaser()">↻ Actualiser</button>
+        </div>
         <div id="commTeaserContainer"><p style="color:var(--muted2);font-size:13px">Chargement...</p></div>
       </div>
 
