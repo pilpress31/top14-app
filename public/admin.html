@@ -2583,7 +2583,8 @@ async function commChargerStatsAlgo() {
     if (isHcup) {
       journeeDisplay = (journee === '__all__') ? 'Tous' : journee;
     } else {
-      journeeDisplay = (journee === '__all__') ? 'Toutes' : ('J' + (data.journee || journee));
+      journeeDisplay = (journee === '__all__') ? 'Toutes'
+        : (data.round_label || ('J' + (data.journee || journee)));
     }
     document.getElementById('commAlgoJourneeVal').textContent = journeeDisplay;
     document.getElementById('commAlgoPctFT').textContent = (data.pct_ft != null ? data.pct_ft : '—') + '%';
