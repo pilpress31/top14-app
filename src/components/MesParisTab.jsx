@@ -462,15 +462,31 @@ export default function MesParisTab() {
                         🏉 Pro D2
                       </span>
                     )}
-                    {/* Badge Barrage / Accession */}
-                    {isD2 && bet.round && bet.round !== 'Journée' && (
-                      <span className="px-2 py-1 rounded-full text-[10px] font-bold"
-                        style={bet.round === 'Accession'
-                          ? { backgroundColor: '#7c3aed', color: '#fff' }
-                          : { backgroundColor: '#00174D', color: '#97C1FE' }}>
-                        {bet.round === 'Accession' ? '⚡ Accession' : '🏆 Barrage'}
-                      </span>
-                    )}
+                    {/* Badge phase finale D2 (Barrage / Demi-finale / Finale / Accession) */}
+                    {isD2 && bet.round && bet.round !== 'Journée' && (() => {
+                      // Mapping aligné sur AlgoPronosTab.jsx pour une cohérence
+                      // visuelle entre les écrans. NAVY = phases finales D2 ;
+                      // PURPLE = match d'Accession.
+                      const NAVY   = { backgroundColor: '#00174D', color: '#97C1FE' };
+                      const PURPLE = { backgroundColor: '#7c3aed', color: '#fff' };
+                      const D2_BADGE = {
+                        'Demi-finale 1': { label: '🏉 Demi-finale 1', style: NAVY },
+                        'Demi-finale 2': { label: '🏉 Demi-finale 2', style: NAVY },
+                        'Demi-finale':   { label: '🏉 Demi-finale',   style: NAVY },
+                        'Barrage 1':     { label: '🏆 Barrage 1',     style: NAVY },
+                        'Barrage 2':     { label: '🏆 Barrage 2',     style: NAVY },
+                        'Barrage':       { label: '🏆 Barrage',       style: NAVY },
+                        'Finale':        { label: '🏆 Finale',        style: NAVY },
+                        'Accession':     { label: '⚡ Accession',     style: PURPLE },
+                      };
+                      // Fallback : round inattendu -> affiché tel quel (préfixé 🏉)
+                      const badge = D2_BADGE[bet.round] || { label: `🏉 ${bet.round}`, style: NAVY };
+                      return (
+                        <span className="px-2 py-1 rounded-full text-[10px] font-bold" style={badge.style}>
+                          {badge.label}
+                        </span>
+                      );
+                    })()}
                     <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-white/60">
                       {bet.bet_type === 'MT' ? '⏱️ Score MT'
                         : bet.bet_type === 'WINNER_FT' ? '🎯 Vainqueur FT'
