@@ -862,13 +862,12 @@ export default function MaCagnotte() {
         
         const placedTx = txs.find(t => t.type === 'bet_placed' && t.bet_id === bet.id);
         const payout = bet.payout || Math.floor(bet.stake * (bet.odds || 1));
-        const isTop14 = !bet.championnat || bet.championnat === 'top14';
-        
-        // Top14 : bet_placed existe en BDD → la mise est déjà déduite du solde
-        //         → on affiche le payout brut (gain total)
-        // HCup/Pro D2 : pas de bet_placed → la mise n'a pas été tracée séparément
-        //               → on affiche le gain NET (payout - stake)
-        const amount = isTop14 ? payout : (payout - bet.stake);
+        // Toutes compétitions : credit_transactions.amount = payout brut
+        // (convention unifiée par update_user_balance, RPC commune).
+        // Ce fallback ne se déclenche que pour les paris won dont la vraie
+        // transaction n'est pas (encore) visible — typiquement pendant la
+        // fenêtre Realtime juste après résolution.
+        const amount = payout;
         
         transactionsFiltered.push({
           id: `won_${bet.id}`,
