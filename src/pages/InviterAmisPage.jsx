@@ -69,21 +69,32 @@ export default function InviterAmisPage() {
     }
   };
 
-  // ── Partage natif (Web Share API, fallback = copier) ──
+  // ── Partage : Web Share API uniquement sur mobile (sinon copie) ──
   const partager = async () => {
     if (!lien) return;
     const titre = 'Rejoins-moi sur Top 14 Pronos';
     const texte = 'Je joue aux pronos rugby sur Top 14 Pronos. Inscris-toi avec mon lien, c\'est gratuit !';
-    if (navigator.share) {
+
+    // Sur desktop, navigator.share peut exister mais se comporter de
+    // façon inconsistante (panneau invisible, échec silencieux). On
+    // limite le partage natif aux clients qui s'annoncent mobiles ;
+    // ailleurs, on copie le lien (avec retour visuel).
+    const estMobile = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent || '');
+
+    if (estMobile && typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: titre, text: texte, url: lien });
-      } catch {
-        // Annulation utilisateur : on ne fait rien
+        return;
+      } catch (err) {
+        // L'utilisateur peut avoir annulé — on ne bascule sur copie
+        // QUE si ce n'est pas une annulation explicite.
+        if (err && err.name === 'AbortError') return;
+        // Sinon : fallback copie (échec API)
       }
-    } else {
-      // Pas de Web Share API (desktop) → fallback copie
-      copier();
     }
+
+    // Desktop, ou API absente/échouée → copier
+    copier();
   };
 
   // ── Formatage date ──
