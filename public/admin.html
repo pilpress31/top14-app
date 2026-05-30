@@ -305,6 +305,8 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
     <button class="tab" onclick="showTab('invitations', this)">🎟️ Invitations</button>
     <button class="tab" onclick="showTab('mail', this)">📧 Mail</button>
     <button class="tab" onclick="showTab('communication', this)">📊 Communication</button>
+    <button class="tab" onclick="showTab('tickets', this)">🎲 Tickets Top14</button>
+
   </div>
 
   <div class="content">
@@ -1335,6 +1337,39 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
       </div>
 
     </div>
+
+
+
+    <!-- TICKETS TOP14 -->
+    <div id="panel-tickets" class="panel">
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <span>🎲 Tickets Top14</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <label for="ticketsJournee" style="font-size:13px;color:var(--muted);">Journée :</label>
+            <select id="ticketsJournee" onchange="chargerTickets()"
+              style="padding:6px 10px;border-radius:var(--border-radius-md);background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:13px;">
+            </select>
+            <button onclick="chargerTickets()"
+              style="padding:6px 12px;border-radius:var(--border-radius-md);background:var(--surface2);color:var(--text);border:1px solid var(--border);cursor:pointer;font-size:13px;">
+              🔄 Actualiser
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:13px;color:var(--muted);">
+          <input type="checkbox" id="ticketsCacherFaible" onchange="renderTickets()" style="cursor:pointer;">
+          <label for="ticketsCacherFaible" style="cursor:pointer;">Cacher les paris à confiance faible (⚪ &lt; 55 %)</label>
+        </div>
+
+        <div id="ticketsContenu">
+          <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">Sélectionnez une journée…</div>
+        </div>
+      </div>
+    </div>
+
+
+
 
     <!-- COMMUNICATION -->
     <div id="panel-communication" class="panel">
@@ -4510,6 +4545,199 @@ function exportDiagCSV() {
   a.href = url; a.download = 'transactions_diagnostic.csv'; a.click();
   URL.revokeObjectURL(url);
 }
+
+// État local
+let _ticketsData = null;
+
+// Charge les tickets via l'API
+async function chargerTickets() {
+  const sel = document.getElementById('ticketsJournee');
+  const journee = sel.value ? Number(sel.value) : null;
+  const container = document.getElementById('ticketsContenu');
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement…</div>';
+  try {
+    const url = journee ? `/api/admin/tickets-top14?journee=${journee}` : '/api/admin/tickets-top14';
+    const res = await fetch(url, { headers: { 'x-admin-token': localStorage.getItem('adminToken') || '' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _ticketsData = await res.json();
+    peuplerSelectJournees();
+    renderTickets();
+  } catch (e) {
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:#ef4444;">Erreur : ${e.message}</div>`;
+  }
+}
+
+// Peuple le <select> des journées disponibles
+function peuplerSelectJournees() {
+  const sel = document.getElementById('ticketsJournee');
+  const journees = _ticketsData?.journees_disponibles || [];
+  const courant = _ticketsData?.journee;
+  // Évite de re-peupler à chaque rafraîchissement
+  if (sel.options.length !== journees.length) {
+    sel.innerHTML = journees.map(j => `<option value="${j}">J${j}</option>`).join('');
+  }
+  if (courant) sel.value = courant;
+}
+
+// Badge de niveau de confiance
+function badgeConfiance(niveau, pct) {
+  const map = {
+    fort:   { emoji: '🟢', color: '#16a34a' },
+    moyen:  { emoji: '🟡', color: '#eab308' },
+    faible: { emoji: '⚪', color: '#9ca3af' },
+  };
+  const b = map[niveau] || map.faible;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:${b.color};font-weight:600;">${b.emoji} ${pct}%</span>`;
+}
+
+// Calcul du gain potentiel (pari simple)
+function fmtGain(mise, cote) {
+  if (!mise || !cote) return '0,00 €';
+  return (mise * cote).toFixed(2).replace('.', ',') + ' €';
+}
+
+// Rendu de la page
+function renderTickets() {
+  const container = document.getElementById('ticketsContenu');
+  if (!_ticketsData) { container.innerHTML = ''; return; }
+
+  const cacherFaible = document.getElementById('ticketsCacherFaible').checked;
+  const { journee, matchs = [], systeme } = _ticketsData;
+
+  if (!journee || matchs.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Aucun match pour cette journée.</div>';
+    return;
+  }
+
+  let html = '';
+
+  // ─── Section paris simples par match ───
+  html += matchs.map(m => {
+    const parisVisibles = cacherFaible
+      ? m.paris.filter(p => p.niveau !== 'faible')
+      : m.paris;
+    if (parisVisibles.length === 0) return ''; // tout filtré
+
+    const date = m.date_match ? new Date(m.date_match).toLocaleString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+
+    return `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+          <div style="font-weight:600;font-size:15px;">${m.equipe_domicile} <span style="color:var(--muted);font-weight:normal;">vs</span> ${m.equipe_exterieure}</div>
+          <div style="font-size:11px;color:var(--muted);">${date}</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+          Score prédit FT : <strong style="color:var(--text);">${m.score_predit}</strong> · MT : ${m.score_predit_mt}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${parisVisibles.map((p, idx) => `
+            <div class="ticket-pari" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface);border-radius:var(--border-radius-md);gap:10px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;">
+                <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px;">${p.categorie}</div>
+                <div style="font-size:13px;font-weight:500;">${p.libelle}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                ${badgeConfiance(p.niveau, p.confiance_pct)}
+                <span style="font-size:12px;color:var(--muted);">cote ${p.cote ? p.cote.toFixed(2).replace('.', ',') : '—'}${p.cote_source === 'estimee' ? ' <span style="font-size:9px;opacity:0.6;">(est.)</span>' : ''}</span>
+                <span style="display:flex;align-items:center;gap:4px;font-size:12px;">
+                  <input type="number" min="0" step="0.5" placeholder="mise"
+                    style="width:60px;padding:3px 6px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;"
+                    oninput="this.nextElementSibling.textContent = '→ ' + (this.value && ${p.cote || 0} ? (this.value * ${p.cote || 0}).toFixed(2).replace('.', ',') + ' €' : '0 €')">
+                  <span style="color:#16a34a;font-weight:600;min-width:60px;">→ 0 €</span>
+                </span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // ─── Section paris système ───
+  if (systeme) {
+    if (systeme.possible) {
+      html += `
+        <div style="background:linear-gradient(135deg, rgba(212,160,23,0.08), rgba(212,160,23,0.02));border:2px solid var(--accent);border-radius:var(--border-radius-lg);padding:20px;margin-top:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+            <div style="font-size:16px;font-weight:600;color:var(--accent);">🎯 Paris système — ${systeme.scenario}</div>
+            <div style="font-size:13px;color:var(--muted);">${systeme.description}</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0;font-size:12px;">
+            <div style="background:var(--surface2);padding:10px;border-radius:var(--border-radius-md);text-align:center;">
+              <div style="color:var(--muted);">Combinés</div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);">${systeme.combinaisons_nb}</div>
+            </div>
+            <div style="background:var(--surface2);padding:10px;border-radius:var(--border-radius-md);text-align:center;">
+              <div style="color:var(--muted);">Proba de gain</div>
+              <div style="font-size:18px;font-weight:700;color:#16a34a;">${Math.round(systeme.proba_gain*100)}%</div>
+            </div>
+            <div style="background:var(--surface2);padding:10px;border-radius:var(--border-radius-md);text-align:center;">
+              <div style="color:var(--muted);">Cote moyenne combiné</div>
+              <div style="font-size:18px;font-weight:700;color:var(--text);">${systeme.cote_moyenne_combine.toFixed(2).replace('.', ',')}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Sélection (3 paris) :</div>
+            ${systeme.selection.map(s => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface);border-radius:var(--border-radius-md);margin-bottom:6px;gap:10px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                  <div style="font-size:11px;color:var(--muted);">${s.match_label}</div>
+                  <div style="font-size:13px;font-weight:500;">${s.categorie} : ${s.libelle}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:12px;">
+                  <span style="color:#16a34a;font-weight:600;">${s.confiance_pct}%</span>
+                  <span style="color:var(--muted);">cote ${s.cote.toFixed(2).replace('.', ',')}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <label style="font-size:13px;color:var(--muted);">Mise par combiné :</label>
+            <input type="number" id="systemeMise" min="0" step="0.5" value="1"
+              style="width:80px;padding:6px 10px;border-radius:var(--border-radius-md);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;"
+              oninput="majSystemeGain()">
+            <span style="font-size:13px;color:var(--muted);">€</span>
+            <span style="font-size:13px;color:var(--muted);margin-left:10px;">Mise totale :</span>
+            <span id="systemeMiseTotale" style="font-weight:600;color:var(--text);">${systeme.combinaisons_nb},00 €</span>
+            <span style="font-size:13px;color:var(--muted);margin-left:10px;">Gain max (3/3) :</span>
+            <span id="systemeGainMax" style="font-weight:600;color:#16a34a;">${(systeme.combinaisons_nb * systeme.cote_moyenne_combine).toFixed(2).replace('.', ',')} €</span>
+          </div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.3);border-radius:var(--border-radius-lg);padding:16px;margin-top:24px;font-size:13px;color:var(--muted);">
+          ⚠️ Paris système indisponible : ${systeme.raison}
+        </div>
+      `;
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+// Mise à jour live du gain potentiel du système
+function majSystemeGain() {
+  const mise = parseFloat(document.getElementById('systemeMise').value) || 0;
+  const sys = _ticketsData?.systeme;
+  if (!sys || !sys.possible) return;
+  const total = mise * sys.combinaisons_nb;
+  const gainMax = total * sys.cote_moyenne_combine;
+  document.getElementById('systemeMiseTotale').textContent = total.toFixed(2).replace('.', ',') + ' €';
+  document.getElementById('systemeGainMax').textContent = gainMax.toFixed(2).replace('.', ',') + ' €';
+}
+
+// Chargement au premier clic sur l'onglet (lazy)
+(function() {
+  const orig = window.showTab;
+  window.showTab = function(name, el) {
+    orig(name, el);
+    if (name === 'tickets' && !_ticketsData) chargerTickets();
+  };
+})();
 
 
 </script>
