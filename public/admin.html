@@ -4556,8 +4556,8 @@ async function chargerTickets() {
   const container = document.getElementById('ticketsContenu');
   container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement…</div>';
   try {
-    const url = journee ? `/api/admin/tickets-top14?journee=${journee}` : '/api/admin/tickets-top14';
-    const res = await fetch(url, { headers: { 'x-admin-token': localStorage.getItem('adminToken') || '' } });
+    const url = journee ? `${API}/api/admin/tickets-top14?journee=${journee}` : `${API}/api/admin/tickets-top14`;
+    const res = await fetch(url, { headers: { 'x-admin-token': adminToken || '' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _ticketsData = await res.json();
     peuplerSelectJournees();
