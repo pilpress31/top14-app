@@ -4556,8 +4556,8 @@ async function chargerTickets() {
   const container = document.getElementById('ticketsContenu');
   container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement…</div>';
   try {
-    const url = journee ? `${API}/api/admin/tickets-top14?journee=${journee}` : `${API}/api/admin/tickets-top14`;
-    const res = await fetch(url, { headers: { 'x-admin-token': adminToken || '' } });
+    const url = journee ? `/api/admin/tickets-top14?journee=${journee}` : '/api/admin/tickets-top14';
+    const res = await fetch(url, { headers: { 'x-admin-token': localStorage.getItem('adminToken') || '' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _ticketsData = await res.json();
     peuplerSelectJournees();
@@ -4602,7 +4602,7 @@ function renderTickets() {
   if (!_ticketsData) { container.innerHTML = ''; return; }
 
   const cacherFaible = document.getElementById('ticketsCacherFaible').checked;
-  const { journee, matchs = [], systeme } = _ticketsData;
+  const { journee, matchs = [], scenarios = [] } = _ticketsData;
 
   if (!journee || matchs.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Aucun match pour cette journée.</div>';
@@ -4653,40 +4653,53 @@ function renderTickets() {
     `;
   }).join('');
 
-  // ─── Section paris système ───
-  if (systeme) {
-    if (systeme.possible) {
-      html += `
-        <div style="background:linear-gradient(135deg, rgba(212,160,23,0.08), rgba(212,160,23,0.02));border:2px solid var(--accent);border-radius:var(--border-radius-lg);padding:20px;margin-top:24px;">
+  // ─── Section paris système : 3 scenarios ───
+  if (scenarios.length > 0) {
+    html += `<div style="margin-top:24px;font-size:15px;font-weight:600;color:var(--accent);margin-bottom:12px;">🎯 Paris système — 3 scenarios</div>`;
+
+    html += scenarios.map((sys, idx) => {
+      if (!sys.possible) {
+        return `
+          <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.3);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:12px;font-size:13px;color:var(--muted);">
+            <div style="font-weight:600;color:var(--text);margin-bottom:4px;">${sys.scenario}</div>
+            ⚠️ Indisponible : ${sys.raison}
+          </div>
+        `;
+      }
+      const miseInit = 1;
+      const totalInit = (miseInit * sys.combinaisons_nb).toFixed(2).replace('.', ',');
+      const gainInit = (miseInit * sys.combinaisons_nb * sys.cote_moyenne_combine).toFixed(2).replace('.', ',');
+      return `
+        <div style="background:linear-gradient(135deg, rgba(212,160,23,0.08), rgba(212,160,23,0.02));border:2px solid var(--accent);border-radius:var(--border-radius-lg);padding:18px;margin-bottom:14px;">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
-            <div style="font-size:16px;font-weight:600;color:var(--accent);">🎯 Paris système — ${systeme.scenario}</div>
-            <div style="font-size:13px;color:var(--muted);">${systeme.description}</div>
+            <div style="font-size:15px;font-weight:600;color:var(--accent);">${sys.scenario}</div>
+            <div style="font-size:12px;color:var(--muted);">${sys.description}</div>
           </div>
 
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0;font-size:12px;">
-            <div style="background:var(--surface2);padding:10px;border-radius:var(--border-radius-md);text-align:center;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:12px 0;font-size:12px;">
+            <div style="background:var(--surface2);padding:8px;border-radius:var(--border-radius-md);text-align:center;">
               <div style="color:var(--muted);">Combinés</div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);">${systeme.combinaisons_nb}</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);">${sys.combinaisons_nb}</div>
             </div>
-            <div style="background:var(--surface2);padding:10px;border-radius:var(--border-radius-md);text-align:center;">
+            <div style="background:var(--surface2);padding:8px;border-radius:var(--border-radius-md);text-align:center;">
               <div style="color:var(--muted);">Proba de gain</div>
-              <div style="font-size:18px;font-weight:700;color:#16a34a;">${Math.round(systeme.proba_gain*100)}%</div>
+              <div style="font-size:16px;font-weight:700;color:#16a34a;">${Math.round(sys.proba_gain*100)}%</div>
             </div>
-            <div style="background:var(--surface2);padding:10px;border-radius:var(--border-radius-md);text-align:center;">
-              <div style="color:var(--muted);">Cote moyenne combiné</div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);">${systeme.cote_moyenne_combine.toFixed(2).replace('.', ',')}</div>
+            <div style="background:var(--surface2);padding:8px;border-radius:var(--border-radius-md);text-align:center;">
+              <div style="color:var(--muted);">Cote moy. combiné</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);">${sys.cote_moyenne_combine.toFixed(2).replace('.', ',')}</div>
             </div>
           </div>
 
-          <div style="margin-top:14px;">
-            <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Sélection (3 paris) :</div>
-            ${systeme.selection.map(s => `
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface);border-radius:var(--border-radius-md);margin-bottom:6px;gap:10px;flex-wrap:wrap;">
+          <div style="margin-top:10px;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Sélection (${sys.n} paris, il faut que ${sys.k} passent) :</div>
+            ${sys.selection.map(s => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--surface);border-radius:var(--border-radius-md);margin-bottom:5px;gap:10px;flex-wrap:wrap;">
                 <div style="flex:1;min-width:200px;">
-                  <div style="font-size:11px;color:var(--muted);">${s.match_label}</div>
-                  <div style="font-size:13px;font-weight:500;">${s.categorie} : ${s.libelle}</div>
+                  <div style="font-size:10px;color:var(--muted);">${s.match_label}</div>
+                  <div style="font-size:12px;font-weight:500;">${s.categorie} : ${s.libelle}</div>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;font-size:12px;">
+                <div style="display:flex;align-items:center;gap:10px;font-size:11px;">
                   <span style="color:#16a34a;font-weight:600;">${s.confiance_pct}%</span>
                   <span style="color:var(--muted);">cote ${s.cote.toFixed(2).replace('.', ',')}</span>
                 </div>
@@ -4694,40 +4707,36 @@ function renderTickets() {
             `).join('')}
           </div>
 
-          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <label style="font-size:13px;color:var(--muted);">Mise par combiné :</label>
-            <input type="number" id="systemeMise" min="0" step="0.5" value="1"
-              style="width:80px;padding:6px 10px;border-radius:var(--border-radius-md);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;"
-              oninput="majSystemeGain()">
-            <span style="font-size:13px;color:var(--muted);">€</span>
-            <span style="font-size:13px;color:var(--muted);margin-left:10px;">Mise totale :</span>
-            <span id="systemeMiseTotale" style="font-weight:600;color:var(--text);">${systeme.combinaisons_nb},00 €</span>
-            <span style="font-size:13px;color:var(--muted);margin-left:10px;">Gain max (3/3) :</span>
-            <span id="systemeGainMax" style="font-weight:600;color:#16a34a;">${(systeme.combinaisons_nb * systeme.cote_moyenne_combine).toFixed(2).replace('.', ',')} €</span>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;">
+            <label style="color:var(--muted);">Mise par combiné :</label>
+            <input type="number" data-sys-idx="${idx}" class="systeme-mise" min="0" step="0.5" value="${miseInit}"
+              style="width:70px;padding:5px 8px;border-radius:var(--border-radius-md);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;"
+              oninput="majSystemeGain(${idx})">
+            <span style="color:var(--muted);">€</span>
+            <span style="color:var(--muted);margin-left:8px;">Mise totale :</span>
+            <span id="systemeMiseTotale-${idx}" style="font-weight:600;color:var(--text);">${totalInit} €</span>
+            <span style="color:var(--muted);margin-left:8px;">Gain max (${sys.n}/${sys.n}) :</span>
+            <span id="systemeGainMax-${idx}" style="font-weight:600;color:#16a34a;">${gainInit} €</span>
           </div>
         </div>
       `;
-    } else {
-      html += `
-        <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.3);border-radius:var(--border-radius-lg);padding:16px;margin-top:24px;font-size:13px;color:var(--muted);">
-          ⚠️ Paris système indisponible : ${systeme.raison}
-        </div>
-      `;
-    }
+    }).join('');
   }
 
   container.innerHTML = html;
 }
 
-// Mise à jour live du gain potentiel du système
-function majSystemeGain() {
-  const mise = parseFloat(document.getElementById('systemeMise').value) || 0;
-  const sys = _ticketsData?.systeme;
+// Mise à jour live du gain potentiel d'un scenario donné
+function majSystemeGain(idx) {
+  const scenarios = _ticketsData?.scenarios || [];
+  const sys = scenarios[idx];
   if (!sys || !sys.possible) return;
+  const input = document.querySelector(`.systeme-mise[data-sys-idx="${idx}"]`);
+  const mise = parseFloat(input?.value) || 0;
   const total = mise * sys.combinaisons_nb;
   const gainMax = total * sys.cote_moyenne_combine;
-  document.getElementById('systemeMiseTotale').textContent = total.toFixed(2).replace('.', ',') + ' €';
-  document.getElementById('systemeGainMax').textContent = gainMax.toFixed(2).replace('.', ',') + ' €';
+  document.getElementById(`systemeMiseTotale-${idx}`).textContent = total.toFixed(2).replace('.', ',') + ' €';
+  document.getElementById(`systemeGainMax-${idx}`).textContent = gainMax.toFixed(2).replace('.', ',') + ' €';
 }
 
 // Chargement au premier clic sur l'onglet (lazy)
