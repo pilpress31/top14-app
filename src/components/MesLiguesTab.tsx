@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Plus, LogIn, Trophy, Users, Share2, Copy, Trash2,
   UserMinus, Pencil, ArrowLeft, X, Loader2, UserPlus, Mail, Check,
-  Bell, Clock,
+  Bell, Clock, MoreVertical,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -91,6 +91,20 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
   const [invitationsEmises, setInvitationsEmises] = useState<InvitationEmise[]>([]);
   const [invitationsEmisesLoading, setInvitationsEmisesLoading] = useState(false);
   const [rappelBusy, setRappelBusy] = useState<string | null>(null);  // id de l'invitation en cours de rappel
+  const [menuOuvert, setMenuOuvert] = useState<string | null>(null);  // id de l'invitation dont le menu (...) est ouvert
+  const [suppressionBusy, setSuppressionBusy] = useState<string | null>(null);
+
+  // Click-outside : ferme le menu (...) si on clique ailleurs
+  useEffect(() => {
+    if (!menuOuvert) return;
+    const handler = () => setMenuOuvert(null);
+    // setTimeout pour ne pas attraper le click qui vient d'ouvrir le menu
+    const t = setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('click', handler);
+    };
+  }, [menuOuvert]);
 
   useRealtimeSync([
     { table: 'league_members', onUpdate: () => chargerLigues() },
@@ -228,6 +242,29 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
       afficherMessage(e?.response?.data?.error || 'Rappel impossible', 'err');
     } finally {
       setRappelBusy(null);
+    }
+  };
+
+  // ─── Supprimer une invitation (annulation pending, ou nettoyage declined) ───
+  const supprimerInvitation = async (
+    invId: string,
+    leagueId: string,
+    status: InvitationEmise['status']
+  ) => {
+    if (suppressionBusy || !userId) return;
+    const libelle = status === 'pending' ? 'Annuler cette invitation ?' : 'Supprimer cette invitation de la liste ?';
+    if (!window.confirm(libelle)) return;
+    setMenuOuvert(null);
+    setSuppressionBusy(invId);
+    try {
+      await axios.delete(`${API_BASE}/api/leagues/invitations/${invId}`,
+        { headers: { 'x-user-id': userId } });
+      afficherMessage(status === 'pending' ? 'Invitation annulée' : 'Invitation supprimée', 'ok');
+      await chargerInvitationsEmises(leagueId);
+    } catch (e: any) {
+      afficherMessage(e?.response?.data?.error || 'Suppression impossible', 'err');
+    } finally {
+      setSuppressionBusy(null);
     }
   };
 
@@ -565,6 +602,39 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
                             : <Bell className="w-3 h-3" />}
                           Rappeler
                         </button>
+                      )}
+
+                      {/* Menu (...) — actions secondaires sur l'invitation */}
+                      {(isPending || isDeclined) && (
+                        <div className="relative flex-shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMenuOuvert(menuOuvert === inv.id ? null : inv.id);
+                            }}
+                            disabled={suppressionBusy === inv.id}
+                            className="p-1.5 rounded hover:bg-gray-100 text-gray-500 transition-colors"
+                            title="Actions"
+                          >
+                            {suppressionBusy === inv.id
+                              ? <Loader2 className="w-4 h-4 animate-spin" />
+                              : <MoreVertical className="w-4 h-4" />}
+                          </button>
+                          {menuOuvert === inv.id && (
+                            <div
+                              className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => supprimerInvitation(inv.id, ligueActive.id, inv.status)}
+                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                {isPending ? 'Annuler l\'invitation' : 'Supprimer de la liste'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   );
