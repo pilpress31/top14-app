@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Plus, LogIn, Trophy, Users, Share2, Copy, Trash2,
   UserMinus, Pencil, ArrowLeft, X, Loader2, UserPlus, Mail, Check,
+  Bell, Clock,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -43,6 +44,16 @@ interface InvitationRecue {
   created_at: string;
 }
 
+interface InvitationEmise {
+  id: string;
+  pseudo: string;
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
+  responded_at: string | null;
+  last_reminder_at: string | null;
+  peut_rappeler: boolean;
+}
+
 interface Props {
   codeInvitation?: string | null;   // code transmis par un lien d'invitation
   onCodeConsomme?: () => void;       // appelé une fois le code traité (nettoie l'URL)
@@ -75,6 +86,11 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
   // Inviter un joueur par pseudo (créateur) : id de la ligue en cours d'invitation
   const [inviteLigueId, setInviteLigueId] = useState<string | null>(null);
   const [pseudoInvite, setPseudoInvite] = useState('');
+
+  // Invitations émises (vues par le créateur dans le détail d'une ligue)
+  const [invitationsEmises, setInvitationsEmises] = useState<InvitationEmise[]>([]);
+  const [invitationsEmisesLoading, setInvitationsEmisesLoading] = useState(false);
+  const [rappelBusy, setRappelBusy] = useState<string | null>(null);  // id de l'invitation en cours de rappel
 
   useRealtimeSync([
     { table: 'league_members', onUpdate: () => chargerLigues() },
@@ -170,10 +186,47 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
       setPseudoInvite('');
       setInviteLigueId(null);
       afficherMessage(`Invitation envoyée à ${res.data?.invited_pseudo || pseudo}`, 'ok');
+      // Si on est dans le détail d'une ligue (créateur), rafraîchir la liste des invitations émises
+      if (ligueActive?.id === leagueId) {
+        await chargerInvitationsEmises(leagueId);
+      }
     } catch (e: any) {
       afficherMessage(e?.response?.data?.error || 'Invitation impossible', 'err');
     } finally {
       setBusy(false);
+    }
+  };
+
+  // ─── Chargement des invitations émises (créateur uniquement) ───
+  const chargerInvitationsEmises = async (leagueId: string) => {
+    if (!userId) return;
+    setInvitationsEmisesLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/leagues/${leagueId}/invitations-emises`, {
+        headers: { 'x-user-id': userId },
+      });
+      setInvitationsEmises(res.data || []);
+    } catch (e) {
+      console.error('Erreur chargement invitations émises:', e);
+      setInvitationsEmises([]);
+    } finally {
+      setInvitationsEmisesLoading(false);
+    }
+  };
+
+  // ─── Renvoyer un push de rappel sur une invitation en attente ───
+  const rappelerInvitation = async (invId: string, leagueId: string) => {
+    if (rappelBusy || !userId) return;
+    setRappelBusy(invId);
+    try {
+      await axios.post(`${API_BASE}/api/leagues/invitations/${invId}/remind`, {},
+        { headers: { 'x-user-id': userId } });
+      afficherMessage('Rappel envoyé', 'ok');
+      await chargerInvitationsEmises(leagueId);
+    } catch (e: any) {
+      afficherMessage(e?.response?.data?.error || 'Rappel impossible', 'err');
+    } finally {
+      setRappelBusy(null);
     }
   };
 
@@ -290,6 +343,7 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
     setLigueActive(league);
     setClassementLoading(true);
     setClassement([]);
+    setInvitationsEmises([]);
     try {
       const res = await axios.get(`${API_BASE}/api/leagues/${league.id}/classement`, {
         headers: { 'x-user-id': userId },
@@ -300,6 +354,10 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
       console.error('Erreur classement ligue:', e);
     } finally {
       setClassementLoading(false);
+    }
+    // Charger les invitations émises seulement si l'utilisateur est créateur
+    if (league.est_createur) {
+      chargerInvitationsEmises(league.id);
     }
   };
 
@@ -421,6 +479,99 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
             </div>
           )}
         </div>
+
+        {/* ─── Invitations émises (créateur uniquement) ─── */}
+        {ligueActive.est_createur && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+              <Mail className="w-4 h-4 text-rugby-gold" />
+              <span className="text-sm font-bold text-gray-800">
+                Invitations émises
+              </span>
+              {invitationsEmises.length > 0 && (
+                <span className="ml-auto text-xs text-gray-500">
+                  {invitationsEmises.length} au total
+                </span>
+              )}
+            </div>
+
+            {invitationsEmisesLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-rugby-gold" />
+              </div>
+            ) : invitationsEmises.length === 0 ? (
+              <div className="p-6 text-center text-gray-500 text-sm">
+                Aucune invitation envoyée pour cette ligue.
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {invitationsEmises.map((inv) => {
+                  const isPending  = inv.status === 'pending';
+                  const isAccepted = inv.status === 'accepted';
+                  const isDeclined = inv.status === 'declined';
+                  const fmtDate = (iso: string | null) => {
+                    if (!iso) return '';
+                    try {
+                      return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                    } catch { return ''; }
+                  };
+                  return (
+                    <div key={inv.id} className="flex items-center gap-3 p-3">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rugby-gold to-rugby-bronze flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {(inv.pseudo || '?').charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{inv.pseudo}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {isPending && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                              <Clock className="w-3 h-3" />
+                              En attente
+                            </span>
+                          )}
+                          {isAccepted && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
+                              <Check className="w-3 h-3" />
+                              Acceptée
+                            </span>
+                          )}
+                          {isDeclined && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-red-700 bg-red-50 px-1.5 py-0.5 rounded">
+                              <X className="w-3 h-3" />
+                              Refusée
+                            </span>
+                          )}
+                          <span className="text-[11px] text-gray-500">
+                            {isPending
+                              ? `envoyée le ${fmtDate(inv.created_at)}`
+                              : `${fmtDate(inv.responded_at)}`}
+                          </span>
+                        </div>
+                      </div>
+                      {isPending && (
+                        <button
+                          onClick={() => rappelerInvitation(inv.id, ligueActive.id)}
+                          disabled={!inv.peut_rappeler || rappelBusy === inv.id}
+                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-semibold transition-colors flex-shrink-0 ${
+                            inv.peut_rappeler && rappelBusy !== inv.id
+                              ? 'bg-rugby-gold text-white hover:bg-rugby-bronze'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          }`}
+                          title={!inv.peut_rappeler ? 'Un rappel a déjà été envoyé il y a moins de 24h' : 'Renvoyer un rappel push'}
+                        >
+                          {rappelBusy === inv.id
+                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                            : <Bell className="w-3 h-3" />}
+                          Rappeler
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
