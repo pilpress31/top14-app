@@ -46,6 +46,7 @@ import FavorisPage from './pages/FavorisPage';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import GuidePage, { GUIDE_STORAGE_KEY } from './pages/GuidePage';
 import CommPanelPage from './pages/CommPanelPage';
+import TicketsTop14Page from './pages/TicketsTop14Page';
 
 /* ✅ Hook pour savoir quel onglet est actif */
 function useActiveLabel() {
@@ -205,6 +206,7 @@ function AppContent() {
         <Route path="/notifications-push" element={<ProtectedRoute><NotificationsPushPage /></ProtectedRoute>} />
         <Route path="/notifications-diagnostic" element={<ProtectedRoute><NotificationsDiagnosticPage /></ProtectedRoute>} />
         <Route path="/comm-panel" element={<ProtectedRoute><CommPanelPage /></ProtectedRoute>} />
+        <Route path="/tickets-top14" element={<ProtectedRoute><TicketsTop14Page /></ProtectedRoute>} />
       </Routes>
 
       {!hideBottomNav && (
