@@ -204,6 +204,7 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
     try {
       const res = await axios.get(`${API_BASE}/api/leagues/${leagueId}/invitations-emises`, {
         headers: { 'x-user-id': userId },
+        params: { _: Date.now() },
       });
       setInvitationsEmises(res.data || []);
     } catch (e) {
