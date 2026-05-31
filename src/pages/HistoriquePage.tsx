@@ -252,7 +252,7 @@ function HistoriquePage() {
       {/* Pagination */}
       <div
         className="fixed left-0 w-full flex justify-center items-center gap-4 bg-white py-2 shadow-md z-50"
-        style={{ bottom: "var(--bottom-nav-height, 60px)" }}
+        style={{ bottom: "var(--bottom-nav-total, 90px)" }}
       >
         <button
           onClick={() => {
