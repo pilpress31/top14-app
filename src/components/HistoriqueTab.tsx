@@ -590,7 +590,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       </div>
 
       {/* Pagination */}
-      <div className="fixed left-0 w-full flex justify-center items-center gap-4 py-2 shadow-md z-50" style={isD2 ? { backgroundColor: '#00174D', borderTop: '1px solid rgba(192,192,192,0.3)', bottom: 'calc(var(--bottom-nav-total, 90px) + 8px)' } : { backgroundColor: '#FFFFFF', bottom: 'calc(var(--bottom-nav-total, 90px) + 8px)' }}>
+      <div className="fixed left-0 w-full flex justify-center items-center gap-4 py-2 shadow-md z-50" style={isD2 ? { backgroundColor: '#00174D', borderTop: '1px solid rgba(192,192,192,0.3)', bottom: 'calc(var(--bottom-nav-total, 90px) + 8px)' } : { backgroundColor: '#FFFFFF', bottom: 'calc(var(--bottom-nav-total, 90px) + 2px)' }}>
         <button
           onClick={() => {
             if (isD2) {
