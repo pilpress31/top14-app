@@ -733,50 +733,20 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
       setLoading(true);
       setError(null);
       try {
-        const equipeA = match.equipe_domicile?.toUpperCase();
-        const equipeB = match.equipe_exterieure?.toUpperCase();
-        const seen = new Set();
-        const found = [];
-
-        for (const equipe of [equipeA, equipeB]) {
-          let offset = 0;
-          const limit = 100;
-          while (true) {
-            const url = `${API_BASE}/api/hcup/historique?limit=${limit}&offset=${offset}&equipe=${encodeURIComponent(equipe)}`;
-            const res = await axios.get(url);
-            const data = res.data;
-            const matchs = data.matchs || [];
-            if (matchs.length === 0) break;
-
-            matchs.forEach(m => {
-              const dom = m.equipe_domicile?.toUpperCase();
-              const ext = m.equipe_exterieure?.toUpperCase();
-              const isConfrontation =
-                (dom === equipeA && ext === equipeB) ||
-                (dom === equipeB && ext === equipeA);
-              const key = m.match_id || m.id;
-              if (isConfrontation && !seen.has(key)) {
-                seen.add(key);
-                found.push({
-                  ...m,
-                  score_domicile: m.score_domicile ?? m.score_reel_dom ?? 0,
-                  score_exterieur: m.score_exterieur ?? m.score_reel_ext ?? 0,
-                });
-              }
-            });
-
-            if (found.length >= 10) break;
-            offset += limit;
-            if (offset >= (data.stats?.total ?? data.total ?? 9999)) break;
-          }
-          if (found.length >= 10) break;
-        }
-
-        found.sort((a, b) => {
-          const dateA = a.date_match ? new Date(a.date_match).getTime() : 0;
-          const dateB = b.date_match ? new Date(b.date_match).getTime() : 0;
-          return dateB - dateA;
+        // Confrontations directes filtrées côté serveur (paramètre adversaire),
+        // déjà triées par date décroissante, limitées à 10.
+        const res = await axios.get(`${API_BASE}/api/hcup/historique`, {
+          params: {
+            equipe: match.equipe_domicile,
+            adversaire: match.equipe_exterieure,
+            limit: 10,
+          },
         });
+        const found = (res.data?.matchs || []).map(m => ({
+          ...m,
+          score_domicile: m.score_domicile ?? m.score_reel_dom ?? 0,
+          score_exterieur: m.score_exterieur ?? m.score_reel_ext ?? 0,
+        }));
 
         setConfrontations(found.slice(0, 10));
       } catch (e) {

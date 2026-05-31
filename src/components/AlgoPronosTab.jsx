@@ -996,66 +996,37 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
       setLoading(true);
       setError(null);
       try {
-        const equipeA = match.equipe_domicile?.toUpperCase();
-        const equipeB = match.equipe_exterieure?.toUpperCase();
         let found = [];
 
         if (match.isD2) {
-          // Pro D2 : filtre serveur par équipe, dédoublonnage
-          const seen = new Set();
-          for (const equipe of [equipeA, equipeB]) {
-            let offset = 0;
-            const limit = 100;
-            while (true) {
-              const url = `${API_BASE}/api/d2/historique?limit=${limit}&offset=${offset}&equipe=${encodeURIComponent(equipe)}`;
-              const res = await axios.get(url);
-              const data = res.data;
-              const matchs = data.matchs || [];
-              if (matchs.length === 0) break;
-              matchs.forEach(m => {
-                const dom = m.equipe_domicile?.toUpperCase();
-                const ext = m.equipe_exterieure?.toUpperCase();
-                const isConfrontation =
-                  (dom === equipeA && ext === equipeB) ||
-                  (dom === equipeB && ext === equipeA);
-                const key = m.match_id || m.id;
-                if (isConfrontation && !seen.has(key)) {
-                  seen.add(key);
-                  found.push({
-                    ...m,
-                    score_domicile: m.score_reel_dom ?? 0,
-                    score_exterieur: m.score_reel_ext ?? 0,
-                    score_ht_domicile: null,
-                    score_ht_exterieur: null,
-                  });
-                }
-              });
-              if (found.length >= 10) break;
-              offset += limit;
-              if (offset >= (data.stats?.total || 9999)) break;
-            }
-            if (found.length >= 10) break;
-          }
+          // Pro D2 : confrontations directes filtrées côté serveur (paramètre adversaire)
+          const res = await axios.get(`${API_BASE}/api/d2/historique`, {
+            params: {
+              equipe: match.equipe_domicile,
+              adversaire: match.equipe_exterieure,
+              limit: 10,
+              offset: 0,
+            },
+          });
+          found = (res.data?.matchs || []).map(m => ({
+            ...m,
+            score_domicile: m.score_reel_dom ?? 0,
+            score_exterieur: m.score_reel_ext ?? 0,
+            score_ht_domicile: null,
+            score_ht_exterieur: null,
+          }));
         } else {
-          // Top 14 : logique existante
-          let offset = 0;
-          const limit = 100;
-          while (found.length < 10) {
-            const url = `${API_BASE}/api/matchs/historique?limit=${limit}&offset=${offset}`;
-            const res = await axios.get(url);
-            const data = res.data;
-            const matchs = data.matchs || [];
-            if (matchs.length === 0) break;
-            const confronts = matchs.filter(m => {
-              const dom = m.equipe_domicile?.toUpperCase();
-              const ext = m.equipe_exterieure?.toUpperCase();
-              return (dom === equipeA && ext === equipeB) ||
-                     (dom === equipeB && ext === equipeA);
-            });
-            found = [...found, ...confronts];
-            offset += limit;
-            if (offset >= Math.min(data.total || 9999, 3700)) break;
-          }
+          // Top 14 : confrontations directes filtrées et normalisées côté serveur
+          // (paramètre `adversaire` => gère les orthographes multiples, ex. UBB / Union Bordeaux Bègles).
+          const res = await axios.get(`${API_BASE}/api/matchs/historique`, {
+            params: {
+              equipe: match.equipe_domicile,
+              adversaire: match.equipe_exterieure,
+              limit: 10,
+              offset: 0,
+            },
+          });
+          found = res.data?.matchs || [];
         }
 
         setConfrontations(found.slice(0, 10));
