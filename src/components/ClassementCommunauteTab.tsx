@@ -73,18 +73,33 @@ interface UserRanking {
 // propre tant que le backend n'a pas alimenté les tables.
 function GamificationLigne({ streak, badges }: { streak?: number; badges?: UserBadge[] }) {
   const afficheStreak = (streak || 0) >= 2;
-  // On garde les 3 badges au plus haut palier (toutes familles confondues).
-  // Tri par seuil décroissant : streak_20 > wins_50 > streak_10 > wins_25 > ...
+  // Pour chaque famille (wins / streak), on garde uniquement le badge au
+  // plus haut palier atteint. Un user avec wins_10 + wins_25 ne montrera
+  // que wins_25 (qui implique wins_10) -> pas de médailles redondantes.
   const badgesRecents = useMemo(() => {
     if (!badges?.length) return [];
     const seuils: Record<string, number> = {
       streak_3: 3, streak_5: 5, streak_10: 10, streak_20: 20,
-      wins_1: 1, wins_10: 10, wins_25: 25, wins_50: 50,
+      wins_1: 1, wins_10: 10, wins_25: 25, wins_50: 50, wins_100: 100, wins_250: 250,
     };
-    return [...badges]
-      .filter(b => seuils[b.badge_code] != null)
-      .sort((a, b) => (seuils[b.badge_code] ?? 0) - (seuils[a.badge_code] ?? 0))
-      .slice(0, 3);
+    const familleDe = (code: string): string =>
+      code.startsWith('streak') ? 'streak'
+        : code.startsWith('wins') ? 'wins'
+        : code;
+    const meilleurParFamille: Record<string, UserBadge> = {};
+    for (const b of badges) {
+      if (seuils[b.badge_code] == null) continue;
+      const fam = familleDe(b.badge_code);
+      const courant = meilleurParFamille[fam];
+      const seuilCourant = courant ? (seuils[courant.badge_code] ?? 0) : -1;
+      if ((seuils[b.badge_code] ?? 0) > seuilCourant) {
+        meilleurParFamille[fam] = b;
+      }
+    }
+    // Tri par palier décroissant pour ordre d'affichage cohérent
+    return Object.values(meilleurParFamille).sort(
+      (a, b) => (seuils[b.badge_code] ?? 0) - (seuils[a.badge_code] ?? 0)
+    );
   }, [badges]);
   if (!afficheStreak && badgesRecents.length === 0) return null;
 
