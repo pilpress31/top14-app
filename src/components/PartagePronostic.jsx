@@ -18,18 +18,10 @@ import { useRef, useState } from 'react';
 import { Share2, Loader2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { getTeamData } from '../utils/teams';
+import { getCharte } from '../constants/chartes';
 
-const CHARTE = {
-  // Top 14 — charte or (#C9A84C / #FFD700) sur fond bleu nuit
-  top14: { accent: '#C9A84C', accentVif: '#FFD700', label: 'TOP 14',
-           fond1: '#1a2740', fond2: '#101a2e', fond3: '#0a111f' },
-  // Pro D2 — charte bleu marine #00174D + argent #C0C0C0 + bleu clair #97C1FE
-  prod2: { accent: '#C0C0C0', accentVif: '#97C1FE', label: 'PRO D2',
-           fond1: '#0a2c66', fond2: '#00174D', fond3: '#000f33' },
-  // Champions Cup — charte EPCR bleu #003E7E + or #FFC72C
-  hcup:  { accent: '#FFC72C', accentVif: '#FFC72C', label: 'CHAMPIONS CUP',
-           fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
-};
+// Chartes couleurs : centralisées dans src/constants/chartes.js.
+// Ici on consomme la vue « partage » (cf. getCharte plus bas).
 
 // Tailles de l'en-tête match pour le visuel story.
 const TAILLES_ENTETE = {
@@ -353,7 +345,8 @@ export default function PartagePronostic({
   const [generation, setGeneration] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const charte = CHARTE[championnat] || CHARTE.top14;
+  const c = getCharte(championnat);
+  const charte = { ...c.partage, label: c.label };
 
   // Garde-fou : sans les deux équipes, on n'affiche rien (évite tout crash)
   if (!equipeDomicile || !equipeExterieure) return null;

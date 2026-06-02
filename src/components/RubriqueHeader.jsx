@@ -1,34 +1,18 @@
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
-// Chartes couleurs par championnat — SOURCE UNIQUE DE VÉRITÉ
-// pour les en-têtes de rubrique partagés par les trois onglets
-// (Actu du match, Analyse historique, Historique des confrontations,
-//  Statistiques du duel / Duel & Forme).
+// Chartes couleurs par championnat — désormais centralisées dans
+// src/constants/chartes.js (SOURCE UNIQUE DE VÉRITÉ). On réexporte
+// RUBRIQUE_THEMES ici pour que les composants consommateurs continuent
+// de l'importer depuis ce fichier sans aucune modification.
 //
+// Rappel de structure (par championnat) :
 //   bg     : fond du bouton
 //   border : bordure du bouton + fond du badge
 //   text   : couleur du titre + texte du badge
 //   accent : icône, chevron, loader
-//
-// Les couleurs sont appliquées en style inline (et non en classes
-// Tailwind) car les chartes D2 et HCup sont des hex bruts. Le thème
-// top14 porte donc lui aussi des hex — mais ils correspondent aux
-// couleurs nommées de tailwind.config.js, à garder synchronisés :
-//   bg     = rugby-gold-soft   (#FAF6EB)
-//   border = rugby-gold-border (#E4D29A)
-//   text   = rugby-bronze      (#8C6D3A)
-//   accent = rugby-gold        (#CBA135)
-//
-// Top 14  : charte or       (cf. couleurs rugby-* de tailwind.config.js)
-// Pro D2  : charte D2       (#00174D / #97C1FE)
-// C. Cup  : charte EPCR     (HCUP_BLEU #003E7E / HCUP_OR #FFC72C)
 // ─────────────────────────────────────────────────────────────
-export const RUBRIQUE_THEMES = {
-  top14: { bg: '#FAF6EB', border: '#E4D29A', text: '#8C6D3A', accent: '#CBA135' },
-  prod2: { bg: '#EEF2FF', border: '#97C1FE', text: '#00174D', accent: '#97C1FE' },
-  hcup:  { bg: '#EEF5FF', border: '#B0CFE8', text: '#003E7E', accent: '#FFC72C' },
-};
+export { RUBRIQUE_THEMES } from '../constants/chartes';
 
 // ─────────────────────────────────────────────────────────────
 // Couleurs des SOUS-RUBRIQUES de « Actu du match » — palette par
