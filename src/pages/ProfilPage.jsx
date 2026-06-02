@@ -101,9 +101,7 @@ function ProfilPage() {
         return
       }
 
-      // Extension dérivée du TYPE MIME réel, pas du nom de fichier
-      // (sur iPhone, une photo prise via l'appareil arrive souvent sans
-      //  extension exploitable → évite les chemins type "avatar.image").
+      // Extension dérivée du TYPE MIME réel (pas du nom de fichier, peu fiable sur iPhone)
       const extByMime = {
         'image/jpeg': 'jpg',
         'image/jpg':  'jpg',
@@ -111,14 +109,17 @@ function ProfilPage() {
         'image/webp': 'webp',
       }
       const fileExt = extByMime[file.type] || 'jpg'
-      const filePath = `${user.id}/avatar.${fileExt}`
 
-      // Upload vers Supabase Storage
-      // contentType explicite : garantit le bon MIME même si le fichier
-      // arrive sans nom/extension fiable.
+      // Nom de fichier UNIQUE à chaque upload (timestamp) :
+      // chaque envoi est ainsi une CRÉATION pure (jamais d'update/upsert).
+      // → évite le 409 "already exists" et le rafraîchissement de cache (URL toujours neuve).
+      const oldAvatarUrl = avatarUrl
+      const filePath = `${user.id}/avatar_${Date.now()}.${fileExt}`
+
+      // Upload (création) vers Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true, contentType: file.type })
+        .upload(filePath, file, { contentType: file.type })
 
       if (uploadError) throw uploadError
 
@@ -143,6 +144,17 @@ function ProfilPage() {
       setAvatarUrl(newAvatarUrl)
       setSuccess('Avatar mis à jour avec succès !')
       setTimeout(() => setSuccess(''), 3000)
+
+      // Nettoyer l'ancien fichier (best effort : on ignore une éventuelle erreur,
+      // l'essentiel — le nouvel avatar — est déjà en place).
+      if (oldAvatarUrl && oldAvatarUrl.includes('/avatars/')) {
+        try {
+          const oldPath = oldAvatarUrl.split('/avatars/')[1]?.split('?')[0]
+          if (oldPath && oldPath !== filePath) {
+            await supabase.storage.from('avatars').remove([oldPath])
+          }
+        } catch (_) { /* orphelin éventuel, sans impact */ }
+      }
     } catch (error) {
       console.error('Erreur upload avatar:', error)
       const detail = error?.message || error?.error_description || error?.error || ''
