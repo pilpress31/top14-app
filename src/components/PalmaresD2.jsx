@@ -5,13 +5,12 @@
 import { useState, useEffect, useRef } from "react";
 import { getTeamData } from "../utils/teams";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { getCharte } from "../constants/chartes";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
 
-// Charte D2
-const D2_NAVY   = "#00174D";
-const D2_SILVER = "#C0C0C0";
-const D2_BLUE   = "#97C1FE";
+// Charte D2 — couleurs d'identité centralisées dans src/constants/chartes.js
+const { navy: D2_NAVY, silver: D2_SILVER, blue: D2_BLUE } = getCharte("prod2").base;
 
 const PODIUM = [
   { bg: "#97C1FE", text: "#00174D", border: "#6AA8FD" }, // 1er — bleu clair D2

@@ -28,18 +28,24 @@ export const CHARTES = {
     rubrique: { bg: '#FAF6EB', border: '#E4D29A', text: '#8C6D3A', accent: '#CBA135' },
     partage:  { accent: '#C9A84C', accentVif: '#FFD700',
                 fond1: '#1a2740', fond2: '#101a2e', fond3: '#0a111f' },
+    // Or « accent » du Palmarès. ⚠️ #D4AF37 diffère de rubrique.accent (#CBA135,
+    // = rugby-gold de Tailwind) ET de partage.accentVif (#FFD700) : trois nuances
+    // d'or Top 14 coexistent dans l'app, à harmoniser un jour si souhaité.
+    base:     { gold: '#D4AF37', goldDark: '#A88829', goldLight: '#FFF8E7' },
   },
   prod2: {
     label: 'PRO D2',
     rubrique: { bg: '#EEF2FF', border: '#97C1FE', text: '#00174D', accent: '#97C1FE' },
     partage:  { accent: '#C0C0C0', accentVif: '#97C1FE',
                 fond1: '#0a2c66', fond2: '#00174D', fond3: '#000f33' },
+    base:     { navy: '#00174D', silver: '#C0C0C0', blue: '#97C1FE' },
   },
   hcup: {
     label: 'CHAMPIONS CUP',
     rubrique: { bg: '#EEF5FF', border: '#B0CFE8', text: '#003E7E', accent: '#FFC72C' },
     partage:  { accent: '#FFC72C', accentVif: '#FFC72C',
                 fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
+    base:     { bleu: '#003E7E', bleuFonce: '#002857', or: '#FFC72C' },
   },
 };
 

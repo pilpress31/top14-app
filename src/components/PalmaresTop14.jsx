@@ -5,13 +5,12 @@
 import { useState, useEffect, useRef } from "react";
 import { getTeamData } from "../utils/teams";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { getCharte } from "../constants/chartes";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
 
-// Charte Top 14
-const T14_GOLD       = "#D4AF37";       // Or principal (rugby-gold)
-const T14_GOLD_DARK  = "#A88829";       // Or foncé pour bordures
-const T14_GOLD_LIGHT = "#FFF8E7";       // Or très clair pour fond surligné
+// Charte Top 14 — couleurs d'identité centralisées dans src/constants/chartes.js
+const { gold: T14_GOLD, goldDark: T14_GOLD_DARK, goldLight: T14_GOLD_LIGHT } = getCharte("top14").base;
 
 // Podium : couleurs + contraste texte soigné
 const PODIUM = [

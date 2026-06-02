@@ -15,11 +15,12 @@
 import { useState, useEffect } from 'react';
 import { Trophy, ChevronDown, ChevronUp, Crown, Star } from 'lucide-react';
 import { getTeamData } from '../utils/teams';
+import { getCharte } from '../constants/chartes';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-const HCUP_BLEU = '#003E7E';
-const HCUP_OR   = '#FFC72C';
+// Charte HCup — couleurs d'identité centralisées dans src/constants/chartes.js
+const { bleu: HCUP_BLEU, bleuFonce: HCUP_BLEU_FONCE, or: HCUP_OR } = getCharte('hcup').base;
 
 // Format saison '2024-2025' → '2024-25'
 function formatSaisonShort(saison) {
@@ -322,7 +323,7 @@ export default function PalmaresHcup() {
       {stats.club_record && (
         <div
           className="rounded-lg p-4 text-center shadow-md"
-          style={{ background: `linear-gradient(135deg, ${HCUP_BLEU} 0%, #002857 100%)` }}
+          style={{ background: `linear-gradient(135deg, ${HCUP_BLEU} 0%, ${HCUP_BLEU_FONCE} 100%)` }}
         >
           <div className="flex items-center justify-center gap-2 mb-1">
             <Crown className="w-5 h-5" style={{ color: HCUP_OR }} />
