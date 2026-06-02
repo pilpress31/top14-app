@@ -28,8 +28,8 @@ function ClassementPage() {
     primary: isHcup ? 'text-hcup-blue' : isD2 ? 'text-d2-navy' : 'text-rugby-gold',
     primaryBg: isHcup ? 'bg-hcup-blue' : isD2 ? 'bg-d2-navy' : 'bg-rugby-gold',
     primaryBgHover: isHcup ? 'hover:bg-hcup-blue-dark' : isD2 ? 'hover:bg-d2-navy-dark' : 'hover:bg-rugby-bronze',
-    secondaryText: isHcup ? 'text-hcup-gold' : isD2 ? 'text-d2-navy-dark' : 'text-rugby-orange',
-    rowHover: isHcup ? 'hover:bg-hcup-blue/10' : isD2 ? 'hover:bg-d2-navy/10' : 'hover:bg-rugby-orange/10',
+    secondaryText: isHcup ? 'text-hcup-gold' : isD2 ? 'text-d2-navy-dark' : 'text-rugby-bronze',
+    rowHover: isHcup ? 'hover:bg-hcup-blue/10' : isD2 ? 'hover:bg-d2-navy/10' : 'hover:bg-rugby-gold/10',
   };
 
   const loadClassement = useCallback(async () => {
