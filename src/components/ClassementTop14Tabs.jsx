@@ -11,8 +11,9 @@
 import { useState } from 'react';
 import { Award, Trophy } from 'lucide-react';
 import PalmaresTop14 from './PalmaresTop14';
+import { getCharte } from '../constants/chartes';
 
-const GOLD = '#CBA135';
+const GOLD = getCharte('top14').rubrique.accent; // or UI Top 14 = rugby-gold #CBA135
 
 // Le contenu "Classement" est passé en prop depuis ClassementPage
 // pour ne pas dupliquer toute la logique (tableau, stats, etc.)
