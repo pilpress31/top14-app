@@ -14,6 +14,17 @@ export default {
         'rugby-bronze': '#8C6D3A',        // bronze foncé
         'rugby-gray': '#D4CFC7',          // gris chaud
         'rugby-white': '#FFFFFF',         // blanc pur
+
+        // ── Pro D2 (valeurs alignées sur src/constants/chartes.js — garder synchronisé) ──
+        'd2-navy': '#00174D',             // bleu marine principal
+        'd2-navy-dark': '#002A7D',        // bleu marine foncé (hover / texte secondaire)
+        'd2-blue': '#97C1FE',             // bleu clair (accent)
+        'd2-silver': '#C0C0C0',           // argent
+
+        // ── Champions Cup / EPCR (valeurs alignées sur src/constants/chartes.js) ──
+        'hcup-blue': '#003E7E',           // bleu EPCR principal
+        'hcup-blue-dark': '#002857',      // bleu EPCR foncé (hover)
+        'hcup-gold': '#FFC72C',           // or EPCR (accent)
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',

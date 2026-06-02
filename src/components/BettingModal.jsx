@@ -527,17 +527,17 @@ export default function BettingModal({ match, existingProno, userCredits, isD2 =
   // Couleurs selon le championnat
   // ============================================
   const headerBg = isD2
-    ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE]'
+    ? 'bg-gradient-to-r from-d2-navy to-d2-blue'
     : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze';
-  const borderColor = isD2 ? 'border-[#97C1FE]' : 'border-rugby-gold';
-  const sectionBorderOn = isD2 ? 'border-[#97C1FE]' : 'border-rugby-gold';
-  const infoBg = isD2 ? 'bg-[#97C1FE]/10 border-[#97C1FE]/30' : 'bg-rugby-gold/10 border-rugby-gold/30';
-  const summaryBg = isD2 ? 'bg-[#97C1FE]/10 border-[#97C1FE]/30' : 'bg-rugby-gold/10 border-rugby-gold/30';
+  const borderColor = isD2 ? 'border-d2-blue' : 'border-rugby-gold';
+  const sectionBorderOn = isD2 ? 'border-d2-blue' : 'border-rugby-gold';
+  const infoBg = isD2 ? 'bg-d2-blue/10 border-d2-blue/30' : 'bg-rugby-gold/10 border-rugby-gold/30';
+  const summaryBg = isD2 ? 'bg-d2-blue/10 border-d2-blue/30' : 'bg-rugby-gold/10 border-rugby-gold/30';
   const validBtnBg = isD2
-    ? 'bg-[#00174D] text-white hover:bg-[#97C1FE]'
+    ? 'bg-d2-navy text-white hover:bg-d2-blue'
     : 'bg-rugby-gold text-white hover:bg-rugby-bronze';
-  const inputFocusRing = isD2 ? 'focus:ring-[#97C1FE] focus:border-[#97C1FE]' : 'focus:ring-rugby-gold focus:border-rugby-gold';
-  const toggleActiveBg = isD2 ? 'bg-[#00174D]' : 'bg-rugby-gold';
+  const inputFocusRing = isD2 ? 'focus:ring-d2-blue focus:border-d2-blue' : 'focus:ring-rugby-gold focus:border-rugby-gold';
+  const toggleActiveBg = isD2 ? 'bg-d2-navy' : 'bg-rugby-gold';
 
   return createPortal(
     <div

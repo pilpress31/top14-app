@@ -26,8 +26,8 @@ export default function ActuPage() {
               onClick={() => setChampionnat('prod2')}
               className={`px-4 py-2 font-bold text-sm transition-colors ${
                 championnat === 'prod2'
-                  ? 'bg-[#00174D] text-white'
-                  : 'bg-white text-[#00174D] hover:bg-[#00174D]/10'
+                  ? 'bg-d2-navy text-white'
+                  : 'bg-white text-d2-navy hover:bg-d2-navy/10'
               }`}
             >
               🥈 PRO D2
@@ -36,8 +36,8 @@ export default function ActuPage() {
               onClick={() => setChampionnat('hcup')}
               className={`px-4 py-2 font-bold text-sm transition-colors ${
                 championnat === 'hcup'
-                  ? 'bg-[#003E7E] text-[#FFC72C]'
-                  : 'bg-white text-[#003E7E] hover:bg-[#003E7E]/10'
+                  ? 'bg-hcup-blue text-hcup-gold'
+                  : 'bg-white text-hcup-blue hover:bg-hcup-blue/10'
               }`}
             >
               ⭐ C.CUP

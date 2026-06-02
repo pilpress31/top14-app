@@ -271,7 +271,7 @@ export default function MesParisTab() {
 
   // Couleurs selon championnat
   const bandeauBg = isD2
-    ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE]'
+    ? 'bg-gradient-to-r from-d2-navy to-d2-blue'
     : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze';
 
   return (
@@ -306,8 +306,8 @@ export default function MesParisTab() {
 
       {/* Badge championnat en mode D2 */}
       {isD2 && (
-        <div className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00174D] rounded-lg w-fit mx-auto">
-          <span className="text-xs font-bold text-[#C0C0C0] uppercase tracking-wide">🏉 Paris Pro D2</span>
+        <div className="flex items-center justify-center gap-2 px-4 py-2 bg-d2-navy rounded-lg w-fit mx-auto">
+          <span className="text-xs font-bold text-d2-silver uppercase tracking-wide">🏉 Paris Pro D2</span>
         </div>
       )}
 
@@ -458,7 +458,7 @@ export default function MesParisTab() {
                   <div className="flex items-center gap-2">
                     {/* Badge Pro D2 uniquement en D2 */}
                     {isD2 && (
-                      <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#00174D] text-[#C0C0C0]">
+                      <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-d2-navy text-d2-silver">
                         🏉 Pro D2
                       </span>
                     )}

@@ -312,11 +312,11 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
 
   // Couleurs selon championnat
   const bandeauBg = isD2
-    ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE]'
+    ? 'bg-gradient-to-r from-d2-navy to-d2-blue'
     : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze';
 
-  const headerBg = isD2 ? 'bg-[#97C1FE]/10 hover:bg-[#97C1FE]/20' : 'bg-rugby-gold/10 hover:bg-rugby-gold/20';
-  const headerIconColor = isD2 ? 'text-[#97C1FE]' : 'text-rugby-gold';
+  const headerBg = isD2 ? 'bg-d2-blue/10 hover:bg-d2-blue/20' : 'bg-rugby-gold/10 hover:bg-rugby-gold/20';
+  const headerIconColor = isD2 ? 'text-d2-blue' : 'text-rugby-gold';
 
   return (
     <div className="space-y-3">
@@ -350,8 +350,8 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
 
       {/* Badge championnat en mode D2 */}
       {isD2 && (
-        <div className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00174D] rounded-lg w-fit mx-auto">
-          <span className="text-xs font-bold text-[#C0C0C0] uppercase tracking-wide">🏉 Mode Pro D2 — Paris FT uniquement</span>
+        <div className="flex items-center justify-center gap-2 px-4 py-2 bg-d2-navy rounded-lg w-fit mx-auto">
+          <span className="text-xs font-bold text-d2-silver uppercase tracking-wide">🏉 Mode Pro D2 — Paris FT uniquement</span>
         </div>
       )}
 
@@ -457,7 +457,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
       <div className="flex justify-center mt-6 mb-4">
         <button
           onClick={() => setShowReglementModal(true)}
-          className={`flex items-center gap-2 ${isD2 ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE]' : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze'} text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all`}
+          className={`flex items-center gap-2 ${isD2 ? 'bg-gradient-to-r from-d2-navy to-d2-blue' : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze'} text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all`}
         >
           <FileText className="w-5 h-5" />
           <span className="font-semibold">Consulter le règlement</span>

@@ -311,7 +311,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     );
   };
 
-  const hoverColor = isD2 ? 'hover:bg-[#97C1FE]/5' : 'hover:bg-rugby-gold/5';
+  const hoverColor = isD2 ? 'hover:bg-d2-blue/5' : 'hover:bg-rugby-gold/5';
 
   return (
     <div className={`px-3 py-3 ${hoverColor} transition-colors`}>

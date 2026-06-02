@@ -415,7 +415,7 @@ export default function MesPoints() {
               onClick={() => setChampionnatFilter('prod2')}
               className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
                 championnatFilter === 'prod2'
-                  ? 'bg-[#00174D] text-white'
+                  ? 'bg-d2-navy text-white'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -425,7 +425,7 @@ export default function MesPoints() {
               onClick={() => setChampionnatFilter('hcup')}
               className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
                 championnatFilter === 'hcup'
-                  ? 'text-[#FFC72C]'
+                  ? 'text-hcup-gold'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
               style={championnatFilter === 'hcup' ? { backgroundColor: '#003E7E' } : {}}
@@ -525,7 +525,7 @@ export default function MesPoints() {
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     bet.championnat === 'prod2'
-                      ? 'bg-[#00174D] text-white'
+                      ? 'bg-d2-navy text-white'
                       : bet.championnat === 'hcup'
                       ? ''
                       : 'bg-rugby-gold text-white'
@@ -645,7 +645,7 @@ export default function MesPoints() {
                       <p className="text-[10px] text-gray-500 leading-tight">Points</p>
                       <p
                         className={`text-sm font-bold ${
-                          bet.championnat === 'prod2' ? 'text-[#00174D]'
+                          bet.championnat === 'prod2' ? 'text-d2-navy'
                             : bet.championnat === 'hcup' ? ''
                             : 'text-rugby-gold'
                         }`}

@@ -36,13 +36,13 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
   // HCup prend priorité sur D2 si jamais les deux flags étaient passés ensemble
   const primaryColor = isHcup
     ? `text-[${HCUP_BLEU}]`
-    : isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
+    : isD2 ? 'text-d2-navy' : 'text-rugby-gold';
   const accentColor = isHcup
     ? `text-[${HCUP_OR}]`
-    : isD2 ? 'text-[#00174D]' : 'text-rugby-gold';
+    : isD2 ? 'text-d2-navy' : 'text-rugby-gold';
   const spinnerColor = isHcup
     ? `border-[${HCUP_BLEU}]`
-    : isD2 ? 'border-[#00174D]' : 'border-rugby-gold';
+    : isD2 ? 'border-d2-navy' : 'border-rugby-gold';
 
   // Style inline pour les couleurs HCup (Tailwind ne génère pas les classes dynamiques)
   const hcupTextStyle = isHcup ? { color: HCUP_BLEU } : undefined;

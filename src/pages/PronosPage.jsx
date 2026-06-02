@@ -107,7 +107,7 @@ export default function PronosPage() {
   const inactiveTabClassName = isHcup
     ? 'text-gray-500 hover:bg-gray-100'
     : isD2
-      ? 'text-gray-500 hover:text-[#00174D] hover:bg-[#97C1FE]/10'
+      ? 'text-gray-500 hover:text-d2-navy hover:bg-d2-blue/10'
       : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20';
 
   const HeaderComponent = isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;

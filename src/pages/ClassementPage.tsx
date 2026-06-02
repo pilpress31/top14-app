@@ -25,11 +25,11 @@ function ClassementPage() {
 
   // Couleurs adaptées selon championnat
   const themeColors = {
-    primary: isHcup ? 'text-[#003E7E]' : isD2 ? 'text-[#00174D]' : 'text-rugby-gold',
-    primaryBg: isHcup ? 'bg-[#003E7E]' : isD2 ? 'bg-[#00174D]' : 'bg-rugby-gold',
-    primaryBgHover: isHcup ? 'hover:bg-[#002857]' : isD2 ? 'hover:bg-[#002A7D]' : 'hover:bg-rugby-bronze',
-    secondaryText: isHcup ? 'text-[#FFC72C]' : isD2 ? 'text-[#002A7D]' : 'text-rugby-orange',
-    rowHover: isHcup ? 'hover:bg-[#003E7E]/10' : isD2 ? 'hover:bg-[#00174D]/10' : 'hover:bg-rugby-orange/10',
+    primary: isHcup ? 'text-hcup-blue' : isD2 ? 'text-d2-navy' : 'text-rugby-gold',
+    primaryBg: isHcup ? 'bg-hcup-blue' : isD2 ? 'bg-d2-navy' : 'bg-rugby-gold',
+    primaryBgHover: isHcup ? 'hover:bg-hcup-blue-dark' : isD2 ? 'hover:bg-d2-navy-dark' : 'hover:bg-rugby-bronze',
+    secondaryText: isHcup ? 'text-hcup-gold' : isD2 ? 'text-d2-navy-dark' : 'text-rugby-orange',
+    rowHover: isHcup ? 'hover:bg-hcup-blue/10' : isD2 ? 'hover:bg-d2-navy/10' : 'hover:bg-rugby-orange/10',
   };
 
   const loadClassement = useCallback(async () => {
@@ -155,8 +155,8 @@ function ClassementPage() {
             onClick={() => setChampionnat('prod2')}
             className={`px-4 py-2 font-bold text-sm transition-colors ${
               championnat === 'prod2'
-                ? 'bg-[#00174D] text-white'
-                : 'bg-white text-[#00174D] hover:bg-[#00174D]/10'
+                ? 'bg-d2-navy text-white'
+                : 'bg-white text-d2-navy hover:bg-d2-navy/10'
             }`}
           >
             🥈 PRO D2
@@ -165,8 +165,8 @@ function ClassementPage() {
             onClick={() => setChampionnat('hcup')}
             className={`px-4 py-2 font-bold text-sm transition-colors ${
               championnat === 'hcup'
-                ? 'bg-[#003E7E] text-[#FFC72C]'
-                : 'bg-white text-[#003E7E] hover:bg-[#003E7E]/10'
+                ? 'bg-hcup-blue text-hcup-gold'
+                : 'bg-white text-hcup-blue hover:bg-hcup-blue/10'
             }`}
           >
             ⭐ C.CUP
@@ -351,7 +351,7 @@ function ClassementPage() {
             </p>
             {isD2 && (
               <p className="text-xs text-gray-500 italic mt-1">
-                Source : <a href="https://prod2.lnr.fr/classement" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#00174D]">LNR Pro D2</a>
+                Source : <a href="https://prod2.lnr.fr/classement" target="_blank" rel="noopener noreferrer" className="underline hover:text-d2-navy">LNR Pro D2</a>
               </p>
             )}
           </div>

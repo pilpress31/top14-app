@@ -26,7 +26,7 @@ export default function ChampionnatToggle({ className = '' }) {
         onClick={() => { if (!isD2) toggle(); }}
         className={`flex-1 px-4 py-2 rounded-md text-sm font-bold transition-all ${
           isD2
-            ? 'bg-gradient-to-r from-[#00174D] to-[#97C1FE] text-white shadow-sm'
+            ? 'bg-gradient-to-r from-d2-navy to-d2-blue text-white shadow-sm'
             : 'text-gray-600 hover:bg-white/50'
         }`}
       >

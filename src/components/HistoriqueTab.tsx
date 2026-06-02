@@ -374,7 +374,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
                         loadHistorique(isD2, 1, selectedTeam !== 'all' ? selectedTeam : undefined, newSaison !== 'all' ? newSaison : undefined);
                       }}
                       className={`w-full text-left px-3 py-2 text-sm font-semibold hover:bg-opacity-10 transition-colors border-t border-gray-100 ${
-                        selectedSaison === saison ? (isD2 ? "text-[#97C1FE] font-semibold" : "bg-rugby-gold bg-opacity-20 text-rugby-gold") : "text-gray-800"
+                        selectedSaison === saison ? (isD2 ? "text-d2-blue font-semibold" : "bg-rugby-gold bg-opacity-20 text-rugby-gold") : "text-gray-800"
                       }`}
                     >
                       Saison {saison}
