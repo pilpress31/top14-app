@@ -20,6 +20,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { getCharte } from "../constants/chartes";
 
 // Métadonnées par championnat (label + endpoint + libellé "journée")
 const CHAMP_META = {
@@ -47,7 +48,7 @@ export default function StatsAlgoModal({
   open,
   onClose,
   championnat = "top14",
-  theme = { primary: "#C9A84C", accent: "#FFD700", onPrimary: "#FFFFFF" },
+  theme = getCharte("top14").modal,
   globalStats = { precision: 0, total: 0 },
   apiBase = "https://top14-api-production.up.railway.app",
 }) {

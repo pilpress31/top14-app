@@ -17,12 +17,12 @@ import BettingModalHcup from './BettingModalHcup';
 import MatchCardHcup from './MatchCardHcup';
 import ReglementModal from './ReglementModal';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
+import { getCharte } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-// Couleurs charte HCup
-const HCUP_BLUE = '#003E7E';
-const HCUP_GOLD = '#FFC72C';
+// Couleurs charte HCup — centralisées dans src/constants/chartes.js
+const { bleu: HCUP_BLUE, or: HCUP_GOLD } = getCharte('hcup').base;
 
 // Ordre des rounds pour le tri (du plus tôt au plus tard dans une saison)
 const ROUND_ORDER = {

@@ -16,12 +16,12 @@ import { X, Trophy, Coins, Target, Hash, Brain, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import { supabase } from '../lib/supabaseClient';
 import { getTeamData } from '../utils/teams';
+import { getCharte } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
-// Couleurs charte HCup
-const HCUP_BLUE = '#003E7E';
-const HCUP_GOLD = '#FFC72C';
+// Couleurs charte HCup — centralisées dans src/constants/chartes.js
+const { bleu: HCUP_BLUE, or: HCUP_GOLD } = getCharte('hcup').base;
 
 const toInt = (v) => parseInt(v) || 0;
 
