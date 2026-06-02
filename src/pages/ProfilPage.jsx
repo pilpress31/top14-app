@@ -92,13 +92,33 @@ function ProfilPage() {
         return
       }
 
-      const fileExt = file.name.split('.').pop()
+      // L'iPhone photographie en HEIC/HEIF : non affichable sur le web et
+      // refusé par le bucket. On bloque proprement avec un message clair.
+      const isHeic = /hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name)
+      if (isHeic) {
+        setError('Format HEIC non supporté. Sur iPhone : Réglages → Appareil photo → Formats → « Plus compatible », ou choisis une photo JPEG depuis la galerie.')
+        setUploadingAvatar(false)
+        return
+      }
+
+      // Extension dérivée du TYPE MIME réel, pas du nom de fichier
+      // (sur iPhone, une photo prise via l'appareil arrive souvent sans
+      //  extension exploitable → évite les chemins type "avatar.image").
+      const extByMime = {
+        'image/jpeg': 'jpg',
+        'image/jpg':  'jpg',
+        'image/png':  'png',
+        'image/webp': 'webp',
+      }
+      const fileExt = extByMime[file.type] || 'jpg'
       const filePath = `${user.id}/avatar.${fileExt}`
 
       // Upload vers Supabase Storage
+      // contentType explicite : garantit le bon MIME même si le fichier
+      // arrive sans nom/extension fiable.
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true })
+        .upload(filePath, file, { upsert: true, contentType: file.type })
 
       if (uploadError) throw uploadError
 
@@ -125,7 +145,8 @@ function ProfilPage() {
       setTimeout(() => setSuccess(''), 3000)
     } catch (error) {
       console.error('Erreur upload avatar:', error)
-      setError('Erreur lors de l\'upload de l\'avatar')
+      const detail = error?.message || error?.error_description || error?.error || ''
+      setError(detail ? `Erreur lors de l'upload : ${detail}` : 'Erreur lors de l\'upload de l\'avatar')
     } finally {
       setUploadingAvatar(false)
     }
