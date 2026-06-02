@@ -14,9 +14,9 @@ import { useState } from 'react';
 import { Trophy, Award } from 'lucide-react';
 import ClassementHcup from './ClassementHcup';
 import PalmaresHcup from './PalmaresHcup';
+import { getCharte } from '../constants/chartes';
 
-const HCUP_BLEU = '#003E7E';
-const HCUP_OR   = '#FFC72C';
+const { bleu: HCUP_BLEU, or: HCUP_OR } = getCharte('hcup').base;
 
 export default function ClassementHcupTabs() {
   const [activeSubTab, setActiveSubTab] = useState('classement');

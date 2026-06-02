@@ -11,9 +11,9 @@
 import { useState } from 'react';
 import { Award, Trophy } from 'lucide-react';
 import PalmaresD2 from './PalmaresD2';
+import { getCharte } from '../constants/chartes';
 
-const D2_NAVY = '#00174D';
-const D2_BLUE = '#97C1FE';
+const { navy: D2_NAVY, blue: D2_BLUE } = getCharte('prod2').base;
 
 export default function ClassementD2Tabs({ children }) {
   const [activeSubTab, setActiveSubTab] = useState('classement');

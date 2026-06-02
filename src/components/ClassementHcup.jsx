@@ -14,11 +14,11 @@
 
 import { useState, useEffect } from 'react';
 import { getTeamData } from '../utils/teams';
+import { getCharte } from '../constants/chartes';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-const HCUP_BLEU = '#003E7E';
-const HCUP_OR   = '#FFC72C';
+const { bleu: HCUP_BLEU, or: HCUP_OR } = getCharte('hcup').base;
 
 export default function ClassementHcup() {
   const [pools, setPools] = useState(null);
