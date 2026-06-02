@@ -19,8 +19,11 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { getCharte } from "../constants/chartes";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
+const HC = getCharte("hcup");
+const { bleu, or } = HC.base;
 
 // Seuil au-dessus duquel on bascule en "mode mature" (vraies stats users)
 // En dessous, on affiche un CTA "Sois parmi les 1ers à parier !"
@@ -70,8 +73,8 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
                   transition-transform duration-300
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
-        background: "linear-gradient(to right, #FFFFFF, #FFFFFF, #FFF9E6, #FFC72C33)",
-        borderBottom: "2px solid #003E7E",
+        background: HC.header.fond,
+        borderBottom: `2px solid ${HC.header.bordure}`,
         // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
         top: 'var(--safe-area-top, 0px)',
       }}
@@ -81,7 +84,7 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
         {/* Titre */}
         <div className="text-center">
           <h1 className="text-base font-bold flex items-center justify-center gap-2 uppercase tracking-wider whitespace-nowrap"
-              style={{ color: "#003E7E" }}>
+              style={{ color: bleu }}>
             <img
               src="/images/ballon-logo.png"
               alt="Ballon de rugby"
@@ -89,7 +92,7 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
             />
             CHAMPIONS CUP PARIS VIRTUELS
           </h1>
-          <p className="text-xs italic mt-1" style={{ color: "#003E7E", opacity: 0.7 }}>
+          <p className="text-xs italic mt-1" style={{ color: bleu, opacity: 0.7 }}>
             Des cotes fiables, basées sur la réalité du terrain
           </p>
         </div>
@@ -99,35 +102,35 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
 
           {/* Bloc 1 : Précision moyenne (algo) — toujours affiché */}
           <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
-               style={{ backgroundColor: "#003E7E", border: "1px solid #FFC72C" }}>
-            <TrophyIcon className="h-4 w-4" style={{ color: "#FFC72C" }} />
+               style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
+            <TrophyIcon className="h-4 w-4" style={{ color: or }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
                 {algoStats.precision > 0 ? `${algoStats.precision}%` : "…"}
               </p>
-              <p className="text-[10px]" style={{ color: "#FFC72C" }}>Précision moyenne</p>
+              <p className="text-[10px]" style={{ color: or }}>Précision moyenne</p>
             </div>
           </div>
 
           {/* Bloc 2 : Paris gagnants (mature) OU CTA cold start */}
           {modeMature ? (
             <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
-                 style={{ backgroundColor: "#003E7E", border: "1px solid #FFC72C" }}>
-              <StarIcon className="h-4 w-4" style={{ color: "#FFC72C" }} />
+                 style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
+              <StarIcon className="h-4 w-4" style={{ color: or }} />
               <div>
                 <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
                   {userStats.paris_corrects}/{userStats.total_paris}
                 </p>
-                <p className="text-[10px]" style={{ color: "#FFC72C" }}>Paris gagnants</p>
+                <p className="text-[10px]" style={{ color: or }}>Paris gagnants</p>
               </div>
             </div>
           ) : (
             <div className="rounded-md px-3 py-1 text-center shadow flex items-center justify-center h-[40px]"
                  style={{
-                   backgroundColor: "#003E7E",
-                   border: "1px dashed #FFC72C",
+                   backgroundColor: bleu,
+                   border: `1px dashed ${or}`,
                  }}>
-              <p className="text-[11px] font-bold leading-tight" style={{ color: "#FFC72C" }}>
+              <p className="text-[11px] font-bold leading-tight" style={{ color: or }}>
                 🚀 Sois parmi<br />les 1<sup>ers</sup> à parier !
               </p>
             </div>

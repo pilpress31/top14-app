@@ -13,8 +13,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import StatsAlgoModal from "./StatsAlgoModal";
+import { getCharte } from "../constants/chartes";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
+const HC = getCharte("hcup");
+const { bleu, or } = HC.base;
 
 /**
  * MainHeaderHcup (Champions Cup)
@@ -49,8 +52,8 @@ export default function MainHeaderHcup({ isVisible = true }) {
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
         // 🎨 Fond blanc avec léger dégradé doré pour identifier la HCup
-        background: "linear-gradient(to right, #FFFFFF, #FFFFFF, #FFF9E6, #FFC72C33)",
-        borderBottom: "2px solid #003E7E",
+        background: HC.header.fond,
+        borderBottom: `2px solid ${HC.header.bordure}`,
         // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
         top: 'var(--safe-area-top, 0px)',
       }}
@@ -60,7 +63,7 @@ export default function MainHeaderHcup({ isVisible = true }) {
         {/* Titre */}
         <div className="text-center">
           <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
-              style={{ color: "#003E7E" }}>
+              style={{ color: bleu }}>
             <img
               src="/images/ballon-logo.png"
               alt="Ballon de rugby"
@@ -68,7 +71,7 @@ export default function MainHeaderHcup({ isVisible = true }) {
             />
             CHAMPIONS CUP PRONOS
           </h1>
-          <p className="text-xs italic mt-1" style={{ color: "#003E7E", opacity: 0.7 }}>
+          <p className="text-xs italic mt-1" style={{ color: bleu, opacity: 0.7 }}>
             Prédictions européennes boostées par l'IA
           </p>
         </div>
@@ -82,24 +85,24 @@ export default function MainHeaderHcup({ isVisible = true }) {
                      transition-transform duration-150 hover:scale-[1.03] active:scale-95"
         >
           <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
-               style={{ backgroundColor: "#003E7E", border: "1px solid #FFC72C" }}>
-            <TrophyIcon className="h-4 w-4" style={{ color: "#FFC72C" }} />
+               style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
+            <TrophyIcon className="h-4 w-4" style={{ color: or }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
                 {stats.precision > 0 ? `${stats.precision}%` : "…"}
               </p>
-              <p className="text-[10px]" style={{ color: "#FFC72C" }}>Précision moyenne</p>
+              <p className="text-[10px]" style={{ color: or }}>Précision moyenne</p>
             </div>
           </div>
 
           <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
-               style={{ backgroundColor: "#003E7E", border: "1px solid #FFC72C" }}>
-            <GlobeIcon className="h-4 w-4" style={{ color: "#FFC72C" }} />
+               style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
+            <GlobeIcon className="h-4 w-4" style={{ color: or }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
                 {stats.total > 0 ? stats.total : "…"}
               </p>
-              <p className="text-[10px]" style={{ color: "#FFC72C" }}>Matchs analysés</p>
+              <p className="text-[10px]" style={{ color: or }}>Matchs analysés</p>
             </div>
           </div>
         </button>
@@ -110,7 +113,7 @@ export default function MainHeaderHcup({ isVisible = true }) {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         championnat="hcup"
-        theme={{ primary: "#003E7E", accent: "#FFC72C", onPrimary: "#FFFFFF" }}
+        theme={HC.modal}
         globalStats={{ precision: stats.precision, total: stats.total }}
         apiBase={API_BASE}
       />

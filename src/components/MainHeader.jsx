@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getConfig, getStats } from "../lib/api";
 import StatsAlgoModal from "./StatsAlgoModal";
+import { getCharte } from "../constants/chartes";
 
 /**
  * MainHeader (Top 14)
@@ -112,7 +113,7 @@ function MainHeader({ isVisible = true }) {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         championnat="top14"
-        theme={{ primary: "#C9A84C", accent: "#FFD700", onPrimary: "#FFFFFF" }}
+        theme={getCharte("top14").modal}
         globalStats={{
           precision: stats.precision?.ft?.pourcentage || 0,
           total: stats.nombre_matchs_historique || 0,

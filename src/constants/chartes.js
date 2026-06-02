@@ -2,50 +2,71 @@
 // src/constants/chartes.js
 // SOURCE UNIQUE DE VÉRITÉ des chartes couleurs par championnat.
 //
-// Chaque championnat regroupe ses couleurs par usage :
+// Les couleurs d'identité sont déclarées une seule fois (constantes
+// primaires ci-dessous), puis composées dans les vues par usage :
 //   label    : libellé affiché ('TOP 14' / 'PRO D2' / 'CHAMPIONS CUP')
 //   rubrique : en-têtes d'accordéon { bg, border, text, accent }
 //              (consommé via RUBRIQUE_THEMES, réexporté par RubriqueHeader)
-//   partage  : visuel de partage / story sur fond sombre
-//              { accent, accentVif, fond1, fond2, fond3 }
+//   partage  : visuel story sur fond sombre { accent, accentVif, fond1, fond2, fond3 }
+//   base     : couleurs d'identité brutes (Palmarès, en-têtes…)
+//   header   : fond + bordure des en-têtes de page (D2 / HCup uniquement ;
+//              le Top 14 utilise un dégradé Tailwind en className)
+//   modal    : thème de StatsAlgoModal { primary, accent, onPrimary }
 //
-// ⚠️ Les valeurs Top 14 de `rubrique` sont alignées sur les couleurs
-//    nommées rugby-* de tailwind.config.js — à garder synchronisées :
-//      bg     = rugby-gold-soft   (#FAF6EB)
-//      border = rugby-gold-border (#E4D29A)
-//      text   = rugby-bronze      (#8C6D3A)
-//      accent = rugby-gold        (#CBA135)
-//
-// NOTE : les nuances d'or du visuel de partage (#C9A84C / #FFD700)
-//        diffèrent volontairement du rugby-gold (#CBA135) — elles
-//        rendent mieux sur le fond bleu nuit de la story. Harmonisation
-//        possible plus tard si souhaité (Phase ultérieure).
+// ⚠️ Le Top 14 a TROIS nuances d'or qui coexistent (à harmoniser un jour) :
+//      #CBA135 = rugby-gold (UI/rubriques, cf. tailwind.config.js)
+//      #C9A84C = accent du visuel de partage / modal
+//      #D4AF37 = or du Palmarès
 // ─────────────────────────────────────────────────────────────
+
+// ── Couleurs primaires (déclarées une seule fois) ──
+// Top 14
+const T14_OR_UI       = '#CBA135'; // rugby-gold (Tailwind) — UI / rubriques
+const T14_OR_PARTAGE  = '#C9A84C'; // accent du partage / modal
+const T14_OR_VIF      = '#FFD700'; // or vif (accentVif partage + modal accent)
+const T14_OR_PAL      = '#D4AF37'; // or du Palmarès
+const T14_OR_PAL_DARK = '#A88829';
+const T14_OR_PAL_LIGHT= '#FFF8E7';
+// Pro D2
+const D2_NAVY   = '#00174D';
+const D2_SILVER = '#C0C0C0';
+const D2_BLUE   = '#97C1FE';
+// Champions Cup (EPCR)
+const HCUP_BLEU       = '#003E7E';
+const HCUP_BLEU_FONCE = '#002857';
+const HCUP_OR         = '#FFC72C';
+
+const BLANC = '#FFFFFF';
 
 export const CHARTES = {
   top14: {
     label: 'TOP 14',
-    rubrique: { bg: '#FAF6EB', border: '#E4D29A', text: '#8C6D3A', accent: '#CBA135' },
-    partage:  { accent: '#C9A84C', accentVif: '#FFD700',
+    rubrique: { bg: '#FAF6EB', border: '#E4D29A', text: '#8C6D3A', accent: T14_OR_UI },
+    partage:  { accent: T14_OR_PARTAGE, accentVif: T14_OR_VIF,
                 fond1: '#1a2740', fond2: '#101a2e', fond3: '#0a111f' },
-    // Or « accent » du Palmarès. ⚠️ #D4AF37 diffère de rubrique.accent (#CBA135,
-    // = rugby-gold de Tailwind) ET de partage.accentVif (#FFD700) : trois nuances
-    // d'or Top 14 coexistent dans l'app, à harmoniser un jour si souhaité.
-    base:     { gold: '#D4AF37', goldDark: '#A88829', goldLight: '#FFF8E7' },
+    base:     { gold: T14_OR_PAL, goldDark: T14_OR_PAL_DARK, goldLight: T14_OR_PAL_LIGHT },
+    modal:    { primary: T14_OR_PARTAGE, accent: T14_OR_VIF, onPrimary: BLANC },
+    // header : pas de fond inline (le Top 14 utilise un dégradé Tailwind en className)
   },
   prod2: {
     label: 'PRO D2',
-    rubrique: { bg: '#EEF2FF', border: '#97C1FE', text: '#00174D', accent: '#97C1FE' },
-    partage:  { accent: '#C0C0C0', accentVif: '#97C1FE',
-                fond1: '#0a2c66', fond2: '#00174D', fond3: '#000f33' },
-    base:     { navy: '#00174D', silver: '#C0C0C0', blue: '#97C1FE' },
+    rubrique: { bg: '#EEF2FF', border: D2_BLUE, text: D2_NAVY, accent: D2_BLUE },
+    partage:  { accent: D2_SILVER, accentVif: D2_BLUE,
+                fond1: '#0a2c66', fond2: D2_NAVY, fond3: '#000f33' },
+    base:     { navy: D2_NAVY, silver: D2_SILVER, blue: D2_BLUE },
+    header:   { fond: 'linear-gradient(to right, #FFFFFF, #FFFFFF, #F0F4FA, #97C1FE33)',
+                bordure: D2_NAVY },
+    modal:    { primary: D2_NAVY, accent: D2_BLUE, onPrimary: BLANC },
   },
   hcup: {
     label: 'CHAMPIONS CUP',
-    rubrique: { bg: '#EEF5FF', border: '#B0CFE8', text: '#003E7E', accent: '#FFC72C' },
-    partage:  { accent: '#FFC72C', accentVif: '#FFC72C',
-                fond1: '#0a5099', fond2: '#003E7E', fond3: '#002a56' },
-    base:     { bleu: '#003E7E', bleuFonce: '#002857', or: '#FFC72C' },
+    rubrique: { bg: '#EEF5FF', border: '#B0CFE8', text: HCUP_BLEU, accent: HCUP_OR },
+    partage:  { accent: HCUP_OR, accentVif: HCUP_OR,
+                fond1: '#0a5099', fond2: HCUP_BLEU, fond3: '#002a56' },
+    base:     { bleu: HCUP_BLEU, bleuFonce: HCUP_BLEU_FONCE, or: HCUP_OR },
+    header:   { fond: 'linear-gradient(to right, #FFFFFF, #FFFFFF, #FFF9E6, #FFC72C33)',
+                bordure: HCUP_BLEU },
+    modal:    { primary: HCUP_BLEU, accent: HCUP_OR, onPrimary: BLANC },
   },
 };
 
@@ -54,9 +75,7 @@ export const getCharte = (championnat) => CHARTES[championnat] || CHARTES.top14;
 
 // ─────────────────────────────────────────────────────────────
 // Vue dérivée : thèmes des en-têtes de rubrique, indexés par championnat.
-//   { top14: {bg,border,text,accent}, prod2: {...}, hcup: {...} }
-// Réexportée par RubriqueHeader.jsx → les composants consommateurs
-// continuent d'importer RUBRIQUE_THEMES depuis RubriqueHeader sans changement.
+// Réexportée par RubriqueHeader.jsx → les consommateurs ne changent pas.
 // ─────────────────────────────────────────────────────────────
 export const RUBRIQUE_THEMES = Object.fromEntries(
   Object.entries(CHARTES).map(([cle, charte]) => [cle, charte.rubrique])

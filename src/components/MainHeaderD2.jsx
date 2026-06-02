@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import StatsAlgoModal from "./StatsAlgoModal";
+import { getCharte } from "../constants/chartes";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
+const D2C = getCharte("prod2");
+const { navy, silver, blue } = D2C.base;
 
 /**
  * MainHeaderD2 (Pro D2)
@@ -37,8 +40,8 @@ export default function MainHeaderD2({ isVisible = true }) {
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
         // 🎨 Fond blanc avec léger dégradé bleu pour identifier D2
-        background: "linear-gradient(to right, #FFFFFF, #FFFFFF, #F0F4FA, #97C1FE33)",
-        borderBottom: "2px solid #00174D",
+        background: D2C.header.fond,
+        borderBottom: `2px solid ${D2C.header.bordure}`,
         // ✅ Compense la safe-area iOS (notch/Dynamic Island) en mode PWA standalone
         top: 'var(--safe-area-top, 0px)',
       }}
@@ -48,7 +51,7 @@ export default function MainHeaderD2({ isVisible = true }) {
         {/* Titre */}
         <div className="text-center">
           <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
-              style={{ color: "#00174D" }}>
+              style={{ color: navy }}>
             <img
               src="/images/ballon-logo.png"
               alt="Ballon de rugby"
@@ -56,7 +59,7 @@ export default function MainHeaderD2({ isVisible = true }) {
             />
             PRO D2 PRONOS
           </h1>
-          <p className="text-xs italic mt-1" style={{ color: "#00174D", opacity: 0.7 }}>
+          <p className="text-xs italic mt-1" style={{ color: navy, opacity: 0.7 }}>
             Prédictions sportives boostées par l'IA
           </p>
         </div>
@@ -70,24 +73,24 @@ export default function MainHeaderD2({ isVisible = true }) {
                      transition-transform duration-150 hover:scale-[1.03] active:scale-95"
         >
           <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
-               style={{ backgroundColor: "#00174D", border: "1px solid #C0C0C0" }}>
-            <ChartIcon className="h-4 w-4" style={{ color: "#C0C0C0" }} />
+               style={{ backgroundColor: navy, border: `1px solid ${silver}` }}>
+            <ChartIcon className="h-4 w-4" style={{ color: silver }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
                 {stats.precision > 0 ? `${stats.precision}%` : "…"}
               </p>
-              <p className="text-[10px]" style={{ color: "#97C1FE" }}>Précision moyenne</p>
+              <p className="text-[10px]" style={{ color: blue }}>Précision moyenne</p>
             </div>
           </div>
 
           <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
-               style={{ backgroundColor: "#00174D", border: "1px solid #C0C0C0" }}>
-            <DatabaseIcon className="h-4 w-4" style={{ color: "#C0C0C0" }} />
+               style={{ backgroundColor: navy, border: `1px solid ${silver}` }}>
+            <DatabaseIcon className="h-4 w-4" style={{ color: silver }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
                 {stats.total > 0 ? stats.total : "…"}
               </p>
-              <p className="text-[10px]" style={{ color: "#97C1FE" }}>Matchs analysés</p>
+              <p className="text-[10px]" style={{ color: blue }}>Matchs analysés</p>
             </div>
           </div>
         </button>
@@ -98,7 +101,7 @@ export default function MainHeaderD2({ isVisible = true }) {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         championnat="prod2"
-        theme={{ primary: "#00174D", accent: "#97C1FE", onPrimary: "#FFFFFF" }}
+        theme={D2C.modal}
         globalStats={{ precision: stats.precision, total: stats.total }}
         apiBase={API_BASE}
       />
