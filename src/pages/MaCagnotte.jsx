@@ -250,6 +250,9 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
         return <Gift className="w-5 h-5 text-blue-500" />;
       case 'initial_capital':
         return <Award className="w-5 h-5 text-purple-500" />;
+      case 'referral_welcome':
+      case 'referral_bonus':
+        return <Gift className="w-5 h-5 text-amber-500" />;
       default:
         return <Coins className="w-5 h-5 text-gray-400" />;
     }
