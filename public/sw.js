@@ -1,11 +1,10 @@
 // ============================================
 // SERVICE WORKER — Top14 Pronos
-// Cache agressif multi-stratégie
+// Cache : assets/images uniquement. API = network-only.
 // ============================================
 
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 const CACHE_STATIC = `top14-static-${APP_VERSION}`;
-const CACHE_API    = `top14-api-${APP_VERSION}`;
 const CACHE_IMAGES = `top14-images-${APP_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -54,11 +53,11 @@ self.addEventListener('fetch', (event) => {
   // Auth → Network Only
   if (AUTH_HOSTS.some(h => url.hostname.includes(h))) return;
 
-  // API Railway → Stale While Revalidate
-  if (API_HOSTS.some(h => url.hostname.includes(h))) {
-    event.respondWith(staleWhileRevalidate(request, CACHE_API));
-    return;
-  }
+  // API Railway → Network Only (le SW ne touche pas l'API)
+  // Données toujours fraîches en ligne, zéro cache SW => zéro risque de cache
+  // corrompu. L'anti-cache HTTP iOS/WKWebView est géré côté serveur
+  // (Cache-Control: no-store sur /api).
+  if (API_HOSTS.some(h => url.hostname.includes(h))) return;
 
   // Images / logos → Cache First longue durée
   if (
@@ -107,26 +106,6 @@ async function cacheFirst(request, cacheName) {
   }
 }
 
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  const fetchPromise = fetch(request)
-    .then(response => {
-      if (response.ok) {
-        cache.put(request, response.clone());
-        // Notifier les clients qu'une donnée fraîche est disponible
-        // → useRealtimeSync écoute ce message et recharge les données
-        self.clients.matchAll({ includeUncontrolled: true, type: 'window' })
-          .then(clients => clients.forEach(client =>
-            client.postMessage({ type: 'SW_DATA_UPDATED', url: request.url })
-          ));
-      }
-      return response;
-    })
-    .catch(() => null);
-  return cached || fetchPromise || offlineApiResponse();
-}
-
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
@@ -158,13 +137,6 @@ async function networkFirstWithFallback(request) {
       headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
   }
-}
-
-function offlineApiResponse() {
-  return new Response(
-    JSON.stringify({ offline: true, message: 'Données non disponibles hors connexion' }),
-    { status: 503, headers: { 'Content-Type': 'application/json' } }
-  );
 }
 
 // ── PAGE OFFLINE ─────────────────────────────
