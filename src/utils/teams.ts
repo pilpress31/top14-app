@@ -198,7 +198,6 @@ export const TEAMS_DATA = {
   'US COLOMIERS':                  { logo: '/logos/colomiers.svg', name: 'Colomiers' },
 
   'STADE TARBES':                  { logo: '/logos/tarbes.svg', name: 'Tarbes' },
-  'STADO TARBES':                  { logo: '/logos/tarbes.svg', name: 'Tarbes' },
 
   'NICE RUGBY':                    { logo: '/logos/nice.svg', name: 'Nice' },
 
@@ -206,8 +205,6 @@ export const TEAMS_DATA = {
   'BAGNERES':                      { logo: '/logos/bagneres.svg', name: 'Bagnères' },
   'MAZAMET':                       { logo: '/logos/mazamet.svg', name: 'Mazamet' },
   'COGNAC':                        { logo: '/logos/cognac.svg', name: 'Cognac' },
-  'CARCASSONNE':                   { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
-  'US CARCASSONNE':                { logo: '/logos/carcassonne.svg', name: 'Carcassonne' },
   'FC LYON':                       { logo: '/logos/fclyon.svg', name: 'FC Lyon' },
   'STADE BORDELAIS':               { logo: '/logos/stadebordelais.svg', name: 'Stade Bordelais' },
   'SCUF':                          { logo: '/logos/scuf.svg', name: 'SCUF Paris' },
@@ -229,7 +226,6 @@ export const TEAMS_DATA = {
   'NAC ROANNE':                    { logo: '/logos/nac_roanne.svg', name: 'NAC Roanne' },
   'AS BORTOISE':                   { logo: '/logos/as_bortoise.svg', name: 'AS Bortoise' },
   'UA LIBOURNE':                   { logo: '/logos/ua_libourne.svg', name: 'UA Libourne' },
-  'CS VILLEFRANCHE-SUR-SAÔNE':     { logo: '/logos/cs_villefranche.svg', name: 'CS Villefranche' },
   'STADE NANTAIS':                 { logo: '/logos/stade_nantais.svg', name: 'Stade Nantais' },
   'STADE POITEVIN':                { logo: '/logos/stade_poitevin.svg', name: 'Stade Poitevin' },
   'SC DECAZEVILLE':                { logo: '/logos/sc_decazeville.svg', name: 'SC Decazeville' },
@@ -250,7 +246,6 @@ export const TEAMS_DATA = {
 
   // — 1966-1982 —
   'SAINT-JEAN-DE-LUZ OLYMPIQUE':   { logo: '/logos/saint_jean_de_luz.svg', name: 'St-Jean-de-Luz' },
-  'PARIS UNIVERSITÉ CLUB':         { logo: '/logos/paris_universite_club.svg', name: 'Paris UC' },
   'STADE RUTHÉNOIS':               { logo: '/logos/stade_ruthenois.svg', name: 'Stade Ruthénois' },
   'CA CASTELSARRASIN':             { logo: '/logos/ca_castelsarrasin.svg', name: 'CA Castelsarrasin' },
   'US VICQUOISE':                  { logo: '/logos/us_vicquoise.svg', name: 'US Vicquoise' },
@@ -289,15 +284,6 @@ export const TEAMS_DATA = {
   //  (logos dans public/logos/)
   // ════════════════════════════════════════════════════════════
 
-  'AS SAINT-JUNIEN':               { logo: '/logos/as_saint_junien.svg', name: 'AS Saint-Junien' },
-  'ASPTT PARIS':                   { logo: '/logos/asptt_paris.svg', name: 'ASPTT Paris' },
-  'SA CONDOM':                     { logo: '/logos/sa_condom.svg', name: 'SA Condom' },
-  'SC DECAZEVILLE':                { logo: '/logos/sc_decazeville.svg', name: 'SC Decazeville' },
-  'SO CHAMBÉRY':                   { logo: '/logos/so_chambery.svg', name: 'SO Chambéry' },
-  'STADE CADURCIEN':               { logo: '/logos/stade_cadurcien.svg', name: 'Stade Cadurcien' },
-  'STADE MONTLUÇONNAIS':           { logo: '/logos/stade_montluconnais.svg', name: 'Stade Montluçonnais' },
-  'US SALLES':                     { logo: '/logos/us_salles.svg', name: 'US Salles' },
-  'RC VICHY':                      { logo: '/logos/rc_vichy.svg', name: 'RC Vichy' },
   'CS ANNONAY':                    { logo: '/logos/cs_annonay.svg', name: 'CS Annonay' },
   'BOUCAU STADE':                  { logo: '/logos/boucau_stade.svg', name: 'Boucau Stade' },
   'BOUCAU TARNOS STADE':           { logo: '/logos/boucau_tarnos_stade.svg', name: 'Boucau Tarnos Stade' },
