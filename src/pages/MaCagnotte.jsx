@@ -268,6 +268,10 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
         return 'Distribution mensuelle';
       case 'initial_capital':
         return 'Bonus de bienvenue';
+      case 'referral_welcome':
+        return '🎁 Bonus de parrainage';
+      case 'referral_bonus':
+        return '🤝 Parrainage — filleul actif';
       default:
         return 'Régularisation système';
     }
