@@ -3,7 +3,7 @@
 // Cache agressif multi-stratégie
 // ============================================
 
-const APP_VERSION = 'v5';
+const APP_VERSION = 'v6';
 const CACHE_STATIC = `top14-static-${APP_VERSION}`;
 const CACHE_API    = `top14-api-${APP_VERSION}`;
 const CACHE_IMAGES = `top14-images-${APP_VERSION}`;
@@ -54,12 +54,9 @@ self.addEventListener('fetch', (event) => {
   // Auth → Network Only
   if (AUTH_HOSTS.some(h => url.hostname.includes(h))) return;
 
-  // API Railway → Network First
-  // (les données doivent être fraîches en ligne ; le cache ne sert que de
-  //  filet hors-connexion. Le Stale-While-Revalidate précédent affichait des
-  //  données périmées sur iOS jusqu'à ce que l'utilisateur quitte/rouvre l'app.)
+  // API Railway → Stale While Revalidate
   if (API_HOSTS.some(h => url.hostname.includes(h))) {
-    event.respondWith(networkFirst(request, CACHE_API));
+    event.respondWith(staleWhileRevalidate(request, CACHE_API));
     return;
   }
 
@@ -110,6 +107,26 @@ async function cacheFirst(request, cacheName) {
   }
 }
 
+async function staleWhileRevalidate(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+  const fetchPromise = fetch(request)
+    .then(response => {
+      if (response.ok) {
+        cache.put(request, response.clone());
+        // Notifier les clients qu'une donnée fraîche est disponible
+        // → useRealtimeSync écoute ce message et recharge les données
+        self.clients.matchAll({ includeUncontrolled: true, type: 'window' })
+          .then(clients => clients.forEach(client =>
+            client.postMessage({ type: 'SW_DATA_UPDATED', url: request.url })
+          ));
+      }
+      return response;
+    })
+    .catch(() => null);
+  return cached || fetchPromise || offlineApiResponse();
+}
+
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
@@ -120,7 +137,7 @@ async function networkFirst(request, cacheName) {
     return response;
   } catch {
     const cached = await caches.match(request);
-    return cached || offlineApiResponse();
+    return cached || new Response('Non disponible offline', { status: 503 });
   }
 }
 
