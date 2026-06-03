@@ -1195,7 +1195,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Pseudo</th><th>Nom / Prénom</th><th>Email</th><th>Statut</th><th>Code utilisé</th><th>Inscription</th></tr></thead>
+            <thead><tr><th>Pseudo</th><th>Nom / Prénom</th><th>Email</th><th>Statut</th><th>Code / Parrain</th><th>Inscription</th></tr></thead>
             <tbody id="usersAccessBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
@@ -4126,7 +4126,11 @@ async function loadUsersAccess() {
         <td style="font-size:12px;color:var(--muted2)">${nomPrenom}</td>
         <td style="color:var(--muted2);font-size:12px">${u.email || '—'}</td>
         <td style="${style}">${label}</td>
-        <td style="font-family:monospace;font-size:12px;color:var(--muted2)">${u.invitation_code || '—'}</td>
+        <td style="font-size:12px;color:var(--muted2)">${
+          u.invitation_code
+            ? `<span style="font-family:monospace">${u.invitation_code}</span>`
+            : (u.parrain_pseudo ? `🤝 Parrainé par ${u.parrain_pseudo}` : '—')
+        }</td>
         <td style="color:var(--muted2);font-size:12px">${u.inscription_at ? new Date(u.inscription_at).toLocaleDateString('fr-FR') : '—'}</td>
       </tr>
     `;
