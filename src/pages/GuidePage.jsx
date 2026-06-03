@@ -68,6 +68,13 @@ const SLIDES = [
               <p className="text-xs text-gray-600">Des jetons bonus offerts régulièrement</p>
             </div>
           </div>
+          <div className="flex items-start gap-3 bg-white rounded-lg p-3 border border-yellow-200">
+            <span className="text-xl">🤝</span>
+            <div>
+              <p className="font-semibold text-sm text-gray-800">Parrainage</p>
+              <p className="text-xs text-gray-600">+250 jetons quand un filleul place son 1er pari</p>
+            </div>
+          </div>
         </div>
       </div>
     ),

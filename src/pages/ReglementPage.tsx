@@ -483,6 +483,37 @@ export default function ReglementPage() {
           </p>
         </section>
 
+        {/* Parrainage */}
+        <section className="bg-white rounded-lg shadow-sm p-6 border border-rugby-gray">
+          <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+            <Gift className="w-5 h-5" />
+            Parrainage
+          </h3>
+          <p className="text-sm text-gray-700 leading-relaxed mb-4">
+            Depuis la page <strong>Inviter des amis</strong>, partagez votre lien
+            personnel. Vos amis s'inscrivent sans code et profitent d'un accès
+            gratuit jusqu'au 30 septembre 2026.
+          </p>
+
+          <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 mb-3">
+            <p className="font-bold text-amber-900 mb-2 text-sm flex items-center gap-2">
+              <Gift className="w-4 h-4" />
+              250 jetons pour chacun
+            </p>
+            <p className="text-xs text-gray-700 leading-relaxed">
+              Dès que votre filleul place son <strong>premier pari</strong>, vous
+              recevez <strong>tous les deux 250 jetons</strong> : un bonus de
+              bienvenue pour lui, une récompense de parrainage pour vous.
+            </p>
+          </div>
+
+          <p className="text-xs text-gray-500 italic">
+            💡 La récompense est versée une seule fois par filleul, à son premier
+            pari. Vous pouvez parrainer jusqu'à <strong>10 amis</strong> (jusqu'au
+            30 septembre 2026).
+          </p>
+        </section>
+
         {/* Règles importantes */}
         <section className="bg-yellow-50 rounded-lg p-6 border-2 border-yellow-300">
           <h3 className="text-lg font-bold text-yellow-900 mb-3">⚠️ Règles Importantes</h3>

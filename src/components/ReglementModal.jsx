@@ -1,4 +1,4 @@
-import { X, Trophy, Coins, Calendar, TrendingUp, Zap, Award, Target, Hash, RefreshCw, ExternalLink, Flame, Shield } from 'lucide-react';
+import { X, Trophy, Coins, Calendar, TrendingUp, Zap, Award, Target, Hash, RefreshCw, ExternalLink, Flame, Shield, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ReglementModal({ isOpen, onClose }) {
@@ -303,6 +303,22 @@ export default function ReglementModal({ isOpen, onClose }) {
               </p>
               <p className="text-xs text-gray-500 mt-2 italic">
                 Onglet « Mes Ligues » du Classement — détails dans le règlement complet.
+              </p>
+            </section>
+
+            {/* Parrainage */}
+            <section>
+              <h3 className="text-lg font-bold text-rugby-gold mb-3 flex items-center gap-2">
+                <Gift className="w-5 h-5" />
+                Parrainage
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Invitez vos amis avec votre lien personnel (page <strong>Inviter
+                des amis</strong>). Dès que votre filleul place son <strong>premier
+                pari</strong>, vous recevez <strong>chacun 250 jetons</strong>.
+              </p>
+              <p className="text-xs text-gray-500 mt-2 italic">
+                Jusqu'à 10 filleuls — détails dans le règlement complet.
               </p>
             </section>
 
