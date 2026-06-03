@@ -984,6 +984,33 @@ function InsightsD2({ match, isOpen, onToggle }) {
   );
 }
 
+
+// Libellé d'une "journée" : n° régulier, ou nom du round en phase finale.
+// Top 14 : 26 journées régulières ; barrages introduits en 2009-2010
+// (avant : J27=½ finale, J28=Finale). Pro D2 : repli neutre pour l'instant.
+function libelleJournee(journee, saison, isD2 = false) {
+  const j = Number(journee);
+  if (!j) return `J${journee}`;
+  if (isD2) {
+    // Pro D2 : 30 journées régulières (mapping des rounds à affiner plus tard)
+    return j <= 30 ? `J${j}` : 'Phase finale';
+  }
+  // Top 14
+  if (j <= 26) return `J${j}`;
+  const anneeDebut = parseInt(String(saison).slice(0, 4), 10) || 0;
+  if (anneeDebut >= 2009) {
+    if (j === 27) return 'Barrage';
+    if (j === 28) return '½ finale';
+    if (j === 29) return 'Finale';
+  } else {
+    if (j === 27) return '½ finale';
+    if (j === 28) return 'Finale';
+  }
+  return 'Phase finale';
+}
+
+
+
 // ============================================
 // COMPOSANT : Historique des confrontations
 // ============================================
@@ -1077,7 +1104,7 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
 
               {confrontations.map((m, i) => {
                 const saisonCourt = (m.saison || '').replace('20', '').replace('-20', '-');
-                const journee = `J${m.journee}`;
+                const journee = libelleJournee(m.journee, m.saison, match.isD2);
                 const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
                 const mtScore = (m.score_ht_domicile != null && m.score_ht_exterieur != null)
                   ? `${m.score_ht_domicile}-${m.score_ht_exterieur}` : '-';
