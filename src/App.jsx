@@ -15,6 +15,7 @@ import { useAccessControl } from "./hooks/useAccessControl";
 import PaywallPage from "./pages/PaywallPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import AccessBanner from "./components/AccessBanner";
+import RefreshOnResume from "./components/RefreshOnResume";
 
 // Pages
 import IAPage from '@/pages/IAPage';
@@ -231,17 +232,20 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <ChampionnatProvider>
-        <FavoritesProvider>
-          <ChatNotificationProvider>
-            <NotificationsProvider>
-              <AppContent />
-            </NotificationsProvider>
-          </ChatNotificationProvider>
-        </FavoritesProvider>
-      </ChampionnatProvider>
-    </AuthProvider>
+    <>
+      <RefreshOnResume />
+      <AuthProvider>
+        <ChampionnatProvider>
+          <FavoritesProvider>
+            <ChatNotificationProvider>
+              <NotificationsProvider>
+                <AppContent />
+              </NotificationsProvider>
+            </ChatNotificationProvider>
+          </FavoritesProvider>
+        </ChampionnatProvider>
+      </AuthProvider>
+    </>
   );
 }
 
