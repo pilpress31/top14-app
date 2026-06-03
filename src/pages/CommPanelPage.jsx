@@ -31,6 +31,7 @@ export default function CommPanelPage() {
   const [engagement, setEngagement]   = useState(null);
   const [leaderboard, setLeaderboard] = useState(null);
   const [teaser, setTeaser]           = useState(null);
+  const [usersAccess, setUsersAccess] = useState(null);
   const [loading, setLoading]         = useState(false);
 
   // Récupérer le token Supabase
@@ -70,6 +71,7 @@ export default function CommPanelPage() {
     apiGet('/api/comm/engagement', token).then(setEngagement).catch(() => {});
     apiGet('/api/comm/leaderboard', token).then(setLeaderboard).catch(() => {});
     apiGet('/api/comm/teaser', token).then(setTeaser).catch(() => {});
+    apiGet('/api/comm/users-access', token).then(setUsersAccess).catch(() => {});
   }, [token]);
 
   const col = CHAMPS.find(c => c.value === champ);
@@ -130,6 +132,9 @@ export default function CommPanelPage() {
 
         {/* Teaser */}
         {teaser && <TeaserBloc data={teaser} />}
+
+        {/* Statut d'accès des utilisateurs */}
+        {usersAccess && <UsersAccessBloc data={usersAccess} />}
 
       </div>
     </div>
@@ -305,6 +310,48 @@ function TeaserBloc({ data }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ── Statut d'accès des utilisateurs (vue v_users_access, parrain compris) ──
+function UsersAccessBloc({ data }) {
+  const users = data?.users || [];
+  if (!users.length) return null;
+
+  const statutInfo = (u) => {
+    const s = u.statut_acces || '';
+    if (s === 'beta_gratuit_vie') return { label: '🟢 Bêta à vie', color: '#C9A84C' };
+    if (s.startsWith('actif_'))   return { label: `🔵 Fondateur · ${u.jours_restants}j`, color: '#16a34a' };
+    if (s === 'acces_expire')     return { label: '🔒 Expiré', color: '#dc2626' };
+    return { label: '⏸ Non démarré', color: '#9ca3af' };
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-4">
+      <h3 className="font-bold text-gray-800 mb-3">🔐 Statut d'accès des utilisateurs ({users.length})</h3>
+      <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
+        {users.map((u, i) => {
+          const st = statutInfo(u);
+          const origine = u.invitation_code
+            ? u.invitation_code
+            : (u.parrain_pseudo ? `🤝 Parrainé par ${u.parrain_pseudo}` : null);
+          return (
+            <div key={i} className="py-2">
+              <div className="flex justify-between items-center gap-2">
+                <span className="text-sm font-semibold text-gray-800 truncate">{u.pseudo || '—'}</span>
+                <span className="text-xs font-bold whitespace-nowrap" style={{ color: st.color }}>{st.label}</span>
+              </div>
+              <div className="flex justify-between items-center mt-0.5 gap-2">
+                <span className="text-xs text-gray-400 truncate">{origine || ''}</span>
+                <span className="text-[11px] text-gray-400 whitespace-nowrap">
+                  {u.inscription_at ? new Date(u.inscription_at).toLocaleDateString('fr-FR') : ''}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
