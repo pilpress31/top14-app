@@ -128,11 +128,15 @@ export default function InviterAmisPage() {
       <div className="max-w-2xl mx-auto p-4 space-y-4">
 
         {/* Bandeau pédagogique */}
-        <div className="bg-white rounded-xl shadow-sm border border-rugby-gold/20 p-4">
+        <div className="bg-white rounded-xl shadow-sm border border-rugby-gold/20 p-4 space-y-2">
           <p className="text-sm text-gray-700 leading-relaxed">
             <Gift className="w-5 h-5 text-rugby-gold inline mr-1.5 -mt-0.5" />
             Invite tes potes à pronostiquer avec toi. Ton lien leur offre un accès
             <strong> gratuit jusqu'au 30 septembre 2026</strong>, sans code à saisir.
+          </p>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            🎁 Et dès que ton filleul place son <strong>premier pari</strong>, vous recevez
+            <strong className="text-rugby-gold"> chacun 250 jetons</strong> !
           </p>
         </div>
 
