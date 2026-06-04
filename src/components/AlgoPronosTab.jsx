@@ -985,16 +985,36 @@ function InsightsD2({ match, isOpen, onToggle }) {
 }
 
 
+// Pro D2 : libellés courts des rounds de phase finale pour l'historique des
+// confrontations (un match = une ligne → forme au singulier, comme le Top 14).
+// Graphie source : match_cotes_d2.round (renvoyé par /api/d2/historique).
+const D2_ROUND_COURT = {
+  'Barrage':             'Barrage',
+  'Barrage 1':           'Barrage',
+  'Barrage 2':           'Barrage',
+  'Demi-finale 1':       '½ finale',
+  'Demi-finale 2':       '½ finale',
+  'Finale':              'Finale',
+  'Accession':           "Match d'accession",
+  'Access Match Pro D2': "Match d'accession",
+  'Access Match Top 14': "Match d'accession",
+};
+
 // Libellé d'une "journée" : n° régulier, ou nom du round en phase finale.
 // Top 14 : 26 journées régulières ; barrages introduits en 2009-2010
-// (avant : J27=½ finale, J28=Finale). Pro D2 : repli neutre pour l'instant.
-function libelleJournee(journee, saison, isD2 = false) {
+// (avant : J27=½ finale, J28=Finale).
+// Pro D2 : 30 journées régulières, puis on s'appuie sur le round précis renvoyé
+// par l'endpoint (Barrage / Demi-finale / Finale / Match d'accession).
+function libelleJournee(journee, saison, isD2 = false, round = null) {
   const j = Number(journee);
-  if (!j) return `J${journee}`;
   if (isD2) {
-    // Pro D2 : 30 journées régulières (mapping des rounds à affiner plus tard)
-    return j <= 30 ? `J${j}` : 'Phase finale';
+    // Phase finale : le round est la source la plus fiable (Barrage 1/2, etc.)
+    if (round && D2_ROUND_COURT[round]) return D2_ROUND_COURT[round];
+    if (j && j <= 30) return `J${j}`;
+    if (round) return round;            // round présent mais hors map → affiché brut
+    return j ? 'Phase finale' : `J${journee}`;
   }
+  if (!j) return `J${journee}`;
   // Top 14
   if (j <= 26) return `J${j}`;
   const anneeDebut = parseInt(String(saison).slice(0, 4), 10) || 0;
@@ -1104,7 +1124,7 @@ function HistoriqueConfrontations({ match, isOpen, onToggle }) {
 
               {confrontations.map((m, i) => {
                 const saisonCourt = (m.saison || '').replace('20', '').replace('-20', '-');
-                const journee = libelleJournee(m.journee, m.saison, match.isD2);
+                const journee = libelleJournee(m.journee, m.saison, match.isD2, m.round);
                 const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
                 const mtScore = (m.score_ht_domicile != null && m.score_ht_exterieur != null)
                   ? `${m.score_ht_domicile}-${m.score_ht_exterieur}` : '-';

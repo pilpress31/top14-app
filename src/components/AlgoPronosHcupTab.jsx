@@ -55,6 +55,19 @@ function libelleRound(round) {
   return map[round] || 'Phase de poules';
 }
 
+// Libellé COURT d'un round pour l'historique des confrontations (colonne étroite).
+// Phase finale abrégée façon Top 14 ; poules affichées telles quelles ("Poule J1").
+function libelleRoundCourt(round) {
+  const map = {
+    '8e de finale':    '8ᵉ',
+    'Quart de finale': '¼',
+    'Demi-finale':     '½',
+    'Finale':          'Finale',
+    'Barrage':         'Barrage',
+  };
+  return map[round] || round || '';
+}
+
 // Helper : formate une saison "2024-2025" -> "2024-25"
 function saisonShort(saison) {
   if (!saison) return '';
@@ -797,7 +810,7 @@ function HistoriqueConfrontationsHcup({ match, isOpen, onToggle }) {
 
               {confrontations.map((m, i) => {
                 const saisonCourt = saisonShort(m.saison || '');
-                const round = m.round || `J${m.journee ?? ''}`;
+                const round = m.round ? libelleRoundCourt(m.round) : `J${m.journee ?? ''}`;
                 const ftScore = `${m.score_domicile}-${m.score_exterieur}`;
                 const winnerIsDom = m.score_domicile > m.score_exterieur;
                 const winnerIsExt = m.score_exterieur > m.score_domicile;
