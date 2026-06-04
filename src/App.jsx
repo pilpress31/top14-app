@@ -15,6 +15,7 @@ import PaywallPage from "./pages/PaywallPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import AccessBanner from "./components/AccessBanner";
 import RefreshOnResume from "./components/RefreshOnResume";
+import MaintenanceGate from "./components/MaintenanceGate";
 import { FavoritesProvider } from './contexts/FavoritesContext';
 
 // ── Eager (cas particuliers, ne PAS passer en lazy) ──
@@ -244,7 +245,7 @@ function App() {
   }, []);
 
   return (
-    <>
+    <MaintenanceGate>
       <RefreshOnResume />
       <AuthProvider>
         <ChampionnatProvider>
@@ -257,7 +258,7 @@ function App() {
           </FavoritesProvider>
         </ChampionnatProvider>
       </AuthProvider>
-    </>
+    </MaintenanceGate>
   );
 }
 
