@@ -16,7 +16,7 @@
 // ============================================================
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/supabaseClient"; // ⚠️ ajuste si ton client est ailleurs / export différent
+import { supabase } from "@/lib/supabaseClient"; // client Supabase (src/lib/supabaseClient.js)
 import MaintenancePage from "./MaintenancePage";
 
 function readBypass() {
