@@ -306,6 +306,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
     <button class="tab" onclick="showTab('mail', this)">📧 Mail</button>
     <button class="tab" onclick="showTab('communication', this)">📊 Communication</button>
     <button class="tab" onclick="showTab('tickets', this)">🎲 Tickets Top14</button>
+    <button class="tab" onclick="showTab('maintenance', this)">🛠️ Maintenance</button>
 
   </div>
 
@@ -1520,6 +1521,25 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
 
     </div>
 
+    <div id="panel-maintenance" class="panel">
+      <div class="card">
+        <div class="card-title">🛠️ Mode maintenance</div>
+        <p style="color:var(--muted);font-size:13px;margin:0 0 14px;line-height:1.5;">
+          Affiche une page « Maintenance en cours » à tous les utilisateurs. Tu peux toujours accéder à la vraie prod via <code>?bypass=1</code>. Le basculement prend effet sous ~30 s, sans redéploiement.
+        </p>
+        <div style="margin-bottom:14px;">
+          <span id="maintPill" style="display:inline-block;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(148,163,184,0.15);color:var(--muted);">… chargement</span>
+        </div>
+        <label>Message affiché (optionnel)</label>
+        <textarea id="maintMessage" maxlength="200" placeholder="Ex: Maintenance en cours, retour dans ~30 minutes."></textarea>
+        <div class="btn-row">
+          <button class="btn btn-gold" onclick="toggleMaintenance(true)">🔴 Activer la maintenance</button>
+          <button onclick="toggleMaintenance(false)" style="padding:10px 16px;background:rgba(34,197,94,0.15);color:#86efac;border:1px solid rgba(34,197,94,0.4);border-radius:var(--border-radius-md);cursor:pointer;font-weight:600;font-size:14px;">🟢 Remettre en ligne</button>
+        </div>
+        <div class="result" id="maintResult"></div>
+      </div>
+    </div>
+
 
   </div>
 </div>
@@ -1593,6 +1613,56 @@ function api(path, opts = {}) {
   }).then(r => r.json());
 }
 
+// ── MAINTENANCE ──
+function setMaintPill(enabled) {
+  const pill = document.getElementById('maintPill');
+  if (!pill) return;
+  if (enabled) {
+    pill.textContent = '🔴 Maintenance ACTIVE';
+    pill.style.background = 'rgba(220,38,38,0.15)';
+    pill.style.color = '#fca5a5';
+  } else {
+    pill.textContent = '🟢 En ligne';
+    pill.style.background = 'rgba(34,197,94,0.15)';
+    pill.style.color = '#86efac';
+  }
+}
+
+async function loadMaintenance() {
+  const result = document.getElementById('maintResult');
+  if (result) result.textContent = '';
+  try {
+    const data = await api('/api/admin/maintenance');
+    if (data.error) throw new Error(data.error);
+    setMaintPill(!!data.enabled);
+    const msg = document.getElementById('maintMessage');
+    if (msg && data.message) msg.value = data.message;
+  } catch (e) {
+    const pill = document.getElementById('maintPill');
+    if (pill) { pill.textContent = '⚠️ État inconnu'; }
+  }
+}
+
+async function toggleMaintenance(enabled) {
+  const result = document.getElementById('maintResult');
+  const message = (document.getElementById('maintMessage').value || '').trim();
+  if (enabled && !confirm('Activer la maintenance ? Tous les utilisateurs verront la page « Maintenance en cours ».')) return;
+  if (result) result.textContent = '⏳ …';
+  try {
+    const data = await api('/api/admin/maintenance', {
+      method: 'POST',
+      body: JSON.stringify({ enabled, message })
+    });
+    if (data.error) throw new Error(data.error);
+    setMaintPill(data.enabled);
+    if (result) result.textContent = data.enabled
+      ? '✅ Maintenance activée. Les écrans basculent sous ~30 s.'
+      : '✅ Maintenance levée. Retour en ligne sous ~30 s.';
+  } catch (e) {
+    if (result) result.textContent = '❌ ' + e.message;
+  }
+}
+
 function setLoading(btn, on) {
   btn.disabled = on;
   on ? btn.classList.add('loading') : btn.classList.remove('loading');
@@ -1639,6 +1709,9 @@ function showTab(name, el) {
       loadCommExtras();
       loadDiagUsers();
       loadCommAlgoSaisons();  // 🆕 Init Notif Algo (consultation seule) pour admin_com
+      break;
+    case 'maintenance':
+      loadMaintenance();
       break;
   }
 }
