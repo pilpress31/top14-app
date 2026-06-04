@@ -288,7 +288,7 @@ export const TEAMS_DATA = {
   'BOUCAU STADE':                  { logo: '/logos/boucau_stade.svg', name: 'Boucau Stade' },
   'BOUCAU TARNOS STADE':           { logo: '/logos/boucau_tarnos_stade.svg', name: 'Boucau Tarnos Stade' },
   'CO LE CREUSOT':                 { logo: '/logos/co_le_creusot.svg', name: 'CO Le Creusot' },
-  'CS VILLEFRANCHE-SUR-SAÔNE':     { logo: '/logos/cs_villefranche_fin.svg', name: 'CS Villefranche' },
+  'CS VILLEFRANCHE-SUR-SAÔNE':     { logo: '/logos/cs_villefranche.svg', name: 'CS Villefranche' },
   'FC AIX-LES-BAINS':              { logo: '/logos/fc_aix_les_bains.svg', name: 'FC Aix-les-Bains' },
   'FC OLORON':                     { logo: '/logos/fc_oloron.svg', name: 'FC Oloron' },
   'FC SAINT-CLAUDE':               { logo: '/logos/fc_saint_claude.svg', name: 'FC Saint-Claude' },
