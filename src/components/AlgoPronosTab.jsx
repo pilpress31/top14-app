@@ -995,9 +995,9 @@ const D2_ROUND_COURT = {
   'Demi-finale 1':       '½ finale',
   'Demi-finale 2':       '½ finale',
   'Finale':              'Finale',
-  'Accession':           "Match d'accession",
-  'Access Match Pro D2': "Match d'accession",
-  'Access Match Top 14': "Match d'accession",
+  'Accession':           'Accession',
+  'Access Match Pro D2': 'Accession',
+  'Access Match Top 14': 'Accession',
 };
 
 // Libellé d'une "journée" : n° régulier, ou nom du round en phase finale.
