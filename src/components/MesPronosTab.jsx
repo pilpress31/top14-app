@@ -391,7 +391,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
                         const r = matchsJournee[0]?.round;
                         const PLAYOFF_LABELS = {
                           'Barrage 1': 'Barrages', 'Barrage 2': 'Barrages',
-                          'Barrage': 'Barrage', 'Accession': "Match d'accession",
+                          'Barrage': 'Barrages', 'Accession': "Match d'accession",
                           'Demi-finale 1': 'Demi-finales', 'Demi-finale 2': 'Demi-finales',
                           'Finale': 'Finale',
                           'Access Match Pro D2': "Match d'accession Pro D2",
