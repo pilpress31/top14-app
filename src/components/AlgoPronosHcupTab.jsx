@@ -20,6 +20,7 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
 import { CompoEtBlessesSection } from './ActuTab';
+import PourquoiCePronostic from './PourquoiCePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -1114,6 +1115,12 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
       </div>
 
       <div className="px-4">
+        <PourquoiCePronostic
+          match={match}
+          championnat="hcup"
+          isOpen={openPanel === 'pourquoi'}
+          onToggle={() => onTogglePanel('pourquoi')}
+        />
         <InsightsHcup
           match={match}
           isOpen={openPanel === 'insights'}
