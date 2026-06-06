@@ -5,6 +5,7 @@ import { getTeamData } from '../utils/teams';
 import TeamPopup from './TeamPopup';
 import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
 import PourquoiCePronostic from './PourquoiCePronostic';
+import { CompoEtBlessesSection } from './ActuTab';
 // import PartagePronostic from './PartagePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
@@ -671,57 +672,18 @@ function ActuMatch({ match, isOpen, onToggle }) {
                       {isSectionOpen && (
                         <div className="px-3 py-2.5 bg-white space-y-3">
                           {[
-                            { name: match.equipe_domicile, compo: actu.compo_domicile, blesses: actu.blesses_domicile },
-                            { name: match.equipe_exterieure, compo: actu.compo_exterieure, blesses: actu.blesses_exterieure }
-                          ].map(({ name, compo, blesses }) => {
-                            const compoIndispo = !compo || compo === 'Information non disponible';
-                            const blessesIndispo = !blesses || blesses === 'Aucune absence majeure signalée' || blesses === 'Information non disponible' || blesses === 'Aucune absence signalée';
-                            const getTypeBadge = (text) => {
-                              if (!text) return 'Estimée';
-                              if (text.toLowerCase().includes('officielle')) return 'Officielle';
-                              if (text.toLowerCase().includes('probable')) return 'Probable';
-                              return 'Estimée';
-                            };
-                            const lines = !compoIndispo ? compo.split('\n').filter(l => l.trim()) : [];
-                            const remplacantsIdx = lines.findIndex(l => l.toLowerCase().includes('remplaçant'));
-                            const titulaires = remplacantsIdx >= 0 ? lines.slice(0, remplacantsIdx) : lines;
-                            const remplacants = remplacantsIdx >= 0 ? lines.slice(remplacantsIdx + 1) : [];
+                            { rawName: match.equipe_domicile, compo: actu.compo_domicile, blesses: actu.blesses_domicile },
+                            { rawName: match.equipe_exterieure, compo: actu.compo_exterieure, blesses: actu.blesses_exterieure }
+                          ].map(({ rawName, compo, blesses }) => {
+                            const td = getTeamData(rawName);
                             return (
-                              <div key={name} className="bg-teal-50/40 rounded-lg border border-teal-100 overflow-hidden">
-                                <div className="flex items-center justify-between px-3 py-1.5 bg-teal-100/60">
-                                  <p className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">{name}</p>
-                                  {!compoIndispo && (
-                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                                      {getTypeBadge(compo)}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="px-3 py-2 space-y-2">
-                                  {titulaires.length > 0 && (
-                                    <div>
-                                      <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
-                                      {titulaires.map((line, i) => (
-                                        <p key={i} className="text-[11px] text-gray-700 leading-relaxed">{line.trim()}</p>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {remplacants.length > 0 && (
-                                    <div>
-                                      <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
-                                      {remplacants.map((line, i) => (
-                                        <p key={i} className="text-[11px] text-gray-500 leading-relaxed">{line.trim()}</p>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {compoIndispo && <p className="text-[11px] text-gray-400 italic">Composition non disponible</p>}
-                                  {!blessesIndispo && (
-                                    <div className="pt-2 border-t border-teal-100">
-                                      <p className="text-[9px] font-bold text-red-500 uppercase tracking-wide mb-1">Absents</p>
-                                      <p className="text-[11px] text-red-600 leading-relaxed">{blesses}</p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              <CompoEtBlessesSection
+                                key={rawName}
+                                name={td.name}
+                                logo={td.logo}
+                                compo={compo}
+                                blesses={blesses}
+                              />
                             );
                           })}
                         </div>
