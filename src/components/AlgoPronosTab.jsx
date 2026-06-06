@@ -166,7 +166,7 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
                   {(() => {
                     const round = pronosJournee[0]?.round;
                     const isD2Match = pronosJournee[0]?.isD2;
-                    const D2_PLAYOFF_LABELS = {
+                    const PLAYOFF_LABELS = {
                       'Barrage': 'Barrage', 'Accession': "Match d'accession",
                       'Barrage 1': 'Barrages', 'Barrage 2': 'Barrages',
                       'Demi-finale 1': 'Demi-finales', 'Demi-finale 2': 'Demi-finales',
@@ -174,8 +174,8 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
                       'Access Match Pro D2': "Match d'accession Pro D2",
                       'Access Match Top 14': "Match d'accession Top 14",
                     };
-                    if (isD2Match && round && D2_PLAYOFF_LABELS[round]) {
-                      return <span className="font-bold text-sm" style={{ color: '#00174D' }}>{D2_PLAYOFF_LABELS[round]}</span>;
+                    if (round && PLAYOFF_LABELS[round]) {
+                      return <span className="font-bold text-sm" style={isD2Match ? { color: '#00174D' } : {}}>{PLAYOFF_LABELS[round]}</span>;
                     }
                     return <span className="font-bold text-sm" style={isD2Match ? { color: '#00174D' } : {}}>Journée {journee}</span>;
                   })()}
