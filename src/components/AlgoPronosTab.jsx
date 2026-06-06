@@ -1408,13 +1408,12 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
       {/* Analyse historique (Top 14) + Insights (Pro D2) + Actu du match (les deux) */}
       <div className="px-4">
-        {!match.isD2 && (
-          <PourquoiCePronostic
-            match={match}
-            isOpen={openPanel === 'pourquoi'}
-            onToggle={() => handleTogglePanel('pourquoi')}
-          />
-        )}
+        <PourquoiCePronostic
+          match={match}
+          championnat={match.isD2 ? 'prod2' : 'top14'}
+          isOpen={openPanel === 'pourquoi'}
+          onToggle={() => handleTogglePanel('pourquoi')}
+        />
         {!match.isD2 && (
           <div ref={analyseRef}>
             <AnalyseHistorique

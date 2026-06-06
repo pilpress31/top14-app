@@ -1,7 +1,8 @@
 // ============================================
 // COMPOSANT : Rubrique « Pourquoi ce pronostic ? »
 // Décompose la prédiction de l'algo en facteurs lisibles.
-// Étape 1 : Top 14 uniquement (endpoint /api/explication/top14).
+// Conscient du championnat via la prop `championnat` ('top14' | 'prod2' | 'hcup')
+// → appelle /api/explication/{championnat}. La réponse a la même forme partout.
 //
 // Cadrage honnête : les facteurs et la largeur des barres ÉCLAIRENT
 // la prédiction — ce ne sont pas les variables internes de l'algo VBA.
@@ -103,13 +104,13 @@ function LigneFacteur({ facteur, theme }) {
   );
 }
 
-export default function PourquoiCePronostic({ match, isOpen, onToggle }) {
+export default function PourquoiCePronostic({ match, championnat = 'top14', isOpen, onToggle }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [voirPlus, setVoirPlus] = useState(false);
 
-  const theme = RUBRIQUE_THEMES.top14;
+  const theme = RUBRIQUE_THEMES[championnat] || RUBRIQUE_THEMES.top14;
 
   const handleToggle = async () => {
     onToggle();
@@ -122,7 +123,7 @@ export default function PourquoiCePronostic({ match, isOpen, onToggle }) {
           ext: match.equipe_exterieure,
         });
         if (match.saison) params.set('saison', match.saison);
-        const res = await axios.get(`${API_BASE}/api/explication/top14?${params}`);
+        const res = await axios.get(`${API_BASE}/api/explication/${championnat}?${params}`);
         setData(res.data);
       } catch (e) {
         setError("Impossible de charger l'explication du pronostic.");
