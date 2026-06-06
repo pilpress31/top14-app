@@ -167,7 +167,7 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
                     const round = pronosJournee[0]?.round;
                     const isD2Match = pronosJournee[0]?.isD2;
                     const PLAYOFF_LABELS = {
-                      'Barrage': 'Barrage', 'Accession': "Match d'accession",
+                      'Barrage': 'Barrages', 'Accession': "Match d'accession",
                       'Barrage 1': 'Barrages', 'Barrage 2': 'Barrages',
                       'Demi-finale 1': 'Demi-finales', 'Demi-finale 2': 'Demi-finales',
                       'Finale': 'Finale',
