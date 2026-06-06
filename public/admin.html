@@ -897,6 +897,42 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
       <div class="card">
         <div class="card-title">📦 Distribution mensuelle manuelle</div>
         <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
+          Declenche la distribution progressive des jetons pour un mois donne.
+        </p>
+        <label>Mois (YYYY-MM)</label>
+        <input type="text" id="distMonth" placeholder="Ex: 2026-03" maxlength="7">
+        <label>Cle admin (CRON_SECRET)</label>
+        <input type="password" id="distAdminKey" placeholder="Votre CRON_SECRET">
+        <div class="btn-row">
+          <button class="btn btn-gold" id="distBtn" onclick="distribuer()">
+            <div class="spinner"></div>
+            <span class="btn-text">🚀 Lancer</span>
+          </button>
+        </div>
+        <div class="result" id="distResult"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Historique</div>
+          <button class="btn" onclick="loadDistributions()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mois</th><th>Total distribue</th><th>Users</th><th>Date</th></tr></thead>
+            <tbody id="distBody"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTUALITÉS -->
+    <div id="panel-actualites" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📰 Actualités IA</div>
+        </div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
           Génère les synthèses d'actualité des matchs à venir via Gemini AI, pour les trois championnats.<br>
           Les actus sont régénérées par cron (lundi et jeudi 18h Paris). Les <strong>compos officielles AllRugby</strong> sont rafraîchies les jours de match (jeudi&rarr;dimanche) par le cron « compos ». Génération manuelle ci-dessous.
         </p>
