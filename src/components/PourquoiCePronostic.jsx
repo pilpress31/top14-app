@@ -126,7 +126,11 @@ export default function PourquoiCePronostic({ match, championnat = 'top14', isOp
         const res = await axios.get(`${API_BASE}/api/explication/${championnat}?${params}`);
         setData(res.data);
       } catch (e) {
-        setError("Impossible de charger l'explication du pronostic.");
+        setError(
+          e.response && e.response.status === 404
+            ? "Explication non disponible pour ce match (équipe hors classement)."
+            : "Impossible de charger l'explication du pronostic."
+        );
       } finally {
         setLoading(false);
       }
@@ -171,7 +175,7 @@ export default function PourquoiCePronostic({ match, championnat = 'top14', isOp
       {isOpen && (
         <div className="mt-3">
           {error && (
-            <p className="text-xs text-red-500 text-center py-2">{error}</p>
+            <p className="text-xs text-gray-500 text-center py-2">{error}</p>
           )}
           {loading && (
             <div className="flex justify-center py-4">
@@ -235,6 +239,13 @@ export default function PourquoiCePronostic({ match, championnat = 'top14', isOp
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Bandeau de contexte (ex. match d'accession Pro D2 ↔ Top 14) */}
+              {data.contexte && (
+                <div className="text-[11px] italic text-gray-500 bg-gray-50 rounded-md px-2.5 py-2 mb-3 text-center leading-snug">
+                  {data.contexte}
                 </div>
               )}
 
