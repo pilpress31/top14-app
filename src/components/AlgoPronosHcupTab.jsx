@@ -19,6 +19,7 @@ import { Calendar, ChevronDown, ChevronUp, Globe, Trophy, Loader2, Newspaper, Sw
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import RubriqueHeader, { RUBRIQUE_THEMES, ACTU_SECTION_COLORS } from './RubriqueHeader';
+import { CompoEtBlessesSection } from './ActuTab';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -955,6 +956,32 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
                   </div>
                 );
               })}
+
+              {(() => {
+                const hasCompo = actu.compo_domicile && actu.compo_domicile !== 'Information non disponible';
+                const hasBlesses = (actu.blesses_domicile && actu.blesses_domicile !== 'Aucune absence majeure signalée' && actu.blesses_domicile !== 'Information non disponible')
+                                || (actu.blesses_exterieure && actu.blesses_exterieure !== 'Aucune absence majeure signalée' && actu.blesses_exterieure !== 'Information non disponible');
+                if (!hasCompo && !hasBlesses) return null;
+                return (
+                  <div className="space-y-3 pt-1">
+                    {[
+                      { rawName: match.equipe_domicile, compo: actu.compo_domicile, blesses: actu.blesses_domicile },
+                      { rawName: match.equipe_exterieure, compo: actu.compo_exterieure, blesses: actu.blesses_exterieure }
+                    ].map(({ rawName, compo, blesses }) => {
+                      const td = getTeamData(rawName);
+                      return (
+                        <CompoEtBlessesSection
+                          key={rawName}
+                          name={(td && td.name) || rawName}
+                          logo={td && td.logo}
+                          compo={compo}
+                          blesses={blesses}
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>
