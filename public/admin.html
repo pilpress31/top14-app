@@ -897,54 +897,19 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
       <div class="card">
         <div class="card-title">📦 Distribution mensuelle manuelle</div>
         <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
-          Declenche la distribution progressive des jetons pour un mois donne.
-        </p>
-        <label>Mois (YYYY-MM)</label>
-        <input type="text" id="distMonth" placeholder="Ex: 2026-03" maxlength="7">
-        <label>Cle admin (CRON_SECRET)</label>
-        <input type="password" id="distAdminKey" placeholder="Votre CRON_SECRET">
-        <div class="btn-row">
-          <button class="btn btn-gold" id="distBtn" onclick="distribuer()">
-            <div class="spinner"></div>
-            <span class="btn-text">🚀 Lancer</span>
-          </button>
-        </div>
-        <div class="result" id="distResult"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">📋 Historique</div>
-          <button class="btn" onclick="loadDistributions()">↻ Actualiser</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Mois</th><th>Total distribue</th><th>Users</th><th>Date</th></tr></thead>
-            <tbody id="distBody"><tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACTUALITÉS -->
-    <div id="panel-actualites" class="panel">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">📰 Actualités IA</div>
-        </div>
-        <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
           Génère les synthèses d'actualité des matchs à venir via Gemini AI, pour les trois championnats.<br>
-          Les crons régénèrent les actus automatiquement chaque lundi et jeudi à 18h (heure de Paris), pour les trois championnats. Vous pouvez aussi lancer une génération manuelle ci-dessous.
+          Les actus sont régénérées par cron (lundi et jeudi 18h Paris). Les <strong>compos officielles AllRugby</strong> sont rafraîchies les jours de match (jeudi&rarr;dimanche) par le cron « compos ». Génération manuelle ci-dessous.
         </p>
-        <p style="color:var(--muted2);font-size:13px;margin-bottom:10px;font-weight:600">Top 14</p>
+
+        <p style="color:var(--muted2);font-size:13px;margin:6px 0 8px;font-weight:600">🏆 Top 14</p>
         <div class="btn-row">
           <button class="btn btn-gold" id="actuBtn" onclick="regenererActus()">
             <div class="spinner"></div>
-            <span class="btn-text">🔄 Régénérer les actualités</span>
+            <span class="btn-text">🔄 Régénérer actus</span>
           </button>
-          <button class="btn" id="composBtn" onclick="regenererCompos()" style="margin-left:8px;" title="Met à jour uniquement les compos probables sans toucher au reste des actus">
+          <button class="btn" id="composBtn" onclick="regenererCompos()" style="margin-left:8px;" title="Compos probables IA + override officielle AllRugby (prochaine journée)">
             <div class="spinner"></div>
-            <span class="btn-text">🏉 Régénérer compos uniquement</span>
+            <span class="btn-text">🏉 Compos uniquement</span>
           </button>
           <button class="btn" id="meteoBtn" onclick="regenererMeteo()" style="margin-left:8px;" title="Met à jour uniquement la météo de chaque match">
             <div class="spinner"></div>
@@ -952,44 +917,59 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
           </button>
         </div>
 
-        <p style="color:var(--muted2);font-size:13px;margin:18px 0 10px;line-height:1.6">
-          <strong>Pro D2</strong> — actus + compos officielles AllRugby (barrages et demi-finales inclus ; la finale passe par le one-shot ci-dessous). <strong>Champions Cup</strong> : actus sans compos pour l'instant.
-        </p>
+        <p style="color:var(--muted2);font-size:13px;margin:16px 0 8px;font-weight:600">🥈 Pro D2</p>
         <div class="btn-row">
           <button class="btn" id="actuD2Btn" onclick="regenererActusD2()" style="background:#00174D;color:#97C1FE;">
             <div class="spinner"></div>
-            <span class="btn-text">🥈 Régénérer actus Pro D2</span>
+            <span class="btn-text">🔄 Régénérer actus</span>
           </button>
-          <button class="btn" id="composD2Btn" onclick="regenererComposD2()" style="margin-left:8px;background:#00174D;color:#97C1FE;" title="Met à jour uniquement les compos officielles AllRugby de la prochaine journée Pro D2, sans toucher au reste des actus">
+          <button class="btn" id="composD2Btn" onclick="regenererComposD2()" style="margin-left:8px;background:#00174D;color:#97C1FE;" title="Compos officielles AllRugby de la prochaine journée Pro D2">
             <div class="spinner"></div>
-            <span class="btn-text">🏉 Compos Pro D2 uniquement</span>
-          </button>
-          <button class="btn" id="actuHcupBtn" onclick="regenererActusHcup()" style="margin-left:8px;background:#003E7E;color:#FFC72C;">
-            <div class="spinner"></div>
-            <span class="btn-text">⭐ Régénérer actus Champions Cup</span>
+            <span class="btn-text">🏉 Compos uniquement</span>
           </button>
         </div>
 
-        <p style="color:var(--muted2);font-size:13px;margin:18px 0 10px;line-height:1.6">
-          <strong>Compo finale (one-shot)</strong> — pour une finale (terrain neutre, absente du calendrier AllRugby) ou tout match introuvable au calendrier. Colle l'URL de la feuille de match AllRugby + le match_id de la ligne actu, puis injecte la compo officielle.
+        <p style="color:var(--muted2);font-size:13px;margin:16px 0 8px;font-weight:600">⭐ Champions Cup</p>
+        <div class="btn-row">
+          <button class="btn" id="actuHcupBtn" onclick="regenererActusHcup()" style="background:#003E7E;color:#FFC72C;">
+            <div class="spinner"></div>
+            <span class="btn-text">🔄 Régénérer actus</span>
+          </button>
+          <button class="btn" id="composHcupBtn" onclick="regenererComposHcup()" style="margin-left:8px;background:#003E7E;color:#FFC72C;" title="Compos officielles AllRugby des matchs à venir Champions Cup">
+            <div class="spinner"></div>
+            <span class="btn-text">🏉 Compos uniquement</span>
+          </button>
+        </div>
+
+        <p style="color:var(--muted2);font-size:13px;margin:20px 0 10px;line-height:1.6">
+          <strong>Compo finale (one-shot)</strong> — pour une finale (terrain neutre, absente du calendrier AllRugby) ou tout match introuvable. Colle l'URL de la feuille de match AllRugby + le match_id de la ligne actu, puis injecte la compo officielle.
         </p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;">
-          <div style="flex:1;min-width:280px;border:1px solid #1d2b4a;border-radius:8px;padding:12px;background:rgba(0,23,77,0.25);">
+          <div style="flex:1;min-width:260px;border:1px solid #1d2b4a;border-radius:8px;padding:12px;background:rgba(0,23,77,0.25);">
             <div style="font-weight:600;color:#97C1FE;margin-bottom:8px;">🥈 Finale Pro D2</div>
             <input type="text" id="finaleD2Url" placeholder="URL feuille de match AllRugby" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
             <input type="text" id="finaleD2MatchId" placeholder="match_id (ex: 2025_2026_J34_RC_VANNES_PROVENCE_RUGBY)" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
             <button class="btn" id="finaleD2Btn" onclick="injecterCompoFinale('prod2')" style="margin-top:6px;background:#00174D;color:#97C1FE;">
               <div class="spinner"></div>
-              <span class="btn-text">Injecter compo finale D2</span>
+              <span class="btn-text">Injecter compo finale</span>
             </button>
           </div>
-          <div style="flex:1;min-width:280px;border:1px solid #3a3206;border-radius:8px;padding:12px;background:rgba(0,62,126,0.18);">
+          <div style="flex:1;min-width:260px;border:1px solid #3a3206;border-radius:8px;padding:12px;background:rgba(0,62,126,0.18);">
             <div style="font-weight:600;color:#FFC72C;margin-bottom:8px;">🏆 Finale Top 14</div>
             <input type="text" id="finaleT14Url" placeholder="URL feuille de match AllRugby" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
             <input type="text" id="finaleT14MatchId" placeholder="match_id de la finale Top 14" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
             <button class="btn" id="finaleT14Btn" onclick="injecterCompoFinale('top14')" style="margin-top:6px;background:#003E7E;color:#FFC72C;">
               <div class="spinner"></div>
-              <span class="btn-text">Injecter compo finale Top 14</span>
+              <span class="btn-text">Injecter compo finale</span>
+            </button>
+          </div>
+          <div style="flex:1;min-width:260px;border:1px solid #2a3550;border-radius:8px;padding:12px;background:rgba(0,62,126,0.12);">
+            <div style="font-weight:600;color:#FFC72C;margin-bottom:8px;">⭐ Finale Champions Cup</div>
+            <input type="text" id="finaleHcupUrl" placeholder="URL feuille de match AllRugby" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
+            <input type="text" id="finaleHcupMatchId" placeholder="match_id de la finale Champions Cup" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
+            <button class="btn" id="finaleHcupBtn" onclick="injecterCompoFinale('hcup')" style="margin-top:6px;background:#003E7E;color:#FFC72C;">
+              <div class="spinner"></div>
+              <span class="btn-text">Injecter compo finale</span>
             </button>
           </div>
         </div>
@@ -3125,16 +3105,36 @@ async function regenererComposD2() {
   }
 }
 
+// ── COMPOS CHAMPIONS CUP UNIQUEMENT ──
+async function regenererComposHcup() {
+  const btn = document.getElementById('composHcupBtn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Régénération des compos Champions Cup en cours... (les actus existantes sont conservées)');
+  try {
+    const data = await api('/api/admin/actu-hcup/regenerer-compos', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Régénération compos Champions Cup lancée en arrière-plan ! Compos officielles AllRugby mises à jour.');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
 // ── COMPO FINALE (ONE-SHOT depuis une URL AllRugby) ──
 async function injecterCompoFinale(championnat) {
-  const isD2 = championnat === 'prod2';
-  const btnId = isD2 ? 'finaleD2Btn' : 'finaleT14Btn';
-  const urlId = isD2 ? 'finaleD2Url' : 'finaleT14Url';
-  const matchIdId = isD2 ? 'finaleD2MatchId' : 'finaleT14MatchId';
-  const endpoint = isD2 ? '/api/admin/actu-d2/compo-from-url' : '/api/admin/actu/compo-from-url';
-  const btn = document.getElementById(btnId);
-  const url = (document.getElementById(urlId).value || '').trim();
-  const match_id = (document.getElementById(matchIdId).value || '').trim();
+  const cfg = {
+    'prod2': { btn: 'finaleD2Btn',   url: 'finaleD2Url',   mid: 'finaleD2MatchId',   ep: '/api/admin/actu-d2/compo-from-url' },
+    'top14': { btn: 'finaleT14Btn',  url: 'finaleT14Url',  mid: 'finaleT14MatchId',  ep: '/api/admin/actu/compo-from-url' },
+    'hcup':  { btn: 'finaleHcupBtn', url: 'finaleHcupUrl', mid: 'finaleHcupMatchId', ep: '/api/admin/actu-hcup/compo-from-url' },
+  }[championnat];
+  if (!cfg) return;
+  const btn = document.getElementById(cfg.btn);
+  const url = (document.getElementById(cfg.url).value || '').trim();
+  const match_id = (document.getElementById(cfg.mid).value || '').trim();
   if (!url || !match_id) {
     showResult('actuResult', 'err', '❌ URL et match_id requis.');
     return;
@@ -3142,7 +3142,7 @@ async function injecterCompoFinale(championnat) {
   setLoading(btn, true);
   showResult('actuResult', 'ok', '⏳ Scraping de la feuille de match et injection de la compo...');
   try {
-    const data = await api(endpoint, { method: 'POST', body: JSON.stringify({ match_id, url }) });
+    const data = await api(cfg.ep, { method: 'POST', body: JSON.stringify({ match_id, url }) });
     if (data.ok) {
       showResult('actuResult', 'ok', `✅ Compo officielle injectée pour ${data.match_id} (${data.lignes_mises_a_jour} ligne(s)). Recharge la fiche match pour la voir.`);
     } else {
