@@ -317,7 +317,7 @@ export default function ActuTab() {
 
                         {/* Section fusionnée Compo + Blessés — Top 14 uniquement
                             (pas de source fiable de compos/blessés pour D2 et CCUP) */}
-                        {championnat === 'top14' && (
+                        {(championnat === 'top14' || championnat === 'prod2') && (
                         <SectionBlock
                           icon={<ClipboardList className="w-4 h-4 text-teal-500" />}
                           title="Compo probable & Absents"
