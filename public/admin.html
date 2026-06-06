@@ -953,17 +953,45 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         </div>
 
         <p style="color:var(--muted2);font-size:13px;margin:18px 0 10px;line-height:1.6">
-          <strong>Autres championnats</strong> — actus générées sans compos ni blessés (pas de source fiable).
+          <strong>Pro D2</strong> — actus + compos officielles AllRugby (barrages et demi-finales inclus ; la finale passe par le one-shot ci-dessous). <strong>Champions Cup</strong> : actus sans compos pour l'instant.
         </p>
         <div class="btn-row">
           <button class="btn" id="actuD2Btn" onclick="regenererActusD2()" style="background:#00174D;color:#97C1FE;">
             <div class="spinner"></div>
             <span class="btn-text">🥈 Régénérer actus Pro D2</span>
           </button>
+          <button class="btn" id="composD2Btn" onclick="regenererComposD2()" style="margin-left:8px;background:#00174D;color:#97C1FE;" title="Met à jour uniquement les compos officielles AllRugby de la prochaine journée Pro D2, sans toucher au reste des actus">
+            <div class="spinner"></div>
+            <span class="btn-text">🏉 Compos Pro D2 uniquement</span>
+          </button>
           <button class="btn" id="actuHcupBtn" onclick="regenererActusHcup()" style="margin-left:8px;background:#003E7E;color:#FFC72C;">
             <div class="spinner"></div>
             <span class="btn-text">⭐ Régénérer actus Champions Cup</span>
           </button>
+        </div>
+
+        <p style="color:var(--muted2);font-size:13px;margin:18px 0 10px;line-height:1.6">
+          <strong>Compo finale (one-shot)</strong> — pour une finale (terrain neutre, absente du calendrier AllRugby) ou tout match introuvable au calendrier. Colle l'URL de la feuille de match AllRugby + le match_id de la ligne actu, puis injecte la compo officielle.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+          <div style="flex:1;min-width:280px;border:1px solid #1d2b4a;border-radius:8px;padding:12px;background:rgba(0,23,77,0.25);">
+            <div style="font-weight:600;color:#97C1FE;margin-bottom:8px;">🥈 Finale Pro D2</div>
+            <input type="text" id="finaleD2Url" placeholder="URL feuille de match AllRugby" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
+            <input type="text" id="finaleD2MatchId" placeholder="match_id (ex: 2025_2026_J34_RC_VANNES_PROVENCE_RUGBY)" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
+            <button class="btn" id="finaleD2Btn" onclick="injecterCompoFinale('prod2')" style="margin-top:6px;background:#00174D;color:#97C1FE;">
+              <div class="spinner"></div>
+              <span class="btn-text">Injecter compo finale D2</span>
+            </button>
+          </div>
+          <div style="flex:1;min-width:280px;border:1px solid #3a3206;border-radius:8px;padding:12px;background:rgba(0,62,126,0.18);">
+            <div style="font-weight:600;color:#FFC72C;margin-bottom:8px;">🏆 Finale Top 14</div>
+            <input type="text" id="finaleT14Url" placeholder="URL feuille de match AllRugby" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
+            <input type="text" id="finaleT14MatchId" placeholder="match_id de la finale Top 14" style="width:100%;box-sizing:border-box;margin:4px 0;padding:8px;border-radius:6px;border:1px solid #2a3a5a;background:#0a1426;color:#e6edf7;font-size:12px;">
+            <button class="btn" id="finaleT14Btn" onclick="injecterCompoFinale('top14')" style="margin-top:6px;background:#003E7E;color:#FFC72C;">
+              <div class="spinner"></div>
+              <span class="btn-text">Injecter compo finale Top 14</span>
+            </button>
+          </div>
         </div>
         <div class="result" id="actuResult"></div>
       </div>
@@ -3068,6 +3096,55 @@ async function regenererActusHcup() {
     const data = await api('/api/admin/actu-hcup/regenerer', { method: 'POST' });
     if (data.success) {
       showResult('actuResult', 'ok', '✅ Génération actus Champions Cup lancée en arrière-plan !');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── COMPOS PRO D2 UNIQUEMENT ──
+async function regenererComposD2() {
+  const btn = document.getElementById('composD2Btn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Régénération des compos Pro D2 en cours... (les actus existantes sont conservées)');
+  try {
+    const data = await api('/api/admin/actu-d2/regenerer-compos', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Régénération compos Pro D2 lancée en arrière-plan ! Compos officielles AllRugby mises à jour match par match.');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── COMPO FINALE (ONE-SHOT depuis une URL AllRugby) ──
+async function injecterCompoFinale(championnat) {
+  const isD2 = championnat === 'prod2';
+  const btnId = isD2 ? 'finaleD2Btn' : 'finaleT14Btn';
+  const urlId = isD2 ? 'finaleD2Url' : 'finaleT14Url';
+  const matchIdId = isD2 ? 'finaleD2MatchId' : 'finaleT14MatchId';
+  const endpoint = isD2 ? '/api/admin/actu-d2/compo-from-url' : '/api/admin/actu/compo-from-url';
+  const btn = document.getElementById(btnId);
+  const url = (document.getElementById(urlId).value || '').trim();
+  const match_id = (document.getElementById(matchIdId).value || '').trim();
+  if (!url || !match_id) {
+    showResult('actuResult', 'err', '❌ URL et match_id requis.');
+    return;
+  }
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Scraping de la feuille de match et injection de la compo...');
+  try {
+    const data = await api(endpoint, { method: 'POST', body: JSON.stringify({ match_id, url }) });
+    if (data.ok) {
+      showResult('actuResult', 'ok', `✅ Compo officielle injectée pour ${data.match_id} (${data.lignes_mises_a_jour} ligne(s)). Recharge la fiche match pour la voir.`);
     } else {
       showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
     }
