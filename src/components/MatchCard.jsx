@@ -238,10 +238,10 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
   const pariPartiel = isD2 ? false : ((hasFT && !hasMT) || (!hasFT && hasMT));
   const aucunPari = !hasFT && !hasMT;
 
-  const iaFTDom = match.cotes?.score_predit_dom;
-  const iaFTExt = match.cotes?.score_predit_ext;
-  const iaMTDom = match.cotes?.score_predit_mt_dom;
-  const iaMTExt = match.cotes?.score_predit_mt_ext;
+  const iaFTDom = match.cotes?.score_predit_dom ?? match.prono_ft?.domicile;
+  const iaFTExt = match.cotes?.score_predit_ext ?? match.prono_ft?.exterieur;
+  const iaMTDom = match.cotes?.score_predit_mt_dom ?? match.prono_ht?.domicile;
+  const iaMTExt = match.cotes?.score_predit_mt_ext ?? match.prono_ht?.exterieur;
   const hasIAFT = iaFTDom != null && iaFTExt != null;
   const hasIAMT = !isD2 && iaMTDom != null && iaMTExt != null;
 
