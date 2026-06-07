@@ -255,16 +255,22 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     const displayMT = showMT && !isD2 && hasIAMT;
     if (!showFT && !displayMT) return null;
     return (
-      <div className="flex flex-col items-center px-3 py-2 bg-indigo-50 rounded-lg border border-indigo-200 min-w-[110px]">
-        <div className="flex items-center gap-1 mb-1">
-          <Brain className="w-3 h-3 text-indigo-500" />
+      <div className="w-full flex flex-col px-3 py-2.5 bg-indigo-50 rounded-lg border border-indigo-200">
+        <div className="flex items-center gap-1 mb-1.5">
+          <Brain className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wide">Prono IA</span>
         </div>
         {showFT && hasIAFT && (
-          <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">FT : {iaFTDom} - {iaFTExt}</span>
+          <div className="mb-0.5">
+            <span className="text-[9px] font-semibold text-indigo-500">FT</span>
+            <div className="text-base font-extrabold text-indigo-700 leading-tight">{iaFTDom} – {iaFTExt}</div>
+          </div>
         )}
         {displayMT && (
-          <span className="text-xs font-bold text-indigo-700 whitespace-nowrap">MT : {iaMTDom} - {iaMTExt}</span>
+          <div>
+            <span className="text-[9px] font-semibold text-indigo-500">MT</span>
+            <div className="text-xs font-bold text-indigo-700 leading-tight">{iaMTDom} – {iaMTExt}</div>
+          </div>
         )}
       </div>
     );
@@ -277,35 +283,51 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         onClick={clickable ? () => navigate('/pronos', {
           state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id }
         }) : undefined}
-        className={`flex flex-col items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200 min-w-[110px] ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
+        className={`w-full flex flex-col px-3 py-2.5 bg-green-50 rounded-lg border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
       >
-        <div className="flex items-center gap-1 mb-1">
-          <CheckCircle className="w-3 h-3 text-green-600" />
+        <div className="flex items-center gap-1 mb-1.5">
+          <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
         </div>
+
+        {/* Ligne FT */}
         {pronoFT && !isWinnerBet && (
-          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🏉 Score FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} - {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
-          </span>
+          <div className="mb-0.5">
+            <span className="text-[9px] font-semibold text-green-600">Score FT</span>
+            <div className="text-base font-extrabold text-green-800 leading-tight">
+              {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} – {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
+            </div>
+          </div>
         )}
         {pronoFT && isWinnerBet && (
-          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🎯 Vainqueur FT : {pronoFT.winner_predit === 'domicile' ? teamDom.name 
-              : pronoFT.winner_predit === 'exterieur' ? teamExt.name 
-              : 'Match nul'}
-          </span>
+          <div className="mb-0.5">
+            <span className="text-[9px] font-semibold text-green-600">Vainqueur FT</span>
+            <div className="text-xs font-bold text-green-800 leading-tight break-words">
+              {pronoFT.winner_predit === 'domicile' ? teamDom.name
+                : pronoFT.winner_predit === 'exterieur' ? teamExt.name
+                : 'Match nul'}
+            </div>
+          </div>
         )}
+
+        {/* Ligne MT */}
         {pronoMT && pronoMT.bet_type !== 'WINNER_MT' && (
-          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            ⏱️ Score MT : {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} - {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
-          </span>
+          <div>
+            <span className="text-[9px] font-semibold text-green-600">Score MT</span>
+            <div className="text-xs font-bold text-green-700 leading-tight">
+              {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} – {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
+            </div>
+          </div>
         )}
         {pronoMT && pronoMT.bet_type === 'WINNER_MT' && (
-          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🎯 Vainqueur MT : {pronoMT.winner_predit === 'domicile' ? teamDom.name 
-              : pronoMT.winner_predit === 'exterieur' ? teamExt.name 
-              : 'Match nul'}
-          </span>
+          <div>
+            <span className="text-[9px] font-semibold text-green-600">Vainqueur MT</span>
+            <div className="text-xs font-bold text-green-700 leading-tight break-words">
+              {pronoMT.winner_predit === 'domicile' ? teamDom.name
+                : pronoMT.winner_predit === 'exterieur' ? teamExt.name
+                : 'Match nul'}
+            </div>
+          </div>
         )}
       </div>
     );
@@ -455,7 +477,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {!bettingAllowed && (
           <>
             {(hasFT || hasMT) && (
-              <div className="flex justify-center gap-3">
+              <div className="grid grid-cols-2 gap-2 items-stretch mb-1">
                 <ZoneMonPari clickable={true} />
                 <BlocPronoIA showFT={hasFT} showMT={hasMT} />
               </div>
@@ -470,7 +492,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         {bettingAllowed && (
           <>
             {(hasFT || hasMT) && (
-              <div className="flex justify-center gap-3">
+              <div className="grid grid-cols-2 gap-2 items-stretch mb-1">
                 <ZoneMonPari clickable={false} />
                 <BlocPronoIA showFT={hasFT} showMT={hasMT} />
               </div>
@@ -480,7 +502,9 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                 <p className="text-[11px] text-gray-400 italic text-center">
                   👆 Cliquez sur une cote pour parier
                 </p>
-                <BlocPronoIA showFT={true} showMT={true} />
+                <div className="w-full max-w-[180px]">
+                  <BlocPronoIA showFT={true} showMT={true} />
+                </div>
               </div>
             )}
             {pariPartiel && (
