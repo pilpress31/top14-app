@@ -119,6 +119,7 @@ export default function NotificationCenter({ isOpen, onClose }) {
                 onClick={() => {
                   if (window.confirm('Supprimer toutes les notifications ?')) {
                     deleteAllNotifications();
+                    onClose(); // 🆕 plus de notif → on ferme le panneau
                   }
                 }}
                 className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
@@ -155,7 +156,10 @@ export default function NotificationCenter({ isOpen, onClose }) {
                   key={notification.id}
                   notification={notification}
                   onClick={() => handleNotificationClick(notification)}
-                  onDelete={() => deleteNotification(notification.id)}
+                  onDelete={() => {
+                    deleteNotification(notification.id);
+                    if (notifications.length <= 1) onClose(); // 🆕 dernière notif supprimée → fermer
+                  }}
                   onMarkRead={() => markAsRead(notification.id)}
                 />
               ))}
