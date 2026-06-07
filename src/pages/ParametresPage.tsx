@@ -44,6 +44,48 @@ export default function ParametresPage() {
 
   const { permission, isSupported, isSubscribed } = usePushNotifications();
 
+  // 🆕 Préférences d'alertes d'engagement (rang / badge / récap + push)
+  const [notifPrefs, setNotifPrefs] = useState({
+    push_enabled: true,
+    notif_rang: true,
+    notif_badge: true,
+    notif_recap: true,
+  });
+  const [savingPref, setSavingPref] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch('https://top14-api-production.up.railway.app/api/notifications/preferences', {
+      headers: { 'x-user-id': user.id },
+    })
+      .then(r => r.json())
+      .then(d => { if (d?.success && d.preferences) setNotifPrefs(d.preferences); })
+      .catch(() => {});
+  }, [user]);
+
+  const toggleNotifPref = async (
+    key: 'push_enabled' | 'notif_rang' | 'notif_badge' | 'notif_recap'
+  ) => {
+    if (!user) return;
+    const next = !notifPrefs[key];
+    setNotifPrefs(prev => ({ ...prev, [key]: next }));   // optimiste
+    setSavingPref(key);
+    try {
+      const res = await fetch('https://top14-api-production.up.railway.app/api/notifications/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': user.id },
+        body: JSON.stringify({ [key]: next }),
+      });
+      const d = await res.json();
+      if (d?.success && d.preferences) setNotifPrefs(d.preferences);
+      else throw new Error('save failed');
+    } catch {
+      setNotifPrefs(prev => ({ ...prev, [key]: !next }));  // rollback si échec
+    } finally {
+      setSavingPref(null);
+    }
+  };
+
   const [diagnosticResults, setDiagnosticResults] = useState({
     permission: { status: 'idle', message: '' },
     silenceMode: { status: 'idle', message: '' },
@@ -277,6 +319,38 @@ Résultats du diagnostic :
             <ChevronRight className="h-5 w-5 text-gray-400" />
           </div>
         </button>
+
+        {/* 🆕 Préférences d'alertes (montée au classement, badges, récap paris) */}
+        <div className="border-t border-gray-100">
+          {[
+            { key: 'push_enabled', label: 'Aussi par notification push', desc: 'Recevoir ces alertes sur ton téléphone' },
+            { key: 'notif_rang',   label: 'Montée au classement',         desc: 'Quand tu gagnes des places ou entres dans le top' },
+            { key: 'notif_badge',  label: 'Nouveaux badges & séries',      desc: 'Quand tu débloques un badge ou une série' },
+            { key: 'notif_recap',  label: 'Récap de tes paris gagnés',     desc: 'Après la résolution de tes pronos' },
+          ].map(({ key, label, desc }) => (
+            <div key={key} className="px-6 py-3 flex items-center gap-3 border-b border-gray-50 last:border-b-0">
+              <div className="flex-1">
+                <div className="text-gray-800 font-medium text-sm">{label}</div>
+                <div className="text-gray-400 text-xs">{desc}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleNotifPref(key as 'push_enabled' | 'notif_rang' | 'notif_badge' | 'notif_recap')}
+                disabled={savingPref === key}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+                  notifPrefs[key as keyof typeof notifPrefs] ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+                aria-pressed={notifPrefs[key as keyof typeof notifPrefs]}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                    notifPrefs[key as keyof typeof notifPrefs] ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Diagnostic */}
