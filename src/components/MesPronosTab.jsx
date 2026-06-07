@@ -321,29 +321,33 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
   return (
     <div className="space-y-3">
 
-      {/* BANDEAU CAGNOTTE */}
-      <div className={`${bandeauBg} rounded-lg p-4 shadow-lg`}>
+      {/* BANDEAU CAGNOTTE (compact) */}
+      <div className={`${bandeauBg} rounded-lg px-4 py-2 shadow-md`}>
         <div className="flex items-center justify-between">
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
-            className="flex items-center gap-3 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity"
           >
-            <Coins className="w-8 h-8 text-white" />
-            <div>
-              <p className="text-white text-xs font-medium">Ma cagnotte</p>
-              <p className="text-white text-3xl font-bold">{userCredits?.credits || 0}</p>
+            <Coins className="w-6 h-6 text-white flex-shrink-0" />
+            <div className="text-left leading-tight">
+              <p className="text-white/80 text-[10px] font-medium uppercase tracking-wide">Ma cagnotte</p>
+              <p className="text-white text-xl font-bold leading-none">{userCredits?.credits || 0}</p>
             </div>
           </button>
 
+          <div className="w-px self-stretch bg-white/25 mx-2" />
+
           <button
             onClick={() => window.location.href = '/ma-cagnotte'}
-            className="text-right bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm"
+            className="flex items-center hover:opacity-90 transition-opacity"
           >
-            <p className="text-white/80 text-xs">Total gagné</p>
-            <p className="text-white text-xl font-bold flex items-center gap-1 justify-end">
-              <TrendingUp className="w-4 h-4" />
-              {userCredits?.totalWonFromBets || 0}
-            </p>
+            <div className="text-right leading-tight">
+              <p className="text-white/80 text-[10px] font-medium uppercase tracking-wide">Total gagné</p>
+              <p className="text-white text-xl font-bold leading-none flex items-center gap-1 justify-end">
+                <TrendingUp className="w-3.5 h-3.5" />
+                {userCredits?.totalWonFromBets || 0}
+              </p>
+            </div>
           </button>
         </div>
       </div>
