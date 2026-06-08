@@ -26,7 +26,7 @@ export default function ClassementTop14Tabs({ children, isD2 = false }) {
   return (
     <div>
       {/* Barre des sous-onglets */}
-      <div className="flex items-stretch border-b-2 border-gray-200 mb-4">
+      <div className="flex items-stretch border-b border-white/10 mb-4">
 
         {/* Onglet Classement */}
         <button

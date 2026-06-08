@@ -70,13 +70,13 @@ export default function ClassementPageWithTabs() {
     `flex-1 flex flex-col items-center justify-center gap-1 py-3 font-medium transition-colors ${
       activeTab === key
         ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
-        : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20'
+        : 'text-slate-400 hover:text-rugby-gold hover:bg-white/5'
     }`;
 
   return (
-    <div className="min-h-screen bg-rugby-white pb-24">
+    <div className="min-h-screen bg-[#0c1322] pb-24">
       {/* Onglets */}
-      <div className="bg-rugby-white border-b-2 border-rugby-gray sticky top-0 z-40 shadow-sm">
+      <div className="bg-[#0c1322] border-b border-white/10 sticky top-0 z-40">
         <div className="container mx-auto">
           <div className="flex">
             {/* Onglet Top 14 */}
@@ -85,7 +85,7 @@ export default function ClassementPageWithTabs() {
                 <Trophy className="w-5 h-5" />
                 <span className="font-bold">Top 14</span>
               </div>
-              <span className="text-xs font-normal text-rugby-bronze">
+              <span className="text-xs font-normal text-slate-400">
                 Classement officiel
               </span>
             </button>
@@ -96,7 +96,7 @@ export default function ClassementPageWithTabs() {
                 <Users className="w-5 h-5" />
                 <span className="font-bold">Communauté</span>
               </div>
-              <span className="text-xs font-normal text-rugby-bronze">
+              <span className="text-xs font-normal text-slate-400">
                 Tous les joueurs
               </span>
             </button>
@@ -115,7 +115,7 @@ export default function ClassementPageWithTabs() {
                   </span>
                 )}
               </div>
-              <span className="text-xs font-normal text-rugby-bronze">
+              <span className="text-xs font-normal text-slate-400">
                 Entre amis
               </span>
             </button>

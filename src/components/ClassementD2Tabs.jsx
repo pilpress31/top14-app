@@ -21,7 +21,7 @@ export default function ClassementD2Tabs({ children }) {
   return (
     <div>
       {/* Barre des sous-onglets */}
-      <div className="flex items-stretch border-b-2 border-gray-200 mb-4">
+      <div className="flex items-stretch border-b border-white/10 mb-4">
 
         {/* Onglet Classement */}
         <button
@@ -29,7 +29,7 @@ export default function ClassementD2Tabs({ children }) {
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 px-2 font-medium transition-colors"
           style={
             activeSubTab === 'classement'
-              ? { color: D2_NAVY, borderBottom: '4px solid ' + D2_NAVY, backgroundColor: D2_BLUE + '30', fontWeight: 700, marginBottom: '-2px' }
+              ? { color: '#C0C0C0', borderBottom: '4px solid #C0C0C0', backgroundColor: D2_BLUE + '30', fontWeight: 700, marginBottom: '-2px' }
               : { color: '#9ca3af' }
           }
         >
@@ -48,7 +48,7 @@ export default function ClassementD2Tabs({ children }) {
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 px-2 font-medium transition-colors"
           style={
             activeSubTab === 'palmares'
-              ? { color: D2_NAVY, borderBottom: '4px solid ' + D2_NAVY, backgroundColor: D2_BLUE + '30', fontWeight: 700, marginBottom: '-2px' }
+              ? { color: '#C0C0C0', borderBottom: '4px solid #C0C0C0', backgroundColor: D2_BLUE + '30', fontWeight: 700, marginBottom: '-2px' }
               : { color: '#9ca3af' }
           }
         >

@@ -26,7 +26,7 @@ export default function ClassementHcupTabs() {
       {/* ─────────────────────────────────────── */}
       {/* Barre des sous-onglets                  */}
       {/* ─────────────────────────────────────── */}
-      <div className="flex items-stretch border-b-2 border-gray-200 mb-4">
+      <div className="flex items-stretch border-b border-white/10 mb-4">
         {/* Onglet Classement (par défaut) */}
         <button
           onClick={() => setActiveSubTab('classement')}
@@ -34,7 +34,7 @@ export default function ClassementHcupTabs() {
           style={
             activeSubTab === 'classement'
               ? {
-                  color: HCUP_BLEU,
+                  color: HCUP_OR,
                   borderBottom: `4px solid ${HCUP_OR}`,
                   backgroundColor: HCUP_OR + '10',
                   fontWeight: 700,
@@ -59,7 +59,7 @@ export default function ClassementHcupTabs() {
           style={
             activeSubTab === 'palmares'
               ? {
-                  color: HCUP_BLEU,
+                  color: HCUP_OR,
                   borderBottom: `4px solid ${HCUP_OR}`,
                   backgroundColor: HCUP_OR + '10',
                   fontWeight: 700,

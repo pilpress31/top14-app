@@ -146,7 +146,7 @@ export default function ClassementHcup() {
           className="inline-block animate-spin rounded-full h-10 w-10 border-b-2"
           style={{ borderColor: HCUP_BLEU }}
         />
-        <p className="text-sm text-gray-600 mt-3">Chargement du classement…</p>
+        <p className="text-sm text-slate-400 mt-3">Chargement du classement…</p>
       </div>
     );
   }
@@ -163,7 +163,7 @@ export default function ClassementHcup() {
   if (!pools || Object.keys(pools).length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-gray-500">Aucun classement disponible.</p>
+        <p className="text-sm text-slate-400">Aucun classement disponible.</p>
       </div>
     );
   }
@@ -175,11 +175,11 @@ export default function ClassementHcup() {
       {/* Titre + meta */}
       <div className="text-center mb-2 px-2">
         <h2 className="text-xl sm:text-2xl font-bold leading-tight">
-          <span style={{ color: HCUP_BLEU }}>Classement Champions Cup</span>
-          <span className="text-gray-600 text-sm ml-2 whitespace-nowrap">2025-2026</span>
+          <span style={{ color: HCUP_OR }}>Classement Champions Cup</span>
+          <span className="text-slate-400 text-sm ml-2 whitespace-nowrap">2025-2026</span>
         </h2>
         {meta?.round != null && (
-          <p className="text-xs text-gray-500 italic mt-1">
+          <p className="text-xs text-slate-400 italic mt-1">
             Après J{meta.round - 3}
             {meta.from_cache && (
               <span className="ml-1">· Mis à jour il y a {meta.cache_age_minutes ?? 0} min</span>

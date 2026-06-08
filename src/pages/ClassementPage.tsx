@@ -139,35 +139,26 @@ function ClassementPage() {
       {/* ═══════════════════════════════════════════════════════
           TOGGLE Top 14 / Pro D2 / Champions Cup
           ═══════════════════════════════════════════════════════ */}
-      <div className="flex justify-center mb-4">
-        <div className="inline-flex rounded-lg shadow-md border-2 border-gray-200 overflow-hidden">
+      <div className="mb-4">
+        <div className="flex rounded-full bg-white/5 p-1 border border-white/10">
           <button
             onClick={() => setChampionnat('top14')}
-            className={`px-4 py-2 font-bold text-sm transition-colors ${
-              championnat === 'top14'
-                ? 'bg-rugby-gold text-white'
-                : 'bg-white text-rugby-gold hover:bg-rugby-gold/10'
-            }`}
+            className="flex-1 py-2 rounded-full font-bold text-sm transition-all"
+            style={championnat === 'top14' ? { backgroundColor: '#CBA135', color: '#0c1322' } : { color: '#94a3b8' }}
           >
             🏆 TOP 14
           </button>
           <button
             onClick={() => setChampionnat('prod2')}
-            className={`px-4 py-2 font-bold text-sm transition-colors ${
-              championnat === 'prod2'
-                ? 'bg-d2-navy text-white'
-                : 'bg-white text-d2-navy hover:bg-d2-navy/10'
-            }`}
+            className="flex-1 py-2 rounded-full font-bold text-sm transition-all"
+            style={championnat === 'prod2' ? { backgroundColor: '#C0C0C0', color: '#0c1322' } : { color: '#94a3b8' }}
           >
             🥈 PRO D2
           </button>
           <button
             onClick={() => setChampionnat('hcup')}
-            className={`px-4 py-2 font-bold text-sm transition-colors ${
-              championnat === 'hcup'
-                ? 'bg-hcup-blue text-hcup-gold'
-                : 'bg-white text-hcup-blue hover:bg-hcup-blue/10'
-            }`}
+            className="flex-1 py-2 rounded-full font-bold text-sm transition-all"
+            style={championnat === 'hcup' ? { backgroundColor: '#FFC72C', color: '#0c1322' } : { color: '#94a3b8' }}
           >
             ⭐ C.CUP
           </button>
@@ -192,25 +183,25 @@ function ClassementPage() {
             Classement Top 14
           </span>
           {classement[0]?.saison && (
-            <span className="text-gray-600 text-sm ml-2">{classement[0].saison}</span>
+            <span className="text-slate-400 text-sm ml-2">{classement[0].saison}</span>
           )}
         </h2>
-        <p className="text-xs text-gray-500 italic">
+        <p className="text-xs text-slate-400 italic">
           💡 Cliquez sur une équipe pour voir ses statistiques détaillées
         </p>
       </div>
       )}
 
       {!isHcup && !isD2 && (loading ? (
-        <div className="p-6 text-center text-gray-500">🔄 Chargement du classement…</div>
+        <div className="p-6 text-center text-slate-400">🔄 Chargement du classement…</div>
       ) : classement.length === 0 ? (
-        <div className="p-6 text-center text-gray-500">Aucune donnée disponible</div>
+        <div className="p-6 text-center text-slate-400">Aucune donnée disponible</div>
       ) : (
         <>
           {/* ═══════════════════════════════════════════════════════
               MENTION ROTATION (mobile uniquement)
               ═══════════════════════════════════════════════════════ */}
-          <p className="md:hidden text-[11px] text-gray-500 italic text-center mb-2">
+          <p className="md:hidden text-[11px] text-slate-400 italic text-center mb-2">
             🔄 Tournez l'écran pour voir toutes les colonnes
           </p>
 
@@ -350,7 +341,7 @@ function ClassementPage() {
               <span className="font-semibold">Pts</span> = Points de classement (4 pts victoire + bonus)
             </p>
             {isD2 && (
-              <p className="text-xs text-gray-500 italic mt-1">
+              <p className="text-xs text-slate-400 italic mt-1">
                 Source : <a href="https://prod2.lnr.fr/classement" target="_blank" rel="noopener noreferrer" className="underline hover:text-d2-navy">LNR Pro D2</a>
               </p>
             )}
@@ -530,25 +521,25 @@ function ClassementPage() {
         <ClassementD2Tabs>
           <div className="text-center mb-4">
             <h2 className="text-2xl font-bold mb-2 whitespace-nowrap">
-              <span className={themeColors.primary}>Classement Pro D2</span>
+              <span style={{ color: '#C0C0C0' }}>Classement Pro D2</span>
               {classement[0]?.saison && (
-                <span className="text-gray-600 text-sm ml-2">{classement[0].saison}</span>
+                <span className="text-slate-400 text-sm ml-2">{classement[0].saison}</span>
               )}
             </h2>
-            <p className="text-xs text-gray-500 italic">
+            <p className="text-xs text-slate-400 italic">
               💡 Cliquez sur une équipe pour voir ses statistiques détaillées
             </p>
           </div>
 
           {loading ? (
-            <div className="p-6 text-center text-gray-500">🔄 Chargement du classement…</div>
+            <div className="p-6 text-center text-slate-400">🔄 Chargement du classement…</div>
           ) : classement.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-slate-400">
               Classement Pro D2 indisponible pour le moment. Réessayez dans quelques instants.
             </div>
           ) : (
             <>
-              <p className="md:hidden text-[11px] text-gray-500 italic text-center mb-2">
+              <p className="md:hidden text-[11px] text-slate-400 italic text-center mb-2">
                 🔄 Tournez l'écran pour voir toutes les colonnes
               </p>
               <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
