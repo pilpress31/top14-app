@@ -1,13 +1,18 @@
 // ==========================================
-// CLASSEMENT HCUP — 4 pools × 6 équipes
+// CLASSEMENT HCUP — 4 pools × 6 équipes + phases finales
 // ==========================================
 // Fichier : src/components/ClassementHcup.jsx
 //
 // Affiche le classement officiel de la Champions Cup,
-// scraping RugbyPass via /api/hcup/classement-officiel.
+// scraping RugbyPass via /api/hcup/classement-officiel,
+// puis le tableau de phase finale de la saison en cours
+// via /api/hcup/phases-finales.
 //
-// Format : 4 cartes empilées (1 par pool), chaque carte montre les
+// Format poules : 4 cartes empilées (1 par pool), chaque carte montre les
 // 6 équipes triées par rang avec colonnes : # / Équipe / MJ / V / N / D / Diff / BO / BD / PTS.
+//
+// Format phases finales : section groupée par round (8es → quarts → demies → finale),
+// chaque match en carte 2 lignes avec vainqueur surligné.
 //
 // Couleurs : charte HCup (bleu #003E7E + or #FFC72C)
 // ==========================================
@@ -20,9 +25,71 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const { bleu: HCUP_BLEU, or: HCUP_OR } = getCharte('hcup').base;
 
+// Libellés d'affichage des rounds de phase finale (pluriel quand plusieurs matchs)
+const ROUND_LABEL_PF = {
+  '8e de finale':    '8es de finale',
+  'Quart de finale': 'Quarts de finale',
+  'Demi-finale':     'Demi-finales',
+  'Finale':          'Finale',
+};
+
+// Rendu d'un match de phase finale (carte 2 lignes, vainqueur surligné)
+function renderMatchPF(m) {
+  const sDom = m.score_final_domicile ?? m.score_domicile;
+  const sExt = m.score_final_exterieur ?? m.score_exterieur;
+  const winDom = m.vainqueur && m.vainqueur === m.equipe_domicile;
+  const winExt = m.vainqueur && m.vainqueur === m.equipe_exterieure;
+  const teamDom = getTeamData ? getTeamData(m.equipe_domicile) : null;
+  const teamExt = getTeamData ? getTeamData(m.equipe_exterieure) : null;
+  const dateStr = m.date_match
+    ? new Date(m.date_match).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+    : '';
+
+  const ligne = (equipe, logo, score, win, borderTop) => (
+    <div
+      className={`flex items-center justify-between px-3 py-1.5 ${borderTop ? 'border-t border-gray-100' : ''}`}
+      style={win ? { backgroundColor: HCUP_OR + '22' } : {}}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        {logo && (
+          <img
+            src={logo}
+            alt={equipe}
+            className="w-5 h-5 object-contain flex-shrink-0"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        )}
+        <span className={`truncate text-sm ${win ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
+          {equipe}
+        </span>
+      </div>
+      <span
+        className={`tabular-nums text-sm ml-2 ${win ? 'font-bold' : 'text-gray-500'}`}
+        style={win ? { color: HCUP_BLEU } : {}}
+      >
+        {score}
+      </span>
+    </div>
+  );
+
+  return (
+    <div key={m.id} className="rounded-lg border border-gray-200 overflow-hidden bg-white">
+      {ligne(m.equipe_domicile, teamDom?.logo, sDom, winDom, false)}
+      {ligne(m.equipe_exterieure, teamExt?.logo, sExt, winExt, true)}
+      <div className="px-3 py-1 bg-gray-50 flex items-center justify-between text-[10px] text-gray-500">
+        <span>{dateStr}{m.ville ? ` · ${m.ville}` : ''}</span>
+        {m.prolongation && (
+          <span className="font-semibold" style={{ color: HCUP_BLEU }}>a.p.</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ClassementHcup() {
   const [pools, setPools] = useState(null);
   const [meta, setMeta] = useState(null);
+  const [phasesFinales, setPhasesFinales] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -47,6 +114,18 @@ export default function ClassementHcup() {
           cache_age_minutes: data.cache_age_minutes,
           warning: data.warning,
         });
+
+        // 🆕 Phases finales de la saison en cours (non bloquant : si ça échoue,
+        // les poules restent affichées normalement).
+        try {
+          const rPF = await fetch(`${API_URL}/hcup/phases-finales`);
+          const dPF = await rPF.json();
+          if (!cancelled && dPF && Array.isArray(dPF.rounds)) {
+            setPhasesFinales(dPF);
+          }
+        } catch {
+          /* silencieux — section masquée si pas de données */
+        }
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -239,6 +318,35 @@ export default function ClassementHcup() {
           </div>
         );
       })}
+
+      {/* 🆕 Phases finales de la saison en cours (sous les poules) */}
+      {phasesFinales?.rounds?.length > 0 && (
+        <div
+          className="rounded-lg shadow-md overflow-hidden border"
+          style={{ borderColor: HCUP_BLEU + '40' }}
+        >
+          <div className="px-3 py-2" style={{ backgroundColor: HCUP_BLEU }}>
+            <span className="font-bold text-sm uppercase" style={{ color: HCUP_OR }}>
+              🏆 Phases finales{phasesFinales.saison ? ` ${phasesFinales.saison}` : ''}
+            </span>
+          </div>
+          <div className="p-3 space-y-4 bg-white">
+            {phasesFinales.rounds.map((group) => (
+              <div key={group.round}>
+                <div
+                  className="text-xs font-bold uppercase tracking-wide mb-2"
+                  style={{ color: HCUP_BLEU }}
+                >
+                  {ROUND_LABEL_PF[group.round] || group.round}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {group.matchs.map(renderMatchPF)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Légende */}
       <div className="bg-white rounded-lg p-3 text-[10px] text-gray-600 border border-gray-200">
