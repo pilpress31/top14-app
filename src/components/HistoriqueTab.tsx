@@ -593,7 +593,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       <div
         className="fixed left-0 w-full flex justify-center z-50 px-4"
         style={{
-          bottom: isD2 ? 'calc(var(--bottom-nav-total, 90px) + 8px)' : 'calc(var(--bottom-nav-total, 90px) + 0px)',
+          bottom: 'calc(var(--bottom-nav-total, 90px) + 0px)',
           pointerEvents: 'none',
         }}
       >
