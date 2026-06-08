@@ -139,8 +139,8 @@ function ClassementPage() {
       {/* ═══════════════════════════════════════════════════════
           TOGGLE Top 14 / Pro D2 / Champions Cup
           ═══════════════════════════════════════════════════════ */}
-      <div className="flex justify-center px-3 pt-1 pb-2">
-        <div className="inline-flex items-center gap-1 rounded-full bg-white/5 p-1">
+      <div className="px-1 pb-2">
+        <div className="flex items-center gap-1 rounded-full bg-white/5 p-1">
           {([
             { key: 'top14', emoji: '🏆', label: 'TOP 14', accent: '#CBA135' },
             { key: 'prod2', emoji: '🥈', label: 'PRO D2', accent: '#C0C0C0' },
@@ -152,7 +152,7 @@ function ClassementPage() {
                 key={c.key}
                 onClick={() => setChampionnat(c.key)}
                 aria-label={`Passer à ${c.label}`}
-                className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide transition-all"
+                className="flex-1 flex items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all"
                 style={isActive ? { backgroundColor: c.accent, color: '#0c1322' } : { color: '#94a3b8' }}
               >
                 <span style={{ fontSize: '12px', lineHeight: 1 }}>{c.emoji}</span>
