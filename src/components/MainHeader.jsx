@@ -83,10 +83,10 @@ function MainHeader({ isVisible = true }) {
           type="button"
           onClick={() => setModalOpen(true)}
           aria-label="Voir les statistiques détaillées de l'algorithme"
-          className="flex justify-center gap-2 cursor-pointer bg-transparent border-0 p-0 m-0
+          className="grid grid-cols-2 gap-2 w-full cursor-pointer bg-transparent border-0 p-0 m-0
                      transition-transform duration-150 hover:scale-[1.03] active:scale-95"
         >
-          <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1">
+          <div className="bg-black/50 border border-rugby-gold/40 rounded-lg px-3 py-1 text-center shadow flex items-center gap-1">
             <ChartIcon className="h-4 w-4 text-rugby-gold" />
             <div>
               <p className="text-sm font-bold text-rugby-gold">
@@ -96,7 +96,7 @@ function MainHeader({ isVisible = true }) {
             </div>
           </div>
 
-          <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1">
+          <div className="bg-black/50 border border-rugby-gold/40 rounded-lg px-3 py-1 text-center shadow flex items-center gap-1">
             <DatabaseIcon className="h-4 w-4 text-rugby-gold" />
             <div>
               <p className="text-sm font-bold text-rugby-gold">

@@ -98,10 +98,10 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
         </div>
 
         {/* Stats */}
-        <div className="flex justify-center gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full">
 
           {/* Bloc 1 : Précision moyenne (algo) — toujours affiché */}
-          <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
+          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
                style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
             <TrophyIcon className="h-4 w-4" style={{ color: or }} />
             <div>
@@ -114,7 +114,7 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
 
           {/* Bloc 2 : Paris gagnants (mature) OU CTA cold start */}
           {modeMature ? (
-            <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
+            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
                  style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
               <StarIcon className="h-4 w-4" style={{ color: or }} />
               <div>
@@ -125,7 +125,7 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
               </div>
             </div>
           ) : (
-            <div className="rounded-md px-3 py-1 text-center shadow flex items-center justify-center h-[40px]"
+            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center justify-center h-[40px]"
                  style={{
                    backgroundColor: bleu,
                    border: `1px dashed ${or}`,

@@ -44,7 +44,7 @@ export default function MainHeaderFull({ total, isVisible = true }) {
         </div>
 
         {/* Blocs statistiques */}
-        <div className="flex justify-center gap-2">
+        <div className="grid grid-cols-2 gap-2 w-full">
 
           {/* Bloc précision algo */}
           <div className="bg-black/50 border border-rugby-gold/40 rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">

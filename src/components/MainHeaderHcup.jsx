@@ -81,10 +81,10 @@ export default function MainHeaderHcup({ isVisible = true }) {
           type="button"
           onClick={() => setModalOpen(true)}
           aria-label="Voir les statistiques détaillées de l'algorithme"
-          className="flex justify-center gap-2 cursor-pointer bg-transparent border-0 p-0 m-0
+          className="grid grid-cols-2 gap-2 w-full cursor-pointer bg-transparent border-0 p-0 m-0
                      transition-transform duration-150 hover:scale-[1.03] active:scale-95"
         >
-          <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
+          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
                style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
             <TrophyIcon className="h-4 w-4" style={{ color: or }} />
             <div>
@@ -95,7 +95,7 @@ export default function MainHeaderHcup({ isVisible = true }) {
             </div>
           </div>
 
-          <div className="rounded-md px-3 py-1 text-center shadow flex items-center gap-1"
+          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
                style={{ backgroundColor: bleu, border: `1px solid ${or}` }}>
             <GlobeIcon className="h-4 w-4" style={{ color: or }} />
             <div>
