@@ -139,7 +139,7 @@ function ClassementPage() {
       {/* ═══════════════════════════════════════════════════════
           TOGGLE Top 14 / Pro D2 / Champions Cup
           ═══════════════════════════════════════════════════════ */}
-      <div className="px-1 pb-2">
+      <div className="pb-2">
         <div className="flex items-center gap-1 rounded-full bg-white/5 p-1">
           {([
             { key: 'top14', emoji: '🏆', label: 'TOP 14', accent: '#CBA135' },
