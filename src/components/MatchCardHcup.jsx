@@ -222,7 +222,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
           <Brain className="w-3.5 h-3.5 flex-shrink-0" style={{ color: HCUP_BLUE }} />
           <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: HCUP_BLUE }}>Prono IA</span>
         </div>
-        <div className="text-lg font-extrabold leading-none" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
+        <div className="text-lg font-semibold leading-none" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
         {match.cotes?.confiance_algo && (
           <span className="text-[9px] mt-1" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
             Confiance {match.cotes.confiance_algo}%
@@ -242,18 +242,24 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
         onClick={clickable ? () => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } }) : undefined}
         className={`w-full flex flex-col px-3 py-2.5 bg-green-50 rounded-lg border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
       >
-        <div className="flex items-center gap-1 mb-1">
+        <div className="flex items-center gap-1 mb-1.5">
           <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">Mon pari</span>
         </div>
         {ftScore && (
-          <div className="text-lg font-extrabold text-green-800 leading-none">{ftScore}</div>
+          <div className="leading-tight">
+            <span className="text-[10px] text-green-600 font-medium">Score FT</span>
+            <div className="text-lg font-semibold text-green-800 leading-none">{ftScore}</div>
+          </div>
         )}
         {ftWinner && (
-          <div className="text-sm font-bold text-green-800 leading-tight break-words">{ftWinner}</div>
+          <div className="leading-tight">
+            <span className="text-[10px] text-green-600 font-medium">Vainqueur FT</span>
+            <div className="text-sm font-semibold text-green-800 leading-tight break-words">{ftWinner}</div>
+          </div>
         )}
         {pronoFT && (
-          <span className="text-[9px] text-green-600 mt-1">{pronoFT.stake} jetons @ {pronoFT.odds?.toFixed(2)}</span>
+          <span className="text-[10px] text-green-600 mt-1.5">{pronoFT.stake} jetons @ {pronoFT.odds?.toFixed(2)}</span>
         )}
       </div>
     );
@@ -297,8 +303,8 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
 
         <button onClick={() => setTeamPopup(match.equipe_domicile)}
           className="flex flex-col items-center text-center hover:opacity-80 transition-opacity">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
-            <img src={teamDom.logo} alt={teamDom.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamDom.logo} alt={teamDom.name} className="w-14 h-14 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2 uppercase">
             {teamDom.name}
@@ -319,8 +325,8 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
 
         <button onClick={() => setTeamPopup(match.equipe_exterieure)}
           className="flex flex-col items-center text-center hover:opacity-80 transition-opacity">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
-            <img src={teamExt.logo} alt={teamExt.name} className="w-10 h-10 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamExt.logo} alt={teamExt.name} className="w-14 h-14 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2 uppercase">
             {teamExt.name}
@@ -331,15 +337,15 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
 
       {/* Cotes */}
       {match.cotes && (
-        <div className="flex flex-col items-center gap-1.5 mb-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-16" />
-            <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">1</div>
-            <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">N</div>
-            <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">2</div>
+        <div className="flex flex-col gap-1.5 mb-3 w-full">
+          <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
+            <div />
+            <div className="text-center text-[10px] text-gray-400 font-semibold">1</div>
+            <div className="text-center text-[10px] text-gray-400 font-semibold">N</div>
+            <div className="text-center text-[10px] text-gray-400 font-semibold">2</div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
+          <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
+            <div className="text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
               const ftClickable = bettingAllowed && !hasFT && jouable;
               const winnerForClick = i === 0 ? 'DOM' : i === 1 ? 'NUL' : 'EXT';
@@ -348,7 +354,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
               return (
                 <div key={i}
                   onClick={() => ftClickable && !noOdds && onBetClick(match, preselect)}
-                  className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${ftClickable && !noOdds ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}>
+                  className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded py-1.5 text-center text-sm font-bold ${ftClickable && !noOdds ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}>
                   {noOdds ? '—' : cote.toFixed(2)}
                 </div>
               );

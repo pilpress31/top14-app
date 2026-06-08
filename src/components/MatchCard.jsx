@@ -261,7 +261,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wide">Prono IA</span>
         </div>
         {showFT && hasIAFT && (
-          <div className="text-lg font-extrabold text-indigo-700 leading-none">{iaFTDom} – {iaFTExt}</div>
+          <div className="text-lg font-semibold text-indigo-700 leading-none">{iaFTDom} – {iaFTExt}</div>
         )}
         {displayMT && (
           <div className="text-[11px] font-semibold text-indigo-500 mt-1">MT · {iaMTDom} – {iaMTExt}</div>
@@ -281,10 +281,11 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         : pronoFT.winner_predit === 'exterieur' ? teamExt.name
         : 'Match nul')
       : null;
-    const mtText = !pronoMT ? null
-      : pronoMT.bet_type === 'WINNER_MT'
-        ? `MT · ${pronoMT.winner_predit === 'domicile' ? teamDom.name : pronoMT.winner_predit === 'exterieur' ? teamExt.name : 'Match nul'}`
-        : `MT · ${pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} – ${pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}`;
+    const mtIsWinner = pronoMT?.bet_type === 'WINNER_MT';
+    const mtValue = !pronoMT ? null
+      : mtIsWinner
+        ? (pronoMT.winner_predit === 'domicile' ? teamDom.name : pronoMT.winner_predit === 'exterieur' ? teamExt.name : 'Match nul')
+        : `${pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} – ${pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}`;
 
     return (
       <div
@@ -293,18 +294,27 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         }) : undefined}
         className={`w-full flex flex-col px-3 py-2.5 bg-green-50 rounded-lg border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
       >
-        <div className="flex items-center gap-1 mb-1">
+        <div className="flex items-center gap-1 mb-1.5">
           <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
         </div>
         {ftScore && (
-          <div className="text-lg font-extrabold text-green-800 leading-none">{ftScore}</div>
+          <div className="leading-tight">
+            <span className="text-[10px] text-green-600 font-medium">Score FT</span>
+            <div className="text-lg font-semibold text-green-800 leading-none">{ftScore}</div>
+          </div>
         )}
         {ftWinner && (
-          <div className="text-sm font-bold text-green-800 leading-tight break-words">{ftWinner}</div>
+          <div className="leading-tight">
+            <span className="text-[10px] text-green-600 font-medium">Vainqueur FT</span>
+            <div className="text-sm font-semibold text-green-800 leading-tight break-words">{ftWinner}</div>
+          </div>
         )}
-        {mtText && (
-          <div className="text-[11px] font-semibold text-green-600 mt-1 break-words">{mtText}</div>
+        {mtValue && (
+          <div className="leading-tight mt-1.5">
+            <span className="text-[10px] text-green-600 font-medium">{mtIsWinner ? 'Vainqueur MT' : 'Score MT'}</span>
+            <div className="text-sm font-semibold text-green-700 leading-tight break-words">{mtValue}</div>
+          </div>
         )}
       </div>
     );
@@ -344,8 +354,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           onClick={() => setTeamPopup(match.equipe_domicile)}
           className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
         >
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
-            <img src={teamDom.logo} alt={teamDom.name} className="w-10 h-10 object-contain"
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamDom.logo} alt={teamDom.name} className="w-14 h-14 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2 uppercase">
@@ -379,8 +389,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
           onClick={() => setTeamPopup(match.equipe_exterieure)}
           className="flex flex-col items-center text-center hover:opacity-80 transition-opacity"
         >
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
-            <img src={teamExt.logo} alt={teamExt.name} className="w-10 h-10 object-contain"
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamExt.logo} alt={teamExt.name} className="w-14 h-14 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 underline decoration-dotted underline-offset-2 uppercase">
@@ -392,17 +402,17 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
       {/* Cotes style bookmaker 1-N-2 */}
       {match.cotes && (
-        <div className="flex flex-col items-center gap-1.5 mb-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-16" />
-            <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">1</div>
-            <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">N</div>
-            <div className="w-14 text-center text-[10px] text-gray-400 font-semibold">2</div>
+        <div className="flex flex-col gap-1.5 mb-3 w-full">
+          <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
+            <div />
+            <div className="text-center text-[10px] text-gray-400 font-semibold">1</div>
+            <div className="text-center text-[10px] text-gray-400 font-semibold">N</div>
+            <div className="text-center text-[10px] text-gray-400 font-semibold">2</div>
           </div>
 
           {/* Ligne Temps plein */}
-          <div className="flex items-center gap-1.5">
-            <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
+          <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
+            <div className="text-[10px] text-gray-400 font-semibold text-right">Temps plein</div>
             {[match.cotes.cote_domicile, match.cotes.cote_nul, match.cotes.cote_exterieur].map((cote, i) => {
               const ftClickable = bettingAllowed && !hasFT && jouable;
               const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
@@ -410,7 +420,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
               return (
                 <div key={i}
                   onClick={() => ftClickable && onBetClick(match, preselect)}
-                  className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${ftClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
+                  className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded py-1.5 text-center text-sm font-bold ${ftClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
                 >
                   {cote?.toFixed(2)}
                 </div>
@@ -420,8 +430,8 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
           {/* Ligne Mi-temps — UNIQUEMENT EN TOP 14 */}
           {!isD2 && match.cotes.cote_mt_domicile && (
-            <div className="flex items-center gap-1.5">
-              <div className="w-16 text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
+            <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
+              <div className="text-[10px] text-gray-400 font-semibold text-right">Mi-temps</div>
               {[match.cotes.cote_mt_domicile, match.cotes.cote_mt_nul, match.cotes.cote_mt_exterieur].map((cote, i) => {
                 const mtClickable = bettingAllowed && !hasMT && jouable;
                 const winnerForClick = i === 0 ? 'domicile' : i === 1 ? 'nul' : 'exterieur';
@@ -429,7 +439,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
                 return (
                   <div key={i}
                     onClick={() => mtClickable && onBetClick(match, preselect)}
-                    className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded w-14 py-1.5 text-center text-sm font-bold ${mtClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
+                    className={`${i === 0 ? 'bg-blue-50 border-blue-200 text-blue-900' : i === 1 ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-red-50 border-red-200 text-red-900'} border rounded py-1.5 text-center text-sm font-bold ${mtClickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'opacity-50 cursor-not-allowed'}`}
                   >
                     {cote?.toFixed(2)}
                   </div>
