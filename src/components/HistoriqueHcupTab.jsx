@@ -209,7 +209,7 @@ export default function HistoriqueHcupTab() {
   return (
     <div className="space-y-3">
       {/* Filtres */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -322,7 +322,7 @@ export default function HistoriqueHcupTab() {
             return (
               <div
                 key={saison}
-                className="bg-white rounded-lg shadow-sm border border-rugby-gray overflow-hidden"
+                className="bg-white rounded-xl shadow-sm border border-rugby-gray overflow-hidden"
               >
                 {/* En-tête saison */}
                 <button
