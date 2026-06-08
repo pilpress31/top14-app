@@ -589,73 +589,88 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
         })}
       </div>
 
-      {/* Pagination */}
-      <div className="fixed left-0 w-full flex justify-center items-center gap-4 py-2 shadow-md z-50" style={isD2 ? { backgroundColor: '#00174D', borderTop: '1px solid rgba(192,192,192,0.3)', bottom: 'calc(var(--bottom-nav-total, 90px) + 8px)' } : { backgroundColor: '#0c1322', borderTop: '1px solid rgba(203,161,53,0.40)', bottom: 'calc(var(--bottom-nav-total, 90px) + 0px)' }}>
-        <button
-          onClick={() => {
-            if (isD2) {
-              const newPage = Math.max(1, d2Page - 1);
-              setD2Page(newPage);
-              setLoading(true);
-              loadHistorique(true, newPage,
-                selectedTeam !== 'all' ? selectedTeam : undefined,
-                selectedSaison !== 'all' ? selectedSaison : undefined,
-                selectedJournee !== 'all' ? selectedJournee : undefined);
-            } else {
-              const newPage = Math.max(1, t14Page - 1);
-              setT14Page(newPage);
-              setCurrentPage(newPage);
-              setLoading(true);
-              loadHistorique(false, newPage,
-                selectedTeam !== 'all' ? selectedTeam : undefined,
-                selectedSaison !== 'all' ? selectedSaison : undefined,
-                selectedJournee !== 'all' ? selectedJournee : undefined);
-            }
-            window.scrollTo({ top: 0, behavior: "smooth" });
+      {/* Pagination — pill flottant centré (raccord thème sombre) */}
+      <div
+        className="fixed left-0 w-full flex justify-center z-50 px-4"
+        style={{
+          bottom: isD2 ? 'calc(var(--bottom-nav-total, 90px) + 8px)' : 'calc(var(--bottom-nav-total, 90px) + 0px)',
+          pointerEvents: 'none',
+        }}
+      >
+        <div
+          className="inline-flex items-center gap-2 px-2 py-1.5 rounded-full shadow-lg"
+          style={{
+            pointerEvents: 'auto',
+            backgroundColor: isD2 ? '#00174D' : '#0c1322',
+            border: isD2 ? '1px solid rgba(192,192,192,0.40)' : '1px solid rgba(203,161,53,0.40)',
           }}
-          disabled={isD2 ? d2Page === 1 : t14Page === 1}
-          className="px-4 py-2 rounded font-semibold transition-colors shadow-md"
-          style={isD2
-            ? { backgroundColor: '#00174D', color: '#C0C0C0', border: '1px solid #C0C0C0' }
-            : { backgroundColor: '#CBA135', color: '#FFFFFF' }}
         >
-          ◀ Précédent
-        </button>
+          <button
+            onClick={() => {
+              if (isD2) {
+                const newPage = Math.max(1, d2Page - 1);
+                setD2Page(newPage);
+                setLoading(true);
+                loadHistorique(true, newPage,
+                  selectedTeam !== 'all' ? selectedTeam : undefined,
+                  selectedSaison !== 'all' ? selectedSaison : undefined,
+                  selectedJournee !== 'all' ? selectedJournee : undefined);
+              } else {
+                const newPage = Math.max(1, t14Page - 1);
+                setT14Page(newPage);
+                setCurrentPage(newPage);
+                setLoading(true);
+                loadHistorique(false, newPage,
+                  selectedTeam !== 'all' ? selectedTeam : undefined,
+                  selectedSaison !== 'all' ? selectedSaison : undefined,
+                  selectedJournee !== 'all' ? selectedJournee : undefined);
+              }
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            disabled={isD2 ? d2Page === 1 : t14Page === 1}
+            className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={isD2
+              ? { backgroundColor: '#97C1FE', color: '#00174D' }
+              : { backgroundColor: '#CBA135', color: '#FFFFFF' }}
+          >
+            ◀ Précédent
+          </button>
 
-        <span className="px-4 py-2 font-semibold" style={isD2 ? { color: '#C0C0C0' } : { color: '#CBA135' }}>
-          Page {isD2 ? d2Page : t14Page} / {totalPages}
-        </span>
+          <span className="px-1 text-xs font-semibold whitespace-nowrap" style={{ color: isD2 ? '#C0C0C0' : '#CBA135' }}>
+            Page {isD2 ? d2Page : t14Page} / {totalPages}
+          </span>
 
-        <button
-          onClick={() => {
-            if (isD2) {
-              const newPage = Math.min(totalPages, d2Page + 1);
-              setD2Page(newPage);
-              setLoading(true);
-              loadHistorique(true, newPage,
-                selectedTeam !== 'all' ? selectedTeam : undefined,
-                selectedSaison !== 'all' ? selectedSaison : undefined,
-                selectedJournee !== 'all' ? selectedJournee : undefined);
-            } else {
-              const newPage = Math.min(totalPages, t14Page + 1);
-              setT14Page(newPage);
-              setCurrentPage(newPage);
-              setLoading(true);
-              loadHistorique(false, newPage,
-                selectedTeam !== 'all' ? selectedTeam : undefined,
-                selectedSaison !== 'all' ? selectedSaison : undefined,
-                selectedJournee !== 'all' ? selectedJournee : undefined);
-            }
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          disabled={isD2 ? d2Page === totalPages : t14Page === totalPages}
-          className="px-4 py-2 rounded font-semibold transition-colors shadow-md"
-          style={isD2
-            ? { backgroundColor: '#C0C0C0', color: '#00174D', fontWeight: 700 }
-            : { backgroundColor: '#CBA135', color: '#FFFFFF' }}
-        >
-          Suivant ▶
-        </button>
+          <button
+            onClick={() => {
+              if (isD2) {
+                const newPage = Math.min(totalPages, d2Page + 1);
+                setD2Page(newPage);
+                setLoading(true);
+                loadHistorique(true, newPage,
+                  selectedTeam !== 'all' ? selectedTeam : undefined,
+                  selectedSaison !== 'all' ? selectedSaison : undefined,
+                  selectedJournee !== 'all' ? selectedJournee : undefined);
+              } else {
+                const newPage = Math.min(totalPages, t14Page + 1);
+                setT14Page(newPage);
+                setCurrentPage(newPage);
+                setLoading(true);
+                loadHistorique(false, newPage,
+                  selectedTeam !== 'all' ? selectedTeam : undefined,
+                  selectedSaison !== 'all' ? selectedSaison : undefined,
+                  selectedJournee !== 'all' ? selectedJournee : undefined);
+              }
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            disabled={isD2 ? d2Page === totalPages : t14Page === totalPages}
+            className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={isD2
+              ? { backgroundColor: '#97C1FE', color: '#00174D' }
+              : { backgroundColor: '#CBA135', color: '#FFFFFF' }}
+          >
+            Suivant ▶
+          </button>
+        </div>
       </div>
     </div>
   );
