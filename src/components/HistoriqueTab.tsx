@@ -249,7 +249,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
 
   return (
     <div className="space-y-4">
-      <div className={`sticky bg-white z-30 pb-4 pt-2 shadow-sm border-b border-gray-200 transition-all duration-300 ${
+      <div className={`sticky bg-white z-30 px-3 pb-4 pt-2 shadow-sm border border-gray-200 rounded-xl transition-all duration-300 ${
         headerVisible ? 'top-[200px]' : 'top-[80px]'
       }`}>
         <div className="flex flex-col md:flex-row gap-4">
@@ -469,7 +469,7 @@ export default function HistoriqueTab({ headerVisible = true, isD2 = false }: Hi
       </div>
 
       {/* Liste des matchs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 px-2 pb-32">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-32">
         {paginatedMatches.map(m => {
           const teamDomData = getTeamData(m.equipe_domicile);
           const teamExtData = getTeamData(m.equipe_exterieure);
