@@ -145,9 +145,9 @@ export default function PronosPage() {
 
           </div>
 
-          {/* Ligne 2 : sélecteur de championnat (segmented control) */}
-          <div className="flex justify-center px-3 pt-1 pb-2">
-            <div className="inline-flex items-center gap-1 rounded-full bg-white/5 p-1">
+          {/* Ligne 2 : sélecteur de championnat (segmented control pleine largeur) */}
+          <div className="px-3 pt-1 pb-2">
+            <div className="flex items-center gap-1 rounded-full bg-white/5 p-1">
               {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
                 const isActive = championnat === key;
                 return (
@@ -155,7 +155,7 @@ export default function PronosPage() {
                     key={key}
                     onClick={() => setChampionnat(key)}
                     aria-label={`Passer à ${conf.label}`}
-                    className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide transition-all"
+                    className="flex-1 flex items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all"
                     style={isActive ? { backgroundColor: conf.accent, color: '#0c1322' } : { color: '#94a3b8' }}
                   >
                     <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
