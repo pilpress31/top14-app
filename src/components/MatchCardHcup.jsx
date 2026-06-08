@@ -216,17 +216,18 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
   const BlocPronoIA = () => {
     if (!hasIAFT) return null;
     return (
-      <div className="flex flex-col items-center px-3 py-2 rounded-lg border min-w-[110px]"
+      <div className="w-full flex flex-col px-3 py-2.5 rounded-lg border"
         style={{ backgroundColor: 'rgba(0, 62, 126, 0.05)', borderColor: HCUP_BLUE }}>
-        <div className="flex items-center gap-1 mb-1">
-          <Brain className="w-3 h-3" style={{ color: HCUP_BLUE }} />
+        <div className="flex items-center gap-1 mb-1.5">
+          <Brain className="w-3.5 h-3.5 flex-shrink-0" style={{ color: HCUP_BLUE }} />
           <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: HCUP_BLUE }}>Prono IA</span>
         </div>
-        <span className="text-xs font-bold whitespace-nowrap" style={{ color: HCUP_BLUE }}>
-          FT : {iaFTDom} - {iaFTExt}
-        </span>
+        <div className="mb-0.5">
+          <span className="text-[9px] font-semibold" style={{ color: HCUP_BLUE }}>FT</span>
+          <div className="text-base font-extrabold leading-tight" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
+        </div>
         {match.cotes?.confiance_algo && (
-          <span className="text-[9px] mt-0.5" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
+          <span className="text-[9px]" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
             Confiance {match.cotes.confiance_algo}%
           </span>
         )}
@@ -238,26 +239,30 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
     return (
       <div
         onClick={clickable ? () => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } }) : undefined}
-        className={`flex flex-col items-center px-3 py-2 bg-green-50 rounded-lg border border-green-200 min-w-[110px] ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
+        className={`w-full flex flex-col px-3 py-2.5 bg-green-50 rounded-lg border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
       >
-        <div className="flex items-center gap-1 mb-1">
-          <CheckCircle className="w-3 h-3 text-green-600" />
+        <div className="flex items-center gap-1 mb-1.5">
+          <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">Mon pari</span>
         </div>
         {pronoFT && !isWinnerBet && (
-          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🏉 Score FT : {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'}
-            {' - '}
-            {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
-          </span>
+          <div className="mb-0.5">
+            <span className="text-[9px] font-semibold text-green-600">Score FT</span>
+            <div className="text-base font-extrabold text-green-800 leading-tight">
+              {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} – {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
+            </div>
+          </div>
         )}
         {pronoFT && isWinnerBet && (
-          <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-            🎯 Vainqueur FT : {getWinnerName(pronoFT.winner_predit)}
-          </span>
+          <div className="mb-0.5">
+            <span className="text-[9px] font-semibold text-green-600">Vainqueur FT</span>
+            <div className="text-xs font-bold text-green-800 leading-tight break-words">
+              {getWinnerName(pronoFT.winner_predit)}
+            </div>
+          </div>
         )}
         {pronoFT && (
-          <span className="text-[9px] text-green-600 mt-0.5">
+          <span className="text-[9px] text-green-600">
             {pronoFT.stake} jetons @ {pronoFT.odds?.toFixed(2)}
           </span>
         )}
@@ -380,7 +385,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
         {jouable && !bettingAllowed && (
           <>
             {hasFT && (
-              <div className="flex justify-center gap-3">
+              <div className="grid grid-cols-2 gap-2 items-stretch mb-1">
                 <ZoneMonPari clickable={true} />
                 <BlocPronoIA />
               </div>
@@ -395,7 +400,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
         {jouable && bettingAllowed && (
           <>
             {hasFT && (
-              <div className="flex justify-center gap-3">
+              <div className="grid grid-cols-2 gap-2 items-stretch mb-1">
                 <ZoneMonPari clickable={false} />
                 <BlocPronoIA />
               </div>
@@ -403,7 +408,9 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
             {aucunPari && (
               <div className="flex flex-col items-center gap-1.5 w-full mt-1">
                 <p className="text-[11px] text-gray-400 italic text-center">👆 Cliquez sur une cote pour parier</p>
-                <BlocPronoIA />
+                <div className="w-full max-w-[180px]">
+                  <BlocPronoIA />
+                </div>
               </div>
             )}
             {hasFT && (
