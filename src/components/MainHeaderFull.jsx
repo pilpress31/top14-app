@@ -47,7 +47,7 @@ export default function MainHeaderFull({ total, isVisible = true }) {
         <div className="flex justify-center gap-2">
 
           {/* Bloc précision algo */}
-          <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">
+          <div className="bg-black/50 border border-rugby-gold/40 rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rugby-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 20h16M4 10h4v10H4zm6-6h4v16h-4zm6 8h4v8h-4z" />
             </svg>
@@ -60,7 +60,7 @@ export default function MainHeaderFull({ total, isVisible = true }) {
           </div>
 
           {/* Bloc CTA */}
-          <div className="bg-black/50 rounded-md px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">
+          <div className="bg-black/50 border border-rugby-gold/40 rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]">
             <span className="text-rugby-gold text-base">🚀</span>
             <div>
               <p className="text-[11px] font-bold text-rugby-gold leading-tight">
