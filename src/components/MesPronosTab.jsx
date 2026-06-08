@@ -331,7 +331,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
             <Coins className="w-6 h-6 text-white flex-shrink-0" />
             <div className="text-left leading-tight">
               <p className="text-white/80 text-[10px] font-medium uppercase tracking-wide">Ma cagnotte</p>
-              <p className="text-white text-xl font-bold leading-none">{userCredits?.credits || 0}</p>
+              <p className="text-white text-xl font-bold leading-none">{(userCredits?.credits ?? 0).toLocaleString('fr-FR')}</p>
             </div>
           </button>
 
@@ -345,7 +345,7 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
               <p className="text-white/80 text-[10px] font-medium uppercase tracking-wide">Total gagné</p>
               <p className="text-white text-xl font-bold leading-none flex items-center gap-1 justify-end">
                 <TrendingUp className="w-3.5 h-3.5" />
-                {userCredits?.totalWonFromBets || 0}
+                +{(userCredits?.totalWonFromBets ?? 0).toLocaleString('fr-FR')}
               </p>
             </div>
           </button>

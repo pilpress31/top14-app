@@ -218,16 +218,13 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
     return (
       <div className="w-full flex flex-col px-3 py-2.5 rounded-lg border"
         style={{ backgroundColor: 'rgba(0, 62, 126, 0.05)', borderColor: HCUP_BLUE }}>
-        <div className="flex items-center gap-1 mb-1.5">
+        <div className="flex items-center gap-1 mb-1">
           <Brain className="w-3.5 h-3.5 flex-shrink-0" style={{ color: HCUP_BLUE }} />
           <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: HCUP_BLUE }}>Prono IA</span>
         </div>
-        <div className="mb-0.5">
-          <span className="text-[9px] font-semibold" style={{ color: HCUP_BLUE }}>FT</span>
-          <div className="text-base font-extrabold leading-tight" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
-        </div>
+        <div className="text-lg font-extrabold leading-none" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
         {match.cotes?.confiance_algo && (
-          <span className="text-[9px]" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
+          <span className="text-[9px] mt-1" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
             Confiance {match.cotes.confiance_algo}%
           </span>
         )}
@@ -236,35 +233,27 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
   };
 
   const ZoneMonPari = ({ clickable }) => {
+    const ftScore = pronoFT && !isWinnerBet
+      ? `${pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} – ${pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}`
+      : null;
+    const ftWinner = pronoFT && isWinnerBet ? getWinnerName(pronoFT.winner_predit) : null;
     return (
       <div
         onClick={clickable ? () => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } }) : undefined}
         className={`w-full flex flex-col px-3 py-2.5 bg-green-50 rounded-lg border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
       >
-        <div className="flex items-center gap-1 mb-1.5">
+        <div className="flex items-center gap-1 mb-1">
           <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">Mon pari</span>
         </div>
-        {pronoFT && !isWinnerBet && (
-          <div className="mb-0.5">
-            <span className="text-[9px] font-semibold text-green-600">Score FT</span>
-            <div className="text-base font-extrabold text-green-800 leading-tight">
-              {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} – {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
-            </div>
-          </div>
+        {ftScore && (
+          <div className="text-lg font-extrabold text-green-800 leading-none">{ftScore}</div>
         )}
-        {pronoFT && isWinnerBet && (
-          <div className="mb-0.5">
-            <span className="text-[9px] font-semibold text-green-600">Vainqueur FT</span>
-            <div className="text-xs font-bold text-green-800 leading-tight break-words">
-              {getWinnerName(pronoFT.winner_predit)}
-            </div>
-          </div>
+        {ftWinner && (
+          <div className="text-sm font-bold text-green-800 leading-tight break-words">{ftWinner}</div>
         )}
         {pronoFT && (
-          <span className="text-[9px] text-green-600">
-            {pronoFT.stake} jetons @ {pronoFT.odds?.toFixed(2)}
-          </span>
+          <span className="text-[9px] text-green-600 mt-1">{pronoFT.stake} jetons @ {pronoFT.odds?.toFixed(2)}</span>
         )}
       </div>
     );
@@ -416,7 +405,8 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
             {hasFT && (
               <button
                 onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } })}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm w-fit mx-auto"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-semibold text-white hover:shadow-lg transition-all shadow-sm"
+                style={{ backgroundColor: HCUP_BLUE }}
               >
                 Voir mon pari en cours
               </button>

@@ -256,21 +256,15 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     if (!showFT && !displayMT) return null;
     return (
       <div className="w-full flex flex-col px-3 py-2.5 bg-indigo-50 rounded-lg border border-indigo-200">
-        <div className="flex items-center gap-1 mb-1.5">
+        <div className="flex items-center gap-1 mb-1">
           <Brain className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wide">Prono IA</span>
         </div>
         {showFT && hasIAFT && (
-          <div className="mb-0.5">
-            <span className="text-[9px] font-semibold text-indigo-500">FT</span>
-            <div className="text-base font-extrabold text-indigo-700 leading-tight">{iaFTDom} – {iaFTExt}</div>
-          </div>
+          <div className="text-lg font-extrabold text-indigo-700 leading-none">{iaFTDom} – {iaFTExt}</div>
         )}
         {displayMT && (
-          <div>
-            <span className="text-[9px] font-semibold text-indigo-500">MT</span>
-            <div className="text-xs font-bold text-indigo-700 leading-tight">{iaMTDom} – {iaMTExt}</div>
-          </div>
+          <div className="text-[11px] font-semibold text-indigo-500 mt-1">MT · {iaMTDom} – {iaMTExt}</div>
         )}
       </div>
     );
@@ -278,6 +272,20 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
   const ZoneMonPari = ({ clickable }) => {
     const label = pariComplet ? 'Mes paris' : 'Mon pari';
+
+    const ftScore = pronoFT && !isWinnerBet
+      ? `${pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} – ${pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}`
+      : null;
+    const ftWinner = pronoFT && isWinnerBet
+      ? (pronoFT.winner_predit === 'domicile' ? teamDom.name
+        : pronoFT.winner_predit === 'exterieur' ? teamExt.name
+        : 'Match nul')
+      : null;
+    const mtText = !pronoMT ? null
+      : pronoMT.bet_type === 'WINNER_MT'
+        ? `MT · ${pronoMT.winner_predit === 'domicile' ? teamDom.name : pronoMT.winner_predit === 'exterieur' ? teamExt.name : 'Match nul'}`
+        : `MT · ${pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} – ${pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}`;
+
     return (
       <div
         onClick={clickable ? () => navigate('/pronos', {
@@ -285,49 +293,18 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
         }) : undefined}
         className={`w-full flex flex-col px-3 py-2.5 bg-green-50 rounded-lg border border-green-200 ${clickable ? 'cursor-pointer hover:bg-green-100 transition-colors' : ''}`}
       >
-        <div className="flex items-center gap-1 mb-1.5">
+        <div className="flex items-center gap-1 mb-1">
           <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
           <span className="text-[9px] font-bold text-green-600 uppercase tracking-wide">{label}</span>
         </div>
-
-        {/* Ligne FT */}
-        {pronoFT && !isWinnerBet && (
-          <div className="mb-0.5">
-            <span className="text-[9px] font-semibold text-green-600">Score FT</span>
-            <div className="text-base font-extrabold text-green-800 leading-tight">
-              {pronoFT.score_dom ?? pronoFT.score_dom_pronos ?? pronoFT.score_domicile ?? '?'} – {pronoFT.score_ext ?? pronoFT.score_ext_pronos ?? pronoFT.score_exterieur ?? '?'}
-            </div>
-          </div>
+        {ftScore && (
+          <div className="text-lg font-extrabold text-green-800 leading-none">{ftScore}</div>
         )}
-        {pronoFT && isWinnerBet && (
-          <div className="mb-0.5">
-            <span className="text-[9px] font-semibold text-green-600">Vainqueur FT</span>
-            <div className="text-xs font-bold text-green-800 leading-tight break-words">
-              {pronoFT.winner_predit === 'domicile' ? teamDom.name
-                : pronoFT.winner_predit === 'exterieur' ? teamExt.name
-                : 'Match nul'}
-            </div>
-          </div>
+        {ftWinner && (
+          <div className="text-sm font-bold text-green-800 leading-tight break-words">{ftWinner}</div>
         )}
-
-        {/* Ligne MT */}
-        {pronoMT && pronoMT.bet_type !== 'WINNER_MT' && (
-          <div>
-            <span className="text-[9px] font-semibold text-green-600">Score MT</span>
-            <div className="text-xs font-bold text-green-700 leading-tight">
-              {pronoMT.score_dom ?? pronoMT.score_dom_mt ?? '?'} – {pronoMT.score_ext ?? pronoMT.score_ext_mt ?? '?'}
-            </div>
-          </div>
-        )}
-        {pronoMT && pronoMT.bet_type === 'WINNER_MT' && (
-          <div>
-            <span className="text-[9px] font-semibold text-green-600">Vainqueur MT</span>
-            <div className="text-xs font-bold text-green-700 leading-tight break-words">
-              {pronoMT.winner_predit === 'domicile' ? teamDom.name
-                : pronoMT.winner_predit === 'exterieur' ? teamExt.name
-                : 'Match nul'}
-            </div>
-          </div>
+        {mtText && (
+          <div className="text-[11px] font-semibold text-green-600 mt-1 break-words">{mtText}</div>
         )}
       </div>
     );
@@ -519,7 +496,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             {pariComplet && (
               <button
                 onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } })}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200 transition-colors shadow-sm w-fit mx-auto"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-rugby-gold to-rugby-bronze hover:shadow-lg transition-all shadow-sm"
               >
                 Voir mes paris en cours
               </button>
