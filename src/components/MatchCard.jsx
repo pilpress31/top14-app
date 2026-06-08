@@ -503,7 +503,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             {pariPartiel && (
               <button
                 onClick={() => onBetClick(match)}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-rugby-bronze text-white hover:bg-rugby-bronze/80 transition-colors shadow-sm w-fit mx-auto"
+                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm w-fit mx-auto ${isD2 ? 'bg-d2-navy hover:bg-d2-navy/80' : 'bg-rugby-bronze hover:bg-rugby-bronze/80'}`}
               >
                 <Edit className="w-4 h-4" />
                 <span>Compléter mon pari</span>
@@ -512,7 +512,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
             {pariComplet && (
               <button
                 onClick={() => navigate('/pronos', { state: { activeTab: 'mes-paris', scrollToMatchId: match.match_id } })}
-                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-rugby-gold to-rugby-bronze hover:shadow-lg transition-all shadow-sm"
+                className={`flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-semibold text-white hover:shadow-lg transition-all shadow-sm ${isD2 ? 'bg-gradient-to-r from-[#00174D] to-[#1e4d8c]' : 'bg-gradient-to-r from-rugby-gold to-rugby-bronze'}`}
               >
                 Voir mes paris en cours
               </button>
