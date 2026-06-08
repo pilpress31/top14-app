@@ -124,7 +124,7 @@ export default function ClassementPageWithTabs() {
       </div>
 
       {/* Contenu */}
-      <div className="container mx-auto px-4 pt-1 pb-6">
+      <div className="container mx-auto px-2 pt-1 pb-6">
         {activeTab === 'top14' && <ClassementTop14Tab />}
         {activeTab === 'communaute' && <ClassementCommunauteTab />}
         {activeTab === 'ligues' && (

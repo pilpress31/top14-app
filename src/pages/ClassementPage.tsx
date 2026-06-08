@@ -135,7 +135,7 @@ function ClassementPage() {
   }, []);
 
   return (
-    <div className="px-2 py-4 pb-24">
+    <div className="pt-1 pb-24">
       {/* ═══════════════════════════════════════════════════════
           TOGGLE Top 14 / Pro D2 / Champions Cup
           ═══════════════════════════════════════════════════════ */}
