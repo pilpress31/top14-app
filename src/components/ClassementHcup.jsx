@@ -45,7 +45,7 @@ function renderMatchPF(m) {
     ? new Date(m.date_match).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
 
-  const ligne = (equipe, logo, score, win, borderTop) => (
+  const ligne = (equipe, logo, score, win, borderTop, champion) => (
     <div
       className={`flex items-center justify-between px-3 py-1.5 ${borderTop ? 'border-t border-gray-100' : ''}`}
       style={win ? { backgroundColor: HCUP_OR + '22' } : {}}
@@ -62,6 +62,9 @@ function renderMatchPF(m) {
         <span className={`truncate text-sm ${win ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
           {equipe}
         </span>
+        {champion && (
+          <span className="flex-shrink-0 text-sm" title="Champion d'Europe">🏆</span>
+        )}
       </div>
       <span
         className={`tabular-nums text-sm ml-2 ${win ? 'font-bold' : 'text-gray-500'}`}
@@ -74,8 +77,8 @@ function renderMatchPF(m) {
 
   return (
     <div key={m.id} className="rounded-lg border border-gray-200 overflow-hidden bg-white">
-      {ligne(m.equipe_domicile, teamDom?.logo, sDom, winDom, false)}
-      {ligne(m.equipe_exterieure, teamExt?.logo, sExt, winExt, true)}
+      {ligne(m.equipe_domicile, teamDom?.logo, sDom, winDom, false, winDom && m.round === 'Finale')}
+      {ligne(m.equipe_exterieure, teamExt?.logo, sExt, winExt, true, winExt && m.round === 'Finale')}
       <div className="px-3 py-1 bg-gray-50 flex items-center justify-between text-[10px] text-gray-500">
         <span>{dateStr}{m.ville ? ` · ${m.ville}` : ''}</span>
         {m.prolongation && (
@@ -187,6 +190,35 @@ export default function ClassementHcup() {
           <p className="text-[10px] text-orange-600 italic mt-1">⚠ {meta.warning}</p>
         )}
       </div>
+
+      {/* 🆕 Phases finales de la saison en cours (au-dessus des poules, finale en haut) */}
+      {phasesFinales?.rounds?.length > 0 && (
+        <div
+          className="rounded-lg shadow-md overflow-hidden border"
+          style={{ borderColor: HCUP_BLEU + '40' }}
+        >
+          <div className="px-3 py-2" style={{ backgroundColor: HCUP_BLEU }}>
+            <span className="font-bold text-sm uppercase" style={{ color: HCUP_OR }}>
+              🏆 Phases finales{phasesFinales.saison ? ` ${phasesFinales.saison}` : ''}
+            </span>
+          </div>
+          <div className="p-3 space-y-4 bg-white">
+            {[...phasesFinales.rounds].reverse().map((group) => (
+              <div key={group.round}>
+                <div
+                  className="text-xs font-bold uppercase tracking-wide mb-2"
+                  style={{ color: HCUP_BLEU }}
+                >
+                  {ROUND_LABEL_PF[group.round] || group.round}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {group.matchs.map(renderMatchPF)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 4 cartes (1 par pool) */}
       {poolNames.map((poolName) => {
@@ -318,35 +350,6 @@ export default function ClassementHcup() {
           </div>
         );
       })}
-
-      {/* 🆕 Phases finales de la saison en cours (sous les poules) */}
-      {phasesFinales?.rounds?.length > 0 && (
-        <div
-          className="rounded-lg shadow-md overflow-hidden border"
-          style={{ borderColor: HCUP_BLEU + '40' }}
-        >
-          <div className="px-3 py-2" style={{ backgroundColor: HCUP_BLEU }}>
-            <span className="font-bold text-sm uppercase" style={{ color: HCUP_OR }}>
-              🏆 Phases finales{phasesFinales.saison ? ` ${phasesFinales.saison}` : ''}
-            </span>
-          </div>
-          <div className="p-3 space-y-4 bg-white">
-            {phasesFinales.rounds.map((group) => (
-              <div key={group.round}>
-                <div
-                  className="text-xs font-bold uppercase tracking-wide mb-2"
-                  style={{ color: HCUP_BLEU }}
-                >
-                  {ROUND_LABEL_PF[group.round] || group.round}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {group.matchs.map(renderMatchPF)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Légende */}
       <div className="bg-white rounded-lg p-3 text-[10px] text-gray-600 border border-gray-200">
