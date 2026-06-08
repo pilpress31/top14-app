@@ -33,11 +33,11 @@ export default function MainHeaderFull({ total, isVisible = true }) {
         {/* Bloc titre */}
         <div className="text-center">
           <h1 className="text-lg font-bold flex items-center justify-center gap-2 text-rugby-gold uppercase tracking-widest">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rugby-gold" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-              <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2" />
-              <circle cx="12" cy="12" r="2" fill="currentColor" />
-            </svg>
+            <img
+              src="/images/ballon-logo.png"
+              alt="Ballon de rugby"
+              className="object-contain w-6 h-6"
+            />
             TOP 14 PARIS VIRTUELS
           </h1>
           <p className="text-xs italic text-gray-300 mt-1">Des cotes fiables, basées sur la réalité du terrain</p>

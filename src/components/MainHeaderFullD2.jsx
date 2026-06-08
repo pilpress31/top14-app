@@ -126,13 +126,14 @@ export default function MainHeaderFullD2({ isVisible = true }) {
               </div>
             </div>
           ) : (
-            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center justify-center h-[40px]"
+            <div className="rounded-lg px-3 py-1 shadow flex items-center gap-1 h-[40px]"
                  style={{
                    backgroundColor: navy,
-                   border: `1px dashed ${blue}`,
+                   border: `1px solid ${silver}`,
                  }}>
-              <p className="text-[11px] font-bold leading-tight" style={{ color: blue }}>
-                🚀 Sois parmi<br />les 1<sup>ers</sup> à parier !
+              <span className="text-base">🚀</span>
+              <p className="text-[11px] font-bold leading-tight text-left" style={{ color: blue }}>
+                Sois parmi<br />les 1<sup>ers</sup> à parier !
               </p>
             </div>
           )}

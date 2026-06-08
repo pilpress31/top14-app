@@ -83,7 +83,7 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
 
         {/* Titre */}
         <div className="text-center">
-          <h1 className="text-base font-bold flex items-center justify-center gap-2 uppercase tracking-wider whitespace-nowrap"
+          <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
               style={{ color: bleu }}>
             <img
               src="/images/ballon-logo.png"
@@ -125,13 +125,14 @@ export default function MainHeaderFullHcup({ isVisible = true }) {
               </div>
             </div>
           ) : (
-            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center justify-center h-[40px]"
+            <div className="rounded-lg px-3 py-1 shadow flex items-center gap-1 h-[40px]"
                  style={{
                    backgroundColor: bleu,
-                   border: `1px dashed ${or}`,
+                   border: `1px solid ${or}`,
                  }}>
-              <p className="text-[11px] font-bold leading-tight" style={{ color: or }}>
-                🚀 Sois parmi<br />les 1<sup>ers</sup> à parier !
+              <span className="text-base">🚀</span>
+              <p className="text-[11px] font-bold leading-tight text-left" style={{ color: or }}>
+                Sois parmi<br />les 1<sup>ers</sup> à parier !
               </p>
             </div>
           )}
