@@ -139,29 +139,27 @@ function ClassementPage() {
       {/* ═══════════════════════════════════════════════════════
           TOGGLE Top 14 / Pro D2 / Champions Cup
           ═══════════════════════════════════════════════════════ */}
-      <div className="mb-4">
-        <div className="flex rounded-full bg-white/5 p-1 border border-white/10">
-          <button
-            onClick={() => setChampionnat('top14')}
-            className="flex-1 py-2 rounded-full font-bold text-sm transition-all"
-            style={championnat === 'top14' ? { backgroundColor: '#CBA135', color: '#0c1322' } : { color: '#94a3b8' }}
-          >
-            🏆 TOP 14
-          </button>
-          <button
-            onClick={() => setChampionnat('prod2')}
-            className="flex-1 py-2 rounded-full font-bold text-sm transition-all"
-            style={championnat === 'prod2' ? { backgroundColor: '#C0C0C0', color: '#0c1322' } : { color: '#94a3b8' }}
-          >
-            🥈 PRO D2
-          </button>
-          <button
-            onClick={() => setChampionnat('hcup')}
-            className="flex-1 py-2 rounded-full font-bold text-sm transition-all"
-            style={championnat === 'hcup' ? { backgroundColor: '#FFC72C', color: '#0c1322' } : { color: '#94a3b8' }}
-          >
-            ⭐ C.CUP
-          </button>
+      <div className="flex justify-center px-3 pt-1 pb-2">
+        <div className="inline-flex items-center gap-1 rounded-full bg-white/5 p-1">
+          {([
+            { key: 'top14', emoji: '🏆', label: 'TOP 14', accent: '#CBA135' },
+            { key: 'prod2', emoji: '🥈', label: 'PRO D2', accent: '#C0C0C0' },
+            { key: 'hcup',  emoji: '⭐', label: 'C.CUP',  accent: '#FFC72C' },
+          ] as const).map((c) => {
+            const isActive = championnat === c.key;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setChampionnat(c.key)}
+                aria-label={`Passer à ${c.label}`}
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide transition-all"
+                style={isActive ? { backgroundColor: c.accent, color: '#0c1322' } : { color: '#94a3b8' }}
+              >
+                <span style={{ fontSize: '12px', lineHeight: 1 }}>{c.emoji}</span>
+                {c.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
