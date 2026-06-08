@@ -98,14 +98,21 @@ export default function IAPage() {
     return <MainHeader isVisible={headerVisible} />;
   };
 
+  const champConf = CHAMPIONNATS[championnat] || CHAMPIONNATS.top14;
+  const activeTabStyle = {
+    color: champConf.accent,
+    borderBottom: `4px solid ${champConf.borderActive}`,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  };
+  const inactiveTabStyle = { color: '#94a3b8', borderBottom: '4px solid transparent' };
+
   return (
-    // pb-32 (au lieu de pb-24) pour que le contenu ne passe pas sous la BottomNav
-    <div className="min-h-screen bg-rugby-white pb-32">
+    <div className="min-h-screen bg-[#0c1322] pb-32">
       {renderHeader()}
 
       {/* Onglets - STICKY - z-40 (sous le header en z-50, comme PronosPage) */}
       <div
-        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        className="sticky bg-[#0c1322] border-b border-white/10 z-40 shadow-md transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
@@ -114,14 +121,8 @@ export default function IAPage() {
             {/* Onglet Algorithme */}
             <button
               onClick={() => setActiveTab('algorithme')}
-              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors"
-              style={activeTab === 'algorithme'
-                ? isHcup
-                  ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
-                  : isD2
-                    ? { color: '#00174D', borderBottom: '4px solid #00174D', backgroundColor: 'rgba(151,193,254,0.1)', fontWeight: 700 }
-                    : { color: '#CBA135', borderBottom: '4px solid #CBA135', backgroundColor: 'rgba(203,161,53,0.05)', fontWeight: 700 }
-                : { color: '#9ca3af' }}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 font-medium transition-colors hover:bg-white/5"
+              style={activeTab === 'algorithme' ? activeTabStyle : inactiveTabStyle}
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5" />
@@ -132,46 +133,11 @@ export default function IAPage() {
               </span>
             </button>
 
-            {/* CARROUSEL : 3 championnats - compact */}
-            <div className="flex items-center justify-center gap-0.5 px-0.5 self-center">
-              {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
-                const isActive = championnat === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setChampionnat(key)}
-                    aria-label={`Passer à ${conf.label}`}
-                    className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold uppercase tracking-wider transition-all duration-200"
-                    style={{
-                      width: '46px',
-                      padding: '4px 3px',
-                      fontSize: '9px',
-                      backgroundColor: conf.bg,
-                      borderColor: isActive ? conf.borderActive : conf.accent,
-                      color: conf.accent,
-                      transform: isActive ? 'scale(1.05)' : 'scale(0.92)',
-                      opacity: isActive ? 1 : 0.55,
-                      boxShadow: isActive ? `0 2px 6px ${conf.accent}40` : '0 1px 2px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
-                    <span className="leading-none">{conf.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
             {/* Onglet Historique */}
             <button
               onClick={() => setActiveTab('historique')}
-              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors"
-              style={activeTab === 'historique'
-                ? isHcup
-                  ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)', fontWeight: 700 }
-                  : isD2
-                    ? { color: '#00174D', borderBottom: '4px solid #00174D', backgroundColor: 'rgba(151,193,254,0.1)', fontWeight: 700 }
-                    : { color: '#CBA135', borderBottom: '4px solid #CBA135', backgroundColor: 'rgba(203,161,53,0.05)', fontWeight: 700 }
-                : { color: '#9ca3af' }}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 font-medium transition-colors hover:bg-white/5"
+              style={activeTab === 'historique' ? activeTabStyle : inactiveTabStyle}
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
@@ -182,6 +148,28 @@ export default function IAPage() {
               </span>
             </button>
           </div>
+
+          {/* Ligne 2 : sélecteur de championnat (segmented control pleine largeur) */}
+          <div className="px-3 pt-1 pb-2">
+            <div className="flex items-center gap-1 rounded-full bg-white/5 p-1">
+              {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
+                const isActive = championnat === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setChampionnat(key)}
+                    aria-label={`Passer à ${conf.label}`}
+                    className="flex-1 flex items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all"
+                    style={isActive ? { backgroundColor: conf.accent, color: '#0c1322' } : { color: '#94a3b8' }}
+                  >
+                    <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
+                    {conf.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
       </div>
 
