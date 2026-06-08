@@ -93,46 +93,35 @@ export default function PronosPage() {
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
 
-  // Style des onglets actifs selon championnat
-  const activeTabStyle = isHcup
-    ? { color: '#003E7E', borderBottom: '4px solid #FFC72C', backgroundColor: 'rgba(255,199,44,0.05)' }
-    : isD2
-      ? { color: '#00174D', borderBottom: '4px solid #00174D', backgroundColor: 'rgba(151,193,254,0.1)' }
-      : null;
+  // Couleur d'accent du championnat courant (onglets actifs sur fond sombre)
+  const champConf = CHAMPIONNATS[championnat] || CHAMPIONNATS.top14;
 
-  const activeTabClassName = (!isHcup && !isD2)
-    ? 'text-rugby-gold border-b-4 border-rugby-gold bg-rugby-gold/5'
-    : '';
-
-  const inactiveTabClassName = isHcup
-    ? 'text-gray-500 hover:bg-gray-100'
-    : isD2
-      ? 'text-gray-500 hover:text-d2-navy hover:bg-d2-blue/10'
-      : 'text-rugby-bronze hover:text-rugby-gold hover:bg-rugby-gray/20';
+  const activeTabStyle = {
+    color: champConf.accent,
+    borderBottom: `4px solid ${champConf.borderActive}`,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  };
+  const inactiveTabStyle = { color: '#94a3b8', borderBottom: '4px solid transparent' };
 
   const HeaderComponent = isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;
 
   return (
-    <div className="min-h-screen bg-rugby-white pb-24">
+    <div className="min-h-screen bg-[#0c1322] pb-24">
       <HeaderComponent isVisible={headerVisible} />
 
       {/* Zone sticky : onglets + carrousel championnat */}
       <div
-        className="sticky bg-rugby-white border-b-2 border-rugby-gray z-40 shadow-sm transition-all duration-300"
+        className="sticky bg-[#0c1322] border-b border-white/10 z-40 shadow-md transition-all duration-300"
         style={{ top: `${tabsTop}px` }}
       >
         <div className="container mx-auto">
-          <div className="flex items-stretch relative">
+          <div className="flex items-stretch">
 
             {/* Onglet À parier */}
             <button
               onClick={() => setActiveTab('a-parier')}
-              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors ${
-                activeTab === 'a-parier'
-                  ? activeTabClassName
-                  : inactiveTabClassName
-              }`}
-              style={activeTab === 'a-parier' ? activeTabStyle : null}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 font-medium transition-colors hover:bg-white/5"
+              style={activeTab === 'a-parier' ? activeTabStyle : inactiveTabStyle}
             >
               <div className="flex items-center gap-2">
                 <Target className="w-5 h-5" />
@@ -141,44 +130,11 @@ export default function PronosPage() {
               <span className="text-[10px] font-normal leading-tight text-gray-500">Prochains matchs disponibles</span>
             </button>
 
-            {/* CARROUSEL : 3 championnats - compact et centré verticalement */}
-            <div className="flex items-center justify-center gap-1 px-1 self-center">
-              {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
-                const isActive = championnat === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setChampionnat(key)}
-                    aria-label={`Passer à ${conf.label}`}
-                    className="flex flex-col items-center justify-center gap-0.5 rounded-md border-2 font-bold uppercase tracking-wider transition-all duration-200"
-                    style={{
-                      width: '46px',
-                      padding: '4px 3px',
-                      fontSize: '9px',
-                      backgroundColor: conf.bg,
-                      borderColor: isActive ? conf.borderActive : conf.accent,
-                      color: conf.accent,
-                      transform: isActive ? 'scale(1.05)' : 'scale(0.92)',
-                      opacity: isActive ? 1 : 0.55,
-                      boxShadow: isActive ? `0 2px 6px ${conf.accent}40` : '0 1px 2px rgba(0,0,0,0.1)',
-                    }}
-                  >
-                    <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
-                    <span className="leading-none">{conf.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
             {/* Onglet Mes paris */}
             <button
               onClick={() => setActiveTab('mes-paris')}
-              className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-1 py-3 px-1 font-medium transition-colors ${
-                activeTab === 'mes-paris'
-                  ? activeTabClassName
-                  : inactiveTabClassName
-              }`}
-              style={activeTab === 'mes-paris' ? activeTabStyle : null}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2.5 px-1 font-medium transition-colors hover:bg-white/5"
+              style={activeTab === 'mes-paris' ? activeTabStyle : inactiveTabStyle}
             >
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5" />
@@ -188,6 +144,28 @@ export default function PronosPage() {
             </button>
 
           </div>
+
+          {/* Ligne 2 : sélecteur de championnat (segmented control) */}
+          <div className="flex justify-center px-3 pt-1 pb-2">
+            <div className="inline-flex items-center gap-1 rounded-full bg-white/5 p-1">
+              {Object.entries(CHAMPIONNATS).map(([key, conf]) => {
+                const isActive = championnat === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setChampionnat(key)}
+                    aria-label={`Passer à ${conf.label}`}
+                    className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide transition-all"
+                    style={isActive ? { backgroundColor: conf.accent, color: '#0c1322' } : { color: '#94a3b8' }}
+                  >
+                    <span style={{ fontSize: '12px', lineHeight: 1 }}>{conf.emoji}</span>
+                    {conf.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
       </div>
 
