@@ -256,15 +256,21 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
     if (!showFT && !displayMT) return null;
     return (
       <div className="w-full flex flex-col px-3 py-2.5 bg-indigo-50 rounded-lg border border-indigo-200">
-        <div className="flex items-center gap-1 mb-1">
+        <div className="flex items-center gap-1 mb-1.5">
           <Brain className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
           <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wide">Prono IA</span>
         </div>
         {showFT && hasIAFT && (
-          <div className="text-lg font-semibold text-indigo-700 leading-none">{iaFTDom} – {iaFTExt}</div>
+          <div className="leading-tight">
+            <span className="text-[10px] text-indigo-500 font-medium">Score FT</span>
+            <div className="text-lg font-semibold text-indigo-700 leading-none">{iaFTDom} – {iaFTExt}</div>
+          </div>
         )}
         {displayMT && (
-          <div className="text-[11px] font-semibold text-indigo-500 mt-1">MT · {iaMTDom} – {iaMTExt}</div>
+          <div className="leading-tight mt-1.5">
+            <span className="text-[10px] text-indigo-500 font-medium">Score MT</span>
+            <div className="text-sm font-semibold text-indigo-600 leading-tight">{iaMTDom} – {iaMTExt}</div>
+          </div>
         )}
       </div>
     );
@@ -402,7 +408,7 @@ export default function MatchCard({ match, existingProno, onBetClick, goToMesPar
 
       {/* Cotes style bookmaker 1-N-2 */}
       {match.cotes && (
-        <div className="flex flex-col gap-1.5 mb-3 w-full">
+        <div className="flex flex-col gap-1.5 w-full bg-slate-50 rounded-xl px-3 py-2.5 mb-3">
           <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
             <div />
             <div className="text-center text-[10px] text-gray-400 font-semibold">1</div>

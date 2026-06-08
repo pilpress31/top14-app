@@ -218,13 +218,16 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
     return (
       <div className="w-full flex flex-col px-3 py-2.5 rounded-lg border"
         style={{ backgroundColor: 'rgba(0, 62, 126, 0.05)', borderColor: HCUP_BLUE }}>
-        <div className="flex items-center gap-1 mb-1">
+        <div className="flex items-center gap-1 mb-1.5">
           <Brain className="w-3.5 h-3.5 flex-shrink-0" style={{ color: HCUP_BLUE }} />
           <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: HCUP_BLUE }}>Prono IA</span>
         </div>
-        <div className="text-lg font-semibold leading-none" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
+        <div className="leading-tight">
+          <span className="text-[10px] font-medium" style={{ color: HCUP_BLUE, opacity: 0.8 }}>Score FT</span>
+          <div className="text-lg font-semibold leading-none" style={{ color: HCUP_BLUE }}>{iaFTDom} – {iaFTExt}</div>
+        </div>
         {match.cotes?.confiance_algo && (
-          <span className="text-[9px] mt-1" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
+          <span className="text-[9px] mt-1.5" style={{ color: HCUP_BLUE, opacity: 0.7 }}>
             Confiance {match.cotes.confiance_algo}%
           </span>
         )}
@@ -337,7 +340,7 @@ export default function MatchCardHcup({ match, existingProno, onBetClick, goToMe
 
       {/* Cotes */}
       {match.cotes && (
-        <div className="flex flex-col gap-1.5 mb-3 w-full">
+        <div className="flex flex-col gap-1.5 w-full bg-slate-50 rounded-xl px-3 py-2.5 mb-3">
           <div className="grid grid-cols-[64px_1fr_1fr_1fr] gap-2 items-center">
             <div />
             <div className="text-center text-[10px] text-gray-400 font-semibold">1</div>
