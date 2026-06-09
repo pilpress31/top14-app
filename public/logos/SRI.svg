@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230">
+  <polygon
+    points="100,5 190,57.5 190,172.5 100,225 10,172.5 10,57.5"
+    fill="#8D153A"
+    stroke="#00534E"
+    stroke-width="8"
+  />
+  <polygon
+    points="100,20 175,63 175,167 100,210 25,167 25,63"
+    fill="#FFB700"
+  />
+  <text
+    x="50%"
+    y="50%"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    font-family="Arial Black, sans-serif"
+    font-size="60"
+    fill="#FFB700"
+  >
+    SRI
+  </text>
+</svg>
