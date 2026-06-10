@@ -457,14 +457,14 @@ export default function ClassementCommunauteTab() {
                 {currentUserRank}
               </div>
               <div>
-                <p className="text-sm text-gray-600">Votre position</p>
+                <p className="text-sm text-gray-300">Votre position</p>
                 <p className="font-bold text-rugby-gold">
                   {currentUserRank === 1 ? '🏆 1er' : `${currentUserRank}ème`}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-300">
                 {classementType === 'jetons' ? 'Jetons' : 'Points'}
               </p>
               <p className="text-2xl font-bold text-rugby-gold">
