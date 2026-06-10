@@ -761,7 +761,7 @@ export default function MesLiguesTab({ codeInvitation, onCodeConsomme, onInvitat
       )}
 
       {/* Compteur de ligues */}
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-gray-300 text-center">
         {leagues.length} / {MAX_LEAGUES} ligues
       </p>
 
