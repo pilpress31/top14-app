@@ -5,18 +5,22 @@ import MesPronosTab from '../components/MesPronosTab';
 import MesParisTab from '../components/MesParisTab';
 import MesPronosHcupTab from '../components/MesPronosHcupTab';
 import MesParisHcupTab from '../components/MesParisHcupTab';
+import MesPronosMondeTab from '../components/MesPronosMondeTab';
+import MesParisMondeTab from '../components/MesParisMondeTab';
 import MainHeader from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderFullD2';
 import MainHeaderHcup from '../components/MainHeaderFullHcup';
+import MainHeaderMonde from '../components/MainHeaderFullMonde';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const HEADER_HEIGHT = 120;
 
-// Couleurs des 3 championnats pour le carrousel
+// Couleurs des 4 championnats pour le carrousel
 const CHAMPIONNATS = {
   top14: { label: 'TOP 14', emoji: '🏆', bg: '#FFFFFF', accent: '#D4A017', borderActive: '#FFC72C' },
   prod2: { label: 'PRO D2', emoji: '🥈', bg: '#00174D', accent: '#C0C0C0', borderActive: '#FFC72C' },
   hcup:  { label: 'C.CUP',  emoji: '⭐', bg: '#003E7E', accent: '#FFC72C', borderActive: '#FFC72C' },
+  monde: { label: 'MONDE',  emoji: '🌍', bg: '#064E3B', accent: '#34D399', borderActive: '#34D399' },
 };
 
 export default function PronosPage() {
@@ -54,7 +58,7 @@ export default function PronosPage() {
       setActiveTab(location.state.activeTab);
     }
     if (location.state?.championnat) {
-      const champMap = { top14: 'top14', d2: 'prod2', hcup: 'hcup' };
+      const champMap = { top14: 'top14', d2: 'prod2', hcup: 'hcup', monde: 'monde' };
       const mapped = champMap[location.state.championnat];
       if (mapped) setChampionnat(mapped);
     }
@@ -92,6 +96,7 @@ export default function PronosPage() {
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
+  const isMonde = championnat === 'monde';
 
   // Couleur d'accent du championnat courant (onglets actifs sur fond sombre)
   const champConf = CHAMPIONNATS[championnat] || CHAMPIONNATS.top14;
@@ -103,7 +108,7 @@ export default function PronosPage() {
   };
   const inactiveTabStyle = { color: '#94a3b8', borderBottom: '4px solid transparent' };
 
-  const HeaderComponent = isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;
+  const HeaderComponent = isMonde ? MainHeaderMonde : isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;
 
   return (
     <div className="min-h-screen bg-[#0c1322] pb-24">
@@ -127,7 +132,7 @@ export default function PronosPage() {
                 <Target className="w-5 h-5" />
                 <span className="font-bold">À parier</span>
               </div>
-              <span className="text-[10px] font-normal leading-tight text-gray-500">Prochains matchs disponibles</span>
+              <span className="text-[10px] font-normal leading-tight text-gray-500">Prochains matchs disponibles</span>
             </button>
 
             {/* Onglet Mes paris */}
@@ -140,7 +145,7 @@ export default function PronosPage() {
                 <Trophy className="w-5 h-5" />
                 <span className="font-bold">Mes paris</span>
               </div>
-              <span className="text-[10px] font-normal leading-tight text-gray-500">Historique &amp; statistiques</span>
+              <span className="text-[10px] font-normal leading-tight text-gray-500">Historique &amp; statistiques</span>
             </button>
 
           </div>
@@ -175,13 +180,17 @@ export default function PronosPage() {
         style={{ paddingTop: `${contentPaddingTop}px` }}
       >
         {activeTab === 'a-parier' && (
-          isHcup
+          isMonde
+            ? <MesPronosMondeTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
+            : isHcup
             ? <MesPronosHcupTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
             : <MesPronosTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
         )}
 
         {activeTab === 'mes-paris' && (
-          isHcup
+          isMonde
+            ? <MesParisMondeTab />
+            : isHcup
             ? <MesParisHcupTab />
             : <MesParisTab />
         )}
