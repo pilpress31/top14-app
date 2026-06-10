@@ -226,7 +226,7 @@ export default function ClassementHcup() {
         return (
           <div
             key={poolName}
-            className="rounded-lg shadow-md overflow-hidden border"
+            className="rounded-lg shadow-md overflow-hidden border bg-white"
             style={{ borderColor: HCUP_BLEU + '40' }}
           >
             {/* Header de la carte (bandeau bleu) */}
