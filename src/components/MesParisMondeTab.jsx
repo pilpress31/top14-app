@@ -20,6 +20,12 @@ const API_BASE = 'https://top14-api-production.up.railway.app';
 
 const { vert: MONDE_GREEN, emeraude: MONDE_ACCENT } = getCharte('monde').base;
 
+const PHASE_FINALE = (p) => {
+  const s = (p || '').toString().toLowerCase();
+  return s.includes('finale') || s.includes('quart') || s.includes('demi')
+      || s.includes('barrage') || s.includes('huiti') || s.includes('8e');
+};
+
 export default function MesParisMondeTab() {
   const location = useLocation();
   const [userCredits, setUserCredits] = useState(null);
@@ -302,6 +308,12 @@ export default function MesParisMondeTab() {
                     >
                       🌍 MONDE
                     </span>
+                    {PHASE_FINALE(bet.phase) && (
+                      <span className="px-2 py-1 rounded-full text-[10px] font-bold animate-pulse"
+                        style={{ backgroundColor: '#FCD34D', color: '#064E3B' }}>
+                        🏆 {bet.phase}
+                      </span>
+                    )}
                     {bet.competition && (
                       <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                         {bet.competition}

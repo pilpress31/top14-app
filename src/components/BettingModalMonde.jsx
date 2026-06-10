@@ -24,6 +24,12 @@ const API_BASE = 'https://top14-api-production.up.railway.app';
 // Couleurs charte MONDE — centralisées dans src/constants/chartes.js
 const { vert: MONDE_GREEN, emeraude: MONDE_ACCENT } = getCharte('monde').base;
 
+const PHASE_FINALE = (p) => {
+  const s = (p || '').toString().toLowerCase();
+  return s.includes('finale') || s.includes('quart') || s.includes('demi')
+      || s.includes('barrage') || s.includes('huiti') || s.includes('8e');
+};
+
 const toInt = (v) => parseInt(v) || 0;
 
 export default function BettingModalMonde({ match, existingProno, userCredits, preselectedWinner = null, onClose, onSuccess }) {
@@ -185,6 +191,7 @@ export default function BettingModalMonde({ match, existingProno, userCredits, p
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-gray-600">
                 {match.competition}
+                {PHASE_FINALE(match.phase) && <span className="font-bold" style={{ color: MONDE_GREEN }}> • 🏆 {match.phase}</span>}
                 {' • '}
                 {matchDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
