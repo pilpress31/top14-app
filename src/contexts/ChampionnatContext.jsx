@@ -1,15 +1,15 @@
 // ============================================================
 // ChampionnatContext.jsx
-// Context global pour le switch TOP14 / PRO D2 / CHAMPIONS CUP
+// Context global pour le switch TOP14 / PRO D2 / CHAMPIONS CUP / MONDE
 // Reset à chaque ouverture : toujours TOP14 par défaut
 // ============================================================
 //
 // API exposée :
-//   - championnat   : 'top14' | 'prod2' | 'hcup'
+//   - championnat   : 'top14' | 'prod2' | 'hcup' | 'monde'
 //   - setChampionnat(name) : forcer un championnat précis
-//   - nextChampionnat()    : passer au suivant (T14 → D2 → HCup → T14...)
+//   - nextChampionnat()    : passer au suivant (T14 → D2 → HCup → MONDE → T14...)
 //   - toggle()             : alias rétro-compat de nextChampionnat()
-//   - isTop14, isD2, isHcup : booléens (isD2 conservé pour rétro-compat)
+//   - isTop14, isD2, isHcup, isMonde : booléens (isD2 conservé pour rétro-compat)
 // ============================================================
 
 import { createContext, useContext, useState } from 'react';
@@ -17,10 +17,10 @@ import { createContext, useContext, useState } from 'react';
 const ChampionnatContext = createContext(null);
 
 // Ordre du carrousel — modifiable si besoin
-const ORDER = ['top14', 'prod2', 'hcup'];
+const ORDER = ['top14', 'prod2', 'hcup', 'monde'];
 
 export function ChampionnatProvider({ children }) {
-  // 'top14' | 'prod2' | 'hcup' — toujours top14 au démarrage
+  // 'top14' | 'prod2' | 'hcup' | 'monde' — toujours top14 au démarrage
   const [championnat, setChampionnat] = useState('top14');
 
   // Passer au championnat suivant dans le carrousel
@@ -39,6 +39,7 @@ export function ChampionnatProvider({ children }) {
   const isTop14 = championnat === 'top14';
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
+  const isMonde = championnat === 'monde';
 
   return (
     <ChampionnatContext.Provider
@@ -50,6 +51,7 @@ export function ChampionnatProvider({ children }) {
         isTop14,
         isD2,
         isHcup,
+        isMonde,
       }}
     >
       {children}
