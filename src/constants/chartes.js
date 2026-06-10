@@ -4,12 +4,12 @@
 //
 // Les couleurs d'identité sont déclarées une seule fois (constantes
 // primaires ci-dessous), puis composées dans les vues par usage :
-//   label    : libellé affiché ('TOP 14' / 'PRO D2' / 'CHAMPIONS CUP')
+//   label    : libellé affiché ('TOP 14' / 'PRO D2' / 'CHAMPIONS CUP' / 'RUGBY INTERNATIONAL')
 //   rubrique : en-têtes d'accordéon { bg, border, text, accent }
 //              (consommé via RUBRIQUE_THEMES, réexporté par RubriqueHeader)
 //   partage  : visuel story sur fond sombre { accent, accentVif, fond1, fond2, fond3 }
 //   base     : couleurs d'identité brutes (Palmarès, en-têtes…)
-//   header   : fond + bordure des en-têtes de page (D2 / HCup uniquement ;
+//   header   : fond + bordure des en-têtes de page (D2 / HCup / MONDE ;
 //              le Top 14 utilise un dégradé Tailwind en className)
 //   modal    : thème de StatsAlgoModal { primary, accent, onPrimary }
 //
@@ -35,6 +35,10 @@ const D2_BLUE   = '#97C1FE';
 const HCUP_BLEU       = '#003E7E';
 const HCUP_BLEU_FONCE = '#002857';
 const HCUP_OR         = '#FFC72C';
+// Rugby International (MONDE)
+const MONDE_VERT       = '#0B6E4F'; // vert émeraude profond — couleur principale
+const MONDE_VERT_FONCE = '#064E3B';
+const MONDE_EMERAUDE   = '#34D399'; // accent émeraude
 
 const BLANC = '#FFFFFF';
 
@@ -67,6 +71,16 @@ export const CHARTES = {
     header:   { fond: 'linear-gradient(to right, #FFFFFF, #FFFFFF, #FFF9E6, #FFC72C33)',
                 bordure: HCUP_BLEU },
     modal:    { primary: HCUP_BLEU, accent: HCUP_OR, onPrimary: BLANC },
+  },
+  monde: {
+    label: 'RUGBY INTERNATIONAL',
+    rubrique: { bg: '#ECFDF5', border: '#A7F3D0', text: MONDE_VERT, accent: MONDE_EMERAUDE },
+    partage:  { accent: MONDE_EMERAUDE, accentVif: MONDE_EMERAUDE,
+                fond1: '#065F46', fond2: MONDE_VERT_FONCE, fond3: '#022C22' },
+    base:     { vert: MONDE_VERT, vertFonce: MONDE_VERT_FONCE, emeraude: MONDE_EMERAUDE },
+    header:   { fond: 'linear-gradient(to right, #FFFFFF, #FFFFFF, #ECFDF5, #34D39933)',
+                bordure: MONDE_VERT },
+    modal:    { primary: MONDE_VERT, accent: MONDE_EMERAUDE, onPrimary: BLANC },
   },
 };
 
