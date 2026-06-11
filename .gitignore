@@ -25,3 +25,5 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+body.json
+public/logos/toto.txt
