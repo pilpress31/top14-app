@@ -283,22 +283,22 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
 
       {/* Filtre "vivant" des compétitions (dérivé des matchs à venir) */}
       {competitions.length > 1 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
-          {['toutes', ...competitions].map(c => {
-            const active = filtreActif === c;
-            return (
-              <button
-                key={c}
-                onClick={() => setFiltreCompet(c)}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all border"
-                style={active
-                  ? { backgroundColor: MONDE_GREEN, color: '#fff', borderColor: MONDE_GREEN }
-                  : { backgroundColor: '#fff', color: MONDE_GREEN, borderColor: 'rgba(11,110,79,0.3)' }}
-              >
-                {c === 'toutes' ? 'Toutes' : c}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wide flex-shrink-0" style={{ color: MONDE_GREEN }}>
+            Compétition
+          </span>
+          <select
+            value={filtreActif}
+            onChange={(e) => setFiltreCompet(e.target.value)}
+            className="flex-1 min-w-0 rounded-lg px-3 py-2 text-sm font-semibold bg-white border focus:outline-none"
+            style={{ borderColor: 'rgba(11,110,79,0.35)', color: MONDE_GREEN }}
+          >
+            <option value="toutes">Toutes ({matchsDisponibles.length})</option>
+            {competitions.map(c => {
+              const n = matchsDisponibles.filter(m => m.competition === c).length;
+              return <option key={c} value={c}>{c} ({n})</option>;
+            })}
+          </select>
         </div>
       )}
 
