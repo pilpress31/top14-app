@@ -119,7 +119,7 @@ export default function AlgoPronosMondeTab() {
     const we = 100 - wd - wn;
     return (
       <div className="mt-2">
-        <div className="flex h-3 rounded-full overflow-hidden border border-gray-200">
+        <div className="flex h-1.5 rounded-full overflow-hidden border border-gray-200">
           <div style={{ width: `${wd}%`, backgroundColor: '#3b82f6' }} title={`1 : ${wd}%`} />
           <div style={{ width: `${wn}%`, backgroundColor: '#9ca3af' }} title={`N : ${wn}%`} />
           <div style={{ width: `${we}%`, backgroundColor: '#ef4444' }} title={`2 : ${we}%`} />
@@ -174,7 +174,7 @@ export default function AlgoPronosMondeTab() {
                   {m.score_predit_dom} – {m.score_predit_ext}
                 </div>
                 {m.confiance_algo != null && (
-                  <span className="text-[9px] text-gray-500 mt-0.5">Confiance {m.confiance_algo}%</span>
+                  <span className="text-[9px] text-gray-500 mt-0.5">Confiance {Math.round(m.confiance_algo)}%</span>
                 )}
               </>
             ) : (
