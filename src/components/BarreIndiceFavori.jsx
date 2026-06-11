@@ -22,6 +22,7 @@ const VARIANTS = {
   top14: { label: '#9a7d3a', pct: '#CBA135' },
   prod2: { label: '#97C1FE', pct: '#C0C0C0' },
   hcup:  { label: '#9a7d3a', pct: '#FFC72C' },
+  monde: { label: '#0B6E4F', pct: '#059669' },
 };
 
 // ============================================
