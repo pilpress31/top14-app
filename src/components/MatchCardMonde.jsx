@@ -18,7 +18,14 @@ import { getCharte } from '../constants/chartes';
 
 const { vert: MONDE_GREEN } = getCharte('monde').base;
 
-export default function MatchCardMonde({ match, existingProno, onBetClick, goToMesParis, jouable = true }) {
+// Détection robuste d'une phase à élimination directe (Coupe du Monde, etc.)
+const PHASE_FINALE = (p) => {
+  const s = (p || '').toString().toLowerCase();
+  return s.includes('finale') || s.includes('quart') || s.includes('demi')
+      || s.includes('barrage') || s.includes('huiti') || s.includes('8e');
+};
+
+export default function MatchCardMonde({ match, existingProno, onBetClick, goToMesParis, jouable = true, lockMessage = 'Pari indisponible' }) {
   const navigate = useNavigate();
   const { isFavori, toggleFavori } = useFavorites();
 
@@ -106,17 +113,25 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
   return (
     <div className="px-3 py-3 hover:bg-[rgba(11,110,79,0.04)] transition-colors">
 
-      {/* Date + Compétition */}
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] text-gray-500">
+      {/* Date + Compétition (+ phase finale si élimination directe) */}
+      <div className="flex items-center justify-between mb-2 gap-2">
+        <p className="text-[10px] text-gray-500 flex-shrink-0">
           {matchDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
-        {match.competition && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>
-            {match.competition}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+          {PHASE_FINALE(match.phase) && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse"
+              style={{ backgroundColor: '#FCD34D', color: '#064E3B' }}>
+              🏆 {match.phase}
+            </span>
+          )}
+          {match.competition && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>
+              {match.competition}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Équipes (logos nations + noms) */}
@@ -181,15 +196,20 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
               );
             })}
           </div>
+          {PHASE_FINALE(match.phase) && (
+            <p className="text-[9px] text-gray-500 italic mt-0.5 text-center">
+              Pari basé sur le score à <strong>80 min</strong> (hors prolongation)
+            </p>
+          )}
         </div>
       )}
 
       {/* Zone actions */}
       <div className="flex flex-col gap-2">
         {!jouable && (
-          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 w-fit mx-auto">
-            <Lock className="w-4 h-4 text-gray-400" />
-            <span className="text-xs font-semibold text-gray-400 text-center">Pari indisponible</span>
+          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 mx-auto">
+            <Lock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-xs font-semibold text-gray-400 text-center">{lockMessage}</span>
           </div>
         )}
 

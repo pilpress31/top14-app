@@ -209,6 +209,22 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
 
   const dateKeys = Object.keys(matchsParDate).sort();
 
+  // Verrouillage : un match n'est pariable que s'il est le 1er match à venir
+  // de CHACUNE de ses 2 équipes (les cotes d'un 2e match seraient calculées
+  // sur un ELO périmé, avant le résultat du 1er). Se déverrouille tout seul
+  // quand le match précédent sort de 'a_jouer'.
+  const earliestByTeam = {};
+  for (const m of matchsDisponibles) {
+    const d = dateKeyOf(m);
+    for (const t of [m.equipe_domicile, m.equipe_exterieure]) {
+      if (t && (!earliestByTeam[t] || d < earliestByTeam[t])) earliestByTeam[t] = d;
+    }
+  }
+  const isJouable = (m) => {
+    const d = dateKeyOf(m);
+    return earliestByTeam[m.equipe_domicile] === d && earliestByTeam[m.equipe_exterieure] === d;
+  };
+
   const bandeauStyle = {
     background: `linear-gradient(to right, ${MONDE_GREEN}, ${MONDE_GREEN}dd, ${MONDE_ACCENT}66)`,
   };
@@ -297,7 +313,8 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
                             existingProno={existingProno}
                             onBetClick={ouvrirModal}
                             goToMesParis={goToMesParis}
-                            jouable={true}
+                            jouable={isJouable(match)}
+                            lockMessage="Pariable après le match précédent de l'équipe"
                           />
                         </div>
                       );
