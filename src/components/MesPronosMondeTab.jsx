@@ -48,6 +48,7 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [preselectedWinner, setPreselectedWinner] = useState(null);
   const [expandedDates, setExpandedDates] = useState(new Set());
+  const [filtreCompet, setFiltreCompet] = useState('toutes');
   const matchRefs = useRef({});
 
   // Scroll vers le match cible après chargement
@@ -76,6 +77,14 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Filtre "vivant" : si la compétition sélectionnée n'a plus de match à venir
+  // (ex. après MAJ de l'Excel), on revient automatiquement sur "toutes".
+  useEffect(() => {
+    if (filtreCompet === 'toutes') return;
+    const comps = new Set(matchsDisponibles.map(m => m.competition).filter(Boolean));
+    if (!comps.has(filtreCompet)) setFiltreCompet('toutes');
+  }, [matchsDisponibles, filtreCompet]);
 
   const loadData = async () => {
     try {
@@ -199,8 +208,17 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
     );
   }
 
-  // Groupement par date
-  const matchsParDate = matchsDisponibles.reduce((acc, match) => {
+  // Compétitions présentes dans les matchs à venir (liste "vivante")
+  const competitions = [...new Set(matchsDisponibles.map(m => m.competition).filter(Boolean))].sort();
+  // Si la compétition filtrée n'a plus aucun match à venir → retour à "toutes"
+  const filtreActif = (filtreCompet !== 'toutes' && competitions.includes(filtreCompet)) ? filtreCompet : 'toutes';
+
+  const matchsVisibles = filtreActif === 'toutes'
+    ? matchsDisponibles
+    : matchsDisponibles.filter(m => m.competition === filtreActif);
+
+  // Groupement par date (sur les matchs visibles)
+  const matchsParDate = matchsVisibles.reduce((acc, match) => {
     const key = dateKeyOf(match);
     if (!acc[key]) acc[key] = [];
     acc[key].push(match);
@@ -262,6 +280,27 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
           </button>
         </div>
       </div>
+
+      {/* Filtre "vivant" des compétitions (dérivé des matchs à venir) */}
+      {competitions.length > 1 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+          {['toutes', ...competitions].map(c => {
+            const active = filtreActif === c;
+            return (
+              <button
+                key={c}
+                onClick={() => setFiltreCompet(c)}
+                className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all border"
+                style={active
+                  ? { backgroundColor: MONDE_GREEN, color: '#fff', borderColor: MONDE_GREEN }
+                  : { backgroundColor: '#fff', color: MONDE_GREEN, borderColor: 'rgba(11,110,79,0.3)' }}
+              >
+                {c === 'toutes' ? 'Toutes' : c}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Liste des dates */}
       {dateKeys.length === 0 ? (
