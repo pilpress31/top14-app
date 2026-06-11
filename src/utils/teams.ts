@@ -466,7 +466,7 @@ const NATIONS_DATA = {
   "CHINE": { logo: '/logos/CHN.svg', name: "Chine" },
   "CHYPRE": { logo: '/logos/CYP.svg', name: "Chypre" },
   "COLOMBIE": { logo: '/logos/COL.svg', name: "Colombie" },
-  "CORÉE DU SUD": { logo: '/logos/KOR.svg', name: "Corée du Sud" },
+  "CORÉE DU SUD": { logo: '/logos/CORÉE DU SUD.svg', name: "Corée du Sud" },
   "COSTA RICA": { logo: '/logos/CRC.svg', name: "Costa Rica" },
   "CROATIE": { logo: '/logos/CRO.svg', name: "Croatie" },
   "CÔTE D'IVOIRE": { logo: '/logos/CIV.svg', name: "Côte d'Ivoire" },
