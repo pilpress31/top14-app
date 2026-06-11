@@ -2,13 +2,15 @@
 // MainHeaderFullMonde.jsx
 // Header MONDE dédié à la PAGE PARIS (/pronos quand championnat = monde)
 // ============================================================
-// Variante de MainHeaderMonde (page IA) : même stats (précision + nb matchs),
-// titre orienté "paris virtuels".
+// Différent de MainHeaderMonde (page IA /ia) :
+//   - Affiche les stats UTILISATEURS (paris gagnants/total) au lieu de l'algo
+//   - Fallback cold start : si < 200 paris résolus, affiche un CTA
+//     "Sois parmi les 1ers à parier !" à la place du ratio paris gagnants
 //
-// Couleurs charte MONDE (cf. constants/chartes.js) :
-//   - Vert émeraude : #0B6E4F (principale)  •  Émeraude : #34D399 (accent)
-//
-// API : GET /api/monde/stats/precision
+// Couleurs charte MONDE : vert émeraude #0B6E4F + émeraude #34D399
+// API :
+//   - GET /api/monde/stats/precision    (algo)
+//   - GET /api/monde/stats/users-bets   (utilisateurs)
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -16,30 +18,39 @@ import axios from "axios";
 import { getCharte } from "../constants/chartes";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
-const MC = getCharte("monde");
-const { vert, emeraude } = MC.base;
+const M = getCharte("monde");
+const { vert, emeraude } = M.base;
 
-/**
- * MainHeaderFullMonde (Rugby International — version paris virtuels)
- * @param {boolean} isVisible - Contrôlé depuis PronosPage. Par défaut true.
- */
+// Seuil au-dessus duquel on bascule en "mode mature" (vraies stats users)
+const SEUIL_PARIS_AFFICHAGE = 200;
+
 export default function MainHeaderFullMonde({ isVisible = true }) {
-  const [stats, setStats] = useState({ precision: 0, total: 0 });
+  const [algoStats, setAlgoStats] = useState({ precision: 0 });
+  const [userStats, setUserStats] = useState({
+    total_paris: 0,
+    paris_corrects: 0,
+    taux_reussite: 0,
+  });
 
   useEffect(() => {
     async function loadStats() {
       try {
         const res = await axios.get(`${API_BASE}/api/monde/stats/precision`);
-        setStats({
-          precision: parseFloat(res.data.precision) || 0,
-          total: res.data.total_matchs || 0,
-        });
+        setAlgoStats({ precision: parseFloat(res.data.precision) || 0 });
       } catch (e) {
-        console.error("Erreur stats MONDE:", e);
+        console.error("Erreur stats algo MONDE:", e);
+      }
+      try {
+        const res = await axios.get(`${API_BASE}/api/monde/stats/users-bets`);
+        setUserStats(res.data);
+      } catch (e) {
+        console.error("Erreur stats users MONDE:", e);
       }
     }
     loadStats();
   }, []);
+
+  const modeMature = userStats.total_paris >= SEUIL_PARIS_AFFICHAGE;
 
   return (
     <header
@@ -47,8 +58,8 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
                   transition-transform duration-300
                   ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       style={{
-        background: MC.header.fond,
-        borderBottom: `2px solid ${MC.header.bordure}`,
+        background: M.header.fond,
+        borderBottom: `2px solid ${M.header.bordure}`,
         top: 'var(--safe-area-top, 0px)',
       }}
     >
@@ -68,27 +79,41 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-2 w-full">
+
+          {/* Bloc 1 : Précision moyenne (algo) — toujours affiché */}
           <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
                style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
             <TrophyIcon className="h-4 w-4" style={{ color: emeraude }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-                {stats.precision > 0 ? `${stats.precision}%` : "…"}
+                {algoStats.precision > 0 ? `${algoStats.precision}%` : "…"}
               </p>
               <p className="text-[10px]" style={{ color: emeraude }}>Précision moyenne</p>
             </div>
           </div>
 
-          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
-               style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
-            <GlobeIcon className="h-4 w-4" style={{ color: emeraude }} />
-            <div>
-              <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-                {stats.total > 0 ? stats.total : "…"}
-              </p>
-              <p className="text-[10px]" style={{ color: emeraude }}>Matchs analysés</p>
+          {/* Bloc 2 : Paris gagnants (mature) OU CTA cold start */}
+          {modeMature ? (
+            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
+                 style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
+              <StarIcon className="h-4 w-4" style={{ color: emeraude }} />
+              <div>
+                <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
+                  {userStats.paris_corrects}/{userStats.total_paris}
+                </p>
+                <p className="text-[10px]" style={{ color: emeraude }}>Paris gagnants</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="rounded-lg px-3 py-1 shadow flex items-center gap-1 h-[40px]"
+                 style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
+              <span className="text-base">🚀</span>
+              <p className="text-[11px] font-bold leading-tight text-left" style={{ color: emeraude }}>
+                Sois parmi<br />les 1<sup>ers</sup> à parier !
+              </p>
+            </div>
+          )}
+
         </div>
       </div>
     </header>
@@ -96,7 +121,7 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
 }
 
 // ============================================================
-// Icônes : Trophy + Globe
+// Icônes : Trophy + Star
 // ============================================================
 function TrophyIcon({ className, style }) {
   return (
@@ -111,12 +136,10 @@ function TrophyIcon({ className, style }) {
   );
 }
 
-function GlobeIcon({ className, style }) {
+function StarIcon({ className, style }) {
   return (
-    <svg className={className} style={style} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
+    <svg className={className} style={style} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
     </svg>
   );
 }
