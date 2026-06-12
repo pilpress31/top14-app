@@ -5,11 +5,12 @@ import type { EquipeStats } from "../types/rugby";
 import ClassementHcupTabs from "../components/ClassementHcupTabs";
 import ClassementTop14Tabs from "../components/ClassementTop14Tabs";
 import ClassementD2Tabs from "../components/ClassementD2Tabs";
+import ClassementMonde from "../components/ClassementMonde";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-type Championnat = 'top14' | 'prod2' | 'hcup';
+type Championnat = 'top14' | 'prod2' | 'hcup' | 'monde';
 
 function ClassementPage() {
   const [championnat, setChampionnat] = useState<Championnat>('top14');
@@ -22,6 +23,7 @@ function ClassementPage() {
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
+  const isMonde = championnat === 'monde';
 
   // Couleurs adaptées selon championnat
   const themeColors = {
@@ -33,8 +35,8 @@ function ClassementPage() {
   };
 
   const loadClassement = useCallback(async () => {
-    // 🆕 HCup : géré par le composant ClassementHcup (scraping RugbyPass)
-    if (championnat === 'hcup') {
+    // 🆕 HCup / MONDE : gérés par des composants dédiés (fetch propre)
+    if (championnat === 'hcup' || championnat === 'monde') {
       setClassement([]);
       setLoading(false);
       return;
@@ -145,6 +147,7 @@ function ClassementPage() {
             { key: 'top14', emoji: '🏆', label: 'TOP 14', accent: '#CBA135' },
             { key: 'prod2', emoji: '🥈', label: 'PRO D2', accent: '#C0C0C0' },
             { key: 'hcup',  emoji: '⭐', label: 'C.CUP',  accent: '#FFC72C' },
+            { key: 'monde', emoji: '🌍', label: 'MONDE',  accent: '#34D399' },
           ] as const).map((c) => {
             const isActive = championnat === c.key;
             return (
@@ -171,7 +174,9 @@ function ClassementPage() {
           ═══════════════════════════════════════════════════════ */}
       {isHcup && <ClassementHcupTabs />}
 
-      {!isHcup && !isD2 && (
+      {isMonde && <ClassementMonde />}
+
+      {!isHcup && !isD2 && !isMonde && (
         <ClassementTop14Tabs>
       {/* Titre */}
       {(
