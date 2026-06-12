@@ -5,7 +5,7 @@ import type { EquipeStats } from "../types/rugby";
 import ClassementHcupTabs from "../components/ClassementHcupTabs";
 import ClassementTop14Tabs from "../components/ClassementTop14Tabs";
 import ClassementD2Tabs from "../components/ClassementD2Tabs";
-import ClassementMonde from "../components/ClassementMonde";
+import ClassementMondeTabs from "../components/ClassementMondeTabs";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -174,7 +174,7 @@ function ClassementPage() {
           ═══════════════════════════════════════════════════════ */}
       {isHcup && <ClassementHcupTabs />}
 
-      {isMonde && <ClassementMonde />}
+      {isMonde && <ClassementMondeTabs />}
 
       {!isHcup && !isD2 && !isMonde && (
         <ClassementTop14Tabs>
