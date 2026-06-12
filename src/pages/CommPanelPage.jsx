@@ -272,11 +272,12 @@ function TeaserBloc({ data }) {
     top14: { label: '🏆 TOP 14',     accent: '#C9A84C', bg: '#1a1a1a' },
     d2:    { label: '🥈 PRO D2',     accent: '#97C1FE', bg: '#00174D' },
     hcup:  { label: '⭐ CHAMP. CUP', accent: '#FFC72C', bg: '#003E7E' },
+    monde: { label: '🌍 INTERNATIONAL', accent: '#34D399', bg: '#0B6E4F' },
   };
   return (
     <div className="space-y-3">
       <h3 className="font-bold text-gray-800">🔮 Prédictions IA — Prochains matchs</h3>
-      {Object.entries({ top14: data.top14, d2: data.d2, hcup: data.hcup }).map(([key, matchs]) => {
+      {Object.entries({ top14: data.top14, d2: data.d2, hcup: data.hcup, monde: data.monde }).map(([key, matchs]) => {
         const cfg = champCfg[key];
         if (!matchs?.length) return null;
         return (
