@@ -339,6 +339,7 @@ export default function AlgoPronosMondeTab() {
   const [activePanel, setActivePanel] = useState(null); // { matchId, panel } | null
   const isFirstLoad = useRef(true);
   const dateRefs = useRef({});
+  const cardRefs = useRef({});
 
   useRealtimeSync([
     { table: 'match_cotes_monde', onUpdate: () => loadPronos() },
@@ -392,7 +393,19 @@ export default function AlgoPronosMondeTab() {
     }
   };
   const togglePanel = (matchId, panel) => {
-    setActivePanel(prev => (prev && prev.matchId === matchId && prev.panel === panel) ? null : { matchId, panel });
+    const estOuvert = activePanel && activePanel.matchId === matchId && activePanel.panel === panel;
+    setActivePanel(estOuvert ? null : { matchId, panel });
+    // À l'ouverture, recentrer sur la carte (sinon la fermeture du panneau d'un
+    // autre match, au-dessus, fait remonter la page).
+    if (!estOuvert) {
+      setTimeout(() => {
+        const el = cardRefs.current[matchId];
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - 110;
+          window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+        }
+      }, 60);
+    }
   };
 
   if (loading) {
@@ -443,12 +456,13 @@ export default function AlgoPronosMondeTab() {
             {isExpanded && (
               <div className="divide-y divide-gray-200">
                 {matchsDate.map(m => (
-                  <CarteMonde
-                    key={m.match_id}
-                    m={m}
-                    openPanel={activePanel && activePanel.matchId === m.match_id ? activePanel.panel : null}
-                    onTogglePanel={(panel) => togglePanel(m.match_id, panel)}
-                  />
+                  <div key={m.match_id} ref={el => { cardRefs.current[m.match_id] = el; }} className="scroll-mt-2">
+                    <CarteMonde
+                      m={m}
+                      openPanel={activePanel && activePanel.matchId === m.match_id ? activePanel.panel : null}
+                      onTogglePanel={(panel) => togglePanel(m.match_id, panel)}
+                    />
+                  </div>
                 ))}
               </div>
             )}
