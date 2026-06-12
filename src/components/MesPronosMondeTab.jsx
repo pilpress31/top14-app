@@ -202,7 +202,7 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
       setTimeout(() => {
         const el = dateRefs.current[key];
         if (el) {
-          const y = el.getBoundingClientRect().top + window.scrollY - 70;
+          const y = el.getBoundingClientRect().top + window.scrollY - 110;
           window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
         }
       }, 60);
