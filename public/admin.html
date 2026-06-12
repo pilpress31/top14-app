@@ -855,6 +855,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="top14">🏆 Top 14</option>
               <option value="prod2">🥈 Pro D2</option>
               <option value="hcup">🌍 Champions Cup</option>
+              <option value="monde">🌍 International</option>
             </select>
             <button class="btn" onclick="loadParis()">↻ Actualiser</button>
           </div>
@@ -875,6 +876,11 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
           <span style="display:inline-flex;align-items:center;gap:6px;">
             <span style="color:var(--muted)">🌍 Champions Cup</span>
             <span id="parisCountHcup" style="background:rgba(0,61,107,0.45);color:#7FC4F0;padding:2px 8px;border-radius:4px;font-weight:700">0</span>
+          </span>
+          <span style="color:var(--border2)">·</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span style="color:var(--muted)">🌍 International</span>
+            <span id="parisCountMonde" style="background:rgba(11,110,79,0.30);color:#6EE7B7;padding:2px 8px;border-radius:4px;font-weight:700">0</span>
           </span>
           <span style="color:var(--border2);margin-left:auto">·</span>
           <span style="display:inline-flex;align-items:center;gap:6px;">
@@ -933,7 +939,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
           <div class="card-title">📰 Actualités IA</div>
         </div>
         <p style="color:var(--muted2);font-size:13px;margin-bottom:20px;line-height:1.6">
-          Génère les synthèses d'actualité des matchs à venir via Gemini AI, pour les trois championnats.<br>
+          Génère les synthèses d'actualité des matchs à venir via Gemini AI, pour les quatre championnats.<br>
           Les actus sont régénérées par cron (lundi et jeudi 18h Paris). Les <strong>compos officielles AllRugby</strong> sont rafraîchies les jours de match (jeudi&rarr;dimanche) par le cron « compos ». Génération manuelle ci-dessous.
         </p>
 
@@ -975,6 +981,15 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
             <div class="spinner"></div>
             <span class="btn-text">🏉 Compos uniquement</span>
           </button>
+        </div>
+
+        <p style="color:var(--muted2);font-size:13px;margin:16px 0 8px;font-weight:600">🌍 Rugby International (MONDE)</p>
+        <div class="btn-row">
+          <button class="btn" id="actuMondeBtn" onclick="regenererActusMonde()" style="background:#0B6E4F;color:#A7F3D0;">
+            <div class="spinner"></div>
+            <span class="btn-text">🔄 Régénérer actus</span>
+          </button>
+          <span style="color:var(--muted2);font-size:12px;margin-left:8px;">Pas de compos AllRugby pour l'international.</span>
         </div>
 
         <p style="color:var(--muted2);font-size:13px;margin:20px 0 10px;line-height:1.6">
@@ -2879,13 +2894,15 @@ async function loadParis() {
     }
 
     // ─── Compteurs par championnat ──────────────────────────
-    const counts = { top14: 0, prod2: 0, hcup: 0 };
+    const counts = { top14: 0, prod2: 0, hcup: 0, monde: 0 };
     all.forEach(b => { if (counts[b.championnat] != null) counts[b.championnat]++; });
     const total = all.length;
 
     document.getElementById('parisCountTop14').textContent = counts.top14;
     document.getElementById('parisCountProD2').textContent = counts.prod2;
     document.getElementById('parisCountHcup').textContent = counts.hcup;
+    const mondeEl = document.getElementById('parisCountMonde');
+    if (mondeEl) mondeEl.textContent = counts.monde;
     document.getElementById('parisCountTotal').textContent = total;
     document.getElementById('parisCounters').style.display = 'flex';
 
@@ -2902,6 +2919,7 @@ async function loadParis() {
       if (c === 'top14') return '<span style="background:rgba(201,168,76,0.18);color:var(--gold-light);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🏆 T14</span>';
       if (c === 'prod2') return '<span style="background:rgba(0,23,77,0.45);color:#9DB7E8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🥈 D2</span>';
       if (c === 'hcup')  return '<span style="background:rgba(0,61,107,0.45);color:#7FC4F0;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🌍 HCup</span>';
+      if (c === 'monde') return '<span style="background:rgba(11,110,79,0.30);color:#6EE7B7;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🌍 Monde</span>';
       return '<span style="color:var(--muted)">—</span>';
     };
 
@@ -3112,6 +3130,25 @@ async function regenererActusHcup() {
     const data = await api('/api/admin/actu-hcup/regenerer', { method: 'POST' });
     if (data.success) {
       showResult('actuResult', 'ok', '✅ Génération actus Champions Cup lancée en arrière-plan !');
+    } else {
+      showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
+    }
+  } catch(e) {
+    showResult('actuResult', 'err', '❌ ' + e.message);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+// ── ACTUS MONDE (rugby international) ──
+async function regenererActusMonde() {
+  const btn = document.getElementById('actuMondeBtn');
+  setLoading(btn, true);
+  showResult('actuResult', 'ok', '⏳ Génération des actus Rugby International en cours...');
+  try {
+    const data = await api('/api/admin/actu-monde/regenerer', { method: 'POST' });
+    if (data.success) {
+      showResult('actuResult', 'ok', '✅ Génération actus Rugby International lancée en arrière-plan !');
     } else {
       showResult('actuResult', 'err', '❌ ' + (data.error || 'Erreur inconnue'));
     }
