@@ -338,6 +338,7 @@ export default function AlgoPronosMondeTab() {
   const [expandedDates, setExpandedDates] = useState(new Set());
   const [activePanel, setActivePanel] = useState(null); // { matchId, panel } | null
   const isFirstLoad = useRef(true);
+  const dateRefs = useRef({});
 
   useRealtimeSync([
     { table: 'match_cotes_monde', onUpdate: () => loadPronos() },
@@ -375,7 +376,21 @@ export default function AlgoPronosMondeTab() {
     } finally { setLoading(false); }
   };
 
-  const toggleDate = (key) => setExpandedDates(prev => (prev.has(key) ? new Set() : new Set([key])));
+  const toggleDate = (key) => {
+    const opening = !expandedDates.has(key);
+    setExpandedDates(opening ? new Set([key]) : new Set());
+    // À l'ouverture, on recentre l'accordéon : sinon la fermeture du précédent
+    // (au-dessus) fait remonter le scroll trop haut.
+    if (opening) {
+      setTimeout(() => {
+        const el = dateRefs.current[key];
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - 70;
+          window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+        }
+      }, 60);
+    }
+  };
   const togglePanel = (matchId, panel) => {
     setActivePanel(prev => (prev && prev.matchId === matchId && prev.panel === panel) ? null : { matchId, panel });
   };
@@ -410,7 +425,7 @@ export default function AlgoPronosMondeTab() {
         const isExpanded = expandedDates.has(key);
         const matchsDate = parDate[key];
         return (
-          <div key={key} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div key={key} ref={el => { dateRefs.current[key] = el; }} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden scroll-mt-2">
             <button onClick={() => toggleDate(key)}
               className="w-full px-3 py-2 border-b border-gray-200 transition-colors"
               style={{ backgroundColor: 'rgba(11,110,79,0.08)' }}>

@@ -50,6 +50,7 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
   const [expandedDates, setExpandedDates] = useState(new Set());
   const [filtreCompet, setFiltreCompet] = useState('toutes');
   const matchRefs = useRef({});
+  const dateRefs = useRef({});
 
   // Scroll vers le match cible après chargement
   useEffect(() => {
@@ -194,10 +195,18 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
 
   const toggleDate = (key) => {
     // Accordéon exclusif
-    setExpandedDates(prev => {
-      if (prev.has(key)) return new Set();
-      return new Set([key]);
-    });
+    const opening = !expandedDates.has(key);
+    setExpandedDates(opening ? new Set([key]) : new Set());
+    // À l'ouverture, recentrer (sinon la fermeture du précédent fait remonter trop haut).
+    if (opening) {
+      setTimeout(() => {
+        const el = dateRefs.current[key];
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - 70;
+          window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+        }
+      }, 60);
+    }
   };
 
   if (loading) {
@@ -317,7 +326,7 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
             const compUnique = compsDuJour.length === 1 ? compsDuJour[0] : null;
 
             return (
-              <div key={key} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div key={key} ref={el => { dateRefs.current[key] = el; }} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden scroll-mt-2">
                 <button
                   onClick={() => toggleDate(key)}
                   className="w-full px-3 py-2 border-b border-gray-200 transition-colors"
