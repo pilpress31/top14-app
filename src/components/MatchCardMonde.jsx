@@ -10,13 +10,158 @@
 //   - couleurs charte MONDE (vert émeraude / émeraude)
 // ============================================================
 
-import { CheckCircle, Brain, Lock, Star } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, Brain, Lock, Star, Lightbulb, X, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
 import { getCharte } from '../constants/chartes';
+import axios from 'axios';
 
-const { vert: MONDE_GREEN } = getCharte('monde').base;
+const API_BASE = 'https://top14-api-production.up.railway.app';
+const _charteMonde = getCharte('monde').base;
+const MONDE_GREEN = _charteMonde.vert;
+const MONDE_EMERAUDE = _charteMonde.emeraude || '#34D399';
+
+// ── Popup Conseil personnalisé MONDE ─────────────────────────
+const ConseilPopupMonde = ({ match, onClose }) => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const chargerConseils = async () => {
+    if (loaded) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.post(`${API_BASE}/api/insights/conseil-personnalise`, {
+        match_id: match.match_id,
+        equipe_domicile: match.equipe_domicile,
+        equipe_exterieure: match.equipe_exterieure,
+        championnat: 'monde',
+      }, {
+        headers: { 'x-user-id': user.id }
+      });
+      setData(res.data);
+      setLoaded(true);
+    } catch (err) {
+      setError('Impossible de charger les conseils. Réessaie dans quelques instants.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useState(() => { chargerConseils(); }, []);
+
+  const styleLabel = data?.profil_style === 'prudent' ? '🛡️ Profil prudent'
+    : data?.profil_style === 'agressif' ? '🔥 Profil audacieux'
+    : data?.profil_style === 'neutre' ? '🏁 Profil débutant'
+    : '⚖️ Profil équilibré';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: 'calc(100vh - 140px - env(safe-area-inset-bottom, 0px))' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div
+          className="px-5 py-4 flex items-center justify-between"
+          style={{ backgroundColor: 'rgba(11,110,79,0.06)', borderBottom: `3px solid ${MONDE_GREEN}` }}
+        >
+          <div className="flex items-center gap-2">
+            <Lightbulb className="w-5 h-5" style={{ color: MONDE_GREEN }} />
+            <div>
+              <p className="font-bold text-sm" style={{ color: MONDE_GREEN }}>Conseil personnalisé</p>
+              <p className="text-xs text-gray-500">{match.equipe_domicile} vs {match.equipe_exterieure}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/10 transition-colors">
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1">
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader className="w-8 h-8 animate-spin" style={{ color: MONDE_GREEN }} />
+              <p className="text-sm text-gray-500">Analyse de ton profil en cours...</p>
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="p-5">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                <p className="text-sm text-red-600">{error}</p>
+                <button onClick={() => { setLoaded(false); chargerConseils(); }} className="mt-3 text-xs font-semibold text-red-700 underline">
+                  Réessayer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {data && !loading && (
+            <div className="p-4 space-y-3">
+              <div className="rounded-xl px-4 py-3 flex items-start gap-3" style={{ backgroundColor: 'rgba(11,110,79,0.06)' }}>
+                <span className="text-[11px] font-bold px-2 py-1 rounded-full flex-shrink-0 mt-0.5"
+                  style={{ backgroundColor: MONDE_GREEN, color: '#FFFFFF' }}>
+                  {styleLabel}
+                </span>
+                <p className="text-xs text-gray-600 leading-relaxed">{data.resume_profil}</p>
+              </div>
+
+              {data.nb_paris > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-gray-50 rounded-xl px-3 py-2 text-center border border-gray-200">
+                    <p className="text-xs text-gray-500">Taux de réussite</p>
+                    <p className="text-lg font-bold" style={{ color: MONDE_GREEN }}>{data.profil_taux}%</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl px-3 py-2 text-center border border-gray-200">
+                    <p className="text-xs text-gray-500">Paris joués</p>
+                    <p className="text-lg font-bold" style={{ color: MONDE_GREEN }}>{data.nb_paris}</p>
+                  </div>
+                </div>
+              )}
+
+              {data.conseils?.map((conseil, i) => (
+                <div key={i} className="rounded-xl border p-4 space-y-1"
+                  style={{ borderColor: MONDE_GREEN + '30', backgroundColor: i % 2 === 0 ? 'rgba(11,110,79,0.04)' : 'white' }}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{conseil.emoji}</span>
+                    <p className="font-bold text-sm text-gray-800">{conseil.titre}</p>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed pl-7">{conseil.texte}</p>
+                </div>
+              ))}
+
+              <p className="text-[10px] text-gray-400 text-center italic px-2 pb-2">
+                Ces conseils sont générés par l'IA à titre informatif et ne constituent pas une incitation au pari.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-gray-100"
+             style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-xl font-semibold text-sm transition-colors text-white"
+            style={{ backgroundColor: MONDE_GREEN }}
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Détection robuste d'une phase à élimination directe (Coupe du Monde, etc.)
 const PHASE_FINALE = (p) => {
@@ -28,6 +173,7 @@ const PHASE_FINALE = (p) => {
 export default function MatchCardMonde({ match, existingProno, onBetClick, goToMesParis, jouable = true, lockMessage = 'Pari indisponible', hideCompetition = false }) {
   const navigate = useNavigate();
   const { isFavori, toggleFavori } = useFavorites();
+  const [showConseil, setShowConseil] = useState(false);
 
   const teamDom = getTeamData(match.equipe_domicile);
   const teamExt = getTeamData(match.equipe_exterieure);
@@ -131,6 +277,15 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
               {match.competition}
             </span>
           )}
+          {/* Bouton Conseil */}
+          <button
+            onClick={() => setShowConseil(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-all hover:opacity-80"
+            style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN, border: '1px solid rgba(11,110,79,0.3)' }}
+          >
+            <Lightbulb className="w-3 h-3" />
+            Conseil
+          </button>
         </div>
       </div>
 
@@ -241,6 +396,11 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
           </>
         )}
       </div>
+
+      {/* Popup conseil personnalisé */}
+      {showConseil && (
+        <ConseilPopupMonde match={match} onClose={() => setShowConseil(false)} />
+      )}
     </div>
   );
 }
