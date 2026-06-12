@@ -70,10 +70,46 @@ function GroupeTable({ label, rows }) {
   );
 }
 
+function PhasesFinales({ phases }) {
+  const nom = (e) => {
+    const t = getTeamData ? getTeamData(e) : null;
+    return (t && t.name) || e;
+  };
+  return (
+    <div className="space-y-3 mt-2">
+      <h3 className="text-sm font-bold px-1" style={{ color: MONDE_FONCE }}>🏆 Phases finales</h3>
+      {phases.map((p) => (
+        <div key={p.phase} className="space-y-1">
+          <p className="text-[11px] font-semibold text-gray-500 px-1">{p.phase}</p>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+            {p.matchs.map((m, i) => {
+              const sd = m.score_domicile;
+              const se = m.score_exterieur;
+              const joue = sd != null && se != null;
+              const domGagne = joue && sd > se;
+              const extGagne = joue && se > sd;
+              return (
+                <div key={i} className="flex items-center px-3 py-2 text-sm">
+                  <span className={`flex-1 text-right ${domGagne ? 'font-bold text-gray-900' : 'text-gray-600'}`}>{nom(m.equipe_domicile)}</span>
+                  <span className="mx-3 tabular-nums font-bold flex-shrink-0" style={{ color: MONDE_FONCE }}>
+                    {joue ? `${sd} – ${se}` : 'vs'}
+                  </span>
+                  <span className={`flex-1 text-left ${extGagne ? 'font-bold text-gray-900' : 'text-gray-600'}`}>{nom(m.equipe_exterieure)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ClassementCompetitionsMonde() {
   const [dispo, setDispo] = useState([]);
   const [selected, setSelected] = useState(null);
   const [groups, setGroups] = useState([]);
+  const [phases, setPhases] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingTable, setLoadingTable] = useState(false);
   const [error, setError] = useState(null);
@@ -115,6 +151,24 @@ export default function ClassementCompetitionsMonde() {
         if (!annule) { setError(e.message); setGroups([]); }
       } finally {
         if (!annule) setLoadingTable(false);
+      }
+    })();
+    return () => { annule = true; };
+  }, [selected]);
+
+  // Phases finales (élimination directe) depuis matchs_monde
+  useEffect(() => {
+    if (!selected) { setPhases([]); return; }
+    let annule = false;
+    (async () => {
+      try {
+        const q = `competition=${encodeURIComponent(selected.competition)}&annee=${selected.annee}`;
+        const res = await fetch(`${API_URL}/monde/phases-finales?${q}`);
+        const json = await res.json();
+        if (annule) return;
+        setPhases(json.success ? (json.phases || []) : []);
+      } catch {
+        if (!annule) setPhases([]);
       }
     })();
     return () => { annule = true; };
@@ -162,6 +216,10 @@ export default function ClassementCompetitionsMonde() {
             <GroupeTable key={g.label || i} label={g.label} rows={g.rows} />
           ))}
         </div>
+      )}
+
+      {!loadingTable && !error && phases.length > 0 && (
+        <PhasesFinales phases={phases} />
       )}
 
       {!loadingTable && !error && groups.length > 0 && (
