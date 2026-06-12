@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { Award, Trophy } from 'lucide-react';
 import ClassementMonde from './ClassementMonde';
 import PalmaresMonde from './PalmaresMonde';
+import ClassementCompetitionsMonde from './ClassementCompetitionsMonde';
 
 const MONDE_VERT = '#0B6E4F';
 
@@ -63,7 +64,14 @@ export default function ClassementMondeTabs() {
       </div>
 
       {/* Contenu actif */}
-      {activeSubTab === 'classement' ? <ClassementMonde /> : <PalmaresMonde />}
+      {activeSubTab === 'classement' ? (
+        <>
+          <ClassementMonde />
+          <ClassementCompetitionsMonde />
+        </>
+      ) : (
+        <PalmaresMonde />
+      )}
     </div>
   );
 }
