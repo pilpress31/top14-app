@@ -198,13 +198,13 @@ export default function PalmaresMonde() {
                   <th className="px-2 py-2 text-center font-bold" style={{ color: MONDE_FONCE }} title="Titres">🏆</th>
                   {isCdM ? (
                     <>
-                      <th className="px-2 py-2 text-center font-semibold text-gray-600">Finales</th>
-                      {hasThird && <th className="px-2 py-2 text-center font-semibold text-gray-600">3ᵉs</th>}
+                      <th className="px-2 py-2 text-center font-semibold text-gray-600" title="Finales jouées">Fin.</th>
+                      {hasThird && <th className="px-2 py-2 text-center font-semibold text-gray-600" title="3ᵉs places">3ᵉs</th>}
                     </>
                   ) : (
                     <>
-                      <th className="px-2 py-2 text-center font-semibold text-gray-600" title="Grands Chelems">Gd Chelem</th>
-                      {hasTC && <th className="px-2 py-2 text-center font-semibold text-gray-600">Triple C.</th>}
+                      <th className="px-2 py-2 text-center font-semibold text-gray-600" title="Grands Chelems">GC</th>
+                      {hasTC && <th className="px-2 py-2 text-center font-semibold text-gray-600" title="Triples Couronnes">TC</th>}
                       {hasCB && <th className="px-2 py-2 text-center font-semibold text-gray-600" title="Cuillères de bois">🥄</th>}
                     </>
                   )}
@@ -233,6 +233,14 @@ export default function PalmaresMonde() {
             </table>
           </div>
         )
+      )}
+
+      {vue === 'records' && records.length > 0 && (
+        <p className="text-center text-[10px] text-gray-400 leading-relaxed">
+          {isCdM
+            ? '🏆 Sacres · Fin. Finales jouées · 3ᵉs places'
+            : '🏆 Titres · GC Grands Chelems · TC Triples Couronnes · 🥄 Cuillères de bois'}
+        </p>
       )}
 
       <p className="text-center text-[10px] text-gray-400">
