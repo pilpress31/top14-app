@@ -23,6 +23,12 @@ const THEMES = {
     subtitleColor: '#cbd5e1',
     sousTitre: 'Analyses et avant-matchs de Champions Cup',
   },
+  monde: {
+    gradient: 'linear-gradient(to right, #043B2E, #065F46, #0B6E4F)',
+    accent: '#34D399',
+    subtitleColor: '#A7F3D0',
+    sousTitre: 'Analyses et avant-matchs du rugby international',
+  },
 };
 
 export default function ActuHeader({ championnat = 'top14', isVisible = true }) {
