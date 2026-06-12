@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="gT" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0B6E4F"/><stop offset="100%" stop-color="#34D399"/></linearGradient>
+  </defs>
+  <g transform="translate(60,60)">
+    <path d="M -46,0 A 51.79 51.79 0 0 1 46,0 A 51.79 51.79 0 0 1 -46,0 Z" fill="none" stroke="#0B6E4F" stroke-width="2.2" stroke-linejoin="round" transform="rotate(0.0)"/><path d="M -46,0 A 51.79 51.79 0 0 1 46,0 A 51.79 51.79 0 0 1 -46,0 Z" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linejoin="round" transform="rotate(60.0)"/><path d="M -46,0 A 51.79 51.79 0 0 1 46,0 A 51.79 51.79 0 0 1 -46,0 Z" fill="none" stroke="#0B6E4F" stroke-width="2.2" stroke-linejoin="round" transform="rotate(120.0)"/>
+    <circle cx="0" cy="0" r="25" fill="#FFFFFF"/>
+    <text x="0" y="0" text-anchor="middle" dominant-baseline="central"
+          font-family="Arial, Helvetica, sans-serif" font-weight="800"
+          font-size="20" letter-spacing="0.5" fill="url(#gT)">ALG</text>
+  </g>
+</svg>
