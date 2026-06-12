@@ -95,23 +95,22 @@ export default function PalmaresMonde() {
         </p>
       </div>
 
-      {/* Sélecteur de compétition (défilement horizontal) */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        {competitions.map((c) => {
-          const isActive = c === selected;
-          return (
-            <button
-              key={c}
-              onClick={() => setSelected(c)}
-              className="flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors border"
-              style={isActive
-                ? { backgroundColor: MONDE_VERT, color: '#FFFFFF', borderColor: MONDE_VERT }
-                : { backgroundColor: '#FFFFFF', color: MONDE_FONCE, borderColor: '#D1FAE5' }}
-            >
-              {c}
-            </button>
-          );
-        })}
+      {/* Filtre compétition (déroulant — tout accessible, pas de débordement) */}
+      <div className="flex items-center gap-2">
+        <label htmlFor="palmares-comp" className="text-xs font-semibold text-gray-500 flex-shrink-0">
+          Compétition
+        </label>
+        <select
+          id="palmares-comp"
+          value={selected || ''}
+          onChange={(e) => setSelected(e.target.value)}
+          className="flex-1 rounded-lg border px-3 py-2 text-sm font-bold bg-white appearance-none"
+          style={{ borderColor: '#A7F3D0', color: MONDE_FONCE }}
+        >
+          {competitions.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
 
       {/* Palmarès de la compétition sélectionnée */}
