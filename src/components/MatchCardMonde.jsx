@@ -25,7 +25,7 @@ const PHASE_FINALE = (p) => {
       || s.includes('barrage') || s.includes('huiti') || s.includes('8e');
 };
 
-export default function MatchCardMonde({ match, existingProno, onBetClick, goToMesParis, jouable = true, lockMessage = 'Pari indisponible' }) {
+export default function MatchCardMonde({ match, existingProno, onBetClick, goToMesParis, jouable = true, lockMessage = 'Pari indisponible', hideCompetition = false }) {
   const navigate = useNavigate();
   const { isFavori, toggleFavori } = useFavorites();
 
@@ -125,7 +125,7 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
               🏆 {match.phase}
             </span>
           )}
-          {match.competition && (
+          {!hideCompetition && match.competition && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>
               {match.competition}

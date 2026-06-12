@@ -313,6 +313,8 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
           {dateKeys.map(key => {
             const isExpanded = expandedDates.has(key);
             const matchsDate = matchsParDate[key];
+            const compsDuJour = [...new Set(matchsDate.map(m => m.competition).filter(Boolean))];
+            const compUnique = compsDuJour.length === 1 ? compsDuJour[0] : null;
 
             return (
               <div key={key} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -322,14 +324,22 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
                   style={{ backgroundColor: 'rgba(11,110,79,0.08)' }}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" style={{ color: MONDE_GREEN }} />
-                      <span className="font-bold text-sm" style={{ color: MONDE_GREEN }}>
-                        {labelDate(key)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({matchsDate.length} match{matchsDate.length > 1 ? 's' : ''})
-                      </span>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 flex-shrink-0" style={{ color: MONDE_GREEN }} />
+                        <span className="font-bold text-sm" style={{ color: MONDE_GREEN }}>
+                          {labelDate(key)}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          ({matchsDate.length} match{matchsDate.length > 1 ? 's' : ''})
+                        </span>
+                      </div>
+                      {compUnique && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full self-start ml-6 truncate max-w-full"
+                          style={{ backgroundColor: 'rgba(11,110,79,0.12)', color: MONDE_GREEN }}>
+                          {compUnique}
+                        </span>
+                      )}
                     </div>
                     {isExpanded ? (
                       <ChevronUp className="w-4 h-4" style={{ color: MONDE_GREEN }} />
@@ -354,6 +364,7 @@ export default function MesPronosMondeTab({ goToMesParis, scrollToMatchId, onScr
                             goToMesParis={goToMesParis}
                             jouable={isJouable(match)}
                             lockMessage="Pariable après le match précédent de l'équipe"
+                            hideCompetition={!!compUnique}
                           />
                         </div>
                       );
