@@ -574,15 +574,22 @@ export default function MaCagnotte() {
       );
       setUserCredits(creditsResponse.data.credits || 0);
 
-      const { data: userStatsData, error: statsError } = await supabase
-        .from('user_stats')
-        .select('total_points')
-        .eq('user_id', userId)
-        .eq('saison', getSaisonCourante())
-        .single();
+      // 🆕 Points "live" = somme des points des ÉDITIONS EN COURS uniquement.
+      // Les éditions terminées (ex. Champions Cup 2025-2026) sont exclues → reset par compétition.
+      const { data: livePts, error: ptsError } = await supabase
+        .rpc('user_live_points', { p_user: userId });
 
-      if (!statsError && userStatsData) {
-        setUserPoints(userStatsData.total_points || 0);
+      if (!ptsError && livePts !== null && livePts !== undefined) {
+        setUserPoints(Number(livePts) || 0);
+      } else {
+        // Repli : ancien total brut si la RPC échoue
+        const { data: userStatsData } = await supabase
+          .from('user_stats')
+          .select('total_points')
+          .eq('user_id', userId)
+          .eq('saison', getSaisonCourante())
+          .single();
+        if (userStatsData) setUserPoints(userStatsData.total_points || 0);
       }
 
       const API_BASE_D2 = 'https://top14-api-production.up.railway.app';
