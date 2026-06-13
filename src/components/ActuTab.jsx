@@ -178,7 +178,7 @@ export default function ActuTab() {
           <div key={section}>
             <div className="flex items-center gap-2 mb-3 px-1">
               <Calendar className="w-4 h-4 text-rugby-gold" />
-              <h2 className="font-bold text-rugby-black text-sm uppercase tracking-wide">
+              <h2 className="font-bold text-white text-sm uppercase tracking-wide">
                 {section}
               </h2>
               <span className="text-xs text-gray-400">
