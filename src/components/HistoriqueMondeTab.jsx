@@ -114,7 +114,7 @@ export default function HistoriqueMondeTab() {
   }
 
   return (
-    <div className="space-y-3 pb-24">
+    <div className="space-y-3 pb-32">
 
       {/* Barre filtres */}
       <button
@@ -240,12 +240,15 @@ export default function HistoriqueMondeTab() {
         </div>
       )}
 
-      {/* Pagination — pastille style Top 14 (teinte émeraude MONDE) */}
+      {/* Pagination — pill flottant FIXE au-dessus de la barre de nav (style Top 14, teinte émeraude MONDE) */}
       {totalPages > 1 && (
-        <div className="flex justify-center pt-3">
+        <div
+          className="fixed left-0 w-full flex justify-center z-50 px-4"
+          style={{ bottom: 'calc(var(--bottom-nav-total, 90px) + 0px)', pointerEvents: 'none' }}
+        >
           <div
             className="inline-flex items-center gap-2 px-2 py-1.5 rounded-full shadow-lg"
-            style={{ backgroundColor: '#0c1322', border: `1px solid ${MONDE_GREEN}` }}
+            style={{ pointerEvents: 'auto', backgroundColor: '#0c1322', border: '1px solid rgba(52,211,153,0.45)' }}
           >
             <button
               onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
@@ -254,7 +257,7 @@ export default function HistoriqueMondeTab() {
               style={{ backgroundColor: MONDE_GREEN, color: '#FFFFFF' }}
             >◀ Précédent</button>
 
-            <span className="px-1 text-xs font-semibold whitespace-nowrap" style={{ color: MONDE_GREEN }}>
+            <span className="px-1 text-xs font-semibold whitespace-nowrap" style={{ color: MONDE_ACCENT }}>
               Page {pageSafe} / {totalPages}
             </span>
 
