@@ -26,7 +26,7 @@ export default function ActuPage() {
             className={`flex-1 px-1 py-2 font-bold text-xs whitespace-nowrap border-l border-white/10 transition-colors ${
               championnat === 'prod2'
                 ? 'bg-d2-navy text-white'
-                : 'bg-[#161616] text-d2-navy hover:bg-d2-navy/10'
+                : 'bg-[#161616] text-[#97C1FE] hover:bg-d2-navy/30'
             }`}
           >
             🥈 PRO D2

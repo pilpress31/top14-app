@@ -6,6 +6,7 @@ import ClassementHcupTabs from "../components/ClassementHcupTabs";
 import ClassementTop14Tabs from "../components/ClassementTop14Tabs";
 import ClassementD2Tabs from "../components/ClassementD2Tabs";
 import ClassementMondeTabs from "../components/ClassementMondeTabs";
+import { useChampionnat } from "../contexts/ChampionnatContext";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -13,7 +14,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 type Championnat = 'top14' | 'prod2' | 'hcup' | 'monde';
 
 function ClassementPage() {
-  const [championnat, setChampionnat] = useState<Championnat>('top14');
+  // Championnat partagé + persisté (reste identique après refresh)
+  const { championnat, setChampionnat } = useChampionnat();
   const [classement, setClassement] = useState<EquipeStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEquipe, setSelectedEquipe] = useState<EquipeStats | null>(null);
