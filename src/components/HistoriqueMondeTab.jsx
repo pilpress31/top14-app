@@ -240,22 +240,23 @@ export default function HistoriqueMondeTab() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination — pastille unifiée (style Top 14) */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-3 pt-2">
-          <button
-            onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            disabled={pageSafe === 1}
-            className="px-4 py-2 rounded font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500 transition-colors shadow-sm"
-            style={pageSafe === 1 ? {} : { backgroundColor: MONDE_GREEN }}
-          >◀ Précédent</button>
-          <span className="px-2 font-semibold text-sm" style={{ color: MONDE_GREEN }}>Page {pageSafe} / {totalPages}</span>
-          <button
-            onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            disabled={pageSafe === totalPages}
-            className="px-4 py-2 rounded font-semibold text-white disabled:bg-gray-300 disabled:text-gray-500 transition-colors shadow-sm"
-            style={pageSafe === totalPages ? {} : { backgroundColor: MONDE_GREEN }}
-          >Suivant ▶</button>
+        <div className="flex justify-center pt-3">
+          <div className="inline-flex items-center gap-1 rounded-full bg-gray-900 shadow-md px-1.5 py-1.5">
+            <button
+              onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={pageSafe === 1}
+              className="px-3 py-1.5 rounded-full text-sm font-semibold text-white hover:bg-white/10 disabled:opacity-40 transition-colors"
+            >◀ Précédent</button>
+            <span className="px-3 text-sm font-semibold text-gray-200 whitespace-nowrap">Page {pageSafe} / {totalPages}</span>
+            <button
+              onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              disabled={pageSafe === totalPages}
+              className="px-3 py-1.5 rounded-full text-sm font-semibold text-white disabled:opacity-40 transition-colors"
+              style={pageSafe === totalPages ? {} : { backgroundColor: MONDE_GREEN }}
+            >Suivant ▶</button>
+          </div>
         </div>
       )}
     </div>
