@@ -277,6 +277,13 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
               {match.competition}
             </span>
           )}
+          {match.compte_points === false && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' }}
+              title="Ce match ne rapporte pas de points au classement (jetons uniquement)">
+              Hors classement
+            </span>
+          )}
           {/* Bouton Conseil */}
           <button
             onClick={() => setShowConseil(true)}
