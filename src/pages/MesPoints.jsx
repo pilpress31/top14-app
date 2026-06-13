@@ -14,8 +14,8 @@ import { getSaisonCourante } from '../utils/season';
 
 // ─── Helper : calculer les points d'un pari selon le championnat ───
 const computeBetPoints = (bet) => {
-  // HCup : utilise classement_points (1 par pari gagné, pas de points_ft/points_mt)
-  if (bet.championnat === 'hcup') {
+  // HCup / MONDE : utilisent classement_points (pas de points_ft/points_mt)
+  if (bet.championnat === 'hcup' || bet.championnat === 'monde') {
     return bet.classement_points || 0;
   }
   // Top14/D2 : utilise points_ft + points_mt
@@ -96,6 +96,8 @@ export default function MesPoints() {
   const [matchsResultsD2, setMatchsResultsD2] = useState({});
   const [matchCotesD2, setMatchCotesD2] = useState({});
   const [matchsResultsHcup, setMatchsResultsHcup] = useState({}); // 🆕 HCup
+  const [matchsResultsMonde, setMatchsResultsMonde] = useState({}); // 🆕 MONDE
+  const [mondePeriodeStart, setMondePeriodeStart] = useState(null); // début Nations Championship
   const [loading, setLoading] = useState(true);
   const [sortMode, setSortMode] = useState('desc'); // 🆕 DESC par défaut = plus récent → cumul direct visible
   const [championnatFilter, setChampionnatFilter] = useState('all'); // all | top14 | prod2 | hcup
@@ -117,6 +119,7 @@ export default function MesPoints() {
     { table: 'user_bets', onUpdate: () => debouncedLoadData(user?.id) },
     { table: 'user_bets_d2', onUpdate: () => debouncedLoadData(user?.id) },
     { table: 'user_bets_hcup', onUpdate: () => debouncedLoadData(user?.id) }, // 🆕
+    { table: 'user_bets_monde', onUpdate: () => debouncedLoadData(user?.id) }, // 🆕 MONDE
   ]);
 
   useEffect(() => {
@@ -175,6 +178,16 @@ export default function MesPoints() {
         .order('resolved_at', { ascending: true });
       if (hcupErr) throw hcupErr;
 
+      // ─── 2ter. Paris won MONDE ───
+      const { data: mondeBets, error: mondeErr } = await supabase
+        .from('user_bets_monde')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'won')
+        .eq('deleted', false)
+        .order('resolved_at', { ascending: true });
+      if (mondeErr) throw mondeErr;
+
       // ─── 3. Charger les résultats de matchs Top 14 (pour score affichage) ───
       const topMatchIds = [...new Set((topBets || []).map(b => b.match_id))];
       let topMatchesMap = {};
@@ -208,9 +221,30 @@ export default function MesPoints() {
         hcupMatchesMap = (hm || []).reduce((acc, m) => ({ ...acc, [m.id]: m }), {});
       }
 
+      // ─── 4ter. Charger matchs_monde (clé = id::text) ───
+      const mondeMatchIds = [...new Set((mondeBets || []).map(b => b.match_id))];
+      let mondeMatchesMap = {};
+      if (mondeMatchIds.length > 0) {
+        const { data: mm } = await supabase
+          .from('matchs_monde')
+          .select('id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, score_final_domicile, score_final_exterieur, prolongation, phase, competition, date_match')
+          .in('id', mondeMatchIds.map(Number));
+        mondeMatchesMap = (mm || []).reduce((acc, m) => ({ ...acc, [String(m.id)]: m }), {});
+      }
+
+      // Date de reprise du comptage MONDE = début Nations Championship (dynamique)
+      const { data: ncRows } = await supabase
+        .from('matchs_monde')
+        .select('date_match')
+        .eq('competition', 'Nations Championship')
+        .order('date_match', { ascending: true })
+        .limit(1);
+      setMondePeriodeStart(ncRows?.[0]?.date_match || null);
+
       setMatchsResults(topMatchesMap);
       setMatchCotesD2(d2MatchesMap);
       setMatchsResultsHcup(hcupMatchesMap); // 🆕
+      setMatchsResultsMonde(mondeMatchesMap); // 🆕 MONDE
 
       // ─── 5. Fusionner les paris et garder uniquement ceux avec points > 0 ───
       const allBets = [
@@ -220,6 +254,11 @@ export default function MesPoints() {
           ...b,
           championnat: 'hcup',
           // Normaliser : HCup utilise resolved_at au lieu de result_at
+          result_at: b.resolved_at || b.result_at,
+        })),
+        ...(mondeBets || []).map(b => ({
+          ...b,
+          championnat: 'monde',
           result_at: b.resolved_at || b.result_at,
         })),
       ].filter(b => computeBetPoints(b) > 0);
@@ -274,16 +313,22 @@ export default function MesPoints() {
       const d = m?.date_match || bet.result_at || bet.resolved_at;
       return d ? new Date(d) >= new Date(HCUP_PERIODE_START) : true;
     }
+    if (bet.championnat === 'monde') {
+      if (!mondePeriodeStart) return false; // Nations Championship pas encore au calendrier → hors comptage
+      const m = matchsResultsMonde[bet.match_id];
+      const d = m?.date_match || bet.resolved_at || bet.created_at;
+      return d ? new Date(d) >= new Date(mondePeriodeStart) : false;
+    }
     return true;
   };
 
   const activeBets = useMemo(
     () => filteredBets.filter(isPeriodeActive),
-    [filteredBets, matchsResultsHcup]
+    [filteredBets, matchsResultsHcup, matchsResultsMonde, mondePeriodeStart]
   );
   const archivedBets = useMemo(
     () => filteredBets.filter(b => !isPeriodeActive(b)),
-    [filteredBets, matchsResultsHcup]
+    [filteredBets, matchsResultsHcup, matchsResultsMonde, mondePeriodeStart]
   );
 
   // ─── Cumul (TOUJOURS chronologique ASC) puis tri d'affichage ───
@@ -324,13 +369,17 @@ export default function MesPoints() {
       mrInfo = matchCotesD2[bet.match_id];
     } else if (bet.championnat === 'hcup') {
       mrInfo = matchsResultsHcup[bet.match_id];
+    } else if (bet.championnat === 'monde') {
+      mrInfo = matchsResultsMonde[bet.match_id];
     } else {
       mrInfo = matchsResults[bet.match_id];
     }
 
-    // Pour HCup : "journee" = "round" (textuel : "Demi-finale", "Poule J3", etc.)
+    // Pour HCup : "journee" = "round" ; MONDE : phase / compétition
     const journee = bet.championnat === 'hcup'
       ? (mrInfo?.round ?? bet.round ?? null)
+      : bet.championnat === 'monde'
+      ? (mrInfo?.phase ?? mrInfo?.competition ?? null)
       : (mrInfo?.journee ?? bet.journee ?? null);
 
     return {
@@ -356,8 +405,8 @@ export default function MesPoints() {
         ht_ext: null,
       };
     }
-    if (bet.championnat === 'hcup') {
-      // HCup : score_domicile/score_exterieur = score à 80' (référence pour les paris)
+    if (bet.championnat === 'hcup' || bet.championnat === 'monde') {
+      // HCup / MONDE : score_domicile/exterieur = score à 80' (référence des paris)
       return {
         dom: mr.score_domicile,
         ext: mr.score_exterieur,
@@ -397,7 +446,7 @@ export default function MesPoints() {
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs text-white/90 font-semibold">
                 Total points
-                {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : 'Champions Cup'}`}
+                {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : 'MONDE'}`}
               </p>
               {saisonFilter !== 'all' && (
                 <span className="text-[10px] text-white/80 bg-white/15 px-2 py-0.5 rounded-full font-semibold">
@@ -408,7 +457,7 @@ export default function MesPoints() {
             </div>
             <p className="text-3xl font-bold text-white">{totalPoints}</p>
             <p className="text-xs text-white/80 mt-1">
-              {filteredBets.length} pari{filteredBets.length > 1 ? 's' : ''} gagné{filteredBets.length > 1 ? 's' : ''}
+              {activeBets.length} pari{activeBets.length > 1 ? 's' : ''} gagné{activeBets.length > 1 ? 's' : ''}
             </p>
           </div>
         </div>
@@ -460,6 +509,17 @@ export default function MesPoints() {
             >
               ⭐ C.Cup
             </button>
+            <button
+              onClick={() => setChampionnatFilter('monde')}
+              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
+                championnatFilter === 'monde'
+                  ? 'text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              style={championnatFilter === 'monde' ? { backgroundColor: '#0B6E4F' } : {}}
+            >
+              🌍 MONDE
+            </button>
           </div>
 
           {/* Tri inversable */}
@@ -508,7 +568,7 @@ export default function MesPoints() {
             <p className="font-semibold">
               {saisonFilter === getSaisonCourante() && bets.length === 0
                 ? "Aucun pari gagné pour l'instant"
-                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : 'Champions Cup'})` : ''}`
+                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : 'MONDE'})` : ''}`
               }
             </p>
             <p className="text-sm mt-1">
@@ -554,18 +614,21 @@ export default function MesPoints() {
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     bet.championnat === 'prod2'
                       ? 'bg-d2-navy text-white'
-                      : bet.championnat === 'hcup'
+                      : (bet.championnat === 'hcup' || bet.championnat === 'monde')
                       ? ''
                       : 'bg-rugby-gold text-white'
                   }`}
                   style={
                     bet.championnat === 'hcup'
                       ? { backgroundColor: '#003E7E', color: '#FFC72C' }
+                      : bet.championnat === 'monde'
+                      ? { backgroundColor: '#0B6E4F', color: '#fff' }
                       : {}
                   }
                 >
                   {bet.championnat === 'prod2' ? 'Pro D2'
                     : bet.championnat === 'hcup' ? 'C.Cup'
+                    : bet.championnat === 'monde' ? 'MONDE'
                     : 'Top 14'}
                 </span>
               </div>
