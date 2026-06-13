@@ -6,7 +6,9 @@ import { useState, useEffect, useMemo } from "react";
 
 const IA_USER_ID = "00000000-0000-0000-0000-000000000001";
 const IA_D2_USER_ID = "00000000-0000-0000-0000-000000000002";
-const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID];
+const IA_CCUP_USER_ID = "00000000-0000-0000-0000-000000000003";
+const IA_MONDE_USER_ID = "00000000-0000-0000-0000-000000000004";
+const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID, IA_CCUP_USER_ID, IA_MONDE_USER_ID];
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X,
          Star, Medal, Crown, Gem, Flame, Zap, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -138,6 +140,7 @@ export default function ClassementCommunauteTab() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [classementType, setClassementType] = useState<'jetons' | 'points'>('jetons');
+  const [champPoints, setChampPoints] = useState<'top14' | 'prod2' | 'hcup' | 'monde'>('top14');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [showReglementPoints, setShowReglementPoints] = useState(false);
@@ -154,7 +157,7 @@ export default function ClassementCommunauteTab() {
   // ✅ Un seul useEffect — charge le user EN PREMIER puis le classement
   useEffect(() => {
     loadAll();
-  }, [classementType]);
+  }, [classementType, champPoints]);
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -271,13 +274,9 @@ export default function ClassementCommunauteTab() {
   }
     async function loadClassementPoints(userId: string | null) {
     try {
-      // 1. Stats par saison — sans embed
+      // 1. Classement par compétition via RPC (vrais users + bot dédié, fenêtré)
       const { data: stats, error: statsError } = await supabase
-        .from('user_stats')
-        .select('user_id, total_points, total_pronos, pronos_corrects, taux_reussite')
-        .eq('saison', getSaisonCourante())
-        .order('total_points', { ascending: false })
-        .limit(100);
+        .rpc('classement_points_competition', { p_champ: champPoints });
       if (statsError) throw statsError;
 
       // 2. Pseudos + avatars depuis la vue sécurisée
@@ -290,7 +289,7 @@ export default function ClassementCommunauteTab() {
       const formattedData: UserRanking[] = (stats || []).map((item: any, index: number) => {
         const profile = profiles?.find((p: any) => p.user_id === item.user_id);
         return {
-          rang: index + 1,
+          rang: item.rang ?? index + 1,
           user_id: item.user_id,
           pseudo: profile?.pseudo || 'Utilisateur',
           avatar: profile?.avatar_url || null,
@@ -447,6 +446,29 @@ export default function ClassementCommunauteTab() {
           </button>
         </button>
       </div>
+
+      {/* Sous-bandeau compétition (mode Points uniquement) */}
+      {classementType === 'points' && (
+        <div className="flex gap-1.5 bg-white rounded-lg p-1 shadow-sm">
+          {([
+            { key: 'top14', label: 'TOP 14', color: '#CBA135' },
+            { key: 'prod2', label: 'PRO D2', color: '#1E3A8A' },
+            { key: 'hcup',  label: 'C.CUP',  color: '#0EA5E9' },
+            { key: 'monde', label: 'MONDE',  color: '#0B6E4F' },
+          ] as const).map(c => (
+            <button
+              key={c.key}
+              onClick={() => setChampPoints(c.key)}
+              className="flex-1 py-2 rounded-md text-xs font-bold tracking-wide transition-all"
+              style={champPoints === c.key
+                ? { backgroundColor: c.color, color: '#fff' }
+                : { color: '#9ca3af' }}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Bandeau Votre position */}
       {currentUserRank && (
