@@ -165,8 +165,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
   const ecartProno = hasRealScore ? Math.abs((pronoHome - pronoAway) - (realHome - realAway)) : null;
 
   // Extraire les noms d'équipes - essayer toutes les sources disponibles
-  let homeTeam = match?.home_team || fullBet?.matches?.home_team || 'Équipe domicile';
-  let awayTeam = match?.away_team || fullBet?.matches?.away_team || 'Équipe extérieure';
+  // Extraire les noms d'équipes - essayer toutes les sources disponibles
+  // 🆕 MONDE : les paris exposent equipe_domicile/exterieure (noms FR propres, accents inclus).
+  //    On les prend AVANT le reparsing du match_id (slug sans accents : "Corée"->"COREE" ne matche
+  //    pas la clé accentuée -> tombait sur la regex [A-Za-z] qui coupait à l'accent -> "E DU SUD").
+  let homeTeam = match?.home_team || fullBet?.matches?.home_team
+    || fullBet?.equipe_domicile || trans.bets?.equipe_domicile || 'Équipe domicile';
+  let awayTeam = match?.away_team || fullBet?.matches?.away_team
+    || fullBet?.equipe_exterieure || trans.bets?.equipe_exterieure || 'Équipe extérieure';
 
   const extractTeamsFromId = (id) => {
     if (!id) return null;
@@ -211,7 +217,7 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
 
   // ✅ Dernier recours : extraire depuis la description de la transaction
   if ((homeTeam === 'Équipe domicile' || awayTeam === 'Équipe extérieure') && trans.description) {
-    const vsMatch = trans.description.match(/([A-Za-z\s]+)\s+vs\.?\s+([A-Za-z\s]+)/i);
+    const vsMatch = trans.description.match(/([A-Za-zÀ-ÖØ-öø-ÿ\s]+)\s+vs\.?\s+([A-Za-zÀ-ÖØ-öø-ÿ\s]+)/i);
     if (vsMatch) {
       homeTeam = vsMatch[1].trim();
       awayTeam = vsMatch[2].trim();
