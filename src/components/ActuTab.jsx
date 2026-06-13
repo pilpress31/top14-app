@@ -132,9 +132,9 @@ export default function ActuTab() {
   // Pas encore disponible pour la prochaine journée
   if (!disponible || actus.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center border border-rugby-gray mt-4">
+      <div className="bg-[#161616] rounded-lg shadow-sm p-8 text-center border border-white/10 mt-4">
         <div className="text-3xl mb-3">📰</div>
-        <p className="text-gray-700 font-semibold text-sm">
+        <p className="text-gray-300 font-semibold text-sm">
           {journee ? `Analyses J${journee} à venir` : 'Analyses à venir'}
         </p>
         <p className="text-gray-400 text-xs mt-2">
@@ -197,7 +197,7 @@ export default function ActuTab() {
                   <div
                     key={actu.match_id}
                     ref={el => cardRefs.current[actu.match_id] = el}
-                    className="bg-white rounded-xl shadow-sm border border-rugby-gray overflow-hidden"
+                    className="bg-[#161616] rounded-xl shadow-sm border border-white/10 overflow-hidden"
                   >
                     {/* Header match cliquable */}
                     <button
@@ -217,16 +217,16 @@ export default function ActuTab() {
 
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1">
-                          <div className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center flex-shrink-0">
+                          <div className="w-8 h-8 bg-white/5 rounded-full flex items-center justify-center flex-shrink-0">
                             <img src={teamDom.logo} alt={teamDom.name} className="w-7 h-7 object-contain"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                           </div>
-                          <span className="text-sm font-bold text-gray-900 truncate">{teamDom.name}</span>
+                          <span className="text-sm font-bold text-gray-100 truncate">{teamDom.name}</span>
                         </div>
                         <span className="text-xs font-bold text-rugby-gold px-2 flex-shrink-0">VS</span>
                         <div className="flex items-center gap-2 flex-1 justify-end">
-                          <span className="text-sm font-bold text-gray-900 truncate text-right">{teamExt.name}</span>
-                          <div className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm font-bold text-gray-100 truncate text-right">{teamExt.name}</span>
+                          <div className="w-8 h-8 bg-white/5 rounded-full flex items-center justify-center flex-shrink-0">
                             <img src={teamExt.logo} alt={teamExt.name} className="w-7 h-7 object-contain"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                           </div>
@@ -234,13 +234,13 @@ export default function ActuTab() {
                       </div>
 
                       {actu.resume_global && actu.resume_global !== 'Synthèse en cours de génération...' && (
-                        <p className={`text-xs text-gray-600 mt-2 italic leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
+                        <p className={`text-xs text-gray-400 mt-2 italic leading-relaxed ${isExpanded ? '' : 'line-clamp-2'}`}>
                           {actu.resume_global}
                         </p>
                       )}
 
                       {hasContent && (
-                        <div className="flex items-center justify-end gap-1 mt-3 pt-2 border-t border-gray-100">
+                        <div className="flex items-center justify-end gap-1 mt-3 pt-2 border-t border-white/10">
                           <span className="text-[11px] text-rugby-gold font-semibold">
                             {isExpanded ? 'Réduire' : 'Analyse complète'}
                           </span>
@@ -257,13 +257,13 @@ export default function ActuTab() {
 
                     {/* Contenu expandable */}
                     {isExpanded && hasContent && (
-                      <div className="border-t border-rugby-gray divide-y divide-rugby-gray">
+                      <div className="border-t border-white/10 divide-y divide-rugby-gray">
 
                         {actu.meteo && !['Météo non disponible', 'Météo temporairement indisponible'].includes(actu.meteo) && (
-                          <div className="px-4 py-2.5 bg-blue-50/50">
+                          <div className="px-4 py-2.5 bg-blue-500/10">
                             <div className="flex items-center gap-2">
                               <CloudSun className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                              <p className="text-xs text-blue-700">{actu.meteo}</p>
+                              <p className="text-xs text-blue-300">{actu.meteo}</p>
                             </div>
                           </div>
                         )}
@@ -287,7 +287,7 @@ export default function ActuTab() {
                             onToggle={() => toggleSection(actu.match_id, 'pronostic')}
                           >
                             <div className="bg-rugby-gold/5 rounded-lg p-3 border border-rugby-gold/20">
-                              <p className="text-xs text-gray-700 leading-relaxed">{actu.pronostic_ia}</p>
+                              <p className="text-xs text-gray-300 leading-relaxed">{actu.pronostic_ia}</p>
                             </div>
                           </SectionBlock>
                         )}
@@ -311,7 +311,7 @@ export default function ActuTab() {
                             isOpen={isSectionOpen(actu.match_id, 'contexte', false)}
                             onToggle={() => toggleSection(actu.match_id, 'contexte')}
                           >
-                            <p className="text-xs text-gray-700 leading-relaxed">{actu.contexte_match}</p>
+                            <p className="text-xs text-gray-300 leading-relaxed">{actu.contexte_match}</p>
                           </SectionBlock>
                         )}
 
@@ -366,11 +366,11 @@ function SectionBlock({ icon, title, isOpen, onToggle, children }) {
     <div>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-xs font-semibold text-gray-700">{title}</span>
+          <span className="text-xs font-semibold text-gray-300">{title}</span>
         </div>
         {isOpen
           ? <ChevronUp className="w-3 h-3 text-gray-400" />
@@ -397,7 +397,7 @@ function TeamSection({ name, logo, content }) {
         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
       <div className="flex-1">
         <p className="text-[10px] font-semibold text-gray-500 mb-0.5 uppercase tracking-wide">{name}</p>
-        <p className={`text-xs leading-relaxed ${isUnavailable ? 'text-gray-400 italic' : 'text-gray-700'}`}>
+        <p className={`text-xs leading-relaxed ${isUnavailable ? 'text-gray-400 italic' : 'text-gray-300'}`}>
           {isUnavailable ? 'Information non disponible' : content}
         </p>
       </div>
@@ -408,13 +408,13 @@ function TeamSection({ name, logo, content }) {
 // ─── Section Insights algorithmiques ───
 function InsightBadge({ label, sublabel, confiance, color }) {
   const pct = Math.min(100, Math.max(0, confiance || 0));
-  const barColor = pct >= 70 ? 'bg-green-500' : pct >= 45 ? 'bg-green-300' : 'bg-amber-300';
+  const barColor = pct >= 70 ? 'bg-green-500/10' : pct >= 45 ? 'bg-green-300' : 'bg-amber-300';
   return (
     <div className={`rounded-lg border px-3 py-2 ${color}`}>
-      <p className="text-xs font-semibold text-gray-800 mb-0.5 leading-snug">{label}</p>
+      <p className="text-xs font-semibold text-gray-100 mb-0.5 leading-snug">{label}</p>
       {sublabel && <p className="text-[10px] text-gray-500 mb-1">{sublabel}</p>}
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
           <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
         </div>
         <span className="text-[10px] text-gray-500 font-medium">{pct}%</span>
@@ -459,14 +459,14 @@ function InsightsSection({ insights }) {
         <div className="space-y-2">
           <div className="bg-rugby-gold/10 border border-rugby-gold/30 rounded-lg px-3 py-2 text-center">
             <p className="text-[9px] font-bold text-rugby-gold uppercase tracking-wide mb-0.5">⏱ Temps plein</p>
-            <p className="text-base font-bold text-gray-800">{score_predit?.ft || '—'}</p>
+            <p className="text-base font-bold text-gray-100">{score_predit?.ft || '—'}</p>
           </div>
           {total_ft && (
             <InsightBadge
               label={total_ft.label}
               sublabel="Total de points FT"
               confiance={total_ft.confiance}
-              color={total_ft.direction === 'over' ? 'bg-orange-50 border-orange-200' : 'bg-sky-50 border-sky-200'}
+              color={total_ft.direction === 'over' ? 'bg-orange-50 border-orange-200' : 'bg-sky-500/10 border-sky-500/25'}
             />
           )}
           {vainqueur_ft && labelVainqueurFT && (
@@ -482,23 +482,23 @@ function InsightsSection({ insights }) {
               label={ecart_ft.label}
               sublabel="Écart prédit FT"
               confiance={ecart_ft.confiance}
-              color={ecart_ft.type === 'tight' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}
+              color={ecart_ft.type === 'tight' ? 'bg-yellow-500/10 border-yellow-500/25' : 'bg-green-500/10 border-green-500/25'}
             />
           )}
         </div>
 
         {/* Colonne MT */}
         <div className="space-y-2">
-          <div className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-center">
+          <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-center">
             <p className="text-[9px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">⏸ Mi-temps</p>
-            <p className="text-base font-bold text-gray-700">{score_predit?.mt || '—'}</p>
+            <p className="text-base font-bold text-gray-300">{score_predit?.mt || '—'}</p>
           </div>
           {total_mt && (
             <InsightBadge
               label={total_mt.label}
               sublabel="Total de points MT"
               confiance={total_mt.confiance}
-              color={total_mt.direction === 'over' ? 'bg-orange-50 border-orange-100' : 'bg-sky-50 border-sky-100'}
+              color={total_mt.direction === 'over' ? 'bg-orange-50 border-orange-100' : 'bg-sky-500/10 border-sky-500/20'}
             />
           )}
           {vainqueur_mt && labelVainqueurMT && (
@@ -506,7 +506,7 @@ function InsightsSection({ insights }) {
               label={labelVainqueurMT.main}
               sublabel={labelVainqueurMT.sub}
               confiance={vainqueur_mt.confiance}
-              color="bg-teal-50 border-teal-200"
+              color="bg-teal-500/10 border-teal-500/25"
             />
           )}
           {ecart_mt && (
@@ -514,7 +514,7 @@ function InsightsSection({ insights }) {
               label={ecart_mt.label}
               sublabel="Écart prédit MT"
               confiance={ecart_mt.confiance}
-              color={ecart_mt.type === 'tight' ? 'bg-yellow-50 border-yellow-100' : 'bg-green-50 border-green-100'}
+              color={ecart_mt.type === 'tight' ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-green-500/10 border-green-500/20'}
             />
           )}
         </div>
@@ -549,17 +549,17 @@ function CompoListView({ titulaires, remplacants }) {
     <div className="space-y-2">
       {titulaires.length > 0 && (
         <div>
-          <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Titulaires</p>
+          <p className="text-[9px] font-bold text-teal-400 uppercase tracking-wide mb-1">Titulaires</p>
           <div className="space-y-0.5">
             {titulaires.map((line, i) => (
-              <p key={i} className="text-xs text-gray-700 leading-relaxed">{line.trim()}</p>
+              <p key={i} className="text-xs text-gray-300 leading-relaxed">{line.trim()}</p>
             ))}
           </div>
         </div>
       )}
       {remplacants.length > 0 && (
         <div>
-          <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+          <p className="text-[9px] font-bold text-teal-400 uppercase tracking-wide mb-1">Remplaçants</p>
           <div className="space-y-0.5">
             {remplacants.map((line, i) => (
               <p key={i} className="text-xs text-gray-500 leading-relaxed">{line.trim()}</p>
@@ -734,11 +734,11 @@ function CompoTerrainView({ titulaires, remplacants }) {
       {/* Remplaçants (bandeau) */}
       {remps.length > 0 && (
         <div>
-          <p className="text-[9px] font-bold text-teal-600 uppercase tracking-wide mb-1">Remplaçants</p>
+          <p className="text-[9px] font-bold text-teal-400 uppercase tracking-wide mb-1">Remplaçants</p>
           <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
             {remps.map((r, i) => (
               <p key={i} className="text-[10px] text-gray-500 leading-tight">
-                <span className="font-semibold text-gray-600">{r.num}.</span> {r.nom}
+                <span className="font-semibold text-gray-400">{r.num}.</span> {r.nom}
               </p>
             ))}
           </div>
@@ -762,9 +762,9 @@ export function CompoEtBlessesSection({ name, logo, compo, blesses }) {
 
   const getTypeBadge = (text) => {
     if (!text) return null;
-    if (text.toLowerCase().includes('officielle')) return { label: 'Officielle', color: 'bg-green-100 text-green-700' };
-    if (text.toLowerCase().includes('probable')) return { label: 'Probable', color: 'bg-blue-100 text-blue-700' };
-    return { label: 'Estimée', color: 'bg-gray-100 text-gray-600' };
+    if (text.toLowerCase().includes('officielle')) return { label: 'Officielle', color: 'bg-green-500/15 text-green-300' };
+    if (text.toLowerCase().includes('probable')) return { label: 'Probable', color: 'bg-blue-500/15 text-blue-300' };
+    return { label: 'Estimée', color: 'bg-white/5 text-gray-400' };
   };
   const badge = !compoIndispo ? getTypeBadge(compo) : null;
 
@@ -779,22 +779,22 @@ export function CompoEtBlessesSection({ name, logo, compo, blesses }) {
   const remplacants = remplacantsRaw.filter(l => /^\d/.test(l.trim()));
 
   return (
-    <div className="bg-teal-50/40 rounded-lg border border-teal-100 overflow-hidden">
+    <div className="bg-teal-500/10/10 rounded-lg border border-teal-500/20 overflow-hidden">
       {/* Header équipe */}
-      <div className="flex items-center justify-between px-3 py-2 bg-teal-100/60">
+      <div className="flex items-center justify-between px-3 py-2 bg-teal-500/10/15">
         <div className="flex items-center gap-2">
           <img src={logo} alt={name} className="w-5 h-5 object-contain"
             onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-          <p className="text-[10px] font-bold text-teal-800 uppercase tracking-wide">{name}</p>
+          <p className="text-[10px] font-bold text-teal-300 uppercase tracking-wide">{name}</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Toggle Liste / Terrain */}
           {!compoIndispo && titulaires.length > 0 && (
-            <div className="flex items-center bg-white/80 rounded-full overflow-hidden text-[9px] font-semibold">
+            <div className="flex items-center bg-white/10 rounded-full overflow-hidden text-[9px] font-semibold">
               <button
                 type="button"
                 onClick={() => setView('liste')}
-                className={`px-2 py-0.5 transition-colors ${view === 'liste' ? 'bg-teal-600 text-white' : 'text-teal-700 hover:bg-teal-50'}`}
+                className={`px-2 py-0.5 transition-colors ${view === 'liste' ? 'bg-teal-600 text-white' : 'text-teal-300 hover:bg-teal-500/10/10'}`}
                 aria-label="Voir en liste"
               >
                 📋 Liste
@@ -802,7 +802,7 @@ export function CompoEtBlessesSection({ name, logo, compo, blesses }) {
               <button
                 type="button"
                 onClick={() => setView('terrain')}
-                className={`px-2 py-0.5 transition-colors ${view === 'terrain' ? 'bg-teal-600 text-white' : 'text-teal-700 hover:bg-teal-50'}`}
+                className={`px-2 py-0.5 transition-colors ${view === 'terrain' ? 'bg-teal-600 text-white' : 'text-teal-300 hover:bg-teal-500/10/10'}`}
                 aria-label="Voir sur terrain"
               >
                 🏟️ Terrain
@@ -832,9 +832,9 @@ export function CompoEtBlessesSection({ name, logo, compo, blesses }) {
 
         {/* Blessés */}
         {!blessesIndispo && (
-          <div className="pt-2 mt-1 border-t border-teal-100">
+          <div className="pt-2 mt-1 border-t border-teal-500/20">
             <p className="text-[9px] font-bold text-red-500 uppercase tracking-wide mb-1">Absents</p>
-            <p className="text-xs text-red-600 leading-relaxed">{blesses}</p>
+            <p className="text-xs text-red-400 leading-relaxed">{blesses}</p>
           </div>
         )}
       </div>

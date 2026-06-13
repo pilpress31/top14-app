@@ -466,6 +466,59 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
       </div>
 
 
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">🌍 Notif Rugby International (sélection manuelle)</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.5">
+          Les matchs internationaux arrivent par vagues et <strong>n'ont pas d'heure de coup d'envoi</strong> (donc pas de rappel auto).<br>
+          <strong>Choisis les matchs</strong> à inclure dans la notification, puis personnalise le texte.
+        </p>
+
+        <div style="margin-bottom:12px;">
+          <button class="btn" id="mondeLoadMatchsBtn" onclick="loadMondeMatchsForNotif()" style="background:#0B6E4F;color:#fff;border:none;">
+            <div class="spinner"></div>
+            <span class="btn-text">📥 Charger les matchs à venir</span>
+          </button>
+        </div>
+
+        <div id="mondeMatchsListWrap" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+            <div id="mondeMatchsCount" style="font-size:12px;color:var(--muted);">—</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn" onclick="toggleAllMondeMatchs(true)" style="padding:4px 10px;font-size:12px;">Tout cocher</button>
+              <button class="btn" onclick="toggleAllMondeMatchs(false)" style="padding:4px 10px;font-size:12px;">Tout décocher</button>
+            </div>
+          </div>
+
+          <div id="mondeMatchsList" style="max-height:340px;overflow-y:auto;background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          </div>
+
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Texte de la notification</div>
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Titre</label>
+            <input type="text" id="mondeNotifTitle" placeholder="Ex: 🌍 Rugby International — Nouveaux matchs"
+                  style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Corps</label>
+            <textarea id="mondeNotifBody" rows="2" placeholder="Ex: France-Nouvelle-Zélande, Afrique du Sud-Irlande… faites vos pronostics !"
+                      style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">URL cible</label>
+            <input type="text" id="mondeNotifUrl" value="https://app.top14pronos.fr/monde"
+                  style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+          </div>
+
+          <div style="margin-top:14px;">
+            <button class="btn btn-gold" id="mondeSendNotifBtn" onclick="sendMondeNewMatchesNotif()" style="width:100%;">
+              <div class="spinner"></div>
+              <span class="btn-text">📣 Envoyer la notification International</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="result" id="mondeNmResult"></div>
+      </div>
+
+
       <!-- RELANCE JOUEURS INACTIFS -->
       <div class="card" style="margin-top:16px;">
         <div class="card-header">
@@ -2112,6 +2165,135 @@ async function sendHcupNewMatchesNotif() {
     }
   } catch (e) {
     showResult('hcupNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
+// ============================================================
+//  MONDE — NOTIF "NOUVEAUX MATCHS" (sélection manuelle)
+// ============================================================
+let _mondeMatchsCache = [];
+
+async function loadMondeMatchsForNotif() {
+  const btn = document.getElementById('mondeLoadMatchsBtn');
+  const wrap = document.getElementById('mondeMatchsListWrap');
+  const list = document.getElementById('mondeMatchsList');
+  const countEl = document.getElementById('mondeMatchsCount');
+
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/monde/matchs/a-venir');
+    const matchs = (data && Array.isArray(data.matchs)) ? data.matchs : [];
+    _mondeMatchsCache = matchs;
+
+    if (matchs.length === 0) {
+      wrap.style.display = 'block';
+      list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px;">Aucun match international à venir</div>';
+      countEl.textContent = '0 match disponible';
+      document.getElementById('mondeSendNotifBtn').disabled = true;
+      return;
+    }
+    document.getElementById('mondeSendNotifBtn').disabled = false;
+
+    // Grouper par compétition (Nations Championship, Coupe du Monde, qualifs…)
+    const groupes = {};
+    matchs.forEach(m => {
+      const comp = m.competition || 'Rugby international';
+      if (!groupes[comp]) groupes[comp] = [];
+      groupes[comp].push(m);
+    });
+
+    let html = '';
+    Object.keys(groupes).forEach(comp => {
+      const liste = groupes[comp];
+      html += `<div style="font-size:11px;color:#6EE7B7;text-transform:uppercase;letter-spacing:0.5px;margin:${html ? '14px' : '0'} 0 8px;">🌍 ${comp} (${liste.length} match${liste.length > 1 ? 's' : ''})</div>`;
+      liste.forEach(m => {
+        const dateFr = m.date_match
+          ? new Date(m.date_match).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' })
+          : '—';
+        const phase = (m.phase && m.phase !== 'Poule') ? ` · ${m.phase}` : '';
+        html += `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+            <input type="checkbox" class="monde-match-cb" value="${m.match_id}" onchange="updateMondeSelectionCount()" style="cursor:pointer;width:16px;height:16px;accent-color:#34D399;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;color:var(--text);font-weight:500;">${m.equipe_domicile} <span style="color:var(--muted)">vs</span> ${m.equipe_exterieure}</div>
+              <div style="font-size:11px;color:var(--muted2);margin-top:2px;">${dateFr}${phase}</div>
+            </div>
+          </label>
+        `;
+      });
+    });
+
+    list.innerHTML = html;
+    wrap.style.display = 'block';
+    updateMondeSelectionCount();
+
+    const titleInput = document.getElementById('mondeNotifTitle');
+    const bodyInput = document.getElementById('mondeNotifBody');
+    if (!titleInput.value) titleInput.value = '🌍 Rugby International — Nouveaux matchs';
+    if (!bodyInput.value) {
+      const apercu = matchs.slice(0, 3).map(m => `${m.equipe_domicile}-${m.equipe_exterieure}`).join(', ');
+      const suite = matchs.length > 3 ? '… ' : ' — ';
+      bodyInput.value = `${apercu}${suite}faites vos pronostics !`;
+    }
+  } catch (e) {
+    showResult('mondeNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+function toggleAllMondeMatchs(checked) {
+  document.querySelectorAll('.monde-match-cb').forEach(cb => { cb.checked = checked; });
+  updateMondeSelectionCount();
+}
+
+function updateMondeSelectionCount() {
+  const total = document.querySelectorAll('.monde-match-cb').length;
+  const checked = document.querySelectorAll('.monde-match-cb:checked').length;
+  const countEl = document.getElementById('mondeMatchsCount');
+  if (countEl) {
+    countEl.textContent = `${checked} / ${total} match${total > 1 ? 's' : ''} sélectionné${checked > 1 ? 's' : ''}`;
+    countEl.style.color = checked > 0 ? '#6EE7B7' : 'var(--muted)';
+  }
+}
+
+async function sendMondeNewMatchesNotif() {
+  const checkedIds = Array.from(document.querySelectorAll('.monde-match-cb:checked')).map(cb => cb.value);
+  if (checkedIds.length === 0) {
+    showResult('mondeNmResult', 'err', '❌ Sélectionnez au moins un match');
+    return;
+  }
+  const title = document.getElementById('mondeNotifTitle').value.trim();
+  const body = document.getElementById('mondeNotifBody').value.trim();
+  const url = document.getElementById('mondeNotifUrl').value.trim();
+  if (!title || !body) {
+    showResult('mondeNmResult', 'err', '❌ Titre et corps de la notification requis');
+    return;
+  }
+  if (!confirm(`Envoyer la notification "${title}" pour ${checkedIds.length} match(s) à TOUS les utilisateurs ?`)) return;
+
+  const btn = document.getElementById('mondeSendNotifBtn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/monde/notifications/new-matches', {
+      method: 'POST',
+      body: JSON.stringify({ match_ids: checkedIds, title, body, url: url || 'https://app.top14pronos.fr/monde' }),
+    });
+    if (data.success) {
+      const ignored = data.ignored_matchs > 0 ? ` (${data.ignored_matchs} ignorés car déjà joués)` : '';
+      if (data.sent === 0 && data.inAppCreated === 0 && data.count > 0) {
+        showResult('mondeNmResult', 'warn', `⚠️ ${data.count} match(s) sélectionnés mais aucun utilisateur abonné aux push${ignored}`);
+      } else {
+        showResult('mondeNmResult', 'ok', `✅ ${data.count} match(s) International : ${data.sent} push + ${data.inAppCreated} in-app envoyées${ignored}`);
+      }
+    } else {
+      showResult('mondeNmResult', 'err', `❌ ${data.error || data.message || 'Erreur inconnue'}`);
+    }
+  } catch (e) {
+    showResult('mondeNmResult', 'err', `❌ ${e.message}`);
   } finally {
     setLoading(btn, false);
   }
