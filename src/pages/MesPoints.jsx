@@ -84,6 +84,10 @@ const formatDate = (date) => {
   });
 };
 
+// Début de l'édition Champions Cup EN COURS (poules déc. 2026) — aligné sur la
+// RPC classement_points_competition. L'édition 2025-2026 terminée = historique.
+const HCUP_PERIODE_START = '2026-12-01';
+
 export default function MesPoints() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -96,6 +100,7 @@ export default function MesPoints() {
   const [sortMode, setSortMode] = useState('desc'); // 🆕 DESC par défaut = plus récent → cumul direct visible
   const [championnatFilter, setChampionnatFilter] = useState('all'); // all | top14 | prod2 | hcup
   const [saisonFilter, setSaisonFilter] = useState(getSaisonCourante()); // 🆕 saison courante par défaut
+  const [showArchive, setShowArchive] = useState(false); // 🆕 repli « éditions terminées »
   const loadingRef = useRef(false);
 
   // ─── Realtime avec debounce (calque MaCagnotte) ───
@@ -258,33 +263,56 @@ export default function MesPoints() {
     });
   }, [bets, championnatFilter, saisonFilter]);
 
-  // ─── Calculer le cumul (TOUJOURS chronologique ASC) ───
-  // puis appliquer le tri d'affichage demandé
-  const betsWithCumul = useMemo(() => {
-    // Étape 1 : cumul calculé chronologiquement (ASC) — cumul réel
-    const sortedAsc = [...filteredBets].sort((a, b) => {
+  // ─── Édition active vs terminée ───────────────────────────────────────────
+  // Le comptage « live » ne retient que l'édition EN COURS de chaque compétition.
+  // HCup : édition active = matchs ≥ HCUP_PERIODE_START (poules déc. 2026) ;
+  //        l'édition 2025-2026 terminée bascule en historique (hors comptage).
+  // Top14 / Pro D2 : la saison fait déjà office d'édition → toujours actif.
+  const isPeriodeActive = (bet) => {
+    if (bet.championnat === 'hcup') {
+      const m = matchsResultsHcup[bet.match_id];
+      const d = m?.date_match || bet.result_at || bet.resolved_at;
+      return d ? new Date(d) >= new Date(HCUP_PERIODE_START) : true;
+    }
+    return true;
+  };
+
+  const activeBets = useMemo(
+    () => filteredBets.filter(isPeriodeActive),
+    [filteredBets, matchsResultsHcup]
+  );
+  const archivedBets = useMemo(
+    () => filteredBets.filter(b => !isPeriodeActive(b)),
+    [filteredBets, matchsResultsHcup]
+  );
+
+  // ─── Cumul (TOUJOURS chronologique ASC) puis tri d'affichage ───
+  const makeCumul = (list) => {
+    const sortedAsc = [...list].sort((a, b) => {
       const dA = new Date(a.result_at || a.resolved_at || a.placed_at || 0);
       const dB = new Date(b.result_at || b.resolved_at || b.placed_at || 0);
       return dA - dB;
     });
-
     let runningTotal = 0;
     const withCumul = sortedAsc.map(bet => {
       const points = computeBetPoints(bet);
       runningTotal += points;
       return { ...bet, _points: points, _cumul: runningTotal };
     });
+    return sortMode === 'desc' ? [...withCumul].reverse() : withCumul;
+  };
 
-    // Étape 2 : appliquer le tri d'affichage
-    if (sortMode === 'desc') {
-      return [...withCumul].reverse();
-    }
-    return withCumul;
-  }, [filteredBets, sortMode]);
+  const betsWithCumul     = useMemo(() => makeCumul(activeBets),   [activeBets, sortMode]);
+  const archivedWithCumul = useMemo(() => makeCumul(archivedBets), [archivedBets, sortMode]);
 
+  // Total « live » = uniquement l'édition en cours de chaque compétition
   const totalPoints = useMemo(
-    () => filteredBets.reduce((sum, b) => sum + computeBetPoints(b), 0),
-    [filteredBets]
+    () => activeBets.reduce((sum, b) => sum + computeBetPoints(b), 0),
+    [activeBets]
+  );
+  const archivedPoints = useMemo(
+    () => archivedBets.reduce((sum, b) => sum + computeBetPoints(b), 0),
+    [archivedBets]
   );
 
   // ─── Récupérer les infos d'un match ───
@@ -474,7 +502,7 @@ export default function MesPoints() {
           </div>
         )}
 
-        {!loading && betsWithCumul.length === 0 && (
+        {!loading && betsWithCumul.length === 0 && archivedBets.length === 0 && (
           <div className="bg-white rounded-lg p-8 text-center text-gray-500 shadow-sm">
             <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="font-semibold">
@@ -664,6 +692,56 @@ export default function MesPoints() {
             </div>
           );
         })}
+
+        {/* Édition en cours sans point, mais historique présent */}
+        {!loading && betsWithCumul.length === 0 && archivedBets.length > 0 && (
+          <div className="bg-white rounded-lg p-6 text-center text-gray-500 shadow-sm">
+            <p className="font-semibold">Aucun point sur l'édition en cours</p>
+            <p className="text-sm mt-1">
+              {championnatFilter === 'hcup'
+                ? 'La prochaine Champions Cup démarre en décembre 2026.'
+                : "Le comptage de cette édition n'a pas encore commencé."}
+            </p>
+          </div>
+        )}
+
+        {/* ─── Éditions terminées (historique, hors comptage actuel) ─── */}
+        {!loading && archivedBets.length > 0 && (
+          <div className="pt-1">
+            <button
+              onClick={() => setShowArchive(v => !v)}
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              <span>📦 Éditions terminées · hors comptage ({archivedPoints} pt{archivedPoints > 1 ? 's' : ''})</span>
+              <span className="text-gray-400 text-xs">{showArchive ? '▲ masquer' : '▼ voir'}</span>
+            </button>
+
+            {showArchive && (
+              <div className="mt-2 space-y-1.5">
+                {archivedWithCumul.map((bet) => {
+                  const mi = getMatchInfo(bet) || {};
+                  const dom = mi.equipe_domicile ? (getTeamData(mi.equipe_domicile)?.name || mi.equipe_domicile) : '?';
+                  const ext = mi.equipe_exterieure ? (getTeamData(mi.equipe_exterieure)?.name || mi.equipe_exterieure) : '?';
+                  const lib = (mi.round && typeof mi.round === 'string') ? mi.round : (mi.saison || extractSaison(bet.match_id) || '');
+                  return (
+                    <div key={bet.id} className="flex items-center justify-between px-3 py-2 bg-white rounded-lg border border-gray-200 text-sm">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-800 truncate">{dom} – {ext}</p>
+                        <p className="text-[11px] text-gray-400">
+                          {lib ? `${lib} · ` : ''}{formatDate(mi.date_match || bet.result_at || bet.resolved_at)}
+                        </p>
+                      </div>
+                      <div className="text-right pl-3 flex-shrink-0">
+                        <p className="text-xs font-bold text-rugby-gold">+{bet._points}</p>
+                        <p className="text-[10px] text-gray-400">cumul {bet._cumul}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
