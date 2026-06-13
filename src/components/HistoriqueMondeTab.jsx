@@ -240,21 +240,29 @@ export default function HistoriqueMondeTab() {
         </div>
       )}
 
-      {/* Pagination — pastille unifiée (style Top 14) */}
+      {/* Pagination — pastille style Top 14 (teinte émeraude MONDE) */}
       {totalPages > 1 && (
         <div className="flex justify-center pt-3">
-          <div className="inline-flex items-center gap-1 rounded-full bg-gray-900 shadow-md px-1.5 py-1.5">
+          <div
+            className="inline-flex items-center gap-2 px-2 py-1.5 rounded-full shadow-lg"
+            style={{ backgroundColor: '#0c1322', border: `1px solid ${MONDE_GREEN}` }}
+          >
             <button
               onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               disabled={pageSafe === 1}
-              className="px-3 py-1.5 rounded-full text-sm font-semibold text-white hover:bg-white/10 disabled:opacity-40 transition-colors"
+              className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ backgroundColor: MONDE_GREEN, color: '#FFFFFF' }}
             >◀ Précédent</button>
-            <span className="px-3 text-sm font-semibold text-gray-200 whitespace-nowrap">Page {pageSafe} / {totalPages}</span>
+
+            <span className="px-1 text-xs font-semibold whitespace-nowrap" style={{ color: MONDE_GREEN }}>
+              Page {pageSafe} / {totalPages}
+            </span>
+
             <button
               onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               disabled={pageSafe === totalPages}
-              className="px-3 py-1.5 rounded-full text-sm font-semibold text-white disabled:opacity-40 transition-colors"
-              style={pageSafe === totalPages ? {} : { backgroundColor: MONDE_GREEN }}
+              className="px-3 py-1.5 rounded-full text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ backgroundColor: MONDE_GREEN, color: '#FFFFFF' }}
             >Suivant ▶</button>
           </div>
         </div>
