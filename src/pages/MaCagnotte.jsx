@@ -690,16 +690,17 @@ export default function MaCagnotte() {
           .eq('user_id', userId)
           .neq('status', 'cancelled');
         const mondeBets = (mondeRaw || []).filter(b => !b.deleted);
-        const mondeIds = [...new Set(
-          mondeBets.map(b => Number(b.match_id)).filter(n => !Number.isNaN(n))
-        )];
+        // 🔧 user_bets_monde.match_id = match_id TEXTE ("MONDE_...") et NON l'id numérique.
+        //    On joint donc matchs_monde sur match_id (text), pas sur id — sinon Number(...) = NaN
+        //    -> aucune ligne chargée -> scores absents -> bloc "Résultat" manquant.
+        const mondeIds = [...new Set(mondeBets.map(b => b.match_id).filter(Boolean))];
         let mondeMatchMap = {};
         if (mondeIds.length > 0) {
           const { data: mm } = await supabase
             .from('matchs_monde')
-            .select('id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, score_final_domicile, score_final_exterieur, prolongation, date_match, phase, competition')
-            .in('id', mondeIds);
-          (mm || []).forEach(m => { mondeMatchMap[String(m.id)] = m; });
+            .select('id, match_id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, score_final_domicile, score_final_exterieur, prolongation, date_match, phase, competition')
+            .in('match_id', mondeIds);
+          (mm || []).forEach(m => { mondeMatchMap[String(m.match_id)] = m; });
         }
         betsMonde = mondeBets.map(b => {
           const m = mondeMatchMap[String(b.match_id)] || {};
