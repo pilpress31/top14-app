@@ -472,9 +472,9 @@ export default function MesPoints() {
 
       {/* Filtres */}
       <div className="max-w-md mx-auto px-4 py-3 sticky top-[140px] z-30 bg-gray-50 border-b border-gray-200 space-y-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Filtre championnat */}
-          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto pb-0.5">
+          {/* Filtre championnat (défilement horizontal si nécessaire) */}
+          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-max">
             <button
               onClick={() => setChampionnatFilter('all')}
               className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
@@ -528,19 +528,9 @@ export default function MesPoints() {
               🌍 MONDE
             </button>
           </div>
-
-          {/* Tri inversable */}
-          <button
-            onClick={() => setSortMode(sortMode === 'asc' ? 'desc' : 'asc')}
-            className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg shadow-sm border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 ml-auto"
-            aria-label="Inverser le tri"
-          >
-            <ArrowDownUp className="w-3.5 h-3.5" />
-            {sortMode === 'asc' ? 'Plus ancien' : 'Plus récent'}
-          </button>
         </div>
 
-        {/* 🆕 Dropdown saison */}
+        {/* 🆕 Saison + tri sur une même ligne */}
         <div className="flex items-center gap-2">
           <label htmlFor="saison-select" className="text-xs font-semibold text-gray-600">
             Saison :
@@ -558,6 +548,15 @@ export default function MesPoints() {
               </option>
             ))}
           </select>
+          {/* Tri inversable, aligné avec le menu saison */}
+          <button
+            onClick={() => setSortMode(sortMode === 'asc' ? 'desc' : 'asc')}
+            className="flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg shadow-sm border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 whitespace-nowrap flex-shrink-0"
+            aria-label="Inverser le tri"
+          >
+            <ArrowDownUp className="w-3.5 h-3.5" />
+            {sortMode === 'asc' ? 'Plus ancien' : 'Plus récent'}
+          </button>
         </div>
       </div>
 
