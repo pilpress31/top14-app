@@ -36,10 +36,10 @@ export default function ReglementPage() {
           </p>
           <div className="mt-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
             <p className="text-xs text-gray-700">
-              🏉 <strong>3 compétitions disponibles :</strong> Top 14, Pro D2 et Champions Cup.
+              🏉 <strong>4 compétitions disponibles :</strong> Top 14, Pro D2, Champions Cup et Rugby international (MONDE).
               En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la
-              <strong> mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2 et Champions Cup,
-              les paris portent uniquement sur le temps plein.
+              <strong> mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2, Champions Cup et Rugby international,
+              les paris portent uniquement sur le temps plein (score à 80 minutes).
             </p>
           </div>
           <div className="mt-3 bg-rugby-gold/10 rounded-lg p-3 border border-rugby-gold/30">
@@ -153,7 +153,7 @@ export default function ReglementPage() {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm">Score Exact Temps Plein</p>
-                <p className="text-xs text-gray-600">Trouvez le score final exact — Top 14, Pro D2 et Champions Cup</p>
+                <p className="text-xs text-gray-600">Trouvez le score final exact — Top 14, Pro D2, Champions Cup et Rugby international</p>
               </div>
             </div>
 
@@ -316,19 +316,19 @@ export default function ReglementPage() {
             {/* 🆕 Remise à zéro à chaque nouvelle saison */}
             <div className="bg-amber-50 rounded-lg p-4 border border-amber-300">
               <p className="font-bold text-amber-900 mb-2 text-sm flex items-center gap-2">
-                🔄 Remise à zéro chaque nouvelle saison
+                🔄 Un classement par compétition, remis à zéro à chaque édition
               </p>
               <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                Chaque saison de rugby débute le <strong>1er août</strong> et s'achève le <strong>31 juillet</strong> de l'année suivante.
+                Le classement par points est <strong>séparé pour chaque compétition</strong> (Top 14, Pro D2, Champions Cup, Rugby international), chacune avec son propre pronostiqueur IA.
               </p>
               <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                À la bascule du <strong>1er août</strong>, le compteur de <strong>points de classement</strong> de tous les utilisateurs revient automatiquement à <strong>zéro</strong>. Chaque saison repart ainsi sur une base équitable pour tous.
+                Les points se cumulent durant l'<strong>édition en cours</strong> d'une compétition. Dès que son <strong>match décisif</strong> est joué (finale, match d'accession…), le compteur de points de cette compétition <strong>repart à zéro</strong> pour l'édition suivante.
               </p>
               <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                En revanche, votre <strong>solde de jetons</strong> est conservé d'une saison à l'autre — il reflète votre cagnotte personnelle et n'est pas remis à zéro.
+                Côté <strong>Rugby international</strong> : les matchs disputés entre deux grandes échéances (tournées d'été, tests…) rapportent des <strong>jetons</strong> mais <strong>0 point de classement</strong> ; le comptage reprend à la <strong>Nations Championship</strong>. Votre <strong>solde de jetons</strong> n'est jamais remis à zéro.
               </p>
               <p className="text-xs text-gray-600 leading-relaxed italic">
-                💡 L'historique de vos points par saison reste consultable dans <strong>Ma Cagnotte → Mes Points</strong>, avec un sélecteur de saison pour revoir vos performances passées.
+                💡 L'historique des éditions terminées reste consultable dans <strong>Ma Cagnotte → Mes Points</strong> (encart « éditions terminées »).
               </p>
             </div>
           </div>
@@ -340,14 +340,14 @@ export default function ReglementPage() {
               🎁 Récompenses Futures (Évolution prévue)
             </h4>
             <p className="text-xs text-gray-700 mb-3">
-              Une évolution de ce jeu concours pourra prévoir des récompenses pour les <strong>3 premiers</strong> du classement par points :
+              Une évolution de ce jeu concours pourra récompenser le <strong>1er aux points de chaque compétition</strong>, à la clôture de son édition (finale, match d'accession…) :
             </p>
             
             <div className="space-y-2">
               <div className="bg-white rounded p-3 border border-orange-200">
-                <p className="font-bold text-sm text-orange-900 mb-1">🏉 Pour les 3 premiers :</p>
+                <p className="font-bold text-sm text-orange-900 mb-1">🏉 Pour le vainqueur de chaque classement :</p>
                 <p className="text-xs text-gray-700">
-                  Un <strong>ballon de rugby personnalisé</strong> d'une valeur maximale de <strong>50€</strong>
+                  Un <strong>ballon de rugby au choix</strong> d'une valeur maximale de <strong>50€</strong>
                 </p>
               </div>
 
