@@ -331,6 +331,13 @@ export default function MesPoints() {
     [filteredBets, matchsResultsHcup, matchsResultsMonde, mondePeriodeStart]
   );
 
+  // 🆕 Mode "historique" : saison passée OU « toutes les saisons ».
+  // Le filtre "édition en cours" n'a de sens que pour la saison courante :
+  // en mode historique on affiche tout le périmètre filtré, et le bandeau le reflète.
+  const isHistoryView = saisonFilter !== getSaisonCourante();
+  const shownActive    = isHistoryView ? filteredBets : activeBets;
+  const shownArchived  = isHistoryView ? []           : archivedBets;
+
   // ─── Cumul (TOUJOURS chronologique ASC) puis tri d'affichage ───
   const makeCumul = (list) => {
     const sortedAsc = [...list].sort((a, b) => {
@@ -347,17 +354,17 @@ export default function MesPoints() {
     return sortMode === 'desc' ? [...withCumul].reverse() : withCumul;
   };
 
-  const betsWithCumul     = useMemo(() => makeCumul(activeBets),   [activeBets, sortMode]);
-  const archivedWithCumul = useMemo(() => makeCumul(archivedBets), [archivedBets, sortMode]);
+  const betsWithCumul     = useMemo(() => makeCumul(shownActive),   [shownActive, sortMode]);
+  const archivedWithCumul = useMemo(() => makeCumul(shownArchived), [shownArchived, sortMode]);
 
-  // Total « live » = uniquement l'édition en cours de chaque compétition
+  // Total du bandeau : « live » (édition en cours) par défaut ; périmètre filtré en mode historique
   const totalPoints = useMemo(
-    () => activeBets.reduce((sum, b) => sum + computeBetPoints(b), 0),
-    [activeBets]
+    () => shownActive.reduce((sum, b) => sum + computeBetPoints(b), 0),
+    [shownActive]
   );
   const archivedPoints = useMemo(
-    () => archivedBets.reduce((sum, b) => sum + computeBetPoints(b), 0),
-    [archivedBets]
+    () => shownArchived.reduce((sum, b) => sum + computeBetPoints(b), 0),
+    [shownArchived]
   );
 
   // ─── Récupérer les infos d'un match ───
@@ -443,7 +450,7 @@ export default function MesPoints() {
 
         <div className="max-w-md mx-auto px-4 pb-4">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-1 min-h-[22px]">
               <p className="text-xs text-white/90 font-semibold">
                 Total points
                 {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : 'MONDE'}`}
@@ -457,7 +464,7 @@ export default function MesPoints() {
             </div>
             <p className="text-3xl font-bold text-white">{totalPoints}</p>
             <p className="text-xs text-white/80 mt-1">
-              {activeBets.length} pari{activeBets.length > 1 ? 's' : ''} gagné{activeBets.length > 1 ? 's' : ''}
+              {shownActive.length} pari{shownActive.length > 1 ? 's' : ''} gagné{shownActive.length > 1 ? 's' : ''}
             </p>
           </div>
         </div>
@@ -562,7 +569,7 @@ export default function MesPoints() {
           </div>
         )}
 
-        {!loading && betsWithCumul.length === 0 && archivedBets.length === 0 && (
+        {!loading && betsWithCumul.length === 0 && archivedWithCumul.length === 0 && (
           <div className="bg-white rounded-lg p-8 text-center text-gray-500 shadow-sm">
             <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="font-semibold">
@@ -757,7 +764,7 @@ export default function MesPoints() {
         })}
 
         {/* Édition en cours sans point, mais historique présent */}
-        {!loading && betsWithCumul.length === 0 && archivedBets.length > 0 && (
+        {!loading && betsWithCumul.length === 0 && archivedWithCumul.length > 0 && (
           <div className="bg-white rounded-lg p-6 text-center text-gray-500 shadow-sm">
             <p className="font-semibold">Aucun point sur l'édition en cours</p>
             <p className="text-sm mt-1">
@@ -769,7 +776,7 @@ export default function MesPoints() {
         )}
 
         {/* ─── Éditions terminées (historique, hors comptage actuel) ─── */}
-        {!loading && archivedBets.length > 0 && (
+        {!loading && archivedWithCumul.length > 0 && (
           <div className="pt-1">
             <button
               onClick={() => setShowArchive(v => !v)}
