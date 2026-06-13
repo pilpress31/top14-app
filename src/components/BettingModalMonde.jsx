@@ -173,6 +173,16 @@ export default function BettingModalMonde({ match, existingProno, userCredits, p
 
         <div className="p-4 space-y-3">
 
+          {/* Match hors fenêtre de classement → jetons sans points */}
+          {match && match.compte_points === false && (
+            <div className="rounded-lg p-3 border-l-4" style={{ backgroundColor: '#FEF3C7', borderColor: '#D97706' }}>
+              <p className="text-sm font-semibold" style={{ color: '#92400E' }}>⚠️ Hors période de classement</p>
+              <p className="text-xs mt-0.5 leading-snug" style={{ color: '#92400E' }}>
+                Ce match international ne rapporte <strong>aucun point</strong> au classement MONDE (le comptage démarre à la Nations Championship). Tu joues uniquement pour les <strong>jetons</strong>.
+              </p>
+            </div>
+          )}
+
           {/* Erreurs */}
           {errors.length > 0 && (
             <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-3 space-y-1">
