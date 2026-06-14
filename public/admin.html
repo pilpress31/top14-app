@@ -4959,33 +4959,49 @@ function exportDiagCSV() {
 let _ticketsData = null;
 
 // Charge les tickets via l'API
-async function chargerTickets() {
+function ticketsCompetition() {
+  const c = document.getElementById('ticketsCompetition');
+  return c ? c.value : 'top14';
+}
+
+// Changement de compétition -> on réinitialise la journée et on recharge
+function onTicketsCompChange() {
   const sel = document.getElementById('ticketsJournee');
-  const journee = sel.value ? Number(sel.value) : null;
+  if (sel) { sel.innerHTML = ''; sel.value = ''; }
+  _ticketsData = null;
+  chargerTickets();
+}
+
+async function chargerTickets() {
+  const competition = ticketsCompetition();
+  const sel = document.getElementById('ticketsJournee');
+  const journee = sel && sel.value ? sel.value : ''; // string (MONDE) ou numéro (Top 14)
   const container = document.getElementById('ticketsContenu');
   container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Chargement…</div>';
   try {
-    const url = journee ? `${API}/api/admin/tickets-top14?journee=${journee}` : `${API}/api/admin/tickets-top14`;
-    const res = await fetch(url, { headers: { 'x-admin-token': adminToken || '' } });
+    const qs = journee
+      ? `?competition=${competition}&journee=${encodeURIComponent(journee)}`
+      : `?competition=${competition}`;
+    const res = await fetch(`${API}/api/admin/tickets${qs}`, { headers: { 'x-admin-token': adminToken || '' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _ticketsData = await res.json();
-    peuplerSelectJournees();
+    peuplerSelectJournees(competition);
     renderTickets();
   } catch (e) {
     container.innerHTML = `<div style="text-align:center;padding:30px;color:#ef4444;">Erreur : ${e.message}</div>`;
   }
 }
 
-// Peuple le <select> des journées disponibles
-function peuplerSelectJournees() {
+// Peuple le <select> des journées (Top 14) / compétitions (MONDE)
+function peuplerSelectJournees(competition) {
   const sel = document.getElementById('ticketsJournee');
+  if (!sel) return;
   const journees = _ticketsData?.journees_disponibles || [];
   const courant = _ticketsData?.journee;
-  // Évite de re-peupler à chaque rafraîchissement
-  if (sel.options.length !== journees.length) {
-    sel.innerHTML = journees.map(j => `<option value="${j}">J${j}</option>`).join('');
-  }
-  if (courant) sel.value = courant;
+  const isMonde = competition === 'monde';
+  // On re-peuple toujours : les valeurs diffèrent d'une compétition à l'autre
+  sel.innerHTML = journees.map(j => `<option value="${j}">${isMonde ? j : 'J' + j}</option>`).join('');
+  if (courant != null && courant !== '') sel.value = courant;
 }
 
 // Badge de niveau de confiance
@@ -5036,7 +5052,7 @@ function renderTickets() {
           <div style="font-size:11px;color:var(--muted);">${date}</div>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
-          Score prédit FT : <strong style="color:var(--text);">${m.score_predit}</strong> · MT : ${m.score_predit_mt}
+                    Score prédit FT : <strong style="color:var(--text);">${m.score_predit}</strong>${m.score_predit_mt ? ` · MT : ${m.score_predit_mt}` : ''}
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           ${parisVisibles.map((p, idx) => `
