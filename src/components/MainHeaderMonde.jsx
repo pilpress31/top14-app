@@ -8,6 +8,12 @@
 //
 // Stats : précision algo XGBoost (walk-forward) + nb matchs analysés
 // API   : GET /api/monde/stats/precision
+//
+// FIX SCROLL (vrai correctif, juin 2026) :
+//   Cause racine = un même élément cumulait position:fixed ET un transform
+//   animé. Android gère mal ce cumul -> la zone de droite n'était pas
+//   repeinte (artefact translucide au scroll). Solution propre : SÉPARER
+//   les rôles -> un conteneur .fixed (stable) + un <header> enfant animé.
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -41,56 +47,70 @@ export default function MainHeaderMonde({ isVisible = true }) {
   }, []);
 
   return (
-    <header
-      className={`fixed w-full h-[120px] z-50 shadow-md
-                  transition-transform duration-300
-                  ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
+    // 1) Conteneur FIXE et STABLE : il ne porte aucun transform animé.
+    <div
       style={{
-        background: MC.header.fond,
-        borderBottom: `2px solid ${MC.header.bordure}`,
+        position: 'fixed',
         top: 'var(--safe-area-top, 0px)',
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        // Quand le header est masqué, on laisse passer les clics dessous.
+        pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
-      <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
+      {/* 2) Header ANIMÉ : élément non-fixed -> compositing propre, pas d'artefact. */}
+      <header
+        className="w-full h-[120px] shadow-md"
+        style={{
+          background: MC.header.fond,
+          borderBottom: `2px solid ${MC.header.bordure}`,
+          transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+          transition: 'transform 300ms ease',
+          willChange: 'transform',
+        }}
+      >
+        <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
 
-        {/* Titre */}
-        <div className="text-center">
-          <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
-              style={{ color: vert }}>
-            <span style={{ fontSize: '20px', lineHeight: 1 }}>🌍</span>
-            RUGBY INTERNATIONAL
-          </h1>
-          <p className="text-xs italic mt-1" style={{ color: vert, opacity: 0.7 }}>
-            Tests, tournois &amp; coupes du monde — boostés par l'IA
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 w-full">
-          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
-               style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
-            <TrophyIcon className="h-4 w-4" style={{ color: emeraude }} />
-            <div>
-              <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-                {stats.precision > 0 ? `${stats.precision}%` : "…"}
-              </p>
-              <p className="text-[10px]" style={{ color: emeraude }}>Précision moyenne</p>
-            </div>
+          {/* Titre */}
+          <div className="text-center">
+            <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
+                style={{ color: vert }}>
+              <span style={{ fontSize: '20px', lineHeight: 1 }}>🌍</span>
+              RUGBY INTERNATIONAL
+            </h1>
+            <p className="text-xs italic mt-1" style={{ color: vert, opacity: 0.7 }}>
+              Tests, tournois &amp; coupes du monde — boostés par l'IA
+            </p>
           </div>
 
-          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
-               style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
-            <GlobeIcon className="h-4 w-4" style={{ color: emeraude }} />
-            <div>
-              <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-                {stats.total > 0 ? stats.total : "…"}
-              </p>
-              <p className="text-[10px]" style={{ color: emeraude }}>Matchs analysés</p>
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-2 w-full">
+            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
+                 style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
+              <TrophyIcon className="h-4 w-4" style={{ color: emeraude }} />
+              <div>
+                <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
+                  {stats.precision > 0 ? `${stats.precision}%` : "…"}
+                </p>
+                <p className="text-[10px]" style={{ color: emeraude }}>Précision moyenne</p>
+              </div>
+            </div>
+
+            <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
+                 style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
+              <GlobeIcon className="h-4 w-4" style={{ color: emeraude }} />
+              <div>
+                <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
+                  {stats.total > 0 ? stats.total : "…"}
+                </p>
+                <p className="text-[10px]" style={{ color: emeraude }}>Matchs analysés</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 }
 
