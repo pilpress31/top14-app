@@ -10,6 +10,7 @@ const CHAMPS = [
   { value: 'top14', label: '🏆 Top 14',    accent: '#C9A84C', bg: '#1a1a1a' },
   { value: 'prod2', label: '🥈 Pro D2',     accent: '#97C1FE', bg: '#00174D' },
   { value: 'hcup',  label: '⭐ Champ. Cup', accent: '#FFC72C', bg: '#003E7E' },
+  { value: 'monde', label: '🌍 Inter.',     accent: '#34D399', bg: '#0B6E4F' },
 ];
 
 async function apiGet(path, token) {
