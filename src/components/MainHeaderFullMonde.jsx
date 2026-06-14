@@ -11,6 +11,12 @@
 // API :
 //   - GET /api/monde/stats/precision    (algo)
 //   - GET /api/monde/stats/users-bets   (utilisateurs)
+//
+// NOTE (fix scroll juin 2026) :
+//   L'animation show/hide du header se fait via translate3d INLINE (couche GPU)
+//   + will-change/backface-visibility, et le header est épinglé left-0 right-0.
+//   Cela évite l'artefact de repaint (bande non redessinée à droite) observé
+//   sur Android quand le header redescend au scroll vers le haut.
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -54,13 +60,17 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
 
   return (
     <header
-      className={`fixed w-full h-[120px] z-50 shadow-md
-                  transition-transform duration-300
-                  ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
+      className="fixed left-0 right-0 w-full h-[120px] z-50 shadow-md"
       style={{
         background: M.header.fond,
         borderBottom: `2px solid ${M.header.bordure}`,
         top: 'var(--safe-area-top, 0px)',
+        // Animation show/hide sur couche GPU (évite l'artefact de repaint à droite)
+        transform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
+        transition: 'transform 300ms ease',
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
       }}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
