@@ -65,12 +65,17 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
         background: M.header.fond,
         borderBottom: `2px solid ${M.header.bordure}`,
         top: 'var(--safe-area-top, 0px)',
+        overflow: 'hidden',
         // Animation show/hide sur couche GPU (évite l'artefact de repaint à droite)
         transform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
+        WebkitTransform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
         transition: 'transform 300ms ease',
+        WebkitTransition: 'transform 300ms ease',
         willChange: 'transform',
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
+        perspective: 1000,
+        WebkitPerspective: 1000,
       }}
     >
       <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
