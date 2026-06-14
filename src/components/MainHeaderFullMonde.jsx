@@ -13,10 +13,12 @@
 //   - GET /api/monde/stats/users-bets   (utilisateurs)
 //
 // NOTE (fix scroll juin 2026) :
-//   L'animation show/hide du header se fait via translate3d INLINE (couche GPU)
-//   + will-change/backface-visibility, et le header est épinglé left-0 right-0.
-//   Cela évite l'artefact de repaint (bande non redessinée à droite) observé
-//   sur Android quand le header redescend au scroll vers le haut.
+//   Le header.fond MONDE est un dégradé qui se termine par une couleur
+//   translucide. Sur une couche animée en transform, Android ne repeint
+//   pas toujours la zone translucide à droite -> on voyait la page derrière.
+//   Fix : on pose un FOND BLANC OPAQUE (backgroundColor) SOUS le dégradé
+//   (backgroundImage), + animation sur couche GPU (translate3d / will-change
+//   / backface-visibility / perspective) et épinglage left-0 right-0.
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -62,11 +64,12 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
     <header
       className="fixed left-0 right-0 w-full h-[120px] z-50 shadow-md"
       style={{
-        background: M.header.fond,
+        // Fond blanc OPAQUE sous le dégradé (évite le contenu visible à droite au scroll)
+        backgroundColor: '#FFFFFF',
+        backgroundImage: M.header.fond,
         borderBottom: `2px solid ${M.header.bordure}`,
         top: 'var(--safe-area-top, 0px)',
-        overflow: 'hidden',
-        // Animation show/hide sur couche GPU (évite l'artefact de repaint à droite)
+        // Animation show/hide sur couche GPU
         transform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
         WebkitTransform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
         transition: 'transform 300ms ease',
