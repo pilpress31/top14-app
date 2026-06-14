@@ -12,13 +12,13 @@
 //   - GET /api/monde/stats/precision    (algo)
 //   - GET /api/monde/stats/users-bets   (utilisateurs)
 //
-// NOTE (fix scroll juin 2026) :
-//   Le header.fond MONDE est un dégradé qui se termine par une couleur
-//   translucide. Sur une couche animée en transform, Android ne repeint
-//   pas toujours la zone translucide à droite -> on voyait la page derrière.
-//   Fix : on pose un FOND BLANC OPAQUE (backgroundColor) SOUS le dégradé
-//   (backgroundImage), + animation sur couche GPU (translate3d / will-change
-//   / backface-visibility / perspective) et épinglage left-0 right-0.
+// FIX SCROLL (vrai correctif, juin 2026) :
+//   Cause racine = un même élément cumulait position:fixed ET un transform
+//   animé. Android gère mal ce cumul -> la zone de droite n'était pas
+//   repeinte (artefact translucide). Solution propre : SÉPARER les rôles.
+//     - un conteneur .fixed (stable, ne bouge jamais)
+//     - un <header> enfant qui porte l'animation translateY
+//   Un élément non-fixed se compose proprement -> plus d'artefact.
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -61,80 +61,84 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
   const modeMature = userStats.total_paris >= SEUIL_PARIS_AFFICHAGE;
 
   return (
-    <header
-      className="fixed left-0 right-0 w-full h-[120px] z-50 shadow-md"
+    // 1) Conteneur FIXE et STABLE : il ne porte aucun transform animé.
+    <div
       style={{
-        // Fond blanc OPAQUE sous le dégradé (évite le contenu visible à droite au scroll)
-        backgroundColor: '#FFFFFF',
-        backgroundImage: M.header.fond,
-        borderBottom: `2px solid ${M.header.bordure}`,
+        position: 'fixed',
         top: 'var(--safe-area-top, 0px)',
-        // Animation show/hide sur couche GPU
-        transform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
-        WebkitTransform: isVisible ? 'translate3d(0,0,0)' : 'translate3d(0,-100%,0)',
-        transition: 'transform 300ms ease',
-        WebkitTransition: 'transform 300ms ease',
-        willChange: 'transform',
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        perspective: 1000,
-        WebkitPerspective: 1000,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        // Quand le header est masqué, on laisse passer les clics dessous.
+        pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
-      <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
+      {/* 2) Header ANIMÉ : élément non-fixed -> compositing propre, pas d'artefact. */}
+      <header
+        className="w-full h-[120px] shadow-md"
+        style={{
+          background: M.header.fond,
+          borderBottom: `2px solid ${M.header.bordure}`,
+          transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+          transition: 'transform 300ms ease',
+          willChange: 'transform',
+        }}
+      >
+        <div className="container mx-auto px-1 py-1 flex flex-col items-center gap-3">
 
-        {/* Titre */}
-        <div className="text-center">
-          <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
-              style={{ color: vert }}>
-            <span style={{ fontSize: '20px', lineHeight: 1 }}>🌍</span>
-            INTERNATIONAL · PARIS VIRTUELS
-          </h1>
-          <p className="text-xs italic mt-1" style={{ color: vert, opacity: 0.7 }}>
-            Des cotes fiables, basées sur la réalité du terrain
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 w-full">
-
-          {/* Bloc 1 : Précision moyenne (algo) — toujours affiché */}
-          <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
-               style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
-            <TrophyIcon className="h-4 w-4" style={{ color: emeraude }} />
-            <div>
-              <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-                {algoStats.precision > 0 ? `${algoStats.precision}%` : "…"}
-              </p>
-              <p className="text-[10px]" style={{ color: emeraude }}>Précision moyenne</p>
-            </div>
+          {/* Titre */}
+          <div className="text-center">
+            <h1 className="text-lg font-bold flex items-center justify-center gap-2 uppercase tracking-widest"
+                style={{ color: vert }}>
+              <span style={{ fontSize: '20px', lineHeight: 1 }}>🌍</span>
+              INTERNATIONAL · PARIS VIRTUELS
+            </h1>
+            <p className="text-xs italic mt-1" style={{ color: vert, opacity: 0.7 }}>
+              Des cotes fiables, basées sur la réalité du terrain
+            </p>
           </div>
 
-          {/* Bloc 2 : Paris gagnants (mature) OU CTA cold start */}
-          {modeMature ? (
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-2 w-full">
+
+            {/* Bloc 1 : Précision moyenne (algo) — toujours affiché */}
             <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
                  style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
-              <StarIcon className="h-4 w-4" style={{ color: emeraude }} />
+              <TrophyIcon className="h-4 w-4" style={{ color: emeraude }} />
               <div>
                 <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
-                  {userStats.paris_corrects}/{userStats.total_paris}
+                  {algoStats.precision > 0 ? `${algoStats.precision}%` : "…"}
                 </p>
-                <p className="text-[10px]" style={{ color: emeraude }}>Paris gagnants</p>
+                <p className="text-[10px]" style={{ color: emeraude }}>Précision moyenne</p>
               </div>
             </div>
-          ) : (
-            <div className="rounded-lg px-3 py-1 shadow flex items-center gap-1 h-[40px]"
-                 style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
-              <span className="text-base">🚀</span>
-              <p className="text-[11px] font-bold leading-tight text-left" style={{ color: emeraude }}>
-                Sois parmi<br />les 1<sup>ers</sup> à parier !
-              </p>
-            </div>
-          )}
 
+            {/* Bloc 2 : Paris gagnants (mature) OU CTA cold start */}
+            {modeMature ? (
+              <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1 h-[40px]"
+                   style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
+                <StarIcon className="h-4 w-4" style={{ color: emeraude }} />
+                <div>
+                  <p className="text-sm font-bold" style={{ color: "#FFFFFF" }}>
+                    {userStats.paris_corrects}/{userStats.total_paris}
+                  </p>
+                  <p className="text-[10px]" style={{ color: emeraude }}>Paris gagnants</p>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-lg px-3 py-1 shadow flex items-center gap-1 h-[40px]"
+                   style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
+                <span className="text-base">🚀</span>
+                <p className="text-[11px] font-bold leading-tight text-left" style={{ color: emeraude }}>
+                  Sois parmi<br />les 1<sup>ers</sup> à parier !
+                </p>
+              </div>
+            )}
+
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 }
 
