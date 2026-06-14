@@ -63,7 +63,8 @@ export default function MainHeaderMonde({ isVisible = true }) {
       <header
         className="w-full h-[120px] shadow-md"
         style={{
-          background: MC.header.fond,
+          backgroundColor: '#FFFFFF',
+          backgroundImage: MC.header.fond,
           borderBottom: `2px solid ${MC.header.bordure}`,
           transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
           transition: 'transform 300ms ease',

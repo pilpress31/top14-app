@@ -12,13 +12,12 @@
 //   - GET /api/monde/stats/precision    (algo)
 //   - GET /api/monde/stats/users-bets   (utilisateurs)
 //
-// FIX SCROLL (vrai correctif, juin 2026) :
-//   Cause racine = un même élément cumulait position:fixed ET un transform
-//   animé. Android gère mal ce cumul -> la zone de droite n'était pas
-//   repeinte (artefact translucide). Solution propre : SÉPARER les rôles.
-//     - un conteneur .fixed (stable, ne bouge jamais)
-//     - un <header> enfant qui porte l'animation translateY
-//   Un élément non-fixed se compose proprement -> plus d'artefact.
+// FIX SCROLL (juin 2026) — DEUX causes, deux remèdes combinés :
+//   (a) un même élément cumulait position:fixed + transform animé (Android
+//       repeint mal) -> on SÉPARE : conteneur .fixed stable + <header> enfant animé ;
+//   (b) le dégradé header.fond est TRANSLUCIDE à droite (…33) -> le contenu
+//       passait au travers quand le header recouvrait la page -> on pose un
+//       FOND BLANC OPAQUE (backgroundColor) SOUS le dégradé (backgroundImage).
 // ============================================================
 
 import { useState, useEffect } from "react";
@@ -69,15 +68,15 @@ export default function MainHeaderFullMonde({ isVisible = true }) {
         left: 0,
         right: 0,
         zIndex: 50,
-        // Quand le header est masqué, on laisse passer les clics dessous.
         pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
-      {/* 2) Header ANIMÉ : élément non-fixed -> compositing propre, pas d'artefact. */}
+      {/* 2) Header ANIMÉ : fond BLANC OPAQUE sous le dégradé -> rien ne transparaît. */}
       <header
         className="w-full h-[120px] shadow-md"
         style={{
-          background: M.header.fond,
+          backgroundColor: '#FFFFFF',
+          backgroundImage: M.header.fond,
           borderBottom: `2px solid ${M.header.bordure}`,
           transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
           transition: 'transform 300ms ease',
