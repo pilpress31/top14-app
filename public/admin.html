@@ -5047,8 +5047,13 @@ function peuplerSelectJournees(competition) {
   const journees = _ticketsData?.journees_disponibles || [];
   const courant = _ticketsData?.journee;
   const libelleTexte = (competition === 'monde' || competition === 'hcup');
-  // On re-peuple toujours : les valeurs diffèrent d'une compétition à l'autre
-  sel.innerHTML = journees.map(j => `<option value="${j}">${libelleTexte ? j : 'J' + j}</option>`).join('');
+  sel.innerHTML = journees.map(it => {
+    if (libelleTexte) return `<option value="${it}">${it}</option>`;
+    // Top 14 / D2 : objets { journee, round_label } (numéro brut en fallback)
+    const j  = (it && typeof it === 'object') ? it.journee : it;
+    const rl = (it && typeof it === 'object') ? it.round_label : null;
+    return `<option value="${j}">${rl ? rl : 'J' + j}</option>`;
+  }).join('');
   if (courant != null && courant !== '') sel.value = courant;
 }
 
