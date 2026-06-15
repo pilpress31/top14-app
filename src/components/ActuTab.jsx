@@ -34,6 +34,7 @@ export default function ActuTab() {
   const { championnat } = useChampionnat();
   const [actus, setActus] = useState([]);
   const [journee, setJournee] = useState(null);
+  const [round, setRound] = useState(null);
   const [disponible, setDisponible] = useState(true);
   const [message, setMessage] = useState('');
   const [derniereMaj, setDerniereMaj] = useState(null);
@@ -66,6 +67,7 @@ export default function ActuTab() {
       } else {
         setActus(data.actus || []);
         setJournee(data.journee || null);
+        setRound(data.round || null);
         setDisponible(data.disponible !== false);
         setMessage(data.message || '');
         setDerniereMaj(data.derniere_maj || null);
@@ -135,7 +137,9 @@ export default function ActuTab() {
       <div className="bg-white rounded-lg shadow-sm p-8 text-center border border-rugby-gray mt-4">
         <div className="text-3xl mb-3">📰</div>
         <p className="text-gray-700 font-semibold text-sm">
-          {journee ? `Analyses J${journee} à venir` : 'Analyses à venir'}
+          {journee
+            ? `Analyses ${(round && round.toLowerCase() !== 'journée') ? round : 'J' + journee} à venir`
+            : 'Analyses à venir'}
         </p>
         <p className="text-gray-400 text-xs mt-2">
           {message || 'Les analyses IA seront disponibles prochainement.'}
