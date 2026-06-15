@@ -1457,9 +1457,17 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
     <div id="panel-tickets" class="panel">
       <div class="card">
         <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <span>🎲 Tickets Top14</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <label for="ticketsJournee" style="font-size:13px;color:var(--muted);">Journée :</label>
+          <span>🎲 Tickets</span>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label for="ticketsCompetition" style="font-size:13px;color:var(--muted);">Compétition :</label>
+            <select id="ticketsCompetition" onchange="onTicketsCompChange()"
+              style="padding:6px 10px;border-radius:var(--border-radius-md);background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:13px;">
+              <option value="top14">🏆 Top 14</option>
+              <option value="d2">🥈 Pro D2</option>
+              <option value="hcup">⭐ Champions Cup</option>
+              <option value="monde">🌍 International</option>
+            </select>
+            <label for="ticketsJournee" style="font-size:13px;color:var(--muted);">Sélection :</label>
             <select id="ticketsJournee" onchange="chargerTickets()"
               style="padding:6px 10px;border-radius:var(--border-radius-md);background:var(--surface2);color:var(--text);border:1px solid var(--border);font-size:13px;">
             </select>
@@ -4992,15 +5000,15 @@ async function chargerTickets() {
   }
 }
 
-// Peuple le <select> des journées (Top 14) / compétitions (MONDE)
+// Peuple le <select> : Top 14 / Pro D2 = "J" + numéro ; HCup (round) / MONDE (compétition) = libellé brut
 function peuplerSelectJournees(competition) {
   const sel = document.getElementById('ticketsJournee');
   if (!sel) return;
   const journees = _ticketsData?.journees_disponibles || [];
   const courant = _ticketsData?.journee;
-  const isMonde = competition === 'monde';
+  const libelleTexte = (competition === 'monde' || competition === 'hcup');
   // On re-peuple toujours : les valeurs diffèrent d'une compétition à l'autre
-  sel.innerHTML = journees.map(j => `<option value="${j}">${isMonde ? j : 'J' + j}</option>`).join('');
+  sel.innerHTML = journees.map(j => `<option value="${j}">${libelleTexte ? j : 'J' + j}</option>`).join('');
   if (courant != null && courant !== '') sel.value = courant;
 }
 
