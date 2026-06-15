@@ -1375,6 +1375,10 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
             <div class="spinner"></div>
             <span class="btn-text">🤖 Synthèse HCup</span>
           </button>
+          <button class="btn" id="synthBtnMonde" onclick="generateSynthese('monde')" style="background:#0B6E4F;color:#fff">
+            <div class="spinner"></div>
+            <span class="btn-text">🤖 Synthèse International</span>
+          </button>
           <span id="synthStatus" style="color:var(--muted);font-size:12px;align-self:center"></span>
         </div>
         <div class="result" id="synthResult" style="margin-top:10px"></div>
@@ -3825,6 +3829,7 @@ async function generateSynthese(championnat) {
     top14: { btnId: 'synthBtnTop14', label: 'Top 14' },
     prod2: { btnId: 'synthBtnProD2', label: 'Pro D2' },
     hcup:  { btnId: 'synthBtnHcup',  label: 'Champions Cup' },
+    monde: { btnId: 'synthBtnMonde', label: 'International' },
   };
   const cfg = champConfig[championnat] || champConfig.top14;
   const btn = document.getElementById(cfg.btnId);
@@ -3840,7 +3845,7 @@ async function generateSynthese(championnat) {
   }
 
   // Désactiver les 3 boutons pendant la génération
-  const allBtns = ['synthBtnTop14', 'synthBtnProD2', 'synthBtnHcup']
+  const allBtns = ['synthBtnTop14', 'synthBtnProD2', 'synthBtnHcup', 'synthBtnMonde']
     .map(id => document.getElementById(id))
     .filter(Boolean);
   allBtns.forEach(b => { b.disabled = true; });
