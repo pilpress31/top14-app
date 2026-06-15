@@ -4646,7 +4646,10 @@ async function loadCommResults() {
       monde: { bg: '#0B3D2E', accent: '#34D399', text: '#A7F3D0',  label: '🌍 INTERNATIONAL' },
     };
     const col = champColors[champ];
-    const journeeLabel = (champ === 'hcup' || champ === 'monde') ? journee : `Journée ${journee}`;
+    const premierRound = matchs[0]?.round;
+    const journeeLabel = (champ === 'hcup' || champ === 'monde')
+      ? journee
+      : (premierRound && premierRound !== 'Journée' ? premierRound : `Journée ${journee}`);
 
     // Générer les lignes de matchs
     // ── Layout cartes compactes (optimisé screenshot mobile 420px) ──
