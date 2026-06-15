@@ -1553,7 +1553,8 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
                     style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px">
               <option value="top14">🏆 Top 14</option>
               <option value="prod2">🥈 Pro D2</option>
-              <option value="hcup">🌍 Champions Cup</option>
+              <option value="hcup">⭐ Champions Cup</option>
+              <option value="monde">🌍 International</option>
             </select>
             <select id="commAlgoSaison" onchange="onCommAlgoSaisonChange()"
                     style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;min-width:130px">
@@ -2891,26 +2892,54 @@ function onCommAlgoChampChange() {
   const champ = document.getElementById('commAlgoChamp').value;
   const isProD2 = champ === 'prod2';
   const isHcup = champ === 'hcup';
-
-  // Adapter label "Journée/Round"
+  const isMonde = champ === 'monde';
+  // Adapter label "Journée/Round/Compétition"
   const lblJournee = document.getElementById('commAlgoJourneeLabel');
-  if (lblJournee) lblJournee.textContent = isHcup ? 'Round' : 'Journée';
-
-  // Masquer % MT en Pro D2 et HCup
+  if (lblJournee) lblJournee.textContent = isHcup ? 'Round' : (isMonde ? 'Compétition' : 'Journée');
+  // Masquer % MT en Pro D2, HCup et MONDE
   const mtCard = document.getElementById('commAlgoPctMTCard');
   const mtCheckWrap = document.getElementById('commAlgoSendMTWrap');
-  const noMt = isProD2 || isHcup;
+  const noMt = isProD2 || isHcup || isMonde;
   if (mtCard) mtCard.style.display = noMt ? 'none' : '';
   if (mtCheckWrap) mtCheckWrap.style.display = noMt ? 'none' : '';
-
   // Reset preview
   document.getElementById('commAlgoScreenshotCard').style.display = 'none';
   document.getElementById('commAlgoFiltres').style.display = 'none';
   document.getElementById('commAlgoResult').innerHTML = '';
-
+  // MONDE : pas de saison → on masque/neutralise le sélecteur saison et on peuple
+  // directement les compétitions dans le sélecteur "journée".
+  const saisonSel = document.getElementById('commAlgoSaison');
+  if (isMonde) {
+    if (saisonSel) {
+      saisonSel.innerHTML = '<option value="monde">🌍 International</option>';
+      saisonSel.value = 'monde';
+      saisonSel.style.display = 'none';
+    }
+    loadCommAlgoCompetitionsMonde();
+    return;
+  }
+  if (saisonSel) saisonSel.style.display = '';
   loadCommAlgoSaisons();
 }
 
+
+
+
+
+
+// MONDE : peuple le sélecteur "journée" avec la liste des compétitions
+async function loadCommAlgoCompetitionsMonde() {
+  const sel = document.getElementById('commAlgoJournee');
+  sel.innerHTML = '<option value="">⏳ Chargement…</option>';
+  try {
+    const d = await api('/api/comm/journees?champ=monde');
+    const comps = (d.journees || []).map(j => j.journee);
+    sel.innerHTML = '<option value="">— Choisir une compétition —</option>' +
+      comps.map(c => `<option value="${c}">${c}</option>`).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">Erreur chargement</option>';
+  }
+}
 function onCommAlgoSaisonChange() {
   document.getElementById('commAlgoScreenshotCard').style.display = 'none';
   document.getElementById('commAlgoFiltres').style.display = 'none';
@@ -2923,21 +2952,21 @@ async function commChargerStatsAlgo() {
   const journee = document.getElementById('commAlgoJournee').value;
   const isProD2 = champ === 'prod2';
   const isHcup = champ === 'hcup';
-
+  const isMonde = champ === 'monde';
   if (!saison || !journee) {
     document.getElementById('commAlgoResult').innerHTML =
       '<span style="color:var(--red)">❌ Sélectionnez une saison et une journée</span>';
     return;
   }
-
   document.getElementById('commAlgoLoading').style.display = 'block';
   document.getElementById('commAlgoScreenshotCard').style.display = 'none';
   document.getElementById('commAlgoFiltres').style.display = 'none';
   document.getElementById('commAlgoResult').innerHTML = '';
-
   try {
     let endpoint;
-    if (isProD2) {
+    if (isMonde) {
+      endpoint = `/api/monde/admin/stats-algo-journee?competition=${encodeURIComponent(journee)}`;
+    } else if (isProD2) {
       endpoint = `/api/d2/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
     } else if (isHcup) {
       endpoint = `/api/hcup/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&round=${encodeURIComponent(journee)}`;
@@ -2945,16 +2974,15 @@ async function commChargerStatsAlgo() {
       endpoint = `/api/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
     }
     const data = await api(endpoint);
-
     if (!data || data.error) {
       document.getElementById('commAlgoResult').innerHTML =
         '<span style="color:var(--red)">❌ ' + (data?.error || 'Erreur') + '</span>';
       return;
     }
-
-    // Remplir les 4 carrés
     let journeeDisplay;
-    if (isHcup) {
+    if (isMonde) {
+      journeeDisplay = journee; // nom de la compétition
+    } else if (isHcup) {
       journeeDisplay = (journee === '__all__') ? 'Tous' : journee;
     } else {
       journeeDisplay = (journee === '__all__') ? 'Toutes'
@@ -2964,19 +2992,13 @@ async function commChargerStatsAlgo() {
     document.getElementById('commAlgoPctFT').textContent = (data.pct_ft != null ? data.pct_ft : '—') + '%';
     document.getElementById('commAlgoPctMT').textContent = (data.pct_mt != null ? data.pct_mt + '%' : '—');
     document.getElementById('commAlgoNbMatchs').textContent = data.nb_matchs;
-
-    // Header (titre + saison)
-    const champLabel = isProD2 ? 'Pro D2' : (isHcup ? 'Champions Cup' : 'Top 14');
-    const champEmoji = isProD2 ? '🥈' : (isHcup ? '🌍' : '🏉');
+    const champLabel = isProD2 ? 'Pro D2' : (isHcup ? 'Champions Cup' : (isMonde ? 'International' : 'Top 14'));
+    const champEmoji = isProD2 ? '🥈' : (isHcup ? '⭐' : (isMonde ? '🌍' : '🏉'));
     document.getElementById('commAlgoCardTitle').textContent =
       `${champEmoji} ${champLabel} — ${journeeDisplay}`;
-    document.getElementById('commAlgoCardSubtitle').textContent = `Saison ${saison}`;
-
-    // Filtres FT/MT et carte screenshot visibles
+    document.getElementById('commAlgoCardSubtitle').textContent = isMonde ? 'Toutes éditions' : `Saison ${saison}`;
     document.getElementById('commAlgoFiltres').style.display = '';
     document.getElementById('commAlgoScreenshotCard').style.display = '';
-
-    // Appliquer les filtres FT/MT au rendu (au cas où l'utilisateur les a changés avant le calcul)
     commMajApercu();
   } catch(e) {
     document.getElementById('commAlgoResult').innerHTML =
@@ -2991,18 +3013,16 @@ function commMajApercu() {
   const champ = document.getElementById('commAlgoChamp').value;
   const isProD2 = champ === 'prod2';
   const isHcup = champ === 'hcup';
-
+  const isMonde = champ === 'monde';
   const showFT = document.getElementById('commAlgoSendFT').checked;
   const showMT = document.getElementById('commAlgoSendMT')?.checked;
-
   // Masquer/afficher les carrés selon les checkboxes (en respectant noMt)
   const ftCard = document.getElementById('commAlgoPctFTCard');
   const mtCard = document.getElementById('commAlgoPctMTCard');
-
   if (ftCard) ftCard.style.display = showFT ? '' : 'none';
   if (mtCard) {
-    // Pas de MT en Pro D2/HCup, donc toujours masqué dans ces cas
-    if (isProD2 || isHcup) {
+    // Pas de MT en Pro D2 / HCup / MONDE, donc toujours masqué dans ces cas
+    if (isProD2 || isHcup || isMonde) {
       mtCard.style.display = 'none';
     } else {
       mtCard.style.display = showMT ? '' : 'none';
