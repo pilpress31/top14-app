@@ -125,7 +125,7 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
         <div className="text-4xl mb-2 opacity-40">🏉</div>
-        <p className="text-gray-500">Aucun pronostic disponible</p>
+        <p className="text-gray-500">Aucun pronostic {isD2 ? 'Pro D2' : 'Top 14'} disponible</p>
         <p className="text-xs text-gray-400 mt-1">Reviens plus tard pour les prochains matchs</p>
       </div>
     );
