@@ -305,7 +305,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
     <button class="tab" onclick="showTab('invitations', this)">🎟️ Invitations</button>
     <button class="tab" onclick="showTab('mail', this)">📧 Mail</button>
     <button class="tab" onclick="showTab('communication', this)">📊 Communication</button>
-    <button class="tab" onclick="showTab('tickets', this)">🎲 Tickets Top14</button>
+    <button class="tab" onclick="showTab('tickets', this)">🎲 Tickets</button>
     <button class="tab" onclick="showTab('maintenance', this)">🛠️ Maintenance</button>
 
   </div>
@@ -1508,6 +1508,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="top14">🏆 Top 14</option>
               <option value="prod2">🥈 Pro D2</option>
               <option value="hcup">⭐ Champions Cup</option>
+              <option value="monde">🌍 International</option>
             </select>
           </div>
           <div>
@@ -4611,9 +4612,10 @@ async function loadCommResults() {
       top14: { bg: '#1a1a1a', accent: '#CBA135', text: '#ffffff', label: '🏆 TOP 14' },
       prod2: { bg: '#00174D', accent: '#C0C0C0', text: '#97C1FE',  label: '🥈 PRO D2' },
       hcup:  { bg: '#003E7E', accent: '#FFC72C', text: '#ffffff',  label: '⭐ CHAMPIONS CUP' },
+      monde: { bg: '#0B3D2E', accent: '#34D399', text: '#A7F3D0',  label: '🌍 INTERNATIONAL' },
     };
     const col = champColors[champ];
-    const journeeLabel = `Journée ${journee}`;
+    const journeeLabel = (champ === 'hcup' || champ === 'monde') ? journee : `Journée ${journee}`;
 
     // Générer les lignes de matchs
     // ── Layout cartes compactes (optimisé screenshot mobile 420px) ──
@@ -4776,6 +4778,7 @@ async function loadCommTeaser() {
       top14: { label: '🏆 TOP 14',     accent: '#C9A84C', bg: '#1a1a1a' },
       d2:    { label: '🥈 PRO D2',     accent: '#97C1FE', bg: '#00174D' },
       hcup:  { label: '⭐ CHAMP. CUP', accent: '#FFC72C', bg: '#003E7E' },
+      monde: { label: '🌍 INTERNATIONAL', accent: '#34D399', bg: '#0B3D2E' },
     };
 
     const renderMatchs = (matchs, cfg) => {
@@ -4805,7 +4808,7 @@ async function loadCommTeaser() {
     };
 
     el.innerHTML = `<div style="max-width:420px;margin:0 auto;">` +
-      Object.entries({ top14: d.top14, d2: d.d2, hcup: d.hcup }).map(([key, matchs]) => {
+      Object.entries({ top14: d.top14, d2: d.d2, hcup: d.hcup, monde: (d.monde || []) }).map(([key, matchs]) => {
         const cfg = champCfg[key];
         return `
           <div style="border-radius:10px;overflow:hidden;border:1px solid #333;margin-bottom:12px;">
