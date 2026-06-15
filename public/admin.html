@@ -2576,12 +2576,18 @@ async function loadAlgoJournees() {
     if (isHcup) {
       options += items.map(r => `<option value="${r}">${r}</option>`).join('');
     } else {
-      options += items.map(j => `<option value="${j}">J${j}</option>`).join('');
+      options += items.map(it => {
+        const j  = (it && typeof it === 'object') ? it.journee : it;
+        const rl = (it && typeof it === 'object') ? it.round_label : null;
+        return `<option value="${j}">${rl ? rl : 'J' + j}</option>`;
+      }).join('');
     }
-
     selJournee.innerHTML = options;
     // Présélectionner la 1ère journée/round réel (pas "Toutes")
-    if (items.length > 0) selJournee.value = String(items[0]);
+    if (items.length > 0) {
+      const first = items[0];
+      selJournee.value = String((first && typeof first === 'object') ? first.journee : first);
+    }
   } catch (e) {
     selJournee.innerHTML = '<option value="">❌ Erreur</option>';
     console.error('loadAlgoJournees:', e);
