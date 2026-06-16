@@ -17,7 +17,7 @@ import BettingModalHcup from './BettingModalHcup';
 import MatchCardHcup from './MatchCardHcup';
 import ReglementModal from './ReglementModal';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
-import { getCharte } from '../constants/chartes';
+import { getCharte, texteReprise } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
@@ -259,10 +259,12 @@ export default function MesPronosHcupTab({ goToMesParis, scrollToMatchId, onScro
       {/* Liste des rounds */}
       {rounds.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-gray-200">
-          <p className="text-gray-500">Aucun match Champions Cup à venir</p>
-          <p className="text-xs text-gray-400 mt-2">
-            La prochaine saison démarre en décembre
-          </p>
+          <div className="text-4xl mb-2">{getCharte('hcup').icon}</div>
+          <p className="text-gray-700 font-semibold">Pas de paris à venir</p>
+          <p className="text-sm text-gray-500 mt-1">Saison courante terminée.</p>
+          {texteReprise('hcup') && (
+            <p className="text-xs text-gray-400 mt-2">{texteReprise('hcup')}</p>
+          )}
         </div>
       ) : (
         <div className="space-y-2">

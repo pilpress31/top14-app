@@ -23,6 +23,7 @@ import { CompoEtBlessesSection } from './ActuTab';
 import PourquoiCePronostic from './PourquoiCePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import BarreIndiceFavori from './BarreIndiceFavori';
+import { getCharte, texteReprise } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
@@ -192,9 +193,12 @@ export default function AlgoPronosHcupTab() {
   if (rounds.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
-        <Globe className="w-12 h-12 mx-auto mb-2" style={{ color: HCUP_BLEU, opacity: 0.5 }} />
-        <p className="text-gray-500">Aucun pronostic Champions Cup disponible</p>
-        <p className="text-xs text-gray-400 mt-1">Reviens plus tard pour les prochains matchs</p>
+        <div className="text-4xl mb-2">{getCharte('hcup').icon}</div>
+        <p className="text-gray-700 font-semibold">Pas de pronostics à venir</p>
+        <p className="text-sm text-gray-500 mt-1">Saison courante terminée.</p>
+        {texteReprise('hcup') && (
+          <p className="text-xs text-gray-400 mt-1">{texteReprise('hcup')}</p>
+        )}
       </div>
     );
   }

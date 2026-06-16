@@ -11,6 +11,7 @@ import MatchCard from './MatchCard';
 import ReglementModal from './ReglementModal';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { useChampionnat } from '../contexts/ChampionnatContext';
+import { getCharte, texteReprise } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
@@ -372,9 +373,12 @@ export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDo
       {/* Liste des journées */}
       {journees.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
-          <p className="text-gray-500">
-            {isD2 ? 'Aucun match Pro D2 à venir' : 'Aucun match à venir'}
-          </p>
+          <div className="text-4xl mb-2">{getCharte(isD2 ? 'prod2' : 'top14').icon}</div>
+          <p className="text-gray-700 font-semibold">Pas de paris à venir</p>
+          <p className="text-sm text-gray-500 mt-1">Saison courante terminée.</p>
+          {texteReprise(isD2 ? 'prod2' : 'top14') && (
+            <p className="text-xs text-gray-400 mt-1">{texteReprise(isD2 ? 'prod2' : 'top14')}</p>
+          )}
         </div>
       ) : (
         <div className="space-y-2">

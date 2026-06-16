@@ -45,6 +45,8 @@ const BLANC = '#FFFFFF';
 export const CHARTES = {
   top14: {
     label: 'TOP 14',
+    icon: '🏆',
+    reprise: { date: null, libelle: 'septembre 2026' },
     rubrique: { bg: '#FAF6EB', border: '#E4D29A', text: '#8C6D3A', accent: T14_OR_UI },
     partage:  { accent: T14_OR_PARTAGE, accentVif: T14_OR_VIF,
                 fond1: '#1a2740', fond2: '#101a2e', fond3: '#0a111f' },
@@ -54,6 +56,8 @@ export const CHARTES = {
   },
   prod2: {
     label: 'PRO D2',
+    icon: '🥈',
+    reprise: { date: null, libelle: 'septembre 2026' },
     rubrique: { bg: '#EEF2FF', border: D2_BLUE, text: D2_NAVY, accent: D2_BLUE },
     partage:  { accent: D2_SILVER, accentVif: D2_BLUE,
                 fond1: '#0a2c66', fond2: D2_NAVY, fond3: '#000f33' },
@@ -64,6 +68,8 @@ export const CHARTES = {
   },
   hcup: {
     label: 'CHAMPIONS CUP',
+    icon: '⭐',
+    reprise: { date: null, libelle: 'décembre 2026' },
     rubrique: { bg: '#EEF5FF', border: '#B0CFE8', text: HCUP_BLEU, accent: HCUP_OR },
     partage:  { accent: HCUP_OR, accentVif: HCUP_OR,
                 fond1: '#0a5099', fond2: HCUP_BLEU, fond3: '#002a56' },
@@ -74,6 +80,8 @@ export const CHARTES = {
   },
   monde: {
     label: 'RUGBY INTERNATIONAL',
+    icon: '🌍',
+    reprise: { date: null, libelle: null },
     rubrique: { bg: '#ECFDF5', border: '#A7F3D0', text: MONDE_VERT, accent: MONDE_EMERAUDE },
     partage:  { accent: MONDE_EMERAUDE, accentVif: MONDE_EMERAUDE,
                 fond1: '#065F46', fond2: MONDE_VERT_FONCE, fond3: '#022C22' },
@@ -86,6 +94,25 @@ export const CHARTES = {
 
 // Accès à une charte avec repli sur le Top 14 pour tout championnat inconnu.
 export const getCharte = (championnat) => CHARTES[championnat] || CHARTES.top14;
+
+// Texte de reprise affiché dans les états vides (Pronos/Paris) en fin de saison.
+// Priorité à la date ISO (-> « Revenez le … (dans N j) »), sinon le libellé mois.
+// ⚠️ À ajuster avec les dates officielles de reprise (date prioritaire sur libelle).
+export function texteReprise(championnat) {
+  const r = getCharte(championnat).reprise || {};
+  if (r.date) {
+    const d = new Date(r.date + 'T00:00:00');
+    if (!isNaN(d.getTime())) {
+      const dateFmt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      const jours = Math.ceil((d.getTime() - Date.now()) / 86400000);
+      return jours > 0
+        ? `Revenez le ${dateFmt} (dans ${jours} jour${jours > 1 ? 's' : ''}).`
+        : `Revenez le ${dateFmt}.`;
+    }
+  }
+  if (r.libelle) return `Reprise prévue en ${r.libelle}.`;
+  return '';
+}
 
 // ─────────────────────────────────────────────────────────────
 // Vue dérivée : thèmes des en-têtes de rubrique, indexés par championnat.

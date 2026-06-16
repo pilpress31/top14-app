@@ -9,6 +9,7 @@ import { CompoEtBlessesSection } from './ActuTab';
 // import PartagePronostic from './PartagePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import BarreIndiceFavori, { PulsingInfoButton } from './BarreIndiceFavori';
+import { getCharte, texteReprise } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 
@@ -122,11 +123,15 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
   }
 
   if (journees.length === 0) {
+    const _champ = isD2 ? 'prod2' : 'top14';
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-rugby-gray">
-        <div className="text-4xl mb-2 opacity-40">🏉</div>
-        <p className="text-gray-500">Aucun pronostic {isD2 ? 'Pro D2' : 'Top 14'} disponible</p>
-        <p className="text-xs text-gray-400 mt-1">Reviens plus tard pour les prochains matchs</p>
+        <div className="text-4xl mb-2">{getCharte(_champ).icon}</div>
+        <p className="text-gray-700 font-semibold">Pas de pronostics à venir</p>
+        <p className="text-sm text-gray-500 mt-1">Saison courante terminée.</p>
+        {texteReprise(_champ) && (
+          <p className="text-xs text-gray-400 mt-1">{texteReprise(_champ)}</p>
+        )}
       </div>
     );
   }
