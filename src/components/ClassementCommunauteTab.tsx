@@ -10,7 +10,7 @@ const IA_CCUP_USER_ID = "00000000-0000-0000-0000-000000000003";
 const IA_MONDE_USER_ID = "00000000-0000-0000-0000-000000000004";
 const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID, IA_CCUP_USER_ID, IA_MONDE_USER_ID];
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X,
-         Star, Medal, Crown, Gem, Flame, Zap, Sparkles } from 'lucide-react';
+         Star, Medal, Crown, Gem, Flame, Zap, Sparkles, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
@@ -69,6 +69,21 @@ interface UserRanking {
   streak?: number;          // streak_courante
   badges?: UserBadge[];     // badges débloqués, triés du plus récent au plus ancien
 }
+
+// ─── Sélecteur de compétitions du mode « Par Points » ───
+// Général = cumul saison toutes compétitions (hors bots IA) ; c'est le
+// classement qui donne les ballons et celui que reprend la notif.
+// ECC = à venir (pas encore de données).
+type ChampPoints = 'general' | 'top14' | 'prod2' | 'hcup' | 'ecc' | 'monde';
+
+const CHAMP_OPTIONS: { key: ChampPoints; label: string; color: string; soon?: boolean; icon?: LucideIcon }[] = [
+  { key: 'general', label: 'Général', color: '#CBA135', icon: Crown },
+  { key: 'top14',   label: 'TOP 14',  color: '#CBA135' },
+  { key: 'prod2',   label: 'PRO D2',  color: '#1E3A8A' },
+  { key: 'hcup',    label: 'C.CUP',   color: '#0EA5E9' },
+  { key: 'ecc',     label: 'ECC',     color: '#64748B', soon: true },
+  { key: 'monde',   label: 'MONDE',   color: '#0B6E4F' },
+];
 
 // ─── Affichage gamification d'une ligne : streak 🔥 + 3 badges récents ───
 // Ne rend rien si le joueur n'a ni série (>= 2) ni badge -> dégradation
@@ -140,7 +155,8 @@ export default function ClassementCommunauteTab() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [classementType, setClassementType] = useState<'jetons' | 'points'>('jetons');
-  const [champPoints, setChampPoints] = useState<'top14' | 'prod2' | 'hcup' | 'monde'>('top14');
+  const [champPoints, setChampPoints] = useState<ChampPoints>('general');
+  const [champMenuOpen, setChampMenuOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [showReglementPoints, setShowReglementPoints] = useState(false);
@@ -274,9 +290,18 @@ export default function ClassementCommunauteTab() {
   }
     async function loadClassementPoints(userId: string | null) {
     try {
-      // 1. Classement par compétition via RPC (vrais users + bot dédié, fenêtré)
-      const { data: stats, error: statsError } = await supabase
-        .rpc('classement_points_competition', { p_champ: champPoints });
+      // ECC : pas encore de données -> état « à venir », on ne charge rien.
+      if (champPoints === 'ecc') {
+        setUsers([]);
+        setFilteredUsers([]);
+        setCurrentUserRank(null);
+        return;
+      }
+      // 1. Classement : Général (cumul saison, hors bots IA, via RPC dédiée
+      //    -> rang identique à la notif) ou par compétition.
+      const { data: stats, error: statsError } = champPoints === 'general'
+        ? await supabase.rpc('classement_points_general')
+        : await supabase.rpc('classement_points_competition', { p_champ: champPoints });
       if (statsError) throw statsError;
 
       // 2. Pseudos + avatars depuis la vue sécurisée
@@ -409,6 +434,11 @@ export default function ClassementCommunauteTab() {
 
   const top3 = displayedUsers.slice(0, 3);
 
+  // Compétition sélectionnée (mode Points) + état « à venir » pour l'ECC.
+  const eccComingSoon = classementType === 'points' && champPoints === 'ecc';
+  const currentChamp = CHAMP_OPTIONS.find(c => c.key === champPoints) || CHAMP_OPTIONS[0];
+  const CurrentChampIcon = currentChamp.icon;
+
   return (
     <div className="pb-24 space-y-4">
 
@@ -447,29 +477,66 @@ export default function ClassementCommunauteTab() {
         </button>
       </div>
 
-      {/* Sous-bandeau compétition (mode Points uniquement) */}
+      {/* Sélecteur compétition (mode Points) — déroulant compact, Général par défaut */}
       {classementType === 'points' && (
-        <div className="flex gap-1.5 bg-white rounded-lg p-1 shadow-sm">
-          {([
-            { key: 'top14', label: 'TOP 14', color: '#CBA135' },
-            { key: 'prod2', label: 'PRO D2', color: '#1E3A8A' },
-            { key: 'hcup',  label: 'C.CUP',  color: '#0EA5E9' },
-            { key: 'monde', label: 'MONDE',  color: '#0B6E4F' },
-          ] as const).map(c => (
-            <button
-              key={c.key}
-              onClick={() => setChampPoints(c.key)}
-              className="flex-1 py-2 rounded-md text-xs font-bold tracking-wide transition-all"
-              style={champPoints === c.key
-                ? { backgroundColor: c.color, color: '#fff' }
-                : { color: '#9ca3af' }}
-            >
-              {c.label}
-            </button>
-          ))}
+        <div className="relative">
+          <button
+            onClick={() => setChampMenuOpen(o => !o)}
+            className="w-full flex items-center justify-between bg-white rounded-lg p-3 shadow-sm"
+          >
+            <span className="flex items-center gap-2 font-bold text-sm tracking-wide" style={{ color: currentChamp.color }}>
+              {CurrentChampIcon
+                ? <CurrentChampIcon className="w-4 h-4" />
+                : <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: currentChamp.color }} />}
+              {currentChamp.label}
+              {currentChamp.soon && <span className="text-[10px] font-semibold text-gray-400">· à venir</span>}
+            </span>
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${champMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {champMenuOpen && (
+            <>
+              {/* Voile de fermeture au clic extérieur */}
+              <div className="fixed inset-0 z-10" onClick={() => setChampMenuOpen(false)} />
+              <div className="absolute left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-100 z-20 overflow-hidden">
+                {CHAMP_OPTIONS.map(c => {
+                  const Icon = c.icon;
+                  const active = champPoints === c.key;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => { setChampPoints(c.key); setChampMenuOpen(false); }}
+                      className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-left transition-colors ${active ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
+                      style={{ color: c.color }}
+                    >
+                      {Icon
+                        ? <Icon className="w-4 h-4" />
+                        : <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />}
+                      {c.label}
+                      {c.soon && <span className="text-[10px] font-semibold text-gray-400">· à venir</span>}
+                      {active && <span className="ml-auto text-gray-400">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
 
+      {/* ECC : état « à venir » (pas encore de données) */}
+      {eccComingSoon && (
+        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+          <div className="flex justify-center mb-3"><Trophy className="w-10 h-10 text-gray-300" /></div>
+          <p className="font-bold text-gray-700 mb-1">Challenge Cup — à venir</p>
+          <p className="text-sm text-gray-500">
+            Le classement par points de l&apos;ECC arrivera avec l&apos;intégration de la compétition.
+          </p>
+        </div>
+      )}
+
+      {!eccComingSoon && (
+      <>
       {/* Bandeau Votre position */}
       {currentUserRank && (
         <div className="bg-gradient-to-r from-rugby-gold/20 to-rugby-bronze/20 border border-rugby-gold/30 rounded-lg p-4">
@@ -712,6 +779,8 @@ export default function ClassementCommunauteTab() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Modal Règlement Points */}
       {showReglementPoints && (
