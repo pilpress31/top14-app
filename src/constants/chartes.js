@@ -4,12 +4,12 @@
 //
 // Les couleurs d'identité sont déclarées une seule fois (constantes
 // primaires ci-dessous), puis composées dans les vues par usage :
-//   label    : libellé affiché ('TOP 14' / 'PRO D2' / 'CHAMPIONS CUP' / 'RUGBY INTERNATIONAL')
+//   label    : libellé affiché ('TOP 14' / 'PRO D2' / 'CHAMPIONS CUP' / 'CHALLENGE CUP' / 'RUGBY INTERNATIONAL')
 //   rubrique : en-têtes d'accordéon { bg, border, text, accent }
 //              (consommé via RUBRIQUE_THEMES, réexporté par RubriqueHeader)
 //   partage  : visuel story sur fond sombre { accent, accentVif, fond1, fond2, fond3 }
 //   base     : couleurs d'identité brutes (Palmarès, en-têtes…)
-//   header   : fond + bordure des en-têtes de page (D2 / HCup / MONDE ;
+//   header   : fond + bordure des en-têtes de page (D2 / HCup / ECC / MONDE ;
 //              le Top 14 utilise un dégradé Tailwind en className)
 //   modal    : thème de StatsAlgoModal { primary, accent, onPrimary }
 //
@@ -35,6 +35,11 @@ const D2_BLUE   = '#97C1FE';
 const HCUP_BLEU       = '#003E7E';
 const HCUP_BLEU_FONCE = '#002857';
 const HCUP_OR         = '#FFC72C';
+// European Challenge Cup (EPCR) — 2e Coupe d'Europe
+const ECC_VERT        = '#2E7D32'; // vert challenge — couleur principale (température ≠ émeraude MONDE)
+const ECC_VERT_FONCE  = '#1B5E20';
+const ECC_BRONZE      = '#CD7F32'; // bronze — accent
+const ECC_BRONZE_VIF  = '#E0954A'; // bronze clair (accentVif partage + modal accent)
 // Rugby International (MONDE)
 const MONDE_VERT       = '#0B6E4F'; // vert émeraude profond — couleur principale
 const MONDE_VERT_FONCE = '#064E3B';
@@ -78,6 +83,18 @@ export const CHARTES = {
                 bordure: HCUP_BLEU },
     modal:    { primary: HCUP_BLEU, accent: HCUP_OR, onPrimary: BLANC },
   },
+  ecc: {
+    label: 'CHALLENGE CUP',
+    icon: '🛡️',
+    reprise: { date: null, libelle: 'décembre 2026' },
+    rubrique: { bg: '#EEF7EE', border: '#BFE3C2', text: ECC_VERT, accent: ECC_BRONZE },
+    partage:  { accent: ECC_BRONZE, accentVif: ECC_BRONZE_VIF,
+                fond1: '#246B29', fond2: ECC_VERT_FONCE, fond3: '#0E3A14' },
+    base:     { vert: ECC_VERT, vertFonce: ECC_VERT_FONCE, bronze: ECC_BRONZE },
+    header:   { fond: 'linear-gradient(to right, #FFFFFF, #FFFFFF, #EEF7EE, #CD7F3233)',
+                bordure: ECC_VERT },
+    modal:    { primary: ECC_VERT, accent: ECC_BRONZE, onPrimary: BLANC },
+  },
   monde: {
     label: 'RUGBY INTERNATIONAL',
     icon: '🌍',
@@ -101,7 +118,7 @@ export const getCharte = (championnat) => CHARTES[championnat] || CHARTES.top14;
 //               (Top 14 = 1er samedi de septembre ; Pro D2 = dernier vendredi d'août,
 //                colle au calendrier LNR à 2-3 jours près) ;
 //   • date    → ISO 'YYYY-MM-DD' (optionnel) : écrase la règle pour figer une date exacte ;
-//   • libelle → repli texte simple (ex. CCUP « décembre 2026 »).
+//   • libelle → repli texte simple (ex. CCUP / Challenge Cup « décembre 2026 »).
 function _nthWeekday(year, month0, weekday, nth) {
   if (nth === 'last') {
     const d = new Date(year, month0 + 1, 0);
