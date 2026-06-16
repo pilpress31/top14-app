@@ -300,8 +300,8 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
       <div className="grid grid-cols-3 items-start px-1 mb-2">
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
-            <img src={teamDom.logo} alt={match.equipe_domicile} className="w-14 h-14 object-contain"
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamDom.logo} alt={match.equipe_domicile} className="w-16 h-16 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 uppercase">
@@ -322,8 +322,8 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
         </div>
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
-            <img src={teamExt.logo} alt={match.equipe_exterieure} className="w-14 h-14 object-contain"
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-1.5 shadow-sm">
+            <img src={teamExt.logo} alt={match.equipe_exterieure} className="w-16 h-16 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-sm font-bold text-gray-900 leading-tight break-words line-clamp-2 uppercase">

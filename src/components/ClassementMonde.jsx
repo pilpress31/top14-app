@@ -135,7 +135,7 @@ export default function ClassementMonde() {
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-2">
                       {team?.logo && (
-                        <img src={team.logo} alt={nom} className="w-5 h-5 object-contain flex-shrink-0" />
+                        <img src={team.logo} alt={nom} className="w-8 h-8 object-contain flex-shrink-0" />
                       )}
                       <span className="font-semibold text-gray-800">{nom}</span>
                     </div>
