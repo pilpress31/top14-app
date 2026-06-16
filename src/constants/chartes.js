@@ -46,7 +46,7 @@ export const CHARTES = {
   top14: {
     label: 'TOP 14',
     icon: '🏆',
-    reprise: { date: null, libelle: 'septembre 2026' },
+    reprise: { rule: 'first-sat-sep' },
     rubrique: { bg: '#FAF6EB', border: '#E4D29A', text: '#8C6D3A', accent: T14_OR_UI },
     partage:  { accent: T14_OR_PARTAGE, accentVif: T14_OR_VIF,
                 fond1: '#1a2740', fond2: '#101a2e', fond3: '#0a111f' },
@@ -57,7 +57,7 @@ export const CHARTES = {
   prod2: {
     label: 'PRO D2',
     icon: '🥈',
-    reprise: { date: null, libelle: 'septembre 2026' },
+    reprise: { rule: 'last-fri-aug' },
     rubrique: { bg: '#EEF2FF', border: D2_BLUE, text: D2_NAVY, accent: D2_BLUE },
     partage:  { accent: D2_SILVER, accentVif: D2_BLUE,
                 fond1: '#0a2c66', fond2: D2_NAVY, fond3: '#000f33' },
@@ -95,19 +95,52 @@ export const CHARTES = {
 // Accès à une charte avec repli sur le Top 14 pour tout championnat inconnu.
 export const getCharte = (championnat) => CHARTES[championnat] || CHARTES.top14;
 
-// Texte de reprise affiché dans les états vides (Pronos/Paris) en fin de saison.
-// Priorité à la date ISO (-> « Revenez le … (dans N j) »), sinon le libellé mois.
-// ⚠️ À ajuster avec les dates officielles de reprise (date prioritaire sur libelle).
+// ── Reprise hors-saison (états vides Pronos / Paris) ──────────────────
+// Auto-recalculé chaque année, AUCUNE maj manuelle :
+//   • rule    → date approximative recomputée chaque saison
+//               (Top 14 = 1er samedi de septembre ; Pro D2 = dernier vendredi d'août,
+//                colle au calendrier LNR à 2-3 jours près) ;
+//   • date    → ISO 'YYYY-MM-DD' (optionnel) : écrase la règle pour figer une date exacte ;
+//   • libelle → repli texte simple (ex. CCUP « décembre 2026 »).
+function _nthWeekday(year, month0, weekday, nth) {
+  if (nth === 'last') {
+    const d = new Date(year, month0 + 1, 0);
+    d.setDate(d.getDate() - ((d.getDay() - weekday + 7) % 7));
+    return d;
+  }
+  const d = new Date(year, month0, 1);
+  d.setDate(1 + ((weekday - d.getDay() + 7) % 7) + (nth - 1) * 7);
+  return d;
+}
+function _dateDeReprise(rule, year) {
+  switch (rule) {
+    case 'first-sat-sep': return _nthWeekday(year, 8, 6, 1);     // Top 14 : 1er samedi de septembre
+    case 'last-fri-aug':  return _nthWeekday(year, 7, 5, 'last'); // Pro D2 : dernier vendredi d'août
+    case 'first-sat-dec': return _nthWeekday(year, 11, 6, 1);    // (réserve)
+    default: return null;
+  }
+}
 export function texteReprise(championnat) {
   const r = getCharte(championnat).reprise || {};
+  const now = new Date();
+  const fmt = (d) => {
+    const dateFmt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const jours = Math.ceil((d.getTime() - now.getTime()) / 86400000);
+    return { dateFmt, jours };
+  };
   if (r.date) {
     const d = new Date(r.date + 'T00:00:00');
     if (!isNaN(d.getTime())) {
-      const dateFmt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-      const jours = Math.ceil((d.getTime() - Date.now()) / 86400000);
-      return jours > 0
-        ? `Revenez le ${dateFmt} (dans ${jours} jour${jours > 1 ? 's' : ''}).`
-        : `Revenez le ${dateFmt}.`;
+      const { dateFmt, jours } = fmt(d);
+      return jours > 0 ? `Revenez le ${dateFmt} (dans ${jours} jour${jours > 1 ? 's' : ''}).` : `Revenez le ${dateFmt}.`;
+    }
+  }
+  if (r.rule) {
+    let d = _dateDeReprise(r.rule, now.getFullYear());
+    if (d && d.getTime() < now.getTime()) d = _dateDeReprise(r.rule, now.getFullYear() + 1);
+    if (d) {
+      const { dateFmt, jours } = fmt(d);
+      return jours > 0 ? `Reprise prévue le ${dateFmt} (dans ${jours} jour${jours > 1 ? 's' : ''}).` : `Reprise prévue le ${dateFmt}.`;
     }
   }
   if (r.libelle) return `Reprise prévue en ${r.libelle}.`;
