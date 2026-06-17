@@ -282,11 +282,11 @@ export default function MesParisMondeTab() {
                 }`}
               >
                 {/* Header */}
-                <div className={`px-4 py-2 flex items-center justify-between ${
+                <div className={`px-4 py-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 ${
                   isPending ? 'bg-orange-50' :
                   isWon ? 'bg-green-50' : 'bg-red-50'
                 }`}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {isPending && <Clock className="w-4 h-4 text-orange-600" />}
                     {isWon && <Trophy className="w-4 h-4 text-green-600" />}
                     {isLost && <TrendingDown className="w-4 h-4 text-red-600" />}
@@ -301,7 +301,7 @@ export default function MesParisMondeTab() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
                     <span
                       className="px-2 py-1 rounded-full text-[10px] font-bold text-white"
                       style={{ backgroundColor: MONDE_GREEN }}
