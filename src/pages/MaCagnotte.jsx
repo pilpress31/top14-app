@@ -604,8 +604,8 @@ export default function MaCagnotte() {
       // 🆕 Total de points = MÊME calcul que la page "Mes Points" :
       // somme des points des paris GAGNÉS de la SAISON COURANTE, toutes compétitions.
       // Le reset n'a lieu qu'au CHANGEMENT DE SAISON (fin du Top 14) : Top14/D2/HCup/
-      // ECC comptent toute la saison courante. SEULE borne : MONDE ne compte qu'à
-      // partir du Nations Championship (départ du comptage international).
+      // ECC ET MONDE comptent toute la saison courante (pour MONDE, la `saison` du
+      // pari = saison rugby juil.→juin, posée à la création).
       try {
         const saisonCourante = getSaisonCourante();
 
@@ -626,28 +626,16 @@ export default function MaCagnotte() {
           supabase.from('user_bets_ecc').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
         ]);
 
-        // MONDE : dates + début Nations Championship (seule compétition à borne de départ)
-        const mondeIds = [...new Set((mondeW || []).map(b => b.match_id).filter(Boolean))];
-        const mondeDate = {};
-        if (mondeIds.length) {
-          const { data: mm } = await supabase.from('matchs_monde').select('match_id, date_match').in('match_id', mondeIds);
-          (mm || []).forEach(m => { mondeDate[String(m.match_id)] = m.date_match; });
-        }
-        const { data: ncRows } = await supabase.from('matchs_monde').select('date_match')
-          .eq('competition', 'Nations Championship').order('date_match', { ascending: true }).limit(1);
-        const mondeStart = ncRows?.[0]?.date_match || null;
-
+        // Reset au changement de saison pour les 5 compétitions (y compris MONDE).
+        // La `saison` du pari fait foi (pour MONDE = saison rugby juil.→juin posée
+        // à la création) ; on compte tout pari de la saison courante.
         const getSaison = (b) => b.saison || extractSaison(b.match_id) || saisonCourante;
         let pts = 0;
         (topW  || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
         (d2W   || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
         (hcupW || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.classement_points || 0); });
         (eccW  || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.classement_points || 0); });
-        (mondeW || []).forEach(b => {
-          if (getSaison(b) !== saisonCourante || !mondeStart) return;
-          const d = mondeDate[String(b.match_id)];
-          if (d && new Date(d) >= new Date(mondeStart)) pts += (b.classement_points || 0);
-        });
+        (mondeW || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.classement_points || 0); });
         setUserPoints(pts);
       } catch (e) {
         console.warn('⚠️ Calcul des points (live) échoué :', e?.message);

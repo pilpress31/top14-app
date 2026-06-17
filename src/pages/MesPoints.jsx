@@ -95,7 +95,6 @@ export default function MesPoints() {
   const [matchsResultsHcup, setMatchsResultsHcup] = useState({}); // 🆕 HCup
   const [matchsResultsMonde, setMatchsResultsMonde] = useState({}); // 🆕 MONDE
   const [matchsResultsEcc, setMatchsResultsEcc] = useState({}); // 🆕 ECC
-  const [mondePeriodeStart, setMondePeriodeStart] = useState(null); // début Nations Championship
   const [loading, setLoading] = useState(true);
   const [sortMode, setSortMode] = useState('desc'); // 🆕 DESC par défaut = plus récent → cumul direct visible
   const [championnatFilter, setChampionnatFilter] = useState('all'); // all | top14 | prod2 | hcup
@@ -252,15 +251,6 @@ export default function MesPoints() {
         eccMatchesMap = (em || []).reduce((acc, m) => ({ ...acc, [m.match_id]: m }), {});
       }
 
-      // Date de reprise du comptage MONDE = début Nations Championship (dynamique)
-      const { data: ncRows } = await supabase
-        .from('matchs_monde')
-        .select('date_match')
-        .eq('competition', 'Nations Championship')
-        .order('date_match', { ascending: true })
-        .limit(1);
-      setMondePeriodeStart(ncRows?.[0]?.date_match || null);
-
       setMatchsResults(topMatchesMap);
       setMatchCotesD2(d2MatchesMap);
       setMatchsResultsHcup(hcupMatchesMap); // 🆕
@@ -330,29 +320,19 @@ export default function MesPoints() {
 
   // ─── Édition active vs terminée ───────────────────────────────────────────
   // Le comptage des points NE se réinitialise qu'au CHANGEMENT DE SAISON (fin du
-  // Top 14 = fin des 5 compétitions). Tant qu'on est dans la saison courante,
-  // TOUTES les compétitions domestiques comptent (Top14, Pro D2, Champions Cup,
-  // Challenge Cup), même si leur édition propre est déjà terminée — c'est le
-  // filtre saison (getBetSaison) qui fait le reset.
-  // SEULE exception : MONDE ne compte qu'à partir du Nations Championship (borne
-  // de DÉPART), le rugby international ne suivant pas le calendrier des clubs.
-  const isPeriodeActive = (bet) => {
-    if (bet.championnat === 'monde') {
-      if (!mondePeriodeStart) return false; // Nations Championship pas encore au calendrier → hors comptage
-      const m = matchsResultsMonde[bet.match_id];
-      const d = m?.date_match || bet.resolved_at || bet.created_at;
-      return d ? new Date(d) >= new Date(mondePeriodeStart) : false;
-    }
-    return true; // Top14 / Pro D2 / HCup / ECC : comptés toute la saison courante
-  };
+  // Top 14 = fin des 5 compétitions). Toutes les compétitions — Top14, Pro D2,
+  // Champions Cup, Challenge Cup ET MONDE — sont comptées toute la saison courante ;
+  // c'est le filtre saison (getBetSaison) qui fait le reset. MONDE suit la même
+  // règle : sa saison rugby (juil.→juin) est portée par la `saison` du pari.
+  const isPeriodeActive = () => true;
 
   const activeBets = useMemo(
     () => filteredBets.filter(isPeriodeActive),
-    [filteredBets, matchsResultsHcup, matchsResultsMonde, matchsResultsEcc, mondePeriodeStart]
+    [filteredBets]
   );
   const archivedBets = useMemo(
     () => filteredBets.filter(b => !isPeriodeActive(b)),
-    [filteredBets, matchsResultsHcup, matchsResultsMonde, matchsResultsEcc, mondePeriodeStart]
+    [filteredBets]
   );
 
   // 🆕 Mode "historique" : saison passée OU « toutes les saisons ».
