@@ -55,8 +55,8 @@
 
   <!-- Décor -->
   <g opacity="0.18" clip-path="url(#hexClip)">
-    <rect x="-50" y="260" width="612" height="80" fill="#000000" transform="rotate(-20 256 256)"/>
-    <rect x="-80" y="340" width="612" height="40" fill="#000000" transform="rotate(-20 256 256)"/>
+    
+    
   </g>
 
   <!-- Abréviation centrée -->
