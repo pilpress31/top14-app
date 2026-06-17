@@ -11,6 +11,9 @@ import MainHeader from '../components/MainHeader';
 import MainHeaderD2 from '../components/MainHeaderD2';
 import MainHeaderHcup from '../components/MainHeaderHcup';
 import MainHeaderMonde from '../components/MainHeaderMonde';
+import AlgoPronosEccTab from '../components/AlgoPronosEccTab';
+import HistoriqueEccTab from '../components/HistoriqueEccTab';
+import MainHeaderEcc from '../components/MainHeaderEcc';
 import { getStats } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +24,7 @@ const CHAMPIONNATS = {
   top14: { label: 'TOP 14', emoji: '🏆', bg: '#FFFFFF', accent: '#D4A017', borderActive: '#FFC72C' },
   prod2: { label: 'PRO D2', emoji: '🥈', bg: '#00174D', accent: '#C0C0C0', borderActive: '#FFC72C' },
   hcup:  { label: 'C.CUP',  emoji: '⭐', bg: '#003E7E', accent: '#FFC72C', borderActive: '#FFC72C' },
+  ecc:   { label: 'CHALL.', emoji: '🛡️', bg: '#1B5E20', accent: '#CD7F32', borderActive: '#CD7F32' },
   monde: { label: 'MONDE',  emoji: '🌍', bg: '#064E3B', accent: '#34D399', borderActive: '#34D399' },
 };
 
@@ -93,12 +97,14 @@ export default function IAPage() {
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
   const isMonde = championnat === 'monde';
+  const isEcc = championnat === 'ecc';
 
   // Choisir le header selon le championnat actif (toujours le header "algo" sur la page IA)
   // Note : MainHeaderFull et ses variants D2/Hcup/Monde sont réservés à la page Paris (/pronos),
   // car ils affichent les stats users (paris gagnants), pas la précision algo.
   const renderHeader = () => {
     if (isMonde) return <MainHeaderMonde isVisible={headerVisible} />;
+    if (isEcc) return <MainHeaderEcc isVisible={headerVisible} />;
     if (isHcup) return <MainHeaderHcup isVisible={headerVisible} />;
     if (isD2) return <MainHeaderD2 isVisible={headerVisible} />;
     return <MainHeader isVisible={headerVisible} />;
@@ -187,12 +193,16 @@ export default function IAPage() {
         {activeTab === 'algorithme' ? (
           isMonde
             ? <AlgoPronosMondeTab />
+            : isEcc
+            ? <AlgoPronosEccTab />
             : isHcup
             ? <AlgoPronosHcupTab />
             : <AlgoPronosTab onMatchClick={handleMatchClick} isD2={isD2} />
         ) : (
           isMonde
             ? <HistoriqueMondeTab />
+            : isEcc
+            ? <HistoriqueEccTab />
             : isHcup
             ? <HistoriqueHcupTab />
             : <HistoriqueTab headerVisible={headerVisible} isD2={isD2} />
