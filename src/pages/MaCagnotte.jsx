@@ -603,12 +603,12 @@ export default function MaCagnotte() {
 
       // 🆕 Total de points = MÊME calcul que la page "Mes Points" :
       // somme des points des paris GAGNÉS de l'ÉDITION EN COURS (saison courante),
-      // toutes compétitions (Top14 + Pro D2 + HCup + MONDE). HCup/MONDE ne comptent
-      // qu'à partir de l'ouverture de leur édition (sinon exclus, comme Mes Points).
-      // (ECC sera ajouté ici quand Mes Points l'intègrera, après l'étape 3d.)
+      // toutes compétitions (Top14 + Pro D2 + HCup + MONDE + ECC). HCup/MONDE/ECC ne
+      // comptent qu'à partir de l'ouverture de leur édition (sinon exclus, comme Mes Points).
       try {
         const saisonCourante = getSaisonCourante();
         const HCUP_PERIODE_START = '2026-12-01';
+        const ECC_PERIODE_START = '2026-12-01';
 
         const extractSaison = (matchId) => {
           if (!matchId) return null;
@@ -619,11 +619,12 @@ export default function MaCagnotte() {
           return null;
         };
 
-        const [{ data: topW }, { data: d2W }, { data: hcupW }, { data: mondeW }] = await Promise.all([
+        const [{ data: topW }, { data: d2W }, { data: hcupW }, { data: mondeW }, { data: eccW }] = await Promise.all([
           supabase.from('user_bets').select('*').eq('user_id', userId).eq('status', 'won'),
           supabase.from('user_bets_d2').select('*').eq('user_id', userId).eq('status', 'won'),
           supabase.from('user_bets_hcup').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
           supabase.from('user_bets_monde').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
+          supabase.from('user_bets_ecc').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
         ]);
 
         // Dates des matchs HCup/MONDE (filtre "édition en cours") + début Nations Championship
@@ -643,6 +644,13 @@ export default function MaCagnotte() {
           .eq('competition', 'Nations Championship').order('date_match', { ascending: true }).limit(1);
         const mondeStart = ncRows?.[0]?.date_match || null;
 
+        const eccIds = [...new Set((eccW || []).map(b => b.match_id).filter(Boolean))];
+        const eccDate = {};
+        if (eccIds.length) {
+          const { data: em } = await supabase.from('matchs_ecc').select('match_id, date_match').in('match_id', eccIds);
+          (em || []).forEach(m => { eccDate[String(m.match_id)] = m.date_match; });
+        }
+
         const getSaison = (b) => b.saison || extractSaison(b.match_id) || saisonCourante;
         let pts = 0;
         (topW || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
@@ -656,6 +664,11 @@ export default function MaCagnotte() {
           if (getSaison(b) !== saisonCourante || !mondeStart) return;
           const d = mondeDate[String(b.match_id)];
           if (d && new Date(d) >= new Date(mondeStart)) pts += (b.classement_points || 0);
+        });
+        (eccW || []).forEach(b => {
+          if (getSaison(b) !== saisonCourante) return;
+          const d = eccDate[String(b.match_id)];
+          if (d && new Date(d) >= new Date(ECC_PERIODE_START)) pts += (b.classement_points || 0);
         });
         setUserPoints(pts);
       } catch (e) {

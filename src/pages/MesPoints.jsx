@@ -14,8 +14,8 @@ import { getSaisonCourante } from '../utils/season';
 
 // ─── Helper : calculer les points d'un pari selon le championnat ───
 const computeBetPoints = (bet) => {
-  // HCup / MONDE : utilisent classement_points (pas de points_ft/points_mt)
-  if (bet.championnat === 'hcup' || bet.championnat === 'monde') {
+  // HCup / MONDE / ECC : utilisent classement_points (pas de points_ft/points_mt)
+  if (bet.championnat === 'hcup' || bet.championnat === 'monde' || bet.championnat === 'ecc') {
     return bet.classement_points || 0;
   }
   // Top14/D2 : utilise points_ft + points_mt
@@ -88,6 +88,9 @@ const formatDate = (date) => {
 // RPC classement_points_competition. L'édition 2025-2026 terminée = historique.
 const HCUP_PERIODE_START = '2026-12-01';
 
+// ECC (European Challenge Cup) : même calendrier que la Champions Cup (reprise déc. 2026).
+const ECC_PERIODE_START = '2026-12-01';
+
 export default function MesPoints() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -97,6 +100,7 @@ export default function MesPoints() {
   const [matchCotesD2, setMatchCotesD2] = useState({});
   const [matchsResultsHcup, setMatchsResultsHcup] = useState({}); // 🆕 HCup
   const [matchsResultsMonde, setMatchsResultsMonde] = useState({}); // 🆕 MONDE
+  const [matchsResultsEcc, setMatchsResultsEcc] = useState({}); // 🆕 ECC
   const [mondePeriodeStart, setMondePeriodeStart] = useState(null); // début Nations Championship
   const [loading, setLoading] = useState(true);
   const [sortMode, setSortMode] = useState('desc'); // 🆕 DESC par défaut = plus récent → cumul direct visible
@@ -120,6 +124,7 @@ export default function MesPoints() {
     { table: 'user_bets_d2', onUpdate: () => debouncedLoadData(user?.id) },
     { table: 'user_bets_hcup', onUpdate: () => debouncedLoadData(user?.id) }, // 🆕
     { table: 'user_bets_monde', onUpdate: () => debouncedLoadData(user?.id) }, // 🆕 MONDE
+    { table: 'user_bets_ecc', onUpdate: () => debouncedLoadData(user?.id) }, // 🆕 ECC
   ]);
 
   useEffect(() => {
@@ -188,6 +193,16 @@ export default function MesPoints() {
         .order('resolved_at', { ascending: true });
       if (mondeErr) throw mondeErr;
 
+      // ─── 2quater. Paris won ECC ───
+      const { data: eccBets, error: eccErr } = await supabase
+        .from('user_bets_ecc')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'won')
+        .eq('deleted', false)
+        .order('resolved_at', { ascending: true });
+      if (eccErr) throw eccErr;
+
       // ─── 3. Charger les résultats de matchs Top 14 (pour score affichage) ───
       const topMatchIds = [...new Set((topBets || []).map(b => b.match_id))];
       let topMatchesMap = {};
@@ -232,6 +247,17 @@ export default function MesPoints() {
         mondeMatchesMap = (mm || []).reduce((acc, m) => ({ ...acc, [String(m.id)]: m }), {});
       }
 
+      // ─── 4quater. Charger matchs_ecc (clé = match_id text) ───
+      const eccMatchIds = [...new Set((eccBets || []).map(b => b.match_id))];
+      let eccMatchesMap = {};
+      if (eccMatchIds.length > 0) {
+        const { data: em } = await supabase
+          .from('matchs_ecc')
+          .select('match_id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, round, saison, date_match')
+          .in('match_id', eccMatchIds);
+        eccMatchesMap = (em || []).reduce((acc, m) => ({ ...acc, [m.match_id]: m }), {});
+      }
+
       // Date de reprise du comptage MONDE = début Nations Championship (dynamique)
       const { data: ncRows } = await supabase
         .from('matchs_monde')
@@ -245,6 +271,7 @@ export default function MesPoints() {
       setMatchCotesD2(d2MatchesMap);
       setMatchsResultsHcup(hcupMatchesMap); // 🆕
       setMatchsResultsMonde(mondeMatchesMap); // 🆕 MONDE
+      setMatchsResultsEcc(eccMatchesMap); // 🆕 ECC
 
       // ─── 5. Fusionner les paris et garder uniquement ceux avec points > 0 ───
       const allBets = [
@@ -259,6 +286,11 @@ export default function MesPoints() {
         ...(mondeBets || []).map(b => ({
           ...b,
           championnat: 'monde',
+          result_at: b.resolved_at || b.result_at,
+        })),
+        ...(eccBets || []).map(b => ({
+          ...b,
+          championnat: 'ecc',
           result_at: b.resolved_at || b.result_at,
         })),
       ].filter(b => computeBetPoints(b) > 0);
@@ -313,6 +345,11 @@ export default function MesPoints() {
       const d = m?.date_match || bet.result_at || bet.resolved_at;
       return d ? new Date(d) >= new Date(HCUP_PERIODE_START) : true;
     }
+    if (bet.championnat === 'ecc') {
+      const m = matchsResultsEcc[bet.match_id];
+      const d = m?.date_match || bet.result_at || bet.resolved_at;
+      return d ? new Date(d) >= new Date(ECC_PERIODE_START) : true;
+    }
     if (bet.championnat === 'monde') {
       if (!mondePeriodeStart) return false; // Nations Championship pas encore au calendrier → hors comptage
       const m = matchsResultsMonde[bet.match_id];
@@ -324,11 +361,11 @@ export default function MesPoints() {
 
   const activeBets = useMemo(
     () => filteredBets.filter(isPeriodeActive),
-    [filteredBets, matchsResultsHcup, matchsResultsMonde, mondePeriodeStart]
+    [filteredBets, matchsResultsHcup, matchsResultsMonde, matchsResultsEcc, mondePeriodeStart]
   );
   const archivedBets = useMemo(
     () => filteredBets.filter(b => !isPeriodeActive(b)),
-    [filteredBets, matchsResultsHcup, matchsResultsMonde, mondePeriodeStart]
+    [filteredBets, matchsResultsHcup, matchsResultsMonde, matchsResultsEcc, mondePeriodeStart]
   );
 
   // 🆕 Mode "historique" : saison passée OU « toutes les saisons ».
@@ -376,14 +413,16 @@ export default function MesPoints() {
       mrInfo = matchCotesD2[bet.match_id];
     } else if (bet.championnat === 'hcup') {
       mrInfo = matchsResultsHcup[bet.match_id];
+    } else if (bet.championnat === 'ecc') {
+      mrInfo = matchsResultsEcc[bet.match_id];
     } else if (bet.championnat === 'monde') {
       mrInfo = matchsResultsMonde[bet.match_id];
     } else {
       mrInfo = matchsResults[bet.match_id];
     }
 
-    // Pour HCup : "journee" = "round" ; MONDE : phase / compétition
-    const journee = bet.championnat === 'hcup'
+    // Pour HCup / ECC : "journee" = "round" ; MONDE : phase / compétition
+    const journee = (bet.championnat === 'hcup' || bet.championnat === 'ecc')
       ? (mrInfo?.round ?? bet.round ?? null)
       : bet.championnat === 'monde'
       ? (mrInfo?.phase ?? mrInfo?.competition ?? null)
@@ -412,8 +451,8 @@ export default function MesPoints() {
         ht_ext: null,
       };
     }
-    if (bet.championnat === 'hcup' || bet.championnat === 'monde') {
-      // HCup / MONDE : score_domicile/exterieur = score à 80' (référence des paris)
+    if (bet.championnat === 'hcup' || bet.championnat === 'monde' || bet.championnat === 'ecc') {
+      // HCup / MONDE / ECC : score_domicile/exterieur = score de référence des paris
       return {
         dom: mr.score_domicile,
         ext: mr.score_exterieur,
@@ -453,7 +492,7 @@ export default function MesPoints() {
             <div className="flex items-center justify-between mb-1 min-h-[22px]">
               <p className="text-xs text-white/90 font-semibold">
                 Total points
-                {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : 'MONDE'}`}
+                {championnatFilter !== 'all' && ` — ${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : championnatFilter === 'ecc' ? 'Challenge Cup' : 'MONDE'}`}
               </p>
               {saisonFilter !== 'all' && (
                 <span className="text-[10px] text-white/80 bg-white/15 px-2 py-0.5 rounded-full font-semibold">
@@ -517,6 +556,17 @@ export default function MesPoints() {
               ⭐ C.Cup
             </button>
             <button
+              onClick={() => setChampionnatFilter('ecc')}
+              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
+                championnatFilter === 'ecc'
+                  ? 'text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              style={championnatFilter === 'ecc' ? { backgroundColor: '#2E7D32' } : {}}
+            >
+              🛡️ Chall.
+            </button>
+            <button
               onClick={() => setChampionnatFilter('monde')}
               className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
                 championnatFilter === 'monde'
@@ -574,7 +624,7 @@ export default function MesPoints() {
             <p className="font-semibold">
               {saisonFilter === getSaisonCourante() && bets.length === 0
                 ? "Aucun pari gagné pour l'instant"
-                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : 'MONDE'})` : ''}`
+                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : championnatFilter === 'ecc' ? 'Challenge Cup' : 'MONDE'})` : ''}`
               }
             </p>
             <p className="text-sm mt-1">
@@ -620,7 +670,7 @@ export default function MesPoints() {
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     bet.championnat === 'prod2'
                       ? 'bg-d2-navy text-white'
-                      : (bet.championnat === 'hcup' || bet.championnat === 'monde')
+                      : (bet.championnat === 'hcup' || bet.championnat === 'monde' || bet.championnat === 'ecc')
                       ? ''
                       : 'bg-rugby-gold text-white'
                   }`}
@@ -629,11 +679,14 @@ export default function MesPoints() {
                       ? { backgroundColor: '#003E7E', color: '#FFC72C' }
                       : bet.championnat === 'monde'
                       ? { backgroundColor: '#0B6E4F', color: '#fff' }
+                      : bet.championnat === 'ecc'
+                      ? { backgroundColor: '#2E7D32', color: '#fff' }
                       : {}
                   }
                 >
                   {bet.championnat === 'prod2' ? 'Pro D2'
                     : bet.championnat === 'hcup' ? 'C.Cup'
+                    : bet.championnat === 'ecc' ? 'Chall.'
                     : bet.championnat === 'monde' ? 'MONDE'
                     : 'Top 14'}
                 </span>
