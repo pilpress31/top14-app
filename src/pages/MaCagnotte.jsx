@@ -534,6 +534,7 @@ export default function MaCagnotte() {
     { table: 'user_bets_d2',        onUpdate: () => debouncedLoadDataRef.current() },
     { table: 'user_bets_hcup',      onUpdate: () => debouncedLoadDataRef.current() },
     { table: 'user_bets_monde',     onUpdate: () => debouncedLoadDataRef.current() },
+    { table: 'user_bets_ecc',       onUpdate: () => debouncedLoadDataRef.current() },
     { table: 'credit_transactions', onUpdate: () => debouncedLoadDataRef.current() },
   ], []); // deps vides intentionnels — la stabilité est assurée par les refs
 
@@ -732,16 +733,65 @@ export default function MaCagnotte() {
         console.warn('⚠️ Chargement paris MONDE échoué :', e?.message);
       }
 
-      // ✅ Fusion Top 14 + Pro D2 + HCup + MONDE
+      // ✅ Charger les paris ECC (Supabase direct : user_bets_ecc ⋈ matchs_ecc,
+      //    match_id TEXTE comme MONDE ; pas de score_final/prolongation côté ECC)
+      let betsEcc = [];
+      try {
+        const { data: eccRaw } = await supabase
+          .from('user_bets_ecc')
+          .select('*')
+          .eq('user_id', userId)
+          .neq('status', 'cancelled');
+        const eccBets = (eccRaw || []).filter(b => !b.deleted);
+        const eccIds = [...new Set(eccBets.map(b => b.match_id).filter(Boolean))];
+        let eccMatchMap = {};
+        if (eccIds.length > 0) {
+          const { data: em } = await supabase
+            .from('matchs_ecc')
+            .select('match_id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, date_match, round')
+            .in('match_id', eccIds);
+          (em || []).forEach(m => { eccMatchMap[String(m.match_id)] = m; });
+        }
+        betsEcc = eccBets.map(b => {
+          const m = eccMatchMap[String(b.match_id)] || {};
+          return {
+            ...b,
+            championnat: 'ecc',
+            placed_at: b.placed_at || b.created_at,
+            result_at: b.result_at || b.resolved_at,
+            matches: {
+              id: b.match_id,
+              home_team: m.equipe_domicile || b.equipe_domicile || null,
+              away_team: m.equipe_exterieure || b.equipe_exterieure || null,
+              match_date: m.date_match || null,
+              round: m.round || null,
+              score_domicile: m.score_domicile,
+              score_exterieur: m.score_exterieur,
+              score_home: m.score_domicile,
+              score_away: m.score_exterieur,
+              score_final_domicile: null,
+              score_final_exterieur: null,
+              prolongation: false,
+              score_ht_domicile: null,
+              score_ht_exterieur: null,
+            },
+          };
+        });
+      } catch (e) {
+        console.warn('⚠️ Chargement paris ECC échoué :', e?.message);
+      }
+
+      // ✅ Fusion Top 14 + Pro D2 + HCup + MONDE + ECC
       const allBets = [
         ...betsTop14.map(b => ({ ...b, championnat: b.championnat || 'top14' })),
         ...betsD2,
         ...betsHcup,
         ...betsMonde,
+        ...betsEcc,
       ];
 
       // ✅ Charger les match_results pour avoir les scores MT (score_ht_domicile / score_ht_exterieur)
-      const matchIds = [...new Set(allBets.filter(b => b.championnat !== 'monde').map(b => b.match_id).filter(Boolean))];
+      const matchIds = [...new Set(allBets.filter(b => b.championnat !== 'monde' && b.championnat !== 'ecc').map(b => b.match_id).filter(Boolean))];
       let matchResultsMap = {};
       if (matchIds.length > 0) {
         const { data: matchResults } = await supabase
@@ -1146,12 +1196,13 @@ export default function MaCagnotte() {
   // 🆕 Décomposition par championnat (pour diagnostic du total)
   // Basé sur filteredTransactions pour cohérence visuelle avec les autres compteurs (147 partout)
   const transactionsByChamp = useMemo(() => {
-    const stats = { top14: 0, prod2: 0, hcup: 0, monde: 0, autre: 0 };
+    const stats = { top14: 0, prod2: 0, hcup: 0, monde: 0, ecc: 0, autre: 0 };
     filteredTransactions.forEach(t => {
       const champ = t.bets?.championnat || t._championnat;
       if (champ === 'prod2') stats.prod2++;
       else if (champ === 'hcup') stats.hcup++;
       else if (champ === 'monde') stats.monde++;
+      else if (champ === 'ecc') stats.ecc++;
       else if (champ === 'top14' || !champ) stats.top14++;
       else stats.autre++;
     });
@@ -1435,6 +1486,7 @@ export default function MaCagnotte() {
                 {' • '}Pro D2: {transactionsByChamp.prod2}
                 {' • '}HCup: {transactionsByChamp.hcup}
                 {' • '}MONDE: {transactionsByChamp.monde}
+                {' • '}CHALL.: {transactionsByChamp.ecc}
                 {transactionsByChamp.autre > 0 && <> {' • '}Autre: {transactionsByChamp.autre}</>}
               </div>
             </div>
@@ -1445,11 +1497,13 @@ export default function MaCagnotte() {
               const pendingD2    = bets.filter(b => b.status === 'pending' && b.championnat === 'prod2');
               const pendingHcup  = bets.filter(b => b.status === 'pending' && b.championnat === 'hcup');
               const pendingMonde = bets.filter(b => b.status === 'pending' && b.championnat === 'monde');
+              const pendingEcc   = bets.filter(b => b.status === 'pending' && b.championnat === 'ecc');
 
               const stakeTop14 = pendingTop14.reduce((sum, b) => sum + (b.stake || 0), 0);
               const stakeD2    = pendingD2.reduce((sum, b) => sum + (b.stake || 0), 0);
               const stakeHcup  = pendingHcup.reduce((sum, b) => sum + (b.stake || 0), 0);
               const stakeMonde = pendingMonde.reduce((sum, b) => sum + (b.stake || 0), 0);
+              const stakeEcc   = pendingEcc.reduce((sum, b) => sum + (b.stake || 0), 0);
 
               // Handler pour aller vers l'onglet Mes paris d'un championnat précis
               const goToMesParis = (targetChampionnat) => {
@@ -1461,7 +1515,7 @@ export default function MaCagnotte() {
                 });
               };
 
-              if (pendingTop14.length === 0 && pendingD2.length === 0 && pendingHcup.length === 0 && pendingMonde.length === 0) return null;
+              if (pendingTop14.length === 0 && pendingD2.length === 0 && pendingHcup.length === 0 && pendingMonde.length === 0 && pendingEcc.length === 0) return null;
 
               return (
                 <div className="space-y-2 mb-4">
@@ -1576,6 +1630,37 @@ export default function MaCagnotte() {
                           style={{ backgroundColor: '#0B6E4F' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0A5C42'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0B6E4F'}
+                        >
+                          Voir
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bandeau Challenge Cup */}
+                  {pendingEcc.length > 0 && (
+                    <div
+                      className="border-l-4 rounded-lg p-3"
+                      style={{ backgroundColor: '#2E7D321A', borderColor: '#2E7D32' }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5" style={{ color: '#2E7D32' }} />
+                          <div>
+                            <p className="text-sm font-semibold" style={{ color: '#2E7D32' }}>
+                              🛡️ Challenge Cup — {pendingEcc.length} pari{pendingEcc.length > 1 ? 's' : ''} en cours
+                            </p>
+                            <p className="text-xs" style={{ color: '#1B5E20' }}>
+                              Mise totale : {stakeEcc} jetons
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => goToMesParis('ecc')}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg transition"
+                          style={{ backgroundColor: '#2E7D32', color: '#CD7F32' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1B5E20'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E7D32'}
                         >
                           Voir
                         </button>
