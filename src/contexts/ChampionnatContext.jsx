@@ -28,7 +28,7 @@ const ChampionnatContext = createContext(null);
 // Valeurs valides (validation + persistance)
 const ALLOWED = ['top14', 'prod2', 'hcup', 'ecc', 'monde'];
 // Carrousel (swipe / nextChampionnat) — ECC exclu volontairement (cf. en-tête)
-const ORDER = ['top14', 'prod2', 'hcup', 'monde'];
+const ORDER = ['top14', 'prod2', 'hcup', 'ecc', 'monde'];
 const STORAGE_KEY = 'top14pronos.championnat';
 
 // Lecture du dernier championnat choisi (fallback top14)

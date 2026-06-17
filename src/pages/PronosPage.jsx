@@ -7,19 +7,23 @@ import MesPronosHcupTab from '../components/MesPronosHcupTab';
 import MesParisHcupTab from '../components/MesParisHcupTab';
 import MesPronosMondeTab from '../components/MesPronosMondeTab';
 import MesParisMondeTab from '../components/MesParisMondeTab';
+import MesPronosEccTab from '../components/MesPronosEccTab';
+import MesParisEccTab from '../components/MesParisEccTab';
 import MainHeader from '../components/MainHeaderFull';
 import MainHeaderD2 from '../components/MainHeaderFullD2';
 import MainHeaderHcup from '../components/MainHeaderFullHcup';
 import MainHeaderMonde from '../components/MainHeaderFullMonde';
+import MainHeaderEcc from '../components/MainHeaderFullEcc';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
 const HEADER_HEIGHT = 120;
 
-// Couleurs des 4 championnats pour le carrousel
+// Couleurs des championnats pour le carrousel
 const CHAMPIONNATS = {
   top14: { label: 'TOP 14', emoji: '🏆', bg: '#FFFFFF', accent: '#D4A017', borderActive: '#FFC72C' },
   prod2: { label: 'PRO D2', emoji: '🥈', bg: '#00174D', accent: '#C0C0C0', borderActive: '#FFC72C' },
   hcup:  { label: 'C.CUP',  emoji: '⭐', bg: '#003E7E', accent: '#FFC72C', borderActive: '#FFC72C' },
+  ecc:   { label: 'CHALL.', emoji: '🛡️', bg: '#1B5E20', accent: '#CD7F32', borderActive: '#CD7F32' },
   monde: { label: 'MONDE',  emoji: '🌍', bg: '#064E3B', accent: '#34D399', borderActive: '#34D399' },
 };
 
@@ -58,7 +62,7 @@ export default function PronosPage() {
       setActiveTab(location.state.activeTab);
     }
     if (location.state?.championnat) {
-      const champMap = { top14: 'top14', d2: 'prod2', hcup: 'hcup', monde: 'monde' };
+      const champMap = { top14: 'top14', d2: 'prod2', hcup: 'hcup', ecc: 'ecc', monde: 'monde' };
       const mapped = champMap[location.state.championnat];
       if (mapped) setChampionnat(mapped);
     }
@@ -90,12 +94,11 @@ export default function PronosPage() {
 
   const tabsTop = headerVisible ? HEADER_HEIGHT : 0;
 
-  // Padding fixe (identique à l'original = 120)
-  // La hauteur des onglets reste ~65px car le carrousel est compact
   const contentPaddingTop = 120;
 
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
+  const isEcc = championnat === 'ecc';
   const isMonde = championnat === 'monde';
 
   // Couleur d'accent du championnat courant (onglets actifs sur fond sombre)
@@ -108,7 +111,11 @@ export default function PronosPage() {
   };
   const inactiveTabStyle = { color: '#94a3b8', borderBottom: '4px solid transparent' };
 
-  const HeaderComponent = isMonde ? MainHeaderMonde : isHcup ? MainHeaderHcup : isD2 ? MainHeaderD2 : MainHeader;
+  const HeaderComponent = isMonde ? MainHeaderMonde
+    : isEcc ? MainHeaderEcc
+    : isHcup ? MainHeaderHcup
+    : isD2 ? MainHeaderD2
+    : MainHeader;
 
   return (
     <div className="min-h-screen bg-[#0c1322] pb-24">
@@ -182,6 +189,8 @@ export default function PronosPage() {
         {activeTab === 'a-parier' && (
           isMonde
             ? <MesPronosMondeTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
+            : isEcc
+            ? <MesPronosEccTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
             : isHcup
             ? <MesPronosHcupTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
             : <MesPronosTab goToMesParis={goToMesParis} scrollToMatchId={scrollToMatchId} onScrollDone={() => setScrollToMatchId(null)} />
@@ -190,6 +199,8 @@ export default function PronosPage() {
         {activeTab === 'mes-paris' && (
           isMonde
             ? <MesParisMondeTab />
+            : isEcc
+            ? <MesParisEccTab />
             : isHcup
             ? <MesParisHcupTab />
             : <MesParisTab />
