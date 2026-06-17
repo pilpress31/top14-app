@@ -48,6 +48,13 @@ const CHAMP_META = {
     journeeWord: "round",
     journeePrefix: "",
   },
+  monde: {
+    label: "Rugby International",
+    endpoint: "/api/monde/stats-algo-derniere-journee",
+    journeeWord: "journée",
+    journeePrefix: "",
+    headerLabel: "Dernière compétition", // "journée"/"round" n'ont pas de sens à l'international
+  },
 };
 
 export default function StatsAlgoModal({
@@ -262,7 +269,7 @@ export default function StatsAlgoModal({
                 marginBottom: "12px",
               }}
             >
-              📊 Dernier{meta.journeeWord === "round" ? " round" : "e journée"} {journeeLabel !== "—" ? `— ${journeeLabel}` : ""}
+              📊 {meta.headerLabel ? meta.headerLabel : `Dernier${meta.journeeWord === "round" ? " round" : "e journée"}`} {journeeLabel !== "—" ? `— ${journeeLabel}` : ""}
             </div>
 
             {loading && (

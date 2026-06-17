@@ -19,6 +19,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCharte } from "../constants/chartes";
+import StatsAlgoModal from "./StatsAlgoModal";
 
 const API_BASE = "https://top14-api-production.up.railway.app";
 const MC = getCharte("monde");
@@ -30,6 +31,7 @@ const { vert, emeraude } = MC.base;
  */
 export default function MainHeaderMonde({ isVisible = true }) {
   const [stats, setStats] = useState({ precision: 0, total: 0 });
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadStats() {
@@ -85,8 +87,14 @@ export default function MainHeaderMonde({ isVisible = true }) {
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-2 w-full">
+          {/* Stats — cliquables, ouvrent le popup stats algo */}
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            aria-label="Voir les statistiques détaillées de l'algorithme"
+            className="grid grid-cols-2 gap-2 w-full cursor-pointer bg-transparent border-0 p-0 m-0
+                       transition-transform duration-150 hover:scale-[1.03] active:scale-95"
+          >
             <div className="rounded-lg px-3 py-1 text-center shadow flex items-center gap-1"
                  style={{ backgroundColor: vert, border: `1px solid ${emeraude}` }}>
               <TrophyIcon className="h-4 w-4" style={{ color: emeraude }} />
@@ -108,9 +116,19 @@ export default function MainHeaderMonde({ isVisible = true }) {
                 <p className="text-[10px]" style={{ color: emeraude }}>Matchs analysés</p>
               </div>
             </div>
-          </div>
+          </button>
         </div>
       </header>
+
+      {/* Popup stats algo (Rugby International) */}
+      <StatsAlgoModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        championnat="monde"
+        theme={MC.modal || { primary: vert, onPrimary: "#FFFFFF" }}
+        globalStats={{ precision: stats.precision, total: stats.total }}
+        apiBase={API_BASE}
+      />
     </div>
   );
 }

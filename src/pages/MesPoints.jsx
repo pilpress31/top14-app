@@ -12,6 +12,12 @@ import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getSaisonCourante } from '../utils/season';
 
+// ─── Phases finales Top 14 : la colonne `round` est dans match_cotes (pas dans
+//     matchs_results que charge cette page). On mappe donc le n° de journée vers
+//     le nom de phase, comme côté serveur (/api/stats-algo-derniere-journee).
+//     Pro D2 lit directement match_cotes_d2.round (colonne présente).
+const PHASES_FINALES_TOP14 = { 27: 'Barrages', 28: 'Demi-finales', 29: 'Finale' };
+
 // ─── Helper : calculer les points d'un pari selon le championnat ───
 const computeBetPoints = (bet) => {
   // HCup / MONDE / ECC : utilisent classement_points (pas de points_ft/points_mt)
@@ -213,7 +219,7 @@ export default function MesPoints() {
       if (d2MatchIds.length > 0) {
         const { data: dm } = await supabase
           .from('match_cotes_d2')
-          .select('match_id, equipe_domicile, equipe_exterieure, score_reel_dom, score_reel_ext, journee, saison, date_match')
+          .select('match_id, equipe_domicile, equipe_exterieure, score_reel_dom, score_reel_ext, journee, round, saison, date_match')
           .in('match_id', d2MatchIds);
         d2MatchesMap = (dm || []).reduce((acc, m) => ({ ...acc, [m.match_id]: m }), {});
       }
@@ -390,12 +396,22 @@ export default function MesPoints() {
       mrInfo = matchsResults[bet.match_id];
     }
 
-    // Pour HCup / ECC : "journee" = "round" ; MONDE : phase / compétition
-    const journee = (bet.championnat === 'hcup' || bet.championnat === 'ecc')
-      ? (mrInfo?.round ?? bet.round ?? null)
-      : bet.championnat === 'monde'
-      ? (mrInfo?.phase ?? mrInfo?.competition ?? null)
-      : (mrInfo?.journee ?? bet.journee ?? null);
+    // Libellé de "journée" selon le championnat :
+    //  - HCup / ECC : round textuel (déjà le nom de phase en phases finales)
+    //  - MONDE      : phase / compétition
+    //  - Pro D2     : round si présent (nom de phase finale), sinon n° de journée
+    //  - Top 14     : nom de phase finale via la map, sinon n° de journée
+    let journee;
+    if (bet.championnat === 'hcup' || bet.championnat === 'ecc') {
+      journee = mrInfo?.round ?? bet.round ?? null;
+    } else if (bet.championnat === 'monde') {
+      journee = mrInfo?.phase ?? mrInfo?.competition ?? null;
+    } else if (bet.championnat === 'prod2') {
+      journee = mrInfo?.round ?? mrInfo?.journee ?? bet.journee ?? null;
+    } else { // top14
+      const j = mrInfo?.journee ?? bet.journee ?? null;
+      journee = (j != null && PHASES_FINALES_TOP14[j]) ? PHASES_FINALES_TOP14[j] : j;
+    }
 
     return {
       equipe_domicile: bet.equipe_domicile || mrInfo?.equipe_domicile || null,
