@@ -582,21 +582,68 @@ export default function MaCagnotte() {
       );
       setUserCredits(creditsResponse.data.credits || 0);
 
-      // 🆕 Points "live" = somme des points des ÉDITIONS EN COURS uniquement.
-      // Les éditions terminées (ex. Champions Cup 2025-2026) sont exclues → reset par compétition.
-      const { data: livePts, error: ptsError } = await supabase
-        .rpc('user_live_points', { p_user: userId });
+      // 🆕 Total de points = MÊME calcul que la page "Mes Points" :
+      // somme des points des paris GAGNÉS de l'ÉDITION EN COURS (saison courante),
+      // toutes compétitions (Top14 + Pro D2 + HCup + MONDE). HCup/MONDE ne comptent
+      // qu'à partir de l'ouverture de leur édition (sinon exclus, comme Mes Points).
+      // (ECC sera ajouté ici quand Mes Points l'intègrera, après l'étape 3d.)
+      try {
+        const saisonCourante = getSaisonCourante();
+        const HCUP_PERIODE_START = '2026-12-01';
 
-      if (!ptsError && livePts !== null && livePts !== undefined) {
-        setUserPoints(Number(livePts) || 0);
-      } else {
-        // Repli : ancien total brut si la RPC échoue
+        const extractSaison = (matchId) => {
+          if (!matchId) return null;
+          const t14 = String(matchId).match(/^(\d{4}-\d{4})_/);
+          if (t14) return t14[1];
+          const d2 = String(matchId).match(/^(\d{4})_(\d{4})_/);
+          if (d2) return `${d2[1]}-${d2[2]}`;
+          return null;
+        };
+
+        const [{ data: topW }, { data: d2W }, { data: hcupW }, { data: mondeW }] = await Promise.all([
+          supabase.from('user_bets').select('*').eq('user_id', userId).eq('status', 'won'),
+          supabase.from('user_bets_d2').select('*').eq('user_id', userId).eq('status', 'won'),
+          supabase.from('user_bets_hcup').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
+          supabase.from('user_bets_monde').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
+        ]);
+
+        // Dates des matchs HCup/MONDE (filtre "édition en cours") + début Nations Championship
+        const hcupIds = [...new Set((hcupW || []).map(b => b.match_id).filter(Boolean))];
+        const hcupDate = {};
+        if (hcupIds.length) {
+          const { data: hm } = await supabase.from('matchs_hcup').select('id, date_match').in('id', hcupIds);
+          (hm || []).forEach(m => { hcupDate[m.id] = m.date_match; });
+        }
+        const mondeIds = [...new Set((mondeW || []).map(b => b.match_id).filter(Boolean))];
+        const mondeDate = {};
+        if (mondeIds.length) {
+          const { data: mm } = await supabase.from('matchs_monde').select('match_id, date_match').in('match_id', mondeIds);
+          (mm || []).forEach(m => { mondeDate[String(m.match_id)] = m.date_match; });
+        }
+        const { data: ncRows } = await supabase.from('matchs_monde').select('date_match')
+          .eq('competition', 'Nations Championship').order('date_match', { ascending: true }).limit(1);
+        const mondeStart = ncRows?.[0]?.date_match || null;
+
+        const getSaison = (b) => b.saison || extractSaison(b.match_id) || saisonCourante;
+        let pts = 0;
+        (topW || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
+        (d2W  || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
+        (hcupW || []).forEach(b => {
+          if (getSaison(b) !== saisonCourante) return;
+          const d = hcupDate[b.match_id];
+          if (d && new Date(d) >= new Date(HCUP_PERIODE_START)) pts += (b.classement_points || 0);
+        });
+        (mondeW || []).forEach(b => {
+          if (getSaison(b) !== saisonCourante || !mondeStart) return;
+          const d = mondeDate[String(b.match_id)];
+          if (d && new Date(d) >= new Date(mondeStart)) pts += (b.classement_points || 0);
+        });
+        setUserPoints(pts);
+      } catch (e) {
+        console.warn('⚠️ Calcul des points (live) échoué :', e?.message);
         const { data: userStatsData } = await supabase
-          .from('user_stats')
-          .select('total_points')
-          .eq('user_id', userId)
-          .eq('saison', getSaisonCourante())
-          .single();
+          .from('user_stats').select('total_points')
+          .eq('user_id', userId).eq('saison', getSaisonCourante()).maybeSingle();
         if (userStatsData) setUserPoints(userStatsData.total_points || 0);
       }
 
@@ -1606,37 +1653,6 @@ export default function MaCagnotte() {
                     </div>
                   )}
 
-                  {/* Bandeau MONDE */}
-                  {pendingMonde.length > 0 && (
-                    <div
-                      className="border-l-4 rounded-lg p-3"
-                      style={{ backgroundColor: '#0B6E4F1A', borderColor: '#0B6E4F' }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-5 h-5" style={{ color: '#0B6E4F' }} />
-                          <div>
-                            <p className="text-sm font-semibold" style={{ color: '#0B6E4F' }}>
-                              🌍 MONDE — {pendingMonde.length} pari{pendingMonde.length > 1 ? 's' : ''} en cours
-                            </p>
-                            <p className="text-xs" style={{ color: '#0A5C42' }}>
-                              Mise totale : {stakeMonde} jetons
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => goToMesParis('monde')}
-                          className="px-3 py-1.5 text-white text-xs font-semibold rounded-lg transition"
-                          style={{ backgroundColor: '#0B6E4F' }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0A5C42'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0B6E4F'}
-                        >
-                          Voir
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Bandeau Challenge Cup */}
                   {pendingEcc.length > 0 && (
                     <div
@@ -1661,6 +1677,37 @@ export default function MaCagnotte() {
                           style={{ backgroundColor: '#2E7D32', color: '#CD7F32' }}
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1B5E20'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2E7D32'}
+                        >
+                          Voir
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bandeau MONDE */}
+                  {pendingMonde.length > 0 && (
+                    <div
+                      className="border-l-4 rounded-lg p-3"
+                      style={{ backgroundColor: '#0B6E4F1A', borderColor: '#0B6E4F' }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5" style={{ color: '#0B6E4F' }} />
+                          <div>
+                            <p className="text-sm font-semibold" style={{ color: '#0B6E4F' }}>
+                              🌍 MONDE — {pendingMonde.length} pari{pendingMonde.length > 1 ? 's' : ''} en cours
+                            </p>
+                            <p className="text-xs" style={{ color: '#0A5C42' }}>
+                              Mise totale : {stakeMonde} jetons
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => goToMesParis('monde')}
+                          className="px-3 py-1.5 text-white text-xs font-semibold rounded-lg transition"
+                          style={{ backgroundColor: '#0B6E4F' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0A5C42'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0B6E4F'}
                         >
                           Voir
                         </button>
