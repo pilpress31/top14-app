@@ -602,13 +602,12 @@ export default function MaCagnotte() {
       setUserCredits(creditsResponse.data.credits || 0);
 
       // 🆕 Total de points = MÊME calcul que la page "Mes Points" :
-      // somme des points des paris GAGNÉS de l'ÉDITION EN COURS (saison courante),
-      // toutes compétitions (Top14 + Pro D2 + HCup + MONDE + ECC). HCup/MONDE/ECC ne
-      // comptent qu'à partir de l'ouverture de leur édition (sinon exclus, comme Mes Points).
+      // somme des points des paris GAGNÉS de la SAISON COURANTE, toutes compétitions.
+      // Le reset n'a lieu qu'au CHANGEMENT DE SAISON (fin du Top 14) : Top14/D2/HCup/
+      // ECC comptent toute la saison courante. SEULE borne : MONDE ne compte qu'à
+      // partir du Nations Championship (départ du comptage international).
       try {
         const saisonCourante = getSaisonCourante();
-        const HCUP_PERIODE_START = '2026-12-01';
-        const ECC_PERIODE_START = '2026-12-01';
 
         const extractSaison = (matchId) => {
           if (!matchId) return null;
@@ -627,13 +626,7 @@ export default function MaCagnotte() {
           supabase.from('user_bets_ecc').select('*').eq('user_id', userId).eq('status', 'won').eq('deleted', false),
         ]);
 
-        // Dates des matchs HCup/MONDE (filtre "édition en cours") + début Nations Championship
-        const hcupIds = [...new Set((hcupW || []).map(b => b.match_id).filter(Boolean))];
-        const hcupDate = {};
-        if (hcupIds.length) {
-          const { data: hm } = await supabase.from('matchs_hcup').select('id, date_match').in('id', hcupIds);
-          (hm || []).forEach(m => { hcupDate[m.id] = m.date_match; });
-        }
+        // MONDE : dates + début Nations Championship (seule compétition à borne de départ)
         const mondeIds = [...new Set((mondeW || []).map(b => b.match_id).filter(Boolean))];
         const mondeDate = {};
         if (mondeIds.length) {
@@ -644,31 +637,16 @@ export default function MaCagnotte() {
           .eq('competition', 'Nations Championship').order('date_match', { ascending: true }).limit(1);
         const mondeStart = ncRows?.[0]?.date_match || null;
 
-        const eccIds = [...new Set((eccW || []).map(b => b.match_id).filter(Boolean))];
-        const eccDate = {};
-        if (eccIds.length) {
-          const { data: em } = await supabase.from('matchs_ecc').select('match_id, date_match').in('match_id', eccIds);
-          (em || []).forEach(m => { eccDate[String(m.match_id)] = m.date_match; });
-        }
-
         const getSaison = (b) => b.saison || extractSaison(b.match_id) || saisonCourante;
         let pts = 0;
-        (topW || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
-        (d2W  || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
-        (hcupW || []).forEach(b => {
-          if (getSaison(b) !== saisonCourante) return;
-          const d = hcupDate[b.match_id];
-          if (d && new Date(d) >= new Date(HCUP_PERIODE_START)) pts += (b.classement_points || 0);
-        });
+        (topW  || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
+        (d2W   || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.points_ft || 0) + (b.points_mt || 0); });
+        (hcupW || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.classement_points || 0); });
+        (eccW  || []).forEach(b => { if (getSaison(b) === saisonCourante) pts += (b.classement_points || 0); });
         (mondeW || []).forEach(b => {
           if (getSaison(b) !== saisonCourante || !mondeStart) return;
           const d = mondeDate[String(b.match_id)];
           if (d && new Date(d) >= new Date(mondeStart)) pts += (b.classement_points || 0);
-        });
-        (eccW || []).forEach(b => {
-          if (getSaison(b) !== saisonCourante) return;
-          const d = eccDate[String(b.match_id)];
-          if (d && new Date(d) >= new Date(ECC_PERIODE_START)) pts += (b.classement_points || 0);
         });
         setUserPoints(pts);
       } catch (e) {

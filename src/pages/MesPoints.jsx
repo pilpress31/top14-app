@@ -84,12 +84,6 @@ const formatDate = (date) => {
   });
 };
 
-// Début de l'édition Champions Cup EN COURS (poules déc. 2026) — aligné sur la
-// RPC classement_points_competition. L'édition 2025-2026 terminée = historique.
-const HCUP_PERIODE_START = '2026-12-01';
-
-// ECC (European Challenge Cup) : même calendrier que la Champions Cup (reprise déc. 2026).
-const ECC_PERIODE_START = '2026-12-01';
 
 export default function MesPoints() {
   const navigate = useNavigate();
@@ -335,28 +329,21 @@ export default function MesPoints() {
   }, [bets, championnatFilter, saisonFilter]);
 
   // ─── Édition active vs terminée ───────────────────────────────────────────
-  // Le comptage « live » ne retient que l'édition EN COURS de chaque compétition.
-  // HCup : édition active = matchs ≥ HCUP_PERIODE_START (poules déc. 2026) ;
-  //        l'édition 2025-2026 terminée bascule en historique (hors comptage).
-  // Top14 / Pro D2 : la saison fait déjà office d'édition → toujours actif.
+  // Le comptage des points NE se réinitialise qu'au CHANGEMENT DE SAISON (fin du
+  // Top 14 = fin des 5 compétitions). Tant qu'on est dans la saison courante,
+  // TOUTES les compétitions domestiques comptent (Top14, Pro D2, Champions Cup,
+  // Challenge Cup), même si leur édition propre est déjà terminée — c'est le
+  // filtre saison (getBetSaison) qui fait le reset.
+  // SEULE exception : MONDE ne compte qu'à partir du Nations Championship (borne
+  // de DÉPART), le rugby international ne suivant pas le calendrier des clubs.
   const isPeriodeActive = (bet) => {
-    if (bet.championnat === 'hcup') {
-      const m = matchsResultsHcup[bet.match_id];
-      const d = m?.date_match || bet.result_at || bet.resolved_at;
-      return d ? new Date(d) >= new Date(HCUP_PERIODE_START) : true;
-    }
-    if (bet.championnat === 'ecc') {
-      const m = matchsResultsEcc[bet.match_id];
-      const d = m?.date_match || bet.result_at || bet.resolved_at;
-      return d ? new Date(d) >= new Date(ECC_PERIODE_START) : true;
-    }
     if (bet.championnat === 'monde') {
       if (!mondePeriodeStart) return false; // Nations Championship pas encore au calendrier → hors comptage
       const m = matchsResultsMonde[bet.match_id];
       const d = m?.date_match || bet.resolved_at || bet.created_at;
       return d ? new Date(d) >= new Date(mondePeriodeStart) : false;
     }
-    return true;
+    return true; // Top14 / Pro D2 / HCup / ECC : comptés toute la saison courante
   };
 
   const activeBets = useMemo(
