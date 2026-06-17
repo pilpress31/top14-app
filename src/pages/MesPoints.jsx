@@ -229,15 +229,17 @@ export default function MesPoints() {
         hcupMatchesMap = (hm || []).reduce((acc, m) => ({ ...acc, [m.id]: m }), {});
       }
 
-      // ─── 4ter. Charger matchs_monde (clé = id::text) ───
-      const mondeMatchIds = [...new Set((mondeBets || []).map(b => b.match_id))];
+      // ─── 4ter. Charger matchs_monde (clé = match_id TEXTE "MONDE_...") ───
+      // user_bets_monde.match_id est le match_id texte, PAS l'id numérique :
+      // jointure sur match_id (Number("MONDE_...") = NaN → aucune ligne sinon).
+      const mondeMatchIds = [...new Set((mondeBets || []).map(b => b.match_id).filter(Boolean))];
       let mondeMatchesMap = {};
       if (mondeMatchIds.length > 0) {
         const { data: mm } = await supabase
           .from('matchs_monde')
-          .select('id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, score_final_domicile, score_final_exterieur, prolongation, phase, competition, date_match')
-          .in('id', mondeMatchIds.map(Number));
-        mondeMatchesMap = (mm || []).reduce((acc, m) => ({ ...acc, [String(m.id)]: m }), {});
+          .select('id, match_id, equipe_domicile, equipe_exterieure, score_domicile, score_exterieur, score_final_domicile, score_final_exterieur, prolongation, phase, competition, date_match')
+          .in('match_id', mondeMatchIds);
+        mondeMatchesMap = (mm || []).reduce((acc, m) => ({ ...acc, [String(m.match_id)]: m }), {});
       }
 
       // ─── 4quater. Charger matchs_ecc (clé = match_id text) ───
