@@ -623,8 +623,8 @@ export default function MesPoints() {
             <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="font-semibold">
               {saisonFilter === getSaisonCourante() && bets.length === 0
-                ? "Aucun pari gagné pour l'instant"
-                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : championnatFilter === 'ecc' ? 'Challenge Cup' : 'MONDE'})` : ''}`
+                ? "Aucun point gagné pour l'instant"
+                : `Aucun point gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : championnatFilter === 'ecc' ? 'Challenge Cup' : 'MONDE'})` : ''}`
               }
             </p>
             <p className="text-sm mt-1">
@@ -818,6 +818,7 @@ export default function MesPoints() {
         {/* Édition en cours sans point, mais historique présent */}
         {!loading && betsWithCumul.length === 0 && archivedWithCumul.length > 0 && (
           <div className="bg-white rounded-lg p-6 text-center text-gray-500 shadow-sm">
+            <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="font-semibold">Aucun point sur l'édition en cours</p>
             <p className="text-sm mt-1">
               {championnatFilter === 'hcup'
