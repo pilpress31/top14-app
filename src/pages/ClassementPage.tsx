@@ -160,7 +160,7 @@ function ClassementPage() {
                 key={c.key}
                 onClick={() => setChampionnat(c.key)}
                 aria-label={`Passer à ${c.label}`}
-                className="flex-1 flex items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all"
+                className="flex-1 min-w-0 flex items-center justify-center gap-1 rounded-full px-1 py-1.5 text-[10px] font-bold uppercase tracking-tight whitespace-nowrap transition-all"
                 style={isActive ? { backgroundColor: c.accent, color: '#0c1322' } : { color: '#94a3b8' }}
               >
                 <span style={{ fontSize: '12px', lineHeight: 1 }}>{c.emoji}</span>
