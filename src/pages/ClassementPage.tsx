@@ -6,12 +6,13 @@ import ClassementHcupTabs from "../components/ClassementHcupTabs";
 import ClassementTop14Tabs from "../components/ClassementTop14Tabs";
 import ClassementD2Tabs from "../components/ClassementD2Tabs";
 import ClassementMondeTabs from "../components/ClassementMondeTabs";
+import ClassementEccTabs from "../components/ClassementEccTabs";
 import { useChampionnat } from "../contexts/ChampionnatContext";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-type Championnat = 'top14' | 'prod2' | 'hcup' | 'monde';
+type Championnat = 'top14' | 'prod2' | 'hcup' | 'monde' | 'ecc';
 
 function ClassementPage() {
   // Championnat partagé + persisté (reste identique après refresh)
@@ -26,6 +27,7 @@ function ClassementPage() {
   const isD2 = championnat === 'prod2';
   const isHcup = championnat === 'hcup';
   const isMonde = championnat === 'monde';
+  const isEcc = championnat === 'ecc';
 
   // Couleurs adaptées selon championnat
   const themeColors = {
@@ -38,7 +40,7 @@ function ClassementPage() {
 
   const loadClassement = useCallback(async () => {
     // 🆕 HCup / MONDE : gérés par des composants dédiés (fetch propre)
-    if (championnat === 'hcup' || championnat === 'monde') {
+        if (championnat === 'hcup' || championnat === 'monde' || championnat === 'ecc') {
       setClassement([]);
       setLoading(false);
       return;
@@ -149,6 +151,7 @@ function ClassementPage() {
             { key: 'top14', emoji: '🏆', label: 'TOP 14', accent: '#CBA135' },
             { key: 'prod2', emoji: '🥈', label: 'PRO D2', accent: '#C0C0C0' },
             { key: 'hcup',  emoji: '⭐', label: 'C.CUP',  accent: '#FFC72C' },
+            { key: 'ecc',   emoji: '🛡️', label: 'CHALL.', accent: '#CD7F32' },
             { key: 'monde', emoji: '🌍', label: 'MONDE',  accent: '#34D399' },
           ] as const).map((c) => {
             const isActive = championnat === c.key;
@@ -178,7 +181,9 @@ function ClassementPage() {
 
       {isMonde && <ClassementMondeTabs />}
 
-      {!isHcup && !isD2 && !isMonde && (
+      {isEcc && <ClassementEccTabs />}
+
+      {!isHcup && !isD2 && !isMonde && !isEcc && (
         <ClassementTop14Tabs>
       {/* Titre */}
       {(
