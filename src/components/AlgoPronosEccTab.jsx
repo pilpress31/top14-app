@@ -403,6 +403,7 @@ export default function AlgoPronosEccTab() {
   if (pronos.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-gray-200">
+        <div className="text-5xl mb-2" style={{ opacity: 0.85 }}>🛡️</div>
         <p className="text-gray-500">Aucun match de Challenge Cup à venir</p>
         <p className="text-xs text-gray-400 mt-2">{texteReprise('ecc') || "Les prédictions s'afficheront dès la reprise de la compétition."}</p>
       </div>
