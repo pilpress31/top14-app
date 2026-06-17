@@ -11,7 +11,7 @@
 // Props :
 //   - open          : bool      — état d'ouverture
 //   - onClose       : function  — callback de fermeture
-//   - championnat   : 'top14' | 'prod2' | 'hcup'
+//   - championnat   : 'top14' | 'prod2' | 'hcup' | 'ecc'
 //   - theme         : { primary, accent, onPrimary } — couleurs de charte
 //   - globalStats   : { precision, total } — stats déjà chargées par le header
 //   - apiBase       : string    — base URL de l'API
@@ -39,6 +39,12 @@ const CHAMP_META = {
   hcup: {
     label: "Champions Cup",
     endpoint: "/api/hcup/stats-algo-derniere-journee",
+    journeeWord: "round",
+    journeePrefix: "",
+  },
+  ecc: {
+    label: "Challenge Cup",
+    endpoint: "/api/ecc/stats-algo-derniere-journee",
     journeeWord: "round",
     journeePrefix: "",
   },
@@ -109,9 +115,14 @@ export default function StatsAlgoModal({
 
   if (!open) return null;
 
-  // Libellé de la journée/round affichée
+  // Libellé de la journée/round affichée.
+  // Priorité au champ `phase` renvoyé par l'API (nom de phase finale, ex.
+  // "Barrages"/"Demi-finales"/"Finale" pour Top14/D2). Sinon, pour HCup/ECC le
+  // `journee` est déjà le round textuel (préfixe vide) ; pour Top14/D2 c'est "Jxx".
   const journeeLabel = derniere
-    ? `${meta.journeePrefix}${derniere.journee}`
+    ? (derniere.phase
+        ? String(derniere.phase)
+        : `${meta.journeePrefix}${derniere.journee}`)
     : "—";
 
   // Redirection vers la page de paris du championnat
