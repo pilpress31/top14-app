@@ -285,6 +285,17 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
 
   const isPari = trans.type === 'bet_won' || trans.type === 'bet_lost';
 
+  // 🆕 Pastille "compétition" sur chaque pari (alignée sur les emojis des bandeaux)
+  const champ = fullBet?.championnat || trans.bets?.championnat || trans._championnat || 'top14';
+  const COMP_BADGE = {
+    top14: { label: 'Top 14',        emoji: '🏆', bg: '#F9731618', fg: '#C2410C' },
+    prod2: { label: 'Pro D2',        emoji: '🥈', bg: '#00174D14', fg: '#00174D' },
+    hcup:  { label: 'Champions Cup', emoji: '⭐', bg: '#003E7E14', fg: '#003E7E' },
+    ecc:   { label: 'Challenge Cup', emoji: '🛡️', bg: '#2E7D3216', fg: '#1B5E20' },
+    monde: { label: 'MONDE',         emoji: '🌍', bg: '#0B6E4F14', fg: '#0A5C42' },
+  };
+  const compBadge = COMP_BADGE[champ] || COMP_BADGE.top14;
+
   return (
     <div 
       className={`p-4 bg-white border-l-4 hover:bg-gray-50 transition cursor-pointer mb-3 rounded-lg shadow-sm ${
@@ -303,6 +314,14 @@ function TransactionItem({ trans, navigateToBet, getTeamData, bets }) {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-sm">{getTitle()}</span>
+                {isPari && (
+                  <span
+                    className="px-2 py-0.5 text-[10px] rounded-full border font-semibold"
+                    style={{ backgroundColor: compBadge.bg, color: compBadge.fg, borderColor: `${compBadge.fg}40` }}
+                  >
+                    {compBadge.emoji} {compBadge.label}
+                  </span>
+                )}
                 {periodLabel && (
                   <span className="px-2 py-0.5 text-[10px] rounded-full bg-gray-100 text-gray-600 border">
                     {periodLabel}
