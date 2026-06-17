@@ -22,6 +22,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const { vert: ECC_VERT, bronze: ECC_BRONZE } = getCharte('ecc').base;
 const ECC_BRONZE_LIGHT = '#E8B878'; // bronze clair lisible sur fond vert
+// RugbyPass renvoie 'Pool N' (anglais) → francisé pour l'affichage.
+const frPoule = (name) => (name || '').replace(/^Pool\b/i, 'Poule');
 
 // Saison ECC courante (calendrier européen, départ décembre) — même règle que le backend.
 function saisonEccLabel() {
@@ -218,7 +220,7 @@ export default function ClassementEcc() {
         return (
           <div key={poolName} className="rounded-lg shadow-md overflow-hidden border bg-white" style={{ borderColor: ECC_VERT + '40' }}>
             <div className="px-3 py-2 flex items-center justify-between" style={{ backgroundColor: ECC_VERT }}>
-              <span className="font-bold text-sm uppercase" style={{ color: ECC_BRONZE_LIGHT }}>🛡️ {poolName}</span>
+              <span className="font-bold text-sm uppercase" style={{ color: ECC_BRONZE_LIGHT }}>🛡️ {frPoule(poolName)}</span>
               <span className="text-[10px]" style={{ color: ECC_BRONZE_LIGHT, opacity: 0.85 }}>
                 {equipes.length} équipes
               </span>

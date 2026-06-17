@@ -82,16 +82,22 @@ export default function PalmaresEcc() {
         <div className="px-3 py-2" style={{ backgroundColor: ECC_VERT }}>
           <span className="font-bold text-sm uppercase" style={{ color: '#E8B878' }}>🏆 Clubs les plus titrés</span>
         </div>
-        <div className="p-3 flex flex-wrap gap-2">
-          {topTitres.map(([club, n]) => {
+        <div className="divide-y divide-gray-100">
+          {topTitres.map(([club, n], i) => {
             const team = getTeamData ? getTeamData(club) : null;
+            const medaille = ['🥇', '🥈', '🥉'][i];
             return (
-              <div key={club} className="flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: ECC_VERT + '12' }}>
-                {team?.logo && (
-                  <img src={team.logo} alt={club} className="w-4 h-4 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                )}
-                <span className="text-xs font-semibold text-gray-800">{club}</span>
-                <span className="text-xs font-bold" style={{ color: ECC_VERT }}>{n}</span>
+              <div key={club} className="flex items-center gap-3 px-3 py-2">
+                <span className="w-5 text-center text-sm">
+                  {medaille || <span className="text-xs font-bold text-gray-400">{i + 1}</span>}
+                </span>
+                {team?.logo
+                  ? <img src={team.logo} alt={club} className="w-6 h-6 object-contain flex-shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  : <span className="w-6 h-6 flex-shrink-0" />}
+                <span className="flex-1 text-sm font-semibold text-gray-800 truncate">{club}</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ backgroundColor: ECC_VERT + '15', color: ECC_VERT }}>
+                  {n} {n > 1 ? 'titres' : 'titre'}
+                </span>
               </div>
             );
           })}
