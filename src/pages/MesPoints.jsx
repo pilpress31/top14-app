@@ -511,73 +511,24 @@ export default function MesPoints() {
 
       {/* Filtres */}
       <div className="max-w-md mx-auto px-4 py-3 sticky top-[140px] z-30 bg-gray-50 border-b border-gray-200 space-y-2">
-        <div className="overflow-x-auto pb-0.5">
-          {/* Filtre championnat (défilement horizontal si nécessaire) */}
-          <div className="flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-max">
-            <button
-              onClick={() => setChampionnatFilter('all')}
-              className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
-                championnatFilter === 'all'
-                  ? 'bg-rugby-gold text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Tous
-            </button>
-            <button
-              onClick={() => setChampionnatFilter('top14')}
-              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
-                championnatFilter === 'top14'
-                  ? 'bg-rugby-gold text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🏆 Top 14
-            </button>
-            <button
-              onClick={() => setChampionnatFilter('prod2')}
-              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
-                championnatFilter === 'prod2'
-                  ? 'bg-d2-navy text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🥈 Pro D2
-            </button>
-            <button
-              onClick={() => setChampionnatFilter('hcup')}
-              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
-                championnatFilter === 'hcup'
-                  ? 'text-hcup-gold'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              style={championnatFilter === 'hcup' ? { backgroundColor: '#003E7E' } : {}}
-            >
-              ⭐ C.Cup
-            </button>
-            <button
-              onClick={() => setChampionnatFilter('ecc')}
-              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
-                championnatFilter === 'ecc'
-                  ? 'text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              style={championnatFilter === 'ecc' ? { backgroundColor: '#2E7D32' } : {}}
-            >
-              🛡️ Chall.
-            </button>
-            <button
-              onClick={() => setChampionnatFilter('monde')}
-              className={`px-3 py-1.5 text-xs font-semibold transition-colors border-l border-gray-200 ${
-                championnatFilter === 'monde'
-                  ? 'text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              style={championnatFilter === 'monde' ? { backgroundColor: '#0B6E4F' } : {}}
-            >
-              🌍 MONDE
-            </button>
-          </div>
+        {/* Filtre championnat (liste déroulante — compacte pour 6 entrées) */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="champ-select" className="text-xs font-semibold text-gray-600">
+            Compétition :
+          </label>
+          <select
+            id="champ-select"
+            value={championnatFilter}
+            onChange={(e) => setChampionnatFilter(e.target.value)}
+            className="flex-1 px-2 py-1.5 bg-white rounded-lg shadow-sm border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-rugby-gold cursor-pointer"
+          >
+            <option value="all">🏉 Toutes les compétitions</option>
+            <option value="top14">🏆 Top 14</option>
+            <option value="prod2">🥈 Pro D2</option>
+            <option value="hcup">⭐ Champions Cup</option>
+            <option value="ecc">🛡️ Challenge Cup</option>
+            <option value="monde">🌍 MONDE</option>
+          </select>
         </div>
 
         {/* 🆕 Saison + tri sur une même ligne */}
@@ -623,8 +574,8 @@ export default function MesPoints() {
             <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="font-semibold">
               {saisonFilter === getSaisonCourante() && bets.length === 0
-                ? "Aucun point gagné pour l'instant"
-                : `Aucun point gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : championnatFilter === 'ecc' ? 'Challenge Cup' : 'MONDE'})` : ''}`
+                ? "Aucun pari gagné pour l'instant"
+                : `Aucun pari gagné${saisonFilter !== 'all' ? ` pour la saison ${saisonFilter}` : ''}${championnatFilter !== 'all' ? ` (${championnatFilter === 'top14' ? 'Top 14' : championnatFilter === 'prod2' ? 'Pro D2' : championnatFilter === 'hcup' ? 'Champions Cup' : championnatFilter === 'ecc' ? 'Challenge Cup' : 'MONDE'})` : ''}`
               }
             </p>
             <p className="text-sm mt-1">
@@ -818,7 +769,6 @@ export default function MesPoints() {
         {/* Édition en cours sans point, mais historique présent */}
         {!loading && betsWithCumul.length === 0 && archivedWithCumul.length > 0 && (
           <div className="bg-white rounded-lg p-6 text-center text-gray-500 shadow-sm">
-            <Trophy className="w-12 h-12 mx-auto text-gray-300 mb-3" />
             <p className="font-semibold">Aucun point sur l'édition en cours</p>
             <p className="text-sm mt-1">
               {championnatFilter === 'hcup'
