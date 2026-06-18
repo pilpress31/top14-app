@@ -227,7 +227,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                 Le classement par points est <strong>séparé par compétition</strong>. À la fin de chaque édition (finale, match d'accession…), le compteur de points de cette compétition <strong>repart à zéro</strong> pour l'édition suivante.
               </p>
               <p className="text-xs text-gray-700 leading-relaxed">
-                Votre <strong>solde de jetons</strong> n'est jamais remis à zéro — il reflète votre cagnotte personnelle. Côté Rugby international, les matchs intermédiaires rapportent des jetons mais 0 point ; le comptage reprend à la Nations Championship.
+                Votre <strong>solde de jetons</strong> n'est jamais remis à zéro — il reflète votre cagnotte personnelle. Côté Rugby international, <strong>tous les matchs</strong> rapportent des jetons et des points, comptés au <strong>classement Général</strong> de la saison.
               </p>
             </section>
 

@@ -325,7 +325,7 @@ export default function ReglementPage() {
                 Les points se cumulent durant l'<strong>édition en cours</strong> d'une compétition. Dès que son <strong>match décisif</strong> est joué (finale, match d'accession…), le compteur de points de cette compétition <strong>repart à zéro</strong> pour l'édition suivante.
               </p>
               <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                Côté <strong>Rugby international</strong> : les matchs disputés entre deux grandes échéances (tournées d'été, tests…) rapportent des <strong>jetons</strong> mais <strong>0 point de classement</strong> ; le comptage reprend à la <strong>Nations Championship</strong>. Votre <strong>solde de jetons</strong> n'est jamais remis à zéro.
+                Côté <strong>Rugby international</strong> : <strong>tous les matchs</strong> (tournois, tournées, tests, Nations Championship…) rapportent des <strong>jetons</strong> et des <strong>points</strong> qui comptent au <strong>classement Général</strong> de la saison. Votre <strong>solde de jetons</strong> n'est jamais remis à zéro.
               </p>
               <p className="text-xs text-gray-600 leading-relaxed italic">
                 💡 L'historique des éditions terminées reste consultable dans <strong>Ma Cagnotte → Mes Points</strong> (encart « éditions terminées »).
