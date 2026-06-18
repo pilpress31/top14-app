@@ -23,6 +23,12 @@ const THEMES = {
     subtitleColor: '#cbd5e1',
     sousTitre: 'Analyses et avant-matchs de Champions Cup',
   },
+  ecc: {
+    gradient: 'linear-gradient(to right, #0A2A12, #1B5E20, #2E7D32)',
+    accent: '#CD7F32',
+    subtitleColor: '#A5D6A7',
+    sousTitre: 'Analyses et avant-matchs de Challenge Cup',
+  },
   monde: {
     gradient: 'linear-gradient(to right, #043B2E, #065F46, #0B6E4F)',
     accent: '#34D399',
