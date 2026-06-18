@@ -56,7 +56,7 @@ export default function FavorisPage() {
     const myCount = ++loadCounterRef.current;
     setLoadingMatchs(true);
     try {
-      const [favRes, top14Res, d2Res, hcupRes, betsTop14Res, betsD2Res, betsHcupRes] = await Promise.all([
+      const [favRes, top14Res, d2Res, hcupRes, betsTop14Res, betsD2Res, betsHcupRes, betsMondeRes] = await Promise.all([
         axios.get(`${API_BASE}/api/favorites/matchs`, { headers: { 'x-user-id': user.id } }),
         axios.get(`${API_BASE}/api/matchs/a-venir`),
         axios.get(`${API_BASE}/api/d2/matchs/a-venir`),
@@ -64,6 +64,7 @@ export default function FavorisPage() {
         axios.get(`${API_BASE}/api/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
         axios.get(`${API_BASE}/api/d2/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
         axios.get(`${API_BASE}/api/hcup/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
+        axios.get(`${API_BASE}/api/monde/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
       ]);
       // ✅ Si un appel plus récent a déjà démarré, on abandonne ce résultat
       if (myCount !== loadCounterRef.current) return;
@@ -136,6 +137,14 @@ export default function FavorisPage() {
       favMatchsHcup.forEach(m => {
         const id = m.match_id;
         status[id] = betsHcup.some(b => b.match_id === id) ? 'complete' : 'none';
+      });
+
+      // ── Rugby International (MONDE) ──────────────────────
+      const betsMonde = (betsMondeRes.data.bets || []).filter(b => b.status === 'pending');
+      const favMatchsMonde = (favRes.data.matchs || []).filter(m => m.championnat === 'monde');
+      favMatchsMonde.forEach(m => {
+        const id = m.match_id;
+        status[id] = betsMonde.some(b => b.match_id === id) ? 'complete' : 'none';
       });
 
       setMatchsBetStatus(status);
