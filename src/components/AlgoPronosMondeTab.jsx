@@ -214,27 +214,27 @@ function HistoriqueConfrontationsMonde({ match, isOpen, onToggle }) {
           )}
           {confrontations && !loading && confrontations.length > 0 && (
             <div className="rounded-lg overflow-hidden" style={{ backgroundColor: MONDE_SOFT, border: `1px solid ${MONDE_BORDER}` }}>
-              <div className="grid grid-cols-4 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide text-center"
+              <div className="grid grid-cols-[40px_1fr_50px_1fr] gap-x-1 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide"
                 style={{ backgroundColor: 'rgba(11,110,79,0.12)', color: MONDE_GREEN }}>
                 <div className="text-left">Année</div>
-                <div>DOM</div>
-                <div>Score</div>
-                <div>EXT</div>
+                <div className="text-left">DOM</div>
+                <div className="text-center">Score</div>
+                <div className="text-left">EXT</div>
               </div>
               {confrontations.map((m, i) => {
                 const score = `${m.score_domicile}-${m.score_exterieur}`;
                 const winDom = m.score_domicile > m.score_exterieur;
                 const winExt = m.score_exterieur > m.score_domicile;
                 return (
-                  <div key={i} className="grid grid-cols-4 px-2 py-1.5 text-[10px] text-center items-center border-t"
+                  <div key={i} className="grid grid-cols-[40px_1fr_50px_1fr] gap-x-1 px-2 py-1.5 text-[10px] items-center border-t"
                     style={{ borderColor: MONDE_BORDER }}>
                     <div className="text-left text-gray-500 truncate">{m.annee || ''}</div>
-                    <div className={`truncate font-semibold ${winDom ? 'text-green-700' : 'text-gray-700'}`}>
-                      {(m.equipe_domicile || '').split(' ')[0]}
+                    <div className={`text-left truncate font-semibold ${winDom ? 'text-green-700' : 'text-gray-700'}`}>
+                      {m.equipe_domicile || ''}
                     </div>
-                    <div className="font-bold" style={{ color: MONDE_GREEN }}>{score}</div>
-                    <div className={`truncate font-semibold ${winExt ? 'text-green-700' : 'text-gray-700'}`}>
-                      {(m.equipe_exterieure || '').split(' ')[0]}
+                    <div className="text-center font-bold" style={{ color: MONDE_GREEN }}>{score}</div>
+                    <div className={`text-left truncate font-semibold ${winExt ? 'text-green-700' : 'text-gray-700'}`}>
+                      {m.equipe_exterieure || ''}
                     </div>
                   </div>
                 );
