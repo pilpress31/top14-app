@@ -56,7 +56,7 @@ export default function FavorisPage() {
     const myCount = ++loadCounterRef.current;
     setLoadingMatchs(true);
     try {
-      const [favRes, top14Res, d2Res, hcupRes, betsTop14Res, betsD2Res, betsHcupRes, betsMondeRes] = await Promise.all([
+      const [favRes, top14Res, d2Res, hcupRes, betsTop14Res, betsD2Res, betsHcupRes, betsMondeRes, betsEccRes] = await Promise.all([
         axios.get(`${API_BASE}/api/favorites/matchs`, { headers: { 'x-user-id': user.id } }),
         axios.get(`${API_BASE}/api/matchs/a-venir`),
         axios.get(`${API_BASE}/api/d2/matchs/a-venir`),
@@ -65,6 +65,7 @@ export default function FavorisPage() {
         axios.get(`${API_BASE}/api/d2/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
         axios.get(`${API_BASE}/api/hcup/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
         axios.get(`${API_BASE}/api/monde/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
+        axios.get(`${API_BASE}/api/ecc/user/bets/detailed`, { headers: { 'x-user-id': user.id } }).catch(() => ({ data: { bets: [] } })),
       ]);
       // ✅ Si un appel plus récent a déjà démarré, on abandonne ce résultat
       if (myCount !== loadCounterRef.current) return;
@@ -145,6 +146,14 @@ export default function FavorisPage() {
       favMatchsMonde.forEach(m => {
         const id = m.match_id;
         status[id] = betsMonde.some(b => b.match_id === id) ? 'complete' : 'none';
+      });
+
+      // ── Challenge Cup (ECC) ──────────────────────────────
+      const betsEcc = (betsEccRes.data.bets || []).filter(b => b.status === 'pending');
+      const favMatchsEcc = (favRes.data.matchs || []).filter(m => m.championnat === 'ecc');
+      favMatchsEcc.forEach(m => {
+        const id = m.match_id;
+        status[id] = betsEcc.some(b => b.match_id === id) ? 'complete' : 'none';
       });
 
       setMatchsBetStatus(status);
