@@ -8,7 +8,8 @@ const IA_USER_ID = "00000000-0000-0000-0000-000000000001";
 const IA_D2_USER_ID = "00000000-0000-0000-0000-000000000002";
 const IA_CCUP_USER_ID = "00000000-0000-0000-0000-000000000003";
 const IA_MONDE_USER_ID = "00000000-0000-0000-0000-000000000004";
-const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID, IA_CCUP_USER_ID, IA_MONDE_USER_ID];
+const IA_ECC_USER_ID = "00000000-0000-0000-0000-000000000005";
+const BOT_USER_IDS = [IA_USER_ID, IA_D2_USER_ID, IA_CCUP_USER_ID, IA_MONDE_USER_ID, IA_ECC_USER_ID];
 import { Search, Coins, Award, TrendingUp, Trophy, HelpCircle, X,
          Star, Medal, Crown, Gem, Flame, Zap, Sparkles, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
