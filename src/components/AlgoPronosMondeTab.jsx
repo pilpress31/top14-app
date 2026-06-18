@@ -279,7 +279,7 @@ function CarteMonde({ m, openPanel, onTogglePanel }) {
             <img src={teamDom.logo} alt={m.equipe_domicile} className="w-12 h-12 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase">{m.equipe_domicile}</span>
+          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase underline decoration-dotted underline-offset-2">{m.equipe_domicile}</span>
         </button>
         <div className="flex flex-col items-center">
           {hasPred ? (
@@ -298,7 +298,7 @@ function CarteMonde({ m, openPanel, onTogglePanel }) {
             <img src={teamExt.logo} alt={m.equipe_exterieure} className="w-12 h-12 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase">{m.equipe_exterieure}</span>
+          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase underline decoration-dotted underline-offset-2">{m.equipe_exterieure}</span>
         </button>
       </div>
 
