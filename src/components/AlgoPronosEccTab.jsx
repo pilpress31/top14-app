@@ -4,8 +4,8 @@
 //          GET /api/ecc/insights?equipe_dom=&equipe_ext=
 //          GET /api/ecc/historique?equipe=&adversaire=
 // Vitrine des prédictions (paris → page Paris). Groupé par date.
-// Panneaux : Indice favori, Duel & Forme, Historique des confrontations.
-// (« Pourquoi ce pronostic ? » différé tant que /api/explication/ecc n'existe pas.)
+// Panneaux : Indice favori, Pourquoi ce pronostic ?, Duel & Forme, Historique.
+// (« Pourquoi ce pronostic ? » branché via /api/explication/ecc.)
 // ============================================
 
 import { useState, useEffect, useRef } from 'react';
@@ -16,6 +16,7 @@ import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getCharte, texteReprise } from '../constants/chartes';
 import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
 import BarreIndiceFavori from './BarreIndiceFavori';
+import PourquoiCePronostic from './PourquoiCePronostic';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 const { vert: ECC_GREEN, bronze: ECC_BRONZE } = getCharte('ecc').base;
@@ -305,6 +306,12 @@ function CarteEcc({ m, openPanel, onTogglePanel }) {
           )}
           {indice != null && <BarreIndiceFavori pct={indice} variant="ecc" />}
 
+          <PourquoiCePronostic
+            match={m}
+            championnat="ecc"
+            isOpen={openPanel === 'conseil'}
+            onToggle={() => onTogglePanel('conseil')}
+          />
           <InsightsEcc
             match={m}
             isOpen={openPanel === 'insights'}
@@ -403,7 +410,6 @@ export default function AlgoPronosEccTab() {
   if (pronos.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-gray-200">
-        <div className="text-5xl mb-2" style={{ opacity: 0.85 }}>🛡️</div>
         <p className="text-gray-500">Aucun match de Challenge Cup à venir</p>
         <p className="text-xs text-gray-400 mt-2">{texteReprise('ecc') || "Les prédictions s'afficheront dès la reprise de la compétition."}</p>
       </div>
