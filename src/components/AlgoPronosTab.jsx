@@ -1239,7 +1239,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className={`text-xs font-bold leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
+          <div className={`text-xs font-bold leading-tight break-words ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
                style={match.isD2 ? { color: '#00174D' } : { color: '#1a1a1a' }}>
             {equipeDom}
           </div>
@@ -1283,7 +1283,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className={`text-xs font-bold leading-tight break-words line-clamp-2 ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
+          <div className={`text-xs font-bold leading-tight break-words ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
                style={match.isD2 ? { color: '#00174D' } : { color: '#1a1a1a' }}>
             {equipeExt}
           </div>
