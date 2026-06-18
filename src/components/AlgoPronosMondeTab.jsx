@@ -431,6 +431,7 @@ export default function AlgoPronosMondeTab() {
   if (pronos.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-gray-200">
+        <div className="text-4xl mb-2">{getCharte('monde').icon}</div>
         <p className="text-gray-500">Aucun match international à venir</p>
         <p className="text-xs text-gray-400 mt-2">Les prédictions s'afficheront dès la prochaine fenêtre internationale</p>
       </div>

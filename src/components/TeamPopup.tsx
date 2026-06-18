@@ -64,27 +64,11 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
           const response = await fetch(`${API_URL}/${cupPath}/equipes/${encodeURIComponent(equipeNom)}/stats`);
           if (response.ok) {
             const data = await response.json();
-            // Adapter le format au format attendu par le popup
-            setEquipeStats({
-              equipe: data.equipe,
-              points_pour: data.points_pour,
-              points_contre: data.points_contre,
-              points_moy_pour: data.points_moy_pour,
-              points_moy_contre: data.points_moy_contre,
-              victoires: data.victoires,
-              nuls: data.nuls,
-              defaites: data.defaites,
-              taux_victoires: data.taux_victoires,
-              differentiel: data.differentiel,
-              pct_victoires_domicile: data.pct_victoires_domicile,
-              pct_victoires_exterieur: data.pct_victoires_exterieur,
-              forme: data.forme,
-              phase_actuelle: data.phase_actuelle,
-              matchs_joues: data.matchs_joues,
-              saison_courante: data.saison_courante,
-            });
+            // On conserve tous les champs renvoyés (HCup/ECC : bilan saison ;
+            // MONDE : ELO/classement mondial + bilan sur les N derniers internationaux)
+            setEquipeStats({ ...data });
           }
-          // Pas de stats détaillées historiques pour HCup
+          // Pas de stats détaillées historiques pour les coupes / l'international
           setStatsDetaillees(null);
         } else if (isD2) {
           // ─── PRO D2 : on charge seulement le classement D2 ───
@@ -186,7 +170,12 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                 )}
               </h3>
               {/* Sous-titre adapté au contexte */}
-              {isCup && equipeStats?.phase_actuelle && (
+              {isMonde && (equipeStats?.rang_mondial || equipeStats?.phase_actuelle) && (
+                <p className="text-xs text-gray-500">
+                  {equipeStats.rang_mondial ? `#${equipeStats.rang_mondial} mondial` : equipeStats.phase_actuelle}
+                </p>
+              )}
+              {isCup && !isMonde && equipeStats?.phase_actuelle && (
                 <p className="text-xs text-gray-500">
                   {equipeStats.phase_actuelle} • Saison {equipeStats.saison_courante}
                 </p>
@@ -236,8 +225,40 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
               {equipeStats && (!isCup || equipeStats.matchs_joues > 0) && (
                 <div className="mb-4">
                   <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
-                    {isCup ? `Saison ${cupSaison} ${equipeStats.saison_courante || ''} (${equipeStats.matchs_joues || 0} matchs joués)` : 'Saison en cours'}
+                    {isMonde
+                      ? `Sur les ${equipeStats.matchs_joues || 0} derniers internationaux`
+                      : isCup
+                        ? `Saison ${cupSaison} ${equipeStats.saison_courante || ''} (${equipeStats.matchs_joues || 0} matchs joués)`
+                        : 'Saison en cours'}
                   </h4>
+
+                  {/* Classement mondial (ELO World Rugby) — MONDE uniquement */}
+                  {isMonde && (
+                    <div className="rounded-lg p-3 mb-2 flex items-center justify-between"
+                      style={{ backgroundColor: 'rgba(11,110,79,0.08)' }}>
+                      <div>
+                        <p className="text-[10px] text-gray-500 uppercase font-semibold">Classement mondial</p>
+                        <p className="text-2xl font-bold leading-none mt-0.5" style={{ color: CUP_PRIMARY }}>
+                          {equipeStats.rang_mondial != null ? `#${equipeStats.rang_mondial}` : '—'}
+                        </p>
+                      </div>
+                      {equipeStats.points_wr != null && (
+                        <div className="text-right">
+                          <p className="text-[10px] text-gray-500 uppercase font-semibold">Points World Rugby</p>
+                          <p className="text-lg font-bold text-gray-800 leading-none mt-0.5">{equipeStats.points_wr}</p>
+                          {equipeStats.evolution_mondial ? (
+                            <p className="text-[10px] font-semibold mt-0.5"
+                              style={{ color: equipeStats.evolution_mondial > 0 ? '#15803d' : '#b91c1c' }}>
+                              {equipeStats.evolution_mondial > 0
+                                ? `▲ ${equipeStats.evolution_mondial}`
+                                : `▼ ${Math.abs(equipeStats.evolution_mondial)}`}
+                            </p>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-gray-50 rounded-lg p-2 text-center">
                       <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Points marqués</p>
@@ -295,8 +316,8 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
                       )}
                     </div>
 
-                    {/* Dom / Ext — affiché en TOP 14 et en HCUP (les deux ont la donnée) */}
-                    {!isD2 && (
+                    {/* Dom / Ext — TOP 14 et coupes (pas en MONDE : trop de terrains neutres) */}
+                    {!isD2 && !isMonde && (
                       <div className="bg-gray-50 rounded-lg p-2 text-center col-span-2">
                         <p className="text-[10px] text-gray-500 uppercase mb-1 font-semibold">Performance domicile / extérieur</p>
                         <div className="flex justify-around mt-1">
