@@ -278,7 +278,7 @@ function CarteEcc({ m, openPanel, onTogglePanel }) {
             <img src={teamDom.logo} alt={m.equipe_domicile} className="w-12 h-12 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase">{m.equipe_domicile}</span>
+          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase underline decoration-dotted underline-offset-2">{m.equipe_domicile}</span>
         </button>
         <div className="flex flex-col items-center">
           {hasPred ? (
@@ -297,7 +297,7 @@ function CarteEcc({ m, openPanel, onTogglePanel }) {
             <img src={teamExt.logo} alt={m.equipe_exterieure} className="w-12 h-12 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
-          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase">{m.equipe_exterieure}</span>
+          <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase underline decoration-dotted underline-offset-2">{m.equipe_exterieure}</span>
         </button>
       </div>
 
@@ -423,8 +423,11 @@ export default function AlgoPronosEccTab() {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6 text-center border border-gray-200">
         <div className="text-4xl mb-2">{getCharte('ecc').icon}</div>
-        <p className="text-gray-500">Aucun match de Challenge Cup à venir</p>
-        <p className="text-xs text-gray-400 mt-2">{texteReprise('ecc') || "Les prédictions s'afficheront dès la reprise de la compétition."}</p>
+        <p className="text-gray-700 font-semibold">Pas de pronostics à venir</p>
+        <p className="text-sm text-gray-500 mt-1">Saison courante terminée.</p>
+        {texteReprise('ecc') && (
+          <p className="text-xs text-gray-400 mt-1">{texteReprise('ecc')}</p>
+        )}
       </div>
     );
   }
