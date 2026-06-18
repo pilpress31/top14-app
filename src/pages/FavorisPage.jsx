@@ -16,6 +16,8 @@ const CHAMP_LABELS = {
   top14: { label: 'TOP 14', color: '#D4A017', bg: '#FFF8E7' },
   d2: { label: 'PRO D2', color: '#00174D', bg: '#E8EFF7' },
   hcup: { label: 'C.CUP', color: '#003E7E', bg: '#E8EEF7' },
+  ecc: { label: 'CHALL.', color: '#2E7D32', bg: '#E9F5EC' },
+  monde: { label: 'MONDE', color: '#0B6E4F', bg: '#E7F4EF' },
 };
 
 export default function FavorisPage() {
