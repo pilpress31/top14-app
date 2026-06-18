@@ -1228,8 +1228,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
       <div className="grid grid-cols-3 items-start px-4 mb-2">
         {/* Équipe domicile — cliquable */}
         <button
-          onClick={() => !match.isD2 && setTeamPopup(equipeDom)}
-          className={`flex flex-col items-center text-center transition-opacity ${!match.isD2 ? "hover:opacity-80 cursor-pointer" : "cursor-default"}`}
+          onClick={() => setTeamPopup(equipeDom)}
+          className="flex flex-col items-center text-center transition-opacity hover:opacity-80 cursor-pointer"
         >
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -1239,7 +1239,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className={`text-xs font-bold leading-tight break-words ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
+          <div className="text-xs font-bold leading-tight break-words underline decoration-dotted underline-offset-2"
                style={match.isD2 ? { color: '#00174D' } : { color: '#1a1a1a' }}>
             {equipeDom}
           </div>
@@ -1272,8 +1272,8 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
 
         {/* Équipe extérieure — cliquable */}
         <button
-          onClick={() => !match.isD2 && setTeamPopup(equipeExt)}
-          className={`flex flex-col items-center text-center transition-opacity ${!match.isD2 ? "hover:opacity-80 cursor-pointer" : "cursor-default"}`}
+          onClick={() => setTeamPopup(equipeExt)}
+          className="flex flex-col items-center text-center transition-opacity hover:opacity-80 cursor-pointer"
         >
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
@@ -1283,7 +1283,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className={`text-xs font-bold leading-tight break-words ${!match.isD2 ? "underline decoration-dotted underline-offset-2" : ""}`}
+          <div className="text-xs font-bold leading-tight break-words underline decoration-dotted underline-offset-2"
                style={match.isD2 ? { color: '#00174D' } : { color: '#1a1a1a' }}>
             {equipeExt}
           </div>
@@ -1337,6 +1337,7 @@ function PronoCard({ match, openPanel, onTogglePanel }) {
       {teamPopup && (
         <TeamPopup
           equipeNom={teamPopup}
+          isD2={match.isD2}
           onClose={() => setTeamPopup(null)}
         />
       )}

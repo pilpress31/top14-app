@@ -23,6 +23,7 @@ import { CompoEtBlessesSection } from './ActuTab';
 import PourquoiCePronostic from './PourquoiCePronostic';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import BarreIndiceFavori from './BarreIndiceFavori';
+import TeamPopup from './TeamPopup';
 import { getCharte, texteReprise } from '../constants/chartes';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
@@ -908,6 +909,7 @@ function ActuMatchHcup({ match, isOpen, onToggle }) {
 // COMPOSANT : PronoCardHcup (carte d'un match HCup)
 // ============================================
 function PronoCardHcup({ match, openPanel, onTogglePanel }) {
+  const [teamPopup, setTeamPopup] = useState(null);
   const equipeDom = match.equipe_domicile || 'Équipe 1';
   const equipeExt = match.equipe_exterieure || 'Équipe 2';
 
@@ -953,7 +955,8 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
       </div>
 
       <div className="grid grid-cols-3 items-start px-4 mb-2">
-        <div className="flex flex-col items-center text-center">
+        <button type="button" onClick={() => setTeamPopup(equipeDom)}
+          className="flex flex-col items-center text-center bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
               src={teamDomData.logo}
@@ -962,10 +965,10 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className="text-base font-bold leading-tight break-words line-clamp-2" style={{ color: HCUP_BLEU }}>
+          <div className="text-xs font-bold leading-tight break-words underline decoration-dotted underline-offset-2" style={{ color: HCUP_BLEU }}>
             {equipeDom}
           </div>
-        </div>
+        </button>
 
         <div className="flex flex-col items-center justify-center gap-1">
           <div className="text-xs font-medium mb-1" style={{ color: '#9a7d3a' }}>Score FT prédit</div>
@@ -980,7 +983,8 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
           )}
         </div>
 
-        <div className="flex flex-col items-center text-center">
+        <button type="button" onClick={() => setTeamPopup(equipeExt)}
+          className="flex flex-col items-center text-center bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-2 shadow-sm">
             <img
               src={teamExtData.logo}
@@ -989,10 +993,10 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           </div>
-          <div className="text-base font-bold leading-tight break-words line-clamp-2" style={{ color: HCUP_BLEU }}>
+          <div className="text-xs font-bold leading-tight break-words underline decoration-dotted underline-offset-2" style={{ color: HCUP_BLEU }}>
             {equipeExt}
           </div>
-        </div>
+        </button>
       </div>
 
       <BarreIndiceFavori pct={confidencePct} variant="hcup" />
@@ -1015,6 +1019,14 @@ function PronoCardHcup({ match, openPanel, onTogglePanel }) {
           onToggle={() => onTogglePanel('actu')}
         />
       </div>
+
+      {teamPopup && (
+        <TeamPopup
+          equipeNom={teamPopup}
+          isHcup
+          onClose={() => setTeamPopup(null)}
+        />
+      )}
     </div>
   );
 }
