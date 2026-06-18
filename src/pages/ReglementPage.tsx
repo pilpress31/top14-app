@@ -337,33 +337,28 @@ export default function ReglementPage() {
           <div className="mt-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-4 border-2 border-yellow-400">
             <h4 className="font-bold text-orange-900 mb-2 text-sm flex items-center gap-2">
               <Gift className="w-4 h-4" />
-              🎁 Récompenses Futures (Évolution prévue)
+              🎁 Récompenses futures (à l'étude)
             </h4>
             <p className="text-xs text-gray-700 mb-3">
-              Une évolution de ce jeu concours pourra récompenser le <strong>1er aux points de chaque compétition</strong>, à la clôture de son édition (finale, match d'accession…) :
+              Une évolution de ce jeu-concours pourra récompenser les <strong>3 premiers du classement Général</strong> en fin de saison. Les modalités sont <strong>encore à l'étude</strong> et <strong>sans garantie</strong> à ce stade.
             </p>
             
             <div className="space-y-2">
               <div className="bg-white rounded p-3 border border-orange-200">
-                <p className="font-bold text-sm text-orange-900 mb-1">🏉 Pour le vainqueur de chaque classement :</p>
+                <p className="font-bold text-sm text-orange-900 mb-1">🏉 Pour les 3 premiers du classement Général :</p>
                 <p className="text-xs text-gray-700">
-                  Un <strong>ballon de rugby au choix</strong> d'une valeur maximale de <strong>50€</strong>
+                  Un lot symbolique pourra être proposé — par exemple un <strong>ballon de rugby</strong> (valeur indicative ~50&nbsp;€). Rien n'est garanti ni définitif tant que ce dispositif n'est pas confirmé.
                 </p>
               </div>
 
               <div className="bg-white rounded p-2 text-xs">
-                <p className="mb-1"><strong>📦 France Métropolitaine :</strong></p>
-                <p className="text-gray-600">Frais d'envoi inclus (valeur max 50€ tout compris)</p>
-              </div>
-
-              <div className="bg-white rounded p-2 text-xs">
-                <p className="mb-1"><strong>🏝️ Corse et DOM-TOM :</strong></p>
-                <p className="text-gray-600">Ballon 50€ + frais d'envoi à la charge de l'utilisateur</p>
+                <p className="mb-1"><strong>📦 Modalités d'envoi (le cas échéant) :</strong></p>
+                <p className="text-gray-600">France métropolitaine : frais d'envoi inclus. Corse et DOM-TOM : participation aux frais d'envoi possible.</p>
               </div>
             </div>
 
             <p className="text-xs text-orange-800 mt-3 bg-white rounded p-2">
-              ⚠️ <strong>Important :</strong> Cette fonctionnalité n'est pas encore active. Les dates et modalités seront communiquées ultérieurement.
+              ⚠️ <strong>Important :</strong> ce dispositif n'est pas actif et n'a aucun caractère contractuel. Le périmètre (3 premiers du Général), la nature du lot et les modalités pourront évoluer, être précisés ou abandonnés. Tout sera communiqué officiellement s'il est mis en place.
             </p>
           </div>
         </section>
