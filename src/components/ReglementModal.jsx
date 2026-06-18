@@ -49,7 +49,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                 Système de jeu
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed mb-2">
-                Chaque utilisateur démarre avec <strong>1000 jetons virtuels</strong>. Pronostiquez les matchs du <strong>Top 14</strong>, de la <strong>Pro D2</strong>, de la <strong>Champions Cup</strong> et du <strong>Rugby international</strong>, misez vos jetons et gagnez selon les résultats !
+                Chaque utilisateur démarre avec <strong>1000 jetons virtuels</strong>. Pronostiquez les matchs du <strong>Top 14</strong>, de la <strong>Pro D2</strong>, de la <strong>Champions Cup</strong>, de la <strong>Challenge Cup</strong> et du <strong>Rugby international</strong>, misez vos jetons et gagnez selon les résultats !
               </p>
               <p className="text-sm text-gray-700 leading-relaxed">
                 Vous accumulez aussi des <strong>points de classement</strong> qui récompensent la précision de vos pronostics, indépendamment des mises.
@@ -86,7 +86,7 @@ export default function ReglementModal({ isOpen, onClose }) {
               </div>
 
               <p className="text-xs text-gray-600 mt-3 italic">
-                💡 En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la <strong>mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2, Champions Cup et Rugby international, uniquement sur le temps plein (score à 80 min).
+                💡 En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la <strong>mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2, Champions Cup, Challenge Cup et Rugby international, uniquement sur le temps plein (score à 80 min).
               </p>
             </section>
 
@@ -119,7 +119,7 @@ export default function ReglementModal({ isOpen, onClose }) {
               </h3>
 
               <p className="text-xs text-gray-700 mb-3">
-                Réservé aux paris <strong>Score exact</strong>, dans les 4 compétitions. Les paris Vainqueur ne donnent pas de bonus mais ne nécessitent pas de deviner le score.
+                Réservé aux paris <strong>Score exact</strong>, dans les 5 compétitions. Les paris Vainqueur ne donnent pas de bonus mais ne nécessitent pas de deviner le score.
               </p>
 
               <div className="space-y-2">
@@ -129,7 +129,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-sm">Score exact Temps Plein</p>
-                    <p className="text-xs text-gray-600">Vous trouvez le score final exact — Top 14, Pro D2, Champions Cup et Rugby international</p>
+                    <p className="text-xs text-gray-600">Vous trouvez le score final exact — Top 14, Pro D2, Champions Cup, Challenge Cup et Rugby international</p>
                   </div>
                 </div>
 

@@ -17,7 +17,7 @@ const SLIDES = [
         <p className="text-gray-700 text-base leading-relaxed">
           Tu viens de rejoindre une communauté de passionnés de rugby.
           Ici, tu paries des <strong>jetons virtuels</strong> sur les matchs du
-          Top 14, Pro D2 et Champions Cup.
+          Top 14, Pro D2, Champions Cup, Challenge Cup et Rugby international.
         </p>
         <div className="bg-white rounded-xl p-4 border border-amber-200 shadow-sm">
           <p className="text-sm text-gray-600 leading-relaxed">
@@ -141,7 +141,7 @@ const SLIDES = [
     border: 'border-purple-200',
     content: (
       <div className="space-y-3">
-        <p className="text-sm text-gray-600">Tu paries sur 3 compétitions, chacune avec son univers :</p>
+        <p className="text-sm text-gray-600">Tu paries sur 5 compétitions, chacune avec son univers :</p>
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 text-white shadow-md">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xl">🏆</span>
@@ -171,6 +171,28 @@ const SLIDES = [
           </div>
           <p className="text-xs opacity-90">24 clubs européens · phase de poules + phases finales</p>
           <p className="text-xs opacity-80 mt-1">Algo XGBoost — précision 70.9%</p>
+        </div>
+        <div
+          className="rounded-xl p-4 text-white shadow-md"
+          style={{ background: 'linear-gradient(135deg, #2E7D32, #CD7F32)' }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">🛡️</span>
+            <p className="font-bold">Challenge Cup</p>
+          </div>
+          <p className="text-xs opacity-90">18 clubs européens · phase de poules + phases finales</p>
+          <p className="text-xs opacity-80 mt-1">Algo Elo — pari Vainqueur/Score FT</p>
+        </div>
+        <div
+          className="rounded-xl p-4 text-white shadow-md"
+          style={{ background: 'linear-gradient(135deg, #0B6E4F, #34D399)' }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">🌍</span>
+            <p className="font-bold">Rugby international</p>
+          </div>
+          <p className="text-xs opacity-90">Équipes nationales · tournois, tournées et Nations Championship</p>
+          <p className="text-xs opacity-80 mt-1">Algo Elo + météo — pari Vainqueur/Score FT</p>
         </div>
       </div>
     ),

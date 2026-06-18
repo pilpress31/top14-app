@@ -36,9 +36,9 @@ export default function ReglementPage() {
           </p>
           <div className="mt-4 bg-blue-50 rounded-lg p-3 border border-blue-200">
             <p className="text-xs text-gray-700">
-              🏉 <strong>4 compétitions disponibles :</strong> Top 14, Pro D2, Champions Cup et Rugby international (MONDE).
+              🏉 <strong>5 compétitions disponibles :</strong> Top 14, Pro D2, Champions Cup, Challenge Cup et Rugby international (MONDE).
               En Top 14, vous pouvez parier sur le <strong>temps plein (FT)</strong> et la
-              <strong> mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2, Champions Cup et Rugby international,
+              <strong> mi-temps (MT)</strong>, séparément ou ensemble. En Pro D2, Champions Cup, Challenge Cup et Rugby international,
               les paris portent uniquement sur le temps plein (score à 80 minutes).
             </p>
           </div>
@@ -153,7 +153,7 @@ export default function ReglementPage() {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm">Score Exact Temps Plein</p>
-                <p className="text-xs text-gray-600">Trouvez le score final exact — Top 14, Pro D2, Champions Cup et Rugby international</p>
+                <p className="text-xs text-gray-600">Trouvez le score final exact — Top 14, Pro D2, Champions Cup, Challenge Cup et Rugby international</p>
               </div>
             </div>
 
@@ -319,7 +319,7 @@ export default function ReglementPage() {
                 🔄 Un classement par compétition, remis à zéro à chaque édition
               </p>
               <p className="text-xs text-gray-700 leading-relaxed mb-2">
-                Le classement par points est <strong>séparé pour chaque compétition</strong> (Top 14, Pro D2, Champions Cup, Rugby international), chacune avec son propre pronostiqueur IA.
+                Le classement par points est <strong>séparé pour chaque compétition</strong> (Top 14, Pro D2, Champions Cup, Challenge Cup, Rugby international), chacune avec son propre pronostiqueur IA.
               </p>
               <p className="text-xs text-gray-700 leading-relaxed mb-2">
                 Les points se cumulent durant l'<strong>édition en cours</strong> d'une compétition. Dès que son <strong>match décisif</strong> est joué (finale, match d'accession…), le compteur de points de cette compétition <strong>repart à zéro</strong> pour l'édition suivante.
