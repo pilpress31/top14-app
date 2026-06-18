@@ -42,6 +42,15 @@ export default function ActuPage() {
             ⭐ C.CUP
           </button>
           <button
+            onClick={() => setChampionnat('ecc')}
+            className="flex-1 px-1 py-2 font-bold text-xs whitespace-nowrap border-l border-white/10 transition-colors"
+            style={championnat === 'ecc'
+              ? { backgroundColor: '#2E7D32', color: '#FFFFFF' }
+              : { backgroundColor: '#161616', color: '#66BB6A' }}
+          >
+            🛡️ CHALL.
+          </button>
+          <button
             onClick={() => setChampionnat('monde')}
             className="flex-1 px-1 py-2 font-bold text-xs whitespace-nowrap border-l border-white/10 transition-colors"
             style={championnat === 'monde'
