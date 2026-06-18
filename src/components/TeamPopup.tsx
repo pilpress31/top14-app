@@ -22,10 +22,11 @@ interface TeamPopupProps {
   isD2?: boolean;    // contextualise le popup (couleurs + endpoints)
   isHcup?: boolean;  // 🆕 contextualise le popup pour la Champions Cup
   isEcc?: boolean;   // 🆕 contextualise le popup pour la Challenge Cup (ECC)
+  isMonde?: boolean; // 🆕 contextualise le popup pour le rugby international (MONDE)
   onClose: () => void;
 }
 
-export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD2 = false, isHcup = false, isEcc = false, onClose }: TeamPopupProps) {
+export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD2 = false, isHcup = false, isEcc = false, isMonde = false, onClose }: TeamPopupProps) {
   const [statsDetaillees, setStatsDetaillees] = useState<any>(null);
   const [equipeStats, setEquipeStats] = useState<any>(equipeStatsProp || null);
   const [loading, setLoading] = useState(true);
@@ -33,13 +34,13 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
 
   const teamData = getTeamData(equipeNom);
 
-  // Coupe européenne : HCup et ECC partagent le même endpoint /equipes/:nom/stats
-  // et le même format de données ; seules les couleurs et les libellés diffèrent.
-  const isCup = isHcup || isEcc;
-  const CUP_PRIMARY = isEcc ? '#2E7D32' : HCUP_BLEU;   // vert ECC / bleu HCup
-  const CUP_ACCENT  = isEcc ? '#CD7F32' : HCUP_OR;     // bronze ECC / or HCup
-  const cupLabel    = isEcc ? 'Challenge Cup' : 'Champions Cup';
-  const cupSaison   = isEcc ? 'ECC' : 'HCup';
+  // Coupe européenne (HCup/ECC) ET rugby international (MONDE) partagent le même
+  // endpoint /equipes/:nom/stats et le même format ; seules couleurs et libellés diffèrent.
+  const isCup = isHcup || isEcc || isMonde;
+  const CUP_PRIMARY = isMonde ? '#0B6E4F' : isEcc ? '#2E7D32' : HCUP_BLEU;   // vert intl / vert ECC / bleu HCup
+  const CUP_ACCENT  = isMonde ? '#34D399' : isEcc ? '#CD7F32' : HCUP_OR;     // émeraude / bronze / or
+  const cupLabel    = isMonde ? 'Rugby International' : isEcc ? 'Challenge Cup' : 'Champions Cup';
+  const cupSaison   = isMonde ? 'Inter.' : isEcc ? 'ECC' : 'HCup';
 
   // Couleurs dynamiques selon championnat (pour les coupes, l'inline style ci-dessous prime)
   const primaryColor = isCup ? '' : isD2 ? 'text-d2-navy' : 'text-rugby-gold';
@@ -57,9 +58,9 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
       try {
         setLoading(true);
 
-        if (isHcup || isEcc) {
-          // ─── Coupe européenne (HCup/ECC) : endpoint dédié /{champ}/equipes/:nom/stats ───
-          const cupPath = isEcc ? 'ecc' : 'hcup';
+        if (isHcup || isEcc || isMonde) {
+          // ─── Coupe / international : endpoint dédié /{champ}/equipes/:nom/stats ───
+          const cupPath = isMonde ? 'monde' : isEcc ? 'ecc' : 'hcup';
           const response = await fetch(`${API_URL}/${cupPath}/equipes/${encodeURIComponent(equipeNom)}/stats`);
           if (response.ok) {
             const data = await response.json();
@@ -132,7 +133,7 @@ export default function TeamPopup({ equipeNom, equipeStats: equipeStatsProp, isD
       }
     }
     loadStats();
-  }, [equipeNom, isD2, isHcup, isEcc, equipeStatsProp]);
+  }, [equipeNom, isD2, isHcup, isEcc, isMonde, equipeStatsProp]);
 
   // Fermer au clic en dehors
   const handleOverlayClick = (e: React.MouseEvent) => {

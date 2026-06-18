@@ -18,6 +18,7 @@ import { getCharte } from '../constants/chartes';
 import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
 import BarreIndiceFavori from './BarreIndiceFavori';
 import PourquoiCePronostic from './PourquoiCePronostic';
+import TeamPopup from './TeamPopup';
 
 const API_BASE = 'https://top14-api-production.up.railway.app';
 const { vert: MONDE_GREEN, emeraude: MONDE_EMERAUDE } = getCharte('monde').base;
@@ -249,6 +250,7 @@ function HistoriqueConfrontationsMonde({ match, isOpen, onToggle }) {
 
 // ── Carte d'un match (composant top-level → pas de remount) ──
 function CarteMonde({ m, openPanel, onTogglePanel }) {
+  const [teamPopup, setTeamPopup] = useState(null);
   const teamDom = getTeamData(m.equipe_domicile);
   const teamExt = getTeamData(m.equipe_exterieure);
   const hasPred = m.score_predit_dom != null && m.score_predit_ext != null;
@@ -271,13 +273,14 @@ function CarteMonde({ m, openPanel, onTogglePanel }) {
       </div>
 
       <div className="grid grid-cols-3 items-center px-1">
-        <div className="flex flex-col items-center text-center">
+        <button type="button" onClick={() => setTeamPopup(m.equipe_domicile)}
+          className="flex flex-col items-center text-center bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-1 shadow-sm">
             <img src={teamDom.logo} alt={m.equipe_domicile} className="w-12 h-12 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase">{m.equipe_domicile}</span>
-        </div>
+        </button>
         <div className="flex flex-col items-center">
           {hasPred ? (
             <>
@@ -289,13 +292,14 @@ function CarteMonde({ m, openPanel, onTogglePanel }) {
             </>
           ) : <span className="text-xs text-gray-400 font-semibold">VS</span>}
         </div>
-        <div className="flex flex-col items-center text-center">
+        <button type="button" onClick={() => setTeamPopup(m.equipe_exterieure)}
+          className="flex flex-col items-center text-center bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-1 shadow-sm">
             <img src={teamExt.logo} alt={m.equipe_exterieure} className="w-12 h-12 object-contain"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </div>
           <span className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 uppercase">{m.equipe_exterieure}</span>
-        </div>
+        </button>
       </div>
 
       {hasPred && (
@@ -327,6 +331,14 @@ function CarteMonde({ m, openPanel, onTogglePanel }) {
             onToggle={() => onTogglePanel('historique')}
           />
         </>
+      )}
+
+      {teamPopup && (
+        <TeamPopup
+          equipeNom={teamPopup}
+          isMonde
+          onClose={() => setTeamPopup(null)}
+        />
       )}
     </div>
   );
