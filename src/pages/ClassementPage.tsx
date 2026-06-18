@@ -6,6 +6,7 @@ import ClassementHcupTabs from "../components/ClassementHcupTabs";
 import ClassementTop14Tabs from "../components/ClassementTop14Tabs";
 import ClassementD2Tabs from "../components/ClassementD2Tabs";
 import ClassementMondeTabs from "../components/ClassementMondeTabs";
+import TeamPopup from "../components/TeamPopup";
 import ClassementEccTabs from "../components/ClassementEccTabs";
 import { useChampionnat } from "../contexts/ChampionnatContext";
 
@@ -20,6 +21,7 @@ function ClassementPage() {
   const [classement, setClassement] = useState<EquipeStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEquipe, setSelectedEquipe] = useState<EquipeStats | null>(null);
+  const [popupEquipe, setPopupEquipe] = useState<string | null>(null); // fiche équipe D2 (TeamPopup)
   const [statsDetaillees, setStatsDetaillees] = useState<any>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const detailsHeaderRef = useRef<HTMLDivElement | null>(null);
@@ -94,6 +96,7 @@ function ClassementPage() {
   useEffect(() => {
     loadClassement();
     setSelectedEquipe(null); // reset sélection au changement de championnat
+    setPopupEquipe(null);
     setStatsDetaillees(null);
   }, [loadClassement]);
 
@@ -582,7 +585,7 @@ function ClassementPage() {
                             isRelegation ? 'border-l-4 border-red-500' :
                             isAccessMatch ? 'border-l-4 border-orange-500' : ''
                           }`}
-                          onClick={() => setSelectedEquipe(selectedEquipe?.equipe === equipe.equipe ? null : equipe)}
+                          onClick={() => setPopupEquipe(equipe.equipe)}
                         >
                           <td className="px-1 py-3 text-sm font-bold" style={{ color: '#00174D' }}>{equipe.rang}</td>
                           <td className="px-1 py-3">
@@ -638,55 +641,13 @@ function ClassementPage() {
                 </p>
               </div>
 
-              {selectedEquipe && (
-                <div ref={detailsHeaderRef} className="mt-4 bg-white rounded-xl shadow-md p-4 border-2" style={{ borderColor: '#00174D' }}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                      <img src={getTeamData(selectedEquipe.equipe).logo} alt={selectedEquipe.equipe}
-                        className="w-11 h-11 object-contain"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold" style={{ color: '#00174D' }}>{selectedEquipe.equipe}</h3>
-                      <p className="text-xs text-gray-600">#{selectedEquipe.rang} • {selectedEquipe.points_classement} points</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-gray-50 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Points marqués</p>
-                      <p className="text-xl font-bold" style={{ color: '#002A7D' }}>{selectedEquipe.points_pour}</p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">Moy: {selectedEquipe.points_moy_pour?.toFixed(1)}/match</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Points encaissés</p>
-                      <p className="text-xl font-bold text-gray-700">{selectedEquipe.points_contre}</p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">Moy: {selectedEquipe.points_moy_contre?.toFixed(1)}/match</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Bilan</p>
-                      <p className="text-sm font-semibold text-gray-800">
-                        <span className="text-green-600">{selectedEquipe.victoires}V</span> -
-                        <span className="text-gray-500">{selectedEquipe.nuls}N</span> -
-                        <span className="text-red-600">{selectedEquipe.defaites}D</span>
-                      </p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">
-                        Taux: {selectedEquipe.taux_victoires ? `${(selectedEquipe.taux_victoires * 100).toFixed(0)}%` : '-'}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-2 text-center">
-                      <p className="text-[10px] text-gray-700 uppercase mb-1 font-semibold">Différentiel</p>
-                      <p className={`text-xl font-bold ${
-                        (selectedEquipe.differentiel || 0) > 0 ? 'text-green-600' :
-                        (selectedEquipe.differentiel || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                      }`}>
-                        {(selectedEquipe.differentiel || 0) > 0 ? '+' : ''}{selectedEquipe.differentiel || 0}
-                      </p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">
-                        Bonus : {(selectedEquipe as any).bonus || 0}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              {/* Clic sur une équipe → fiche TeamPopup (mode isD2), comme les cartes prono */}
+              {popupEquipe && (
+                <TeamPopup
+                  equipeNom={popupEquipe}
+                  isD2
+                  onClose={() => setPopupEquipe(null)}
+                />
               )}
             </>
           )}
