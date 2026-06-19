@@ -3112,16 +3112,21 @@ function onCommAlgoChampChange() {
   // MONDE : pas de saison → on masque/neutralise le sélecteur saison et on peuple
   // directement les compétitions dans le sélecteur "journée".
   const saisonSel = document.getElementById('commAlgoSaison');
-  if (isMonde || isEcc) {
+  if (isMonde) {
     if (saisonSel) {
-      saisonSel.innerHTML = isEcc ? '<option value="ecc">🛡️ Challenge Cup</option>' : '<option value="monde">🌍 International</option>';
-      saisonSel.value = isEcc ? 'ecc' : 'monde';
+      saisonSel.innerHTML = '<option value="monde">🌍 International</option>';
+      saisonSel.value = 'monde';
       saisonSel.style.display = 'none';
     }
     loadCommAlgoCompetitions(champ);
     return;
   }
+  // ECC : vraie liste déroulante de saisons (comme CCUP), puis rounds via /api/comm/journees.
   if (saisonSel) saisonSel.style.display = '';
+  if (isEcc) {
+    loadCommAlgoSaisonsEcc();
+    return;
+  }
   loadCommAlgoSaisons();
 }
 
@@ -3143,9 +3148,36 @@ async function loadCommAlgoCompetitions(champ = 'monde') {
     sel.innerHTML = '<option value="">Erreur chargement</option>';
   }
 }
+
+// ECC : peuple le sélecteur saison avec les vraies saisons (comme CCUP), puis les rounds.
+async function loadCommAlgoSaisonsEcc() {
+  const selSaison = document.getElementById('commAlgoSaison');
+  if (!selSaison) return;
+  selSaison.innerHTML = '<option value="">⏳ Chargement…</option>';
+  document.getElementById('commAlgoJournee').innerHTML = '<option value="">— Sélectionner saison —</option>';
+  try {
+    const data = await api('/api/ecc/admin/saisons');
+    const saisons = data.saisons || [];
+    if (!saisons.length) {
+      selSaison.innerHTML = '<option value="">Aucune saison</option>';
+      return;
+    }
+    selSaison.innerHTML = saisons.map((s, i) =>
+      `<option value="${s}"${i === 0 ? ' selected' : ''}>${s}</option>`
+    ).join('');
+    // Rounds ECC (Poule 1/2/3, 8e, Quart, Demi, Finale) — structurels, via /api/comm/journees.
+    await loadCommAlgoCompetitions('ecc');
+  } catch (e) {
+    selSaison.innerHTML = '<option value="">❌ Erreur</option>';
+    console.error('loadCommAlgoSaisonsEcc:', e);
+  }
+}
+
 function onCommAlgoSaisonChange() {
   document.getElementById('commAlgoScreenshotCard').style.display = 'none';
   document.getElementById('commAlgoFiltres').style.display = 'none';
+  // ECC : les rounds sont structurels (identiques d'une saison à l'autre) → on ne recharge pas.
+  if (document.getElementById('commAlgoChamp').value === 'ecc') return;
   loadCommAlgoJournees();
 }
 
@@ -3171,7 +3203,7 @@ async function commChargerStatsAlgo() {
     if (isMonde) {
       endpoint = `/api/monde/admin/stats-algo-journee?competition=${encodeURIComponent(journee)}`;
     } else if (isEcc) {
-      endpoint = `/api/ecc/admin/stats-algo-journee?journee=${encodeURIComponent(journee)}`;
+      endpoint = `/api/ecc/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
     } else if (isProD2) {
       endpoint = `/api/d2/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
     } else if (isHcup) {
@@ -3204,7 +3236,7 @@ async function commChargerStatsAlgo() {
     const champEmoji = isProD2 ? '🥈' : (isHcup ? '⭐' : (isMonde ? '🌍' : (isEcc ? '🛡️' : '🏉')));
     document.getElementById('commAlgoCardTitle').textContent =
       `${champEmoji} ${champLabel} — ${journeeDisplay}`;
-    document.getElementById('commAlgoCardSubtitle').textContent = isMonde ? 'Toutes éditions' : (isEcc ? 'Saison en cours' : `Saison ${saison}`);
+    document.getElementById('commAlgoCardSubtitle').textContent = isMonde ? 'Toutes éditions' : `Saison ${saison}`;
     document.getElementById('commAlgoFiltres').style.display = '';
     document.getElementById('commAlgoScreenshotCard').style.display = '';
     commMajApercu();
