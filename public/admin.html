@@ -1514,6 +1514,65 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         <div class="result" id="mailSendResult"></div>
       </div>
 
+      <!-- 😴 RELANCE PAR MAIL — JOUEURS ENDORMIS -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <div class="card-title">😴 Relancer par mail les joueurs endormis</div>
+        </div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.5">
+          Les mêmes joueurs <strong>sans aucun pari sur les matchs à venir</strong>
+          (jamais parié, endormis, ou pas encore passés à l'acte ce week-end), relancés cette
+          fois par <strong>email</strong>. Seuls ceux ayant un email valide sont contactés.
+        </p>
+
+        <div style="margin-bottom:12px;">
+          <button class="btn" id="inactifsMailLoadBtn" onclick="chargerInactifsMail()"
+                  style="background:#7c3aed;color:#fff;border:none;">
+            <div class="spinner"></div>
+            <span class="btn-text">📥 Charger la liste</span>
+          </button>
+        </div>
+
+        <div id="inactifsMailResult" style="color:var(--muted);font-size:13px;padding:4px 0;"></div>
+
+        <div id="inactifsMailWrap" style="display:none;">
+          <div id="inactifsMailKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0;">
+            <div class="stat-box"><div class="stat-val" id="inacMailTotal">—</div><div class="stat-lbl">Inactifs</div></div>
+            <div class="stat-box"><div class="stat-val green" id="inacMailJoignables">—</div><div class="stat-lbl">Joignables mail</div></div>
+            <div class="stat-box"><div class="stat-val" id="inacMailMatchs">—</div><div class="stat-lbl">Matchs à venir</div></div>
+          </div>
+
+          <div class="table-wrap" style="max-height:320px;overflow-y:auto;">
+            <table>
+              <thead>
+                <tr><th>Pseudo</th><th>Statut</th><th>Email</th></tr>
+              </thead>
+              <tbody id="inactifsMailBody"></tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Contenu du mail</div>
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-bottom:4px;">Sujet</label>
+            <input type="text" id="inactifsMailSubject" maxlength="120"
+                   style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Message</label>
+            <textarea id="inactifsMailBody2" rows="4" maxlength="1000"
+                      style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;">Variables disponibles : <code>{pseudo}</code>, <code>{prenom}</code>, <code>{salutation}</code>.</div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <button class="btn btn-gold" id="inactifsMailSendBtn" onclick="envoyerMailInactifs()" style="width:100%;">
+              <div class="spinner"></div>
+              <span class="btn-text">📤 Envoyer le mail aux joueurs joignables</span>
+            </button>
+          </div>
+
+          <div class="result" id="inactifsMailSendResult"></div>
+        </div>
+      </div>
+
     </div>
 
 
@@ -2596,6 +2655,90 @@ async function envoyerPushInactifs() {
 
 
 
+
+// ── RELANCE PAR MAIL — JOUEURS ENDORMIS ──
+async function chargerInactifsMail() {
+  const btn = document.getElementById('inactifsMailLoadBtn');
+  setLoading(btn, true);
+  document.getElementById('inactifsMailResult').textContent = 'Calcul en cours…';
+  try {
+    const data = await api('/api/admin/inactifs');
+    if (!data.success) {
+      document.getElementById('inactifsMailResult').textContent = `❌ ${data.error || 'Erreur'}`;
+      return;
+    }
+
+    document.getElementById('inacMailTotal').textContent = data.total;
+    document.getElementById('inacMailJoignables').textContent = (data.joignables_mail ?? '—');
+    document.getElementById('inacMailMatchs').textContent = data.matchs_a_venir;
+
+    const tbody = document.getElementById('inactifsMailBody');
+    tbody.innerHTML = (data.inactifs || []).map(u => {
+      const pseudo = (u.pseudo || '').replace(/</g, '&lt;');
+      const tag = INACTIFS_TAG_LABEL[u.tag] || u.tag;
+      const mail = u.joignable_mail
+        ? `<span style="color:#15803d;">✓ ${(u.email || '').replace(/</g, '&lt;')}</span>`
+        : '<span style="color:var(--muted);">— aucun</span>';
+      return `<tr><td>${pseudo}</td><td>${tag}</td><td>${mail}</td></tr>`;
+    }).join('');
+
+    // Sujet + message pré-remplis, éditables (variables {pseudo}/{prenom}/{salutation} gérées côté serveur)
+    document.getElementById('inactifsMailSubject').value = '🏉 On t\'a gardé une place au classement !';
+    document.getElementById('inactifsMailBody2').value =
+      `Salut {pseudo},\n\n${data.matchs_a_venir} matchs sont à pronostiquer ce week-end et tu n'as pas encore joué. File poser tes pronos et remonte au classement !`;
+
+    document.getElementById('inactifsMailResult').textContent = '';
+    document.getElementById('inactifsMailWrap').style.display = 'block';
+
+    if ((data.joignables_mail ?? 0) === 0) {
+      showResult('inactifsMailSendResult', 'warn',
+        '⚠️ Aucun joueur inactif n\'a d\'email valide.');
+    }
+  } catch (e) {
+    document.getElementById('inactifsMailResult').textContent = `❌ ${e.message}`;
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+async function envoyerMailInactifs() {
+  const subject = document.getElementById('inactifsMailSubject').value.trim();
+  const body = document.getElementById('inactifsMailBody2').value.trim();
+  const joignables = document.getElementById('inacMailJoignables').textContent;
+
+  if (subject.length < 3 || body.length < 5) {
+    showResult('inactifsMailSendResult', 'err', '❌ Sujet (min 3) et message (min 5) requis');
+    return;
+  }
+  if (!confirm(`Envoyer ce mail aux ${joignables} joueur(s) inactif(s) joignable(s) par email ?`)) {
+    return;
+  }
+
+  // Corps texte -> HTML simple (paragraphes + sauts de ligne). Les variables {pseudo}… restent intactes.
+  const htmlContent = body
+    .split(/\n{2,}/)
+    .map(p => `<p>${p.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`)
+    .join('');
+
+  const btn = document.getElementById('inactifsMailSendBtn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/admin/inactifs/email', {
+      method: 'POST',
+      body: JSON.stringify({ subject, htmlContent, textContent: body }),
+    });
+    if (data.success) {
+      showResult('inactifsMailSendResult', 'ok',
+        `✅ ${data.envoyes} mail(s) envoyé(s)${data.echecs ? `, ${data.echecs} échec(s)` : ''}.`);
+    } else {
+      showResult('inactifsMailSendResult', 'err', `❌ ${data.error || 'Erreur inconnue'}`);
+    }
+  } catch (e) {
+    showResult('inactifsMailSendResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
 
 async function sendPush() {
   const target = document.getElementById('pushTarget').value;
