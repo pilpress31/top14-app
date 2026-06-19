@@ -168,7 +168,7 @@ function ResultatsBloc({ resultats, col, journee, journees }) {
           ? (m.score_reel_dom > m.score_reel_ext) === (m.score_predit_dom > m.score_predit_ext) : null;
         const iaIcon = iaOk === true ? '✅' : iaOk === false ? '❌' : '';
         const date = m.date_match
-          ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+          ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
           : '';
         return (
           <div key={i} style={{ borderBottom: '1px solid #222', padding: '8px 12px' }}>
@@ -291,7 +291,7 @@ function TeaserBloc({ data }) {
             <div style={{ background: '#111' }}>
               {matchs.slice(0, 7).map((m, i) => {
                 const date = m.date_match
-                  ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                  ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                   : '';
                 const confVal = m.confiance_algo > 1 ? Math.round(m.confiance_algo) : Math.round((m.confiance_algo || 0) * 100);
                 return (

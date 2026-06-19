@@ -4871,7 +4871,7 @@ async function loadCommResults() {
       })();
       const iaIcon  = iaOk === true ? '✅' : iaOk === false ? '❌' : '';
       const date = m.date_match
-        ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+        ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
         : '';
       const scoreBg = !joue ? '' : iaOk === false ? 'background:#2a1a1a;' : 'background:#1a2a1a;';
       const scoreDisplay = !joue
@@ -5024,7 +5024,7 @@ async function loadCommTeaser() {
       if (!matchs.length) return `<div style="font-size:12px;color:#555;padding:8px 0">Aucun match à venir</div>`;
       return matchs.slice(0, 7).map(m => {
         const date = m.date_match
-          ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+          ? new Date(m.date_match).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })
           : '';
         const predit = m.score_predit_dom !== null
           ? `${m.score_predit_dom}-${m.score_predit_ext}`
@@ -5304,7 +5304,7 @@ function renderTickets() {
       : m.paris;
     if (parisVisibles.length === 0) return ''; // tout filtré
 
-    const date = m.date_match ? new Date(m.date_match).toLocaleString('fr-FR', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+    const date = m.date_match ? new Date(m.date_match).toLocaleString('fr-FR', { weekday:'short', day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
 
     return `
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:14px;">
