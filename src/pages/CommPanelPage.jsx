@@ -11,6 +11,7 @@ const CHAMPS = [
   { value: 'prod2', label: '🥈 Pro D2',     accent: '#97C1FE', bg: '#00174D' },
   { value: 'hcup',  label: '⭐ Champ. Cup', accent: '#FFC72C', bg: '#003E7E' },
   { value: 'monde', label: '🌍 Inter.',     accent: '#34D399', bg: '#0B6E4F' },
+  { value: 'ecc',   label: '🛡️ Chall. Cup', accent: '#86EFAC', bg: '#2E7D32' },
 ];
 
 async function apiGet(path, token) {
@@ -274,11 +275,12 @@ function TeaserBloc({ data }) {
     d2:    { label: '🥈 PRO D2',     accent: '#97C1FE', bg: '#00174D' },
     hcup:  { label: '⭐ CHAMP. CUP', accent: '#FFC72C', bg: '#003E7E' },
     monde: { label: '🌍 INTERNATIONAL', accent: '#34D399', bg: '#0B6E4F' },
+    ecc:   { label: '🛡️ CHALLENGE CUP', accent: '#86EFAC', bg: '#2E7D32' },
   };
   return (
     <div className="space-y-3">
       <h3 className="font-bold text-gray-800">🔮 Prédictions IA — Prochains matchs</h3>
-      {Object.entries({ top14: data.top14, d2: data.d2, hcup: data.hcup, monde: data.monde }).map(([key, matchs]) => {
+      {Object.entries({ top14: data.top14, d2: data.d2, hcup: data.hcup, monde: data.monde, ecc: data.ecc }).map(([key, matchs]) => {
         const cfg = champCfg[key];
         if (!matchs?.length) return null;
         return (
