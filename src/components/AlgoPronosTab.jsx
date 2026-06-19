@@ -175,10 +175,12 @@ export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
                     const round = pronosJournee[0]?.round;
                     const isD2Match = pronosJournee[0]?.isD2;
                     const PLAYOFF_LABELS = {
-                      'Barrage': 'Barrages', 'Accession': "Match d'accession",
+                      'Barrage': 'Barrages', 'Barrages': 'Barrages',
                       'Barrage 1': 'Barrages', 'Barrage 2': 'Barrages',
+                      'Demi': 'Demi-finales', 'Demi-finale': 'Demi-finales', 'Demi-finales': 'Demi-finales',
                       'Demi-finale 1': 'Demi-finales', 'Demi-finale 2': 'Demi-finales',
                       'Finale': 'Finale',
+                      'Accession': "Match d'accession",
                       'Access Match Pro D2': "Match d'accession Pro D2",
                       'Access Match Top 14': "Match d'accession Top 14",
                     };
