@@ -449,7 +449,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
                       style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
 
             <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">URL cible</label>
-            <input type="text" id="hcupNotifUrl" value="https://app.top14pronos.fr/hcup"
+            <input type="text" id="hcupNotifUrl" value="https://app.top14pronos.fr/pronos"
                   style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
           </div>
 
@@ -503,7 +503,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
                       style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
 
             <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">URL cible</label>
-            <input type="text" id="mondeNotifUrl" value="https://app.top14pronos.fr/monde"
+            <input type="text" id="mondeNotifUrl" value="https://app.top14pronos.fr/pronos"
                   style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
           </div>
 
@@ -516,6 +516,57 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         </div>
 
         <div class="result" id="mondeNmResult"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">🛡️ Notif Challenge Cup (sélection manuelle)</div>
+        <p style="color:var(--muted2);font-size:13px;margin-bottom:16px;line-height:1.5">
+          Sélectionne les matchs de <strong>Challenge Cup</strong> à inclure dans la notification, puis personnalise le texte.
+        </p>
+
+        <div style="margin-bottom:12px;">
+          <button class="btn" id="eccLoadMatchsBtn" onclick="loadEccMatchsForNotif()" style="background:#2E7D32;color:#fff;border:none;">
+            <div class="spinner"></div>
+            <span class="btn-text">📥 Charger les matchs à venir</span>
+          </button>
+        </div>
+
+        <div id="eccMatchsListWrap" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+            <div id="eccMatchsCount" style="font-size:12px;color:var(--muted);">—</div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn" onclick="toggleAllEccMatchs(true)" style="padding:4px 10px;font-size:12px;">Tout cocher</button>
+              <button class="btn" onclick="toggleAllEccMatchs(false)" style="padding:4px 10px;font-size:12px;">Tout décocher</button>
+            </div>
+          </div>
+
+          <div id="eccMatchsList" style="max-height:340px;overflow-y:auto;background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          </div>
+
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Texte de la notification</div>
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Titre</label>
+            <input type="text" id="eccNotifTitle" placeholder="Ex: 🛡️ Challenge Cup — Nouveaux matchs"
+                  style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">Corps</label>
+            <textarea id="eccNotifBody" rows="2" placeholder="Ex: Toulon-Gloucester, Lyon-Édimbourg… faites vos pronostics !"
+                      style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;"></textarea>
+
+            <label style="font-size:12px;color:var(--muted2);display:block;margin-top:8px;margin-bottom:4px;">URL cible</label>
+            <input type="text" id="eccNotifUrl" value="https://app.top14pronos.fr/pronos"
+                  style="width:100%;padding:8px 12px;background:var(--dark3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;">
+          </div>
+
+          <div style="margin-top:14px;">
+            <button class="btn btn-gold" id="eccSendNotifBtn" onclick="sendEccNewMatchesNotif()" style="width:100%;">
+              <div class="spinner"></div>
+              <span class="btn-text">📣 Envoyer la notification Challenge Cup</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="result" id="eccNmResult"></div>
       </div>
 
 
@@ -909,6 +960,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="prod2">🥈 Pro D2</option>
               <option value="hcup">🌍 Champions Cup</option>
               <option value="monde">🌍 International</option>
+              <option value="ecc">🛡️ Challenge Cup</option>
             </select>
             <button class="btn" onclick="loadParis()">↻ Actualiser</button>
           </div>
@@ -934,6 +986,11 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
           <span style="display:inline-flex;align-items:center;gap:6px;">
             <span style="color:var(--muted)">🌍 International</span>
             <span id="parisCountMonde" style="background:rgba(11,110,79,0.30);color:#6EE7B7;padding:2px 8px;border-radius:4px;font-weight:700">0</span>
+          </span>
+          <span style="color:var(--border2)">·</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span style="color:var(--muted)">🛡️ Challenge Cup</span>
+            <span id="parisCountEcc" style="background:rgba(46,125,50,0.30);color:#86EFAC;padding:2px 8px;border-radius:4px;font-weight:700">0</span>
           </span>
           <span style="color:var(--border2);margin-left:auto">·</span>
           <span style="display:inline-flex;align-items:center;gap:6px;">
@@ -1379,6 +1436,10 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
             <div class="spinner"></div>
             <span class="btn-text">🤖 Synthèse International</span>
           </button>
+          <button class="btn" id="synthBtnEcc" onclick="generateSynthese('ecc')" style="background:#2E7D32;color:#fff">
+            <div class="spinner"></div>
+            <span class="btn-text">🤖 Synthèse Challenge Cup</span>
+          </button>
           <span id="synthStatus" style="color:var(--muted);font-size:12px;align-self:center"></span>
         </div>
         <div class="result" id="synthResult" style="margin-top:10px"></div>
@@ -1470,6 +1531,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="d2">🥈 Pro D2</option>
               <option value="hcup">⭐ Champions Cup</option>
               <option value="monde">🌍 International</option>
+              <option value="ecc">🛡️ Challenge Cup</option>
               <option value="combine">🎰 Combiné (4 comp.)</option>
             </select>
             <span id="ticketsJourneeWrap" style="display:flex;align-items:center;gap:10px;">
@@ -1513,6 +1575,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="prod2">🥈 Pro D2</option>
               <option value="hcup">⭐ Champions Cup</option>
               <option value="monde">🌍 International</option>
+              <option value="ecc">🛡️ Challenge Cup</option>
             </select>
           </div>
           <div>
@@ -1559,6 +1622,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="prod2">🥈 Pro D2</option>
               <option value="hcup">⭐ Champions Cup</option>
               <option value="monde">🌍 International</option>
+              <option value="ecc">🛡️ Challenge Cup</option>
             </select>
             <select id="commAlgoSaison" onchange="onCommAlgoSaisonChange()"
                     style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;min-width:130px">
@@ -2163,7 +2227,7 @@ async function sendHcupNewMatchesNotif() {
         match_ids: checkedIds,
         title,
         body,
-        url: url || 'https://app.top14pronos.fr/hcup',
+        url: url || 'https://app.top14pronos.fr/pronos',
       }),
     });
 
@@ -2297,7 +2361,7 @@ async function sendMondeNewMatchesNotif() {
   try {
     const data = await api('/api/monde/notifications/new-matches', {
       method: 'POST',
-      body: JSON.stringify({ match_ids: checkedIds, title, body, url: url || 'https://app.top14pronos.fr/monde' }),
+      body: JSON.stringify({ match_ids: checkedIds, title, body, url: url || 'https://app.top14pronos.fr/pronos' }),
     });
     if (data.success) {
       const ignored = data.ignored_matchs > 0 ? ` (${data.ignored_matchs} ignorés car déjà joués)` : '';
@@ -2311,6 +2375,134 @@ async function sendMondeNewMatchesNotif() {
     }
   } catch (e) {
     showResult('mondeNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+
+// ============================================================
+//  ECC (Challenge Cup) — NOTIF "NOUVEAUX MATCHS" (sélection manuelle)
+// ============================================================
+let _eccMatchsCache = [];
+
+async function loadEccMatchsForNotif() {
+  const btn = document.getElementById('eccLoadMatchsBtn');
+  const wrap = document.getElementById('eccMatchsListWrap');
+  const list = document.getElementById('eccMatchsList');
+  const countEl = document.getElementById('eccMatchsCount');
+
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/ecc/matchs/a-venir');
+    const matchs = (data && Array.isArray(data.matchs)) ? data.matchs : [];
+    _eccMatchsCache = matchs;
+
+    if (matchs.length === 0) {
+      wrap.style.display = 'block';
+      list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:20px;font-size:13px;">Aucun match Challenge Cup à venir</div>';
+      countEl.textContent = '0 match disponible';
+      document.getElementById('eccSendNotifBtn').disabled = true;
+      return;
+    }
+    document.getElementById('eccSendNotifBtn').disabled = false;
+
+    // Grouper par round (Poule, 8e de finale, Quart de finale, Demi-finale, Finale…)
+    const groupes = {};
+    matchs.forEach(m => {
+      const r = m.round || 'Challenge Cup';
+      if (!groupes[r]) groupes[r] = [];
+      groupes[r].push(m);
+    });
+
+    let html = '';
+    Object.keys(groupes).forEach(r => {
+      const liste = groupes[r];
+      html += `<div style="font-size:11px;color:#86EFAC;text-transform:uppercase;letter-spacing:0.5px;margin:${html ? '14px' : '0'} 0 8px;">🛡️ ${r} (${liste.length} match${liste.length > 1 ? 's' : ''})</div>`;
+      liste.forEach(m => {
+        const dateFr = m.date_match
+          ? new Date(m.date_match).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' })
+          : '—';
+        html += `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+            <input type="checkbox" class="ecc-match-cb" value="${m.match_id}" onchange="updateEccSelectionCount()" style="cursor:pointer;width:16px;height:16px;accent-color:#2E7D32;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;color:var(--text);font-weight:500;">${m.equipe_domicile} <span style="color:var(--muted)">vs</span> ${m.equipe_exterieure}</div>
+              <div style="font-size:11px;color:var(--muted2);margin-top:2px;">${dateFr}</div>
+            </div>
+          </label>
+        `;
+      });
+    });
+
+    list.innerHTML = html;
+    wrap.style.display = 'block';
+    updateEccSelectionCount();
+
+    const titleInput = document.getElementById('eccNotifTitle');
+    const bodyInput = document.getElementById('eccNotifBody');
+    if (!titleInput.value) titleInput.value = '🛡️ Challenge Cup — Nouveaux matchs';
+    if (!bodyInput.value) {
+      const apercu = matchs.slice(0, 3).map(m => `${m.equipe_domicile}-${m.equipe_exterieure}`).join(', ');
+      const suite = matchs.length > 3 ? '… ' : ' — ';
+      bodyInput.value = `${apercu}${suite}faites vos pronostics !`;
+    }
+  } catch (e) {
+    showResult('eccNmResult', 'err', `❌ ${e.message}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+function toggleAllEccMatchs(checked) {
+  document.querySelectorAll('.ecc-match-cb').forEach(cb => { cb.checked = checked; });
+  updateEccSelectionCount();
+}
+
+function updateEccSelectionCount() {
+  const total = document.querySelectorAll('.ecc-match-cb').length;
+  const checked = document.querySelectorAll('.ecc-match-cb:checked').length;
+  const countEl = document.getElementById('eccMatchsCount');
+  if (countEl) {
+    countEl.textContent = `${checked} / ${total} match${total > 1 ? 's' : ''} sélectionné${checked > 1 ? 's' : ''}`;
+    countEl.style.color = checked > 0 ? '#86EFAC' : 'var(--muted)';
+  }
+}
+
+async function sendEccNewMatchesNotif() {
+  const checkedIds = Array.from(document.querySelectorAll('.ecc-match-cb:checked')).map(cb => cb.value);
+  if (checkedIds.length === 0) {
+    showResult('eccNmResult', 'err', '❌ Sélectionnez au moins un match');
+    return;
+  }
+  const title = document.getElementById('eccNotifTitle').value.trim();
+  const body = document.getElementById('eccNotifBody').value.trim();
+  const url = document.getElementById('eccNotifUrl').value.trim();
+  if (!title || !body) {
+    showResult('eccNmResult', 'err', '❌ Titre et corps de la notification requis');
+    return;
+  }
+  if (!confirm(`Envoyer la notification "${title}" pour ${checkedIds.length} match(s) à TOUS les utilisateurs ?`)) return;
+
+  const btn = document.getElementById('eccSendNotifBtn');
+  setLoading(btn, true);
+  try {
+    const data = await api('/api/ecc/notifications/new-matches', {
+      method: 'POST',
+      body: JSON.stringify({ match_ids: checkedIds, title, body, url: url || 'https://app.top14pronos.fr/pronos' }),
+    });
+    if (data.success) {
+      const ignored = data.ignored_matchs > 0 ? ` (${data.ignored_matchs} ignorés car déjà joués)` : '';
+      if (data.sent === 0 && data.inAppCreated === 0 && data.count > 0) {
+        showResult('eccNmResult', 'warn', `⚠️ ${data.count} match(s) sélectionnés mais aucun utilisateur abonné aux push${ignored}`);
+      } else {
+        showResult('eccNmResult', 'ok', `✅ ${data.count} match(s) Challenge Cup : ${data.sent} push + ${data.inAppCreated} in-app envoyées${ignored}`);
+      }
+    } else {
+      showResult('eccNmResult', 'err', `❌ ${data.error || data.message || 'Erreur inconnue'}`);
+    }
+  } catch (e) {
+    showResult('eccNmResult', 'err', `❌ ${e.message}`);
   } finally {
     setLoading(btn, false);
   }
@@ -2903,13 +3095,14 @@ function onCommAlgoChampChange() {
   const isProD2 = champ === 'prod2';
   const isHcup = champ === 'hcup';
   const isMonde = champ === 'monde';
+  const isEcc = champ === 'ecc';
   // Adapter label "Journée/Round/Compétition"
   const lblJournee = document.getElementById('commAlgoJourneeLabel');
-  if (lblJournee) lblJournee.textContent = isHcup ? 'Round' : (isMonde ? 'Compétition' : 'Journée');
+  if (lblJournee) lblJournee.textContent = isHcup ? 'Round' : (isMonde ? 'Compétition' : (isEcc ? 'Round' : 'Journée'));
   // Masquer % MT en Pro D2, HCup et MONDE
   const mtCard = document.getElementById('commAlgoPctMTCard');
   const mtCheckWrap = document.getElementById('commAlgoSendMTWrap');
-  const noMt = isProD2 || isHcup || isMonde;
+  const noMt = isProD2 || isHcup || isMonde || isEcc;
   if (mtCard) mtCard.style.display = noMt ? 'none' : '';
   if (mtCheckWrap) mtCheckWrap.style.display = noMt ? 'none' : '';
   // Reset preview
@@ -2919,13 +3112,13 @@ function onCommAlgoChampChange() {
   // MONDE : pas de saison → on masque/neutralise le sélecteur saison et on peuple
   // directement les compétitions dans le sélecteur "journée".
   const saisonSel = document.getElementById('commAlgoSaison');
-  if (isMonde) {
+  if (isMonde || isEcc) {
     if (saisonSel) {
-      saisonSel.innerHTML = '<option value="monde">🌍 International</option>';
-      saisonSel.value = 'monde';
+      saisonSel.innerHTML = isEcc ? '<option value="ecc">🛡️ Challenge Cup</option>' : '<option value="monde">🌍 International</option>';
+      saisonSel.value = isEcc ? 'ecc' : 'monde';
       saisonSel.style.display = 'none';
     }
-    loadCommAlgoCompetitionsMonde();
+    loadCommAlgoCompetitions(champ);
     return;
   }
   if (saisonSel) saisonSel.style.display = '';
@@ -2938,13 +3131,13 @@ function onCommAlgoChampChange() {
 
 
 // MONDE : peuple le sélecteur "journée" avec la liste des compétitions
-async function loadCommAlgoCompetitionsMonde() {
+async function loadCommAlgoCompetitions(champ = 'monde') {
   const sel = document.getElementById('commAlgoJournee');
   sel.innerHTML = '<option value="">⏳ Chargement…</option>';
   try {
-    const d = await api('/api/comm/journees?champ=monde');
+    const d = await api(`/api/comm/journees?champ=${champ}`);
     const comps = (d.journees || []).map(j => j.journee);
-    sel.innerHTML = '<option value="">— Choisir une compétition —</option>' +
+    sel.innerHTML = '<option value="">— Choisir —</option>' +
       comps.map(c => `<option value="${c}">${c}</option>`).join('');
   } catch (e) {
     sel.innerHTML = '<option value="">Erreur chargement</option>';
@@ -2963,6 +3156,7 @@ async function commChargerStatsAlgo() {
   const isProD2 = champ === 'prod2';
   const isHcup = champ === 'hcup';
   const isMonde = champ === 'monde';
+  const isEcc = champ === 'ecc';
   if (!saison || !journee) {
     document.getElementById('commAlgoResult').innerHTML =
       '<span style="color:var(--red)">❌ Sélectionnez une saison et une journée</span>';
@@ -2976,6 +3170,8 @@ async function commChargerStatsAlgo() {
     let endpoint;
     if (isMonde) {
       endpoint = `/api/monde/admin/stats-algo-journee?competition=${encodeURIComponent(journee)}`;
+    } else if (isEcc) {
+      endpoint = `/api/ecc/admin/stats-algo-journee?journee=${encodeURIComponent(journee)}`;
     } else if (isProD2) {
       endpoint = `/api/d2/admin/stats-algo-journee?saison=${encodeURIComponent(saison)}&journee=${encodeURIComponent(journee)}`;
     } else if (isHcup) {
@@ -2992,6 +3188,8 @@ async function commChargerStatsAlgo() {
     let journeeDisplay;
     if (isMonde) {
       journeeDisplay = journee; // nom de la compétition
+    } else if (isEcc) {
+      journeeDisplay = journee; // nom du round
     } else if (isHcup) {
       journeeDisplay = (journee === '__all__') ? 'Tous' : journee;
     } else {
@@ -3002,11 +3200,11 @@ async function commChargerStatsAlgo() {
     document.getElementById('commAlgoPctFT').textContent = (data.pct_ft != null ? data.pct_ft : '—') + '%';
     document.getElementById('commAlgoPctMT').textContent = (data.pct_mt != null ? data.pct_mt + '%' : '—');
     document.getElementById('commAlgoNbMatchs').textContent = data.nb_matchs;
-    const champLabel = isProD2 ? 'Pro D2' : (isHcup ? 'Champions Cup' : (isMonde ? 'International' : 'Top 14'));
-    const champEmoji = isProD2 ? '🥈' : (isHcup ? '⭐' : (isMonde ? '🌍' : '🏉'));
+    const champLabel = isProD2 ? 'Pro D2' : (isHcup ? 'Champions Cup' : (isMonde ? 'International' : (isEcc ? 'Challenge Cup' : 'Top 14')));
+    const champEmoji = isProD2 ? '🥈' : (isHcup ? '⭐' : (isMonde ? '🌍' : (isEcc ? '🛡️' : '🏉')));
     document.getElementById('commAlgoCardTitle').textContent =
       `${champEmoji} ${champLabel} — ${journeeDisplay}`;
-    document.getElementById('commAlgoCardSubtitle').textContent = isMonde ? 'Toutes éditions' : `Saison ${saison}`;
+    document.getElementById('commAlgoCardSubtitle').textContent = isMonde ? 'Toutes éditions' : (isEcc ? 'Saison en cours' : `Saison ${saison}`);
     document.getElementById('commAlgoFiltres').style.display = '';
     document.getElementById('commAlgoScreenshotCard').style.display = '';
     commMajApercu();
@@ -3024,6 +3222,7 @@ function commMajApercu() {
   const isProD2 = champ === 'prod2';
   const isHcup = champ === 'hcup';
   const isMonde = champ === 'monde';
+  const isEcc = champ === 'ecc';
   const showFT = document.getElementById('commAlgoSendFT').checked;
   const showMT = document.getElementById('commAlgoSendMT')?.checked;
   // Masquer/afficher les carrés selon les checkboxes (en respectant noMt)
@@ -3032,7 +3231,7 @@ function commMajApercu() {
   if (ftCard) ftCard.style.display = showFT ? '' : 'none';
   if (mtCard) {
     // Pas de MT en Pro D2 / HCup / MONDE, donc toujours masqué dans ces cas
-    if (isProD2 || isHcup || isMonde) {
+    if (isProD2 || isHcup || isMonde || isEcc) {
       mtCard.style.display = 'none';
     } else {
       mtCard.style.display = showMT ? '' : 'none';
@@ -3118,7 +3317,7 @@ async function loadParis() {
     }
 
     // ─── Compteurs par championnat ──────────────────────────
-    const counts = { top14: 0, prod2: 0, hcup: 0, monde: 0 };
+    const counts = { top14: 0, prod2: 0, hcup: 0, monde: 0, ecc: 0 };
     all.forEach(b => { if (counts[b.championnat] != null) counts[b.championnat]++; });
     const total = all.length;
 
@@ -3127,6 +3326,8 @@ async function loadParis() {
     document.getElementById('parisCountHcup').textContent = counts.hcup;
     const mondeEl = document.getElementById('parisCountMonde');
     if (mondeEl) mondeEl.textContent = counts.monde;
+    const eccEl = document.getElementById('parisCountEcc');
+    if (eccEl) eccEl.textContent = counts.ecc;
     document.getElementById('parisCountTotal').textContent = total;
     document.getElementById('parisCounters').style.display = 'flex';
 
@@ -3144,6 +3345,7 @@ async function loadParis() {
       if (c === 'prod2') return '<span style="background:rgba(0,23,77,0.45);color:#9DB7E8;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🥈 D2</span>';
       if (c === 'hcup')  return '<span style="background:rgba(0,61,107,0.45);color:#7FC4F0;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🌍 HCup</span>';
       if (c === 'monde') return '<span style="background:rgba(11,110,79,0.30);color:#6EE7B7;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🌍 Monde</span>';
+      if (c === 'ecc')   return '<span style="background:rgba(46,125,50,0.30);color:#86EFAC;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:0.3px">🛡️ ECC</span>';
       return '<span style="color:var(--muted)">—</span>';
     };
 
@@ -3836,6 +4038,7 @@ async function generateSynthese(championnat) {
     prod2: { btnId: 'synthBtnProD2', label: 'Pro D2' },
     hcup:  { btnId: 'synthBtnHcup',  label: 'Champions Cup' },
     monde: { btnId: 'synthBtnMonde', label: 'International' },
+    ecc:   { btnId: 'synthBtnEcc',   label: 'Challenge Cup' },
   };
   const cfg = champConfig[championnat] || champConfig.top14;
   const btn = document.getElementById(cfg.btnId);
@@ -3851,7 +4054,7 @@ async function generateSynthese(championnat) {
   }
 
   // Désactiver les 3 boutons pendant la génération
-  const allBtns = ['synthBtnTop14', 'synthBtnProD2', 'synthBtnHcup', 'synthBtnMonde']
+  const allBtns = ['synthBtnTop14', 'synthBtnProD2', 'synthBtnHcup', 'synthBtnMonde', 'synthBtnEcc']
     .map(id => document.getElementById(id))
     .filter(Boolean);
   allBtns.forEach(b => { b.disabled = true; });
@@ -4644,10 +4847,11 @@ async function loadCommResults() {
       prod2: { bg: '#00174D', accent: '#C0C0C0', text: '#97C1FE',  label: '🥈 PRO D2' },
       hcup:  { bg: '#003E7E', accent: '#FFC72C', text: '#ffffff',  label: '⭐ CHAMPIONS CUP' },
       monde: { bg: '#0B3D2E', accent: '#34D399', text: '#A7F3D0',  label: '🌍 INTERNATIONAL' },
+      ecc:   { bg: '#143d14', accent: '#4ADE80', text: '#BBF7D0',  label: '🛡️ CHALLENGE CUP' },
     };
     const col = champColors[champ];
     const premierRound = matchs[0]?.round;
-    const journeeLabel = (champ === 'hcup' || champ === 'monde')
+    const journeeLabel = (champ === 'hcup' || champ === 'monde' || champ === 'ecc')
       ? journee
       : (premierRound && premierRound !== 'Journée' ? premierRound : `Journée ${journee}`);
 
@@ -4813,6 +5017,7 @@ async function loadCommTeaser() {
       d2:    { label: '🥈 PRO D2',     accent: '#97C1FE', bg: '#00174D' },
       hcup:  { label: '⭐ CHAMP. CUP', accent: '#FFC72C', bg: '#003E7E' },
       monde: { label: '🌍 INTERNATIONAL', accent: '#34D399', bg: '#0B3D2E' },
+      ecc:   { label: '🛡️ CHALLENGE CUP', accent: '#4ADE80', bg: '#143d14' },
     };
 
     const renderMatchs = (matchs, cfg) => {
@@ -4842,7 +5047,7 @@ async function loadCommTeaser() {
     };
 
     el.innerHTML = `<div style="max-width:420px;margin:0 auto;">` +
-      Object.entries({ top14: d.top14, d2: d.d2, hcup: d.hcup, monde: (d.monde || []) }).map(([key, matchs]) => {
+      Object.entries({ top14: d.top14, d2: d.d2, hcup: d.hcup, monde: (d.monde || []), ecc: (d.ecc || []) }).map(([key, matchs]) => {
         const cfg = champCfg[key];
         return `
           <div style="border-radius:10px;overflow:hidden;border:1px solid #333;margin-bottom:12px;">
@@ -5049,7 +5254,7 @@ function peuplerSelectJournees(competition) {
   if (!sel) return;
   const journees = _ticketsData?.journees_disponibles || [];
   const courant = _ticketsData?.journee;
-  const libelleTexte = (competition === 'monde' || competition === 'hcup');
+  const libelleTexte = (competition === 'monde' || competition === 'hcup' || competition === 'ecc');
   sel.innerHTML = journees.map(it => {
     if (libelleTexte) return `<option value="${it}">${it}</option>`;
     // Top 14 / D2 : objets { journee, round_label } (numéro brut en fallback)
