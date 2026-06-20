@@ -1591,7 +1591,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
               <option value="hcup">⭐ Champions Cup</option>
               <option value="monde">🌍 International</option>
               <option value="ecc">🛡️ Challenge Cup</option>
-              <option value="combine">🎰 Combiné (4 comp.)</option>
+              <option value="combine">🎰 Combiné (5 comp.)</option>
             </select>
             <span id="ticketsJourneeWrap" style="display:flex;align-items:center;gap:10px;">
               <label for="ticketsJournee" style="font-size:13px;color:var(--muted);">Sélection :</label>
@@ -5402,7 +5402,7 @@ function onTicketsCompChange() {
 
 async function chargerTickets() {
   const competition = ticketsCompetition();
-  // Mode Combiné : pas de sélecteur de journée (on agrège les 4 compétitions)
+  // Mode Combiné : pas de sélecteur de journée (on agrège les 5 compétitions)
   const wrap = document.getElementById('ticketsJourneeWrap');
   if (wrap) wrap.style.display = (competition === 'combine') ? 'none' : 'flex';
   const sel = document.getElementById('ticketsJournee');
