@@ -5,6 +5,14 @@
   text-align: center;
 }
 
+/* ✅ Réduit les bandes latérales sur mobile (garde 2rem de confort sur desktop) */
+@media (max-width: 640px) {
+  #root {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -81,7 +89,7 @@
 }
 
 .nav-active {
-  color: white; /* couleur de l’icône active */
+  color: white; /* couleur de l'icône active */
 }
 
 .nav-inactive {
