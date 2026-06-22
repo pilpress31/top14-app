@@ -1971,7 +1971,9 @@ function showTab(name, el) {
 // ── USERS ──
 async function loadUsers() {
   const data = await api('/api/admin/users');
-  users = (Array.isArray(data) ? data : []).sort((a,b) => (a.pseudo||'').localeCompare(b.pseudo||''));
+  users = (Array.isArray(data) ? data : [])
+    .filter(u => !/^IA-/i.test(u.pseudo || ''))   // exclut les comptes bots IA-*
+    .sort((a,b) => (a.pseudo||'').localeCompare(b.pseudo||''));
 
   // Select jetons (inchangé)
   const selJetons = document.getElementById('jetonsUserId');
