@@ -261,21 +261,16 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
 
       {/* Date + Compétition (+ phase finale si élimination directe) */}
       <div className="flex items-center justify-between mb-2 gap-2">
-        <p className="text-[10px] text-gray-500 flex-shrink-0">
+        <p className="text-[10px] text-gray-500 min-w-0 flex-1 truncate">
           {(() => {
-            // Jour FR (date_match_fr) si dispo : pour un match nocturne austral,
-            // il peut différer du jour local. Heure FR + 🇫🇷 si connue.
-            const jourSrc = match.date_match_fr || match.date_match || match.date;
-            let label;
-            if (match.date_match_fr) {
-              const [y, mo, d] = String(jourSrc).slice(0, 10).split('-').map(Number);
-              label = new Date(y, mo - 1, d, 12).toLocaleDateString('fr-FR',
-                { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-            } else {
-              label = matchDate.toLocaleDateString('fr-FR',
-                { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-            }
-            return match.heure_match_fr ? `${label} • ${match.heure_match_fr} 🇫🇷` : label;
+            // Le JOUR complet est déjà dans l'en-tête d'accordéon : ici on affiche
+            // le contexte du match — compétition · ville · heure de Paris 🇫🇷.
+            const lieu = [match.ville, match.pays].map(s => (s || '').trim()).filter(Boolean).join(', ');
+            const parts = [];
+            if (match.competition) parts.push(match.competition);
+            if (lieu) parts.push(`📍 ${lieu}`);
+            if (match.heure_match_fr) parts.push(`🕒 ${match.heure_match_fr} 🇫🇷`);
+            return parts.join('  ·  ');
           })()}
         </p>
         <div className="flex items-center gap-1.5 flex-wrap justify-end">
@@ -285,12 +280,7 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
               🏆 {match.phase}
             </span>
           )}
-          {!hideCompetition && match.competition && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>
-              {match.competition}
-            </span>
-          )}
+          {/* Compétition désormais affichée à gauche (ligne contexte) — badge retiré pour éviter le doublon */}
           {match.compte_points === false && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' }}
