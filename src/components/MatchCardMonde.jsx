@@ -263,11 +263,10 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
       <div className="flex items-center justify-between mb-2 gap-2">
         <p className="text-[10px] text-gray-500 min-w-0 flex-1 truncate">
           {(() => {
-            // Le JOUR complet est déjà dans l'en-tête d'accordéon : ici on affiche
-            // le contexte du match — compétition · ville · heure de Paris 🇫🇷.
+            // Le JOUR est dans l'en-tête d'accordéon et la compétition dans le
+            // badge en haut de carte : ici on n'affiche que lieu · heure de Paris 🇫🇷.
             const lieu = [match.ville, match.pays].map(s => (s || '').trim()).filter(Boolean).join(', ');
             const parts = [];
-            if (match.competition) parts.push(match.competition);
             if (lieu) parts.push(`📍 ${lieu}`);
             if (match.heure_match_fr) parts.push(`🕒 ${match.heure_match_fr} 🇫🇷`);
             return parts.join('  ·  ');
@@ -280,7 +279,12 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
               🏆 {match.phase}
             </span>
           )}
-          {/* Compétition désormais affichée à gauche (ligne contexte) — badge retiré pour éviter le doublon */}
+          {!hideCompetition && match.competition && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>
+              {match.competition}
+            </span>
+          )}
           {match.compte_points === false && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FCD34D' }}
