@@ -261,15 +261,27 @@ function CarteMonde({ m, openPanel, onTogglePanel }) {
 
   return (
     <div className="px-3 py-3">
-      <div className="flex items-center justify-end gap-1.5 mb-2 flex-wrap">
-        {PHASE_FINALE(m.phase) && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse"
-            style={{ backgroundColor: '#FCD34D', color: '#064E3B' }}>🏆 {m.phase}</span>
-        )}
-        {m.competition && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>{m.competition}</span>
-        )}
+      <div className="flex items-center justify-between gap-1.5 mb-2">
+        <p className="text-[10px] text-gray-500 min-w-0 flex-1 truncate">
+          {(() => {
+            // Le JOUR est dans l'en-tête d'accordéon : ici lieu · heure de Paris 🇫🇷.
+            const lieu = [m.ville, m.pays].map(s => (s || '').trim()).filter(Boolean).join(', ');
+            const parts = [];
+            if (lieu) parts.push(`📍 ${lieu}`);
+            if (m.heure_match_fr) parts.push(`🕒 ${m.heure_match_fr} 🇫🇷`);
+            return parts.join('  ·  ');
+          })()}
+        </p>
+        <div className="flex items-center justify-end gap-1.5 flex-wrap flex-shrink-0">
+          {PHASE_FINALE(m.phase) && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse"
+              style={{ backgroundColor: '#FCD34D', color: '#064E3B' }}>🏆 {m.phase}</span>
+          )}
+          {m.competition && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: 'rgba(11,110,79,0.1)', color: MONDE_GREEN }}>{m.competition}</span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-3 items-center px-1">
