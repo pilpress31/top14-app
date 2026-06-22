@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronDown, ChevronUp, Calendar, CloudSun, Swords, Trophy, ClipboardList } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar, CloudSun, Swords, Trophy, ClipboardList, MapPin } from 'lucide-react';
 import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
@@ -143,6 +143,28 @@ export default function ActuTab() {
     }) + ' • ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // 🌍 MONDE : date + heure en HEURE DE PARIS (pour savoir quand regarder à la TV).
+  // date_match_fr / heure_match_fr sont calculés en amont depuis l'heure locale
+  // du stade convertie en Europe/Paris (gère l'été/hiver ET le décalage de jour
+  // des matchs en Australie / Nouvelle-Zélande / Argentine). On affiche le JOUR
+  // français (date_match_fr) : pour un match nocturne austral, il peut différer
+  // du jour local du match. Repli sur date_match (jour seul) si l'heure est inconnue.
+  const formatDateMonde = (actu) => {
+    const jour = actu.date_match_fr || actu.date_match;
+    if (!jour) return '';
+    const [y, mo, d] = String(jour).slice(0, 10).split('-').map(Number);
+    const dateLabel = new Date(y, mo - 1, d, 12).toLocaleDateString('fr-FR', {
+      weekday: 'short', day: 'numeric', month: 'short',
+    });
+    return actu.heure_match_fr ? `${dateLabel} • ${actu.heure_match_fr} 🇫🇷` : dateLabel;
+  };
+
+  // 🌍 MONDE : lieu "Ville, Pays" (ou l'un des deux si l'autre manque).
+  const formatLieuMonde = (actu) => {
+    const parts = [actu.ville, actu.pays].map(s => (s || '').trim()).filter(Boolean);
+    return parts.join(', ');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -185,9 +207,13 @@ export default function ActuTab() {
   // place un badge compétition + la date sur chaque carte pour les distinguer.
   // Les autres championnats conservent le regroupement par journée/phase.
   const isMonde = championnat === 'monde';
-  const actusTriees = [...actus].sort(
-    (a, b) => new Date(a.date_match) - new Date(b.date_match)
-  );
+  // MONDE : tri par JOUR français puis HEURE française (les matchs sans heure
+  // connue passent en fin de journée). Ailleurs : tri par timestamp date_match.
+  const cleMonde = (a) =>
+    `${String(a.date_match_fr || a.date_match || '').slice(0, 10)} ${a.heure_match_fr || '99:99'}`;
+  const actusTriees = isMonde
+    ? [...actus].sort((a, b) => cleMonde(a).localeCompare(cleMonde(b)))
+    : [...actus].sort((a, b) => new Date(a.date_match) - new Date(b.date_match));
   const groups = isMonde
     ? [{ label: null, matchs: garderPremierMatchParEquipe(actusTriees) }]
     : [...new Set(actus.map(sectionLabel))]
@@ -253,7 +279,15 @@ export default function ActuTab() {
                             {actu.round}
                           </span>
                         )}
-                        <p className="text-[10px] text-gray-400">{formatDate(actu.date_match)}</p>
+                        <p className="text-[10px] text-gray-400">
+                          {isMonde ? formatDateMonde(actu) : formatDate(actu.date_match)}
+                        </p>
+                        {isMonde && formatLieuMonde(actu) && (
+                          <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            {formatLieuMonde(actu)}
+                          </p>
+                        )}
                       </div>
                       {(actu.generated_at || actu.updated_at) && (
                         <p className="text-[9px] text-gray-300 mb-1">
