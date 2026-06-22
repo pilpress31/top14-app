@@ -29,7 +29,7 @@ export default function CGUPage() {
           </div>
           
           <p className="text-gray-100 text-sm text-center">
-            Dernière mise à jour : 1er avril 2026
+            Dernière mise à jour : 22 juin 2026
           </p>
         </div>
       </div>
@@ -383,12 +383,21 @@ export default function CGUPage() {
                 <li>Pronostics personnels : stockés de manière sécurisée</li>
                 <li>Statistiques d'utilisation : pour améliorer l'application</li>
                 <li>Données de classement : pour le système communautaire</li>
+                <li>
+                  Données techniques de connexion : système d'exploitation, type d'appareil
+                  (mobile, tablette ou ordinateur) et navigateur, à des fins de compatibilité,
+                  de support technique et de sécurité
+                </li>
               </ul>
 
               <p className="font-medium">Base légale du traitement :</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
                 <li>Votre <strong>consentement</strong> lors de l'inscription (art. 6.1.a RGPD)</li>
                 <li>L'<strong>exécution du service</strong> auquel vous souscrivez (art. 6.1.b RGPD)</li>
+                <li>
+                  Notre <strong>intérêt légitime</strong> à assurer la compatibilité, la sécurité
+                  et l'amélioration de l'Application (art. 6.1.f RGPD), pour les données techniques
+                </li>
               </ul>
 
               <p>
