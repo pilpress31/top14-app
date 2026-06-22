@@ -157,13 +157,27 @@ export default function ActuTab() {
     const r = (a.round || '').trim();
     return (r && r.toLowerCase() !== 'journée') ? r : `Journée ${a.journee}`;
   };
-  // Sections ordonnées par date du 1er match
-  const sections = [...new Set(actus.map(sectionLabel))].sort((s1, s2) => {
-    const minDate = (s) => Math.min(...actus
-      .filter(a => sectionLabel(a) === s)
-      .map(a => new Date(a.date_match).getTime()));
-    return minDate(s1) - minDate(s2);
-  });
+
+  // 🌍 MONDE : les compétitions (6 Nations, test-matchs, Rugby Championship…)
+  // se chevauchent dans le temps. Les regrouper par compétition casserait
+  // l'ordre chronologique (et noierait deux affiches d'une même paire dans
+  // une même section). On affiche donc un FIL CHRONOLOGIQUE À PLAT, et on
+  // place un badge compétition + la date sur chaque carte pour les distinguer.
+  // Les autres championnats conservent le regroupement par journée/phase.
+  const isMonde = championnat === 'monde';
+  const actusTriees = [...actus].sort(
+    (a, b) => new Date(a.date_match) - new Date(b.date_match)
+  );
+  const groups = isMonde
+    ? [{ label: null, matchs: actusTriees }]
+    : [...new Set(actus.map(sectionLabel))]
+        .sort((s1, s2) => {
+          const minDate = (s) => Math.min(...actus
+            .filter(a => sectionLabel(a) === s)
+            .map(a => new Date(a.date_match).getTime()));
+          return minDate(s1) - minDate(s2);
+        })
+        .map(label => ({ label, matchs: actus.filter(a => sectionLabel(a) === label) }));
 
   return (
     <div className="space-y-4 mt-2">
@@ -176,19 +190,21 @@ export default function ActuTab() {
           })}
         </p>
       )}
-      {sections.map(section => {
-        const matchsJournee = actus.filter(a => sectionLabel(a) === section);
+      {groups.map((group, gi) => {
+        const matchsJournee = group.matchs;
         return (
-          <div key={section}>
-            <div className="flex items-center gap-2 mb-3 px-1">
-              <Calendar className="w-4 h-4 text-rugby-gold" />
-              <h2 className="font-bold text-white text-sm uppercase tracking-wide">
-                {section}
-              </h2>
-              <span className="text-xs text-gray-400">
-                ({matchsJournee.length} match{matchsJournee.length > 1 ? 's' : ''})
-              </span>
-            </div>
+          <div key={group.label || `chrono-${gi}`}>
+            {group.label && (
+              <div className="flex items-center gap-2 mb-3 px-1">
+                <Calendar className="w-4 h-4 text-rugby-gold" />
+                <h2 className="font-bold text-white text-sm uppercase tracking-wide">
+                  {group.label}
+                </h2>
+                <span className="text-xs text-gray-400">
+                  ({matchsJournee.length} match{matchsJournee.length > 1 ? 's' : ''})
+                </span>
+              </div>
+            )}
 
             <div className="space-y-3">
               {matchsJournee.map(actu => {
@@ -208,7 +224,17 @@ export default function ActuTab() {
                       onClick={() => toggleMatch(actu.match_id)}
                       className="w-full px-4 py-3 hover:bg-rugby-gold/5 transition-colors text-left"
                     >
-                      <p className="text-[10px] text-gray-400 mb-2">{formatDate(actu.date_match)}</p>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {isMonde && actu.round && (
+                          <span
+                            className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: 'rgba(11,110,79,0.13)', color: '#0B6E4F' }}
+                          >
+                            {actu.round}
+                          </span>
+                        )}
+                        <p className="text-[10px] text-gray-400">{formatDate(actu.date_match)}</p>
+                      </div>
                       {(actu.generated_at || actu.updated_at) && (
                         <p className="text-[9px] text-gray-300 mb-1">
                           Analyse du {parseAsParis(actu.generated_at || actu.updated_at).toLocaleDateString('fr-FR', {
