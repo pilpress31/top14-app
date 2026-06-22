@@ -4930,11 +4930,13 @@ function resetCustomMail() {
 async function loadUsersAccess() {
   const data = await api('/api/admin/users-access');
   const tbody = document.getElementById('usersAccessBody');
+  // 🤖 Exclure les comptes bots IA (IA-TOP14, IA-MONDE, IA-HCUP, IA-ECC, ...)
+  const users = (data.users || []).filter(u => !/^IA-/i.test(u.pseudo || ''));
   if (!data.success || !data.users?.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Aucune donnée</td></tr>';
     return;
   }
-  tbody.innerHTML = data.users.map(u => {
+  tbody.innerHTML = users.map(u => {
     const statut = u.statut_acces || '';
     const jours = u.jours_restants;
     const style = statut === 'beta_gratuit_vie' ? 'color:var(--gold-light)'
