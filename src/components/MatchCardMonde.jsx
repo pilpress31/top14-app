@@ -262,7 +262,21 @@ export default function MatchCardMonde({ match, existingProno, onBetClick, goToM
       {/* Date + Compétition (+ phase finale si élimination directe) */}
       <div className="flex items-center justify-between mb-2 gap-2">
         <p className="text-[10px] text-gray-500 flex-shrink-0">
-          {matchDate.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+          {(() => {
+            // Jour FR (date_match_fr) si dispo : pour un match nocturne austral,
+            // il peut différer du jour local. Heure FR + 🇫🇷 si connue.
+            const jourSrc = match.date_match_fr || match.date_match || match.date;
+            let label;
+            if (match.date_match_fr) {
+              const [y, mo, d] = String(jourSrc).slice(0, 10).split('-').map(Number);
+              label = new Date(y, mo - 1, d, 12).toLocaleDateString('fr-FR',
+                { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            } else {
+              label = matchDate.toLocaleDateString('fr-FR',
+                { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            }
+            return match.heure_match_fr ? `${label} • ${match.heure_match_fr} 🇫🇷` : label;
+          })()}
         </p>
         <div className="flex items-center gap-1.5 flex-wrap justify-end">
           {PHASE_FINALE(match.phase) && (
