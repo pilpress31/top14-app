@@ -190,7 +190,7 @@ export default function FavorisPage() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm"
            style={{ paddingTop: 'var(--safe-area-top, 0px)' }}>
-        <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="container mx-auto px-1 py-3 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
             <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
@@ -209,7 +209,7 @@ export default function FavorisPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-4 space-y-5">
+      <div className="container mx-auto px-1 py-4 space-y-5">
 
         {favorites.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">

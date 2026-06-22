@@ -183,7 +183,7 @@ export default function PronosPage() {
 
       {/* Contenu - padding-top identique à l'original */}
       <div
-        className="container mx-auto px-4 pb-4"
+        className="container mx-auto px-1 pb-4"
         style={{ paddingTop: `${contentPaddingTop}px` }}
       >
         {activeTab === 'a-parier' && (

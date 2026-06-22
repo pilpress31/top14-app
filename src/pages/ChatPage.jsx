@@ -429,7 +429,7 @@ export default function ChatPage() {
         className="fixed left-0 right-0 z-50 bg-gradient-to-r from-rugby-gold to-rugby-bronze text-white shadow-lg"
         style={{ top: 0, paddingTop: 'var(--safe-area-top, 0px)' }}
       >
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-1 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <MessageCircle className="w-8 h-8" />
