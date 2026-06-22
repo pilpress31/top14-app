@@ -4314,7 +4314,7 @@ async function loadMailUsers() {
   try {
     const data = await api('/api/admin/users');
     mailUsers = (Array.isArray(data) ? data : [])
-      .filter(u => u.email && u.email.includes('@'))  // uniquement ceux avec email
+      .filter(u => u.email && u.email.includes('@') && !/^IA-/i.test(u.pseudo || ''))  // email valide + exclut les bots IA-*
       .sort((a, b) => (a.pseudo || '').localeCompare(b.pseudo || ''));
     
     if (mailUsers.length === 0) {
