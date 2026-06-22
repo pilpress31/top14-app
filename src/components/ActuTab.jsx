@@ -30,6 +30,26 @@ function parseAsParis(dateStr) {
   return new Date(parseInt(y), parseInt(mo) - 1, parseInt(d), parseInt(h), parseInt(mi), parseInt(se || '0'));
 }
 
+/**
+ * 🌍 MONDE — ne garder que le PROCHAIN match de chaque équipe.
+ * Une équipe ayant plusieurs matchs à venir ne doit apparaître qu'une fois :
+ * ses matchs suivants ne s'afficheront qu'une fois le précédent joué (il sort
+ * alors de la fenêtre "à venir"), car leur actu dépend du résultat précédent.
+ * `liste` DOIT être triée par date_match croissante. On parcourt dans l'ordre
+ * et on saute tout match dont une équipe est déjà engagée plus tôt.
+ */
+function garderPremierMatchParEquipe(liste) {
+  const engagees = new Set();
+  const retenus = [];
+  for (const a of liste) {
+    if (engagees.has(a.equipe_domicile) || engagees.has(a.equipe_exterieure)) continue;
+    retenus.push(a);
+    engagees.add(a.equipe_domicile);
+    engagees.add(a.equipe_exterieure);
+  }
+  return retenus;
+}
+
 export default function ActuTab() {
   const { championnat } = useChampionnat();
   const [actus, setActus] = useState([]);
@@ -169,7 +189,7 @@ export default function ActuTab() {
     (a, b) => new Date(a.date_match) - new Date(b.date_match)
   );
   const groups = isMonde
-    ? [{ label: null, matchs: actusTriees }]
+    ? [{ label: null, matchs: garderPremierMatchParEquipe(actusTriees) }]
     : [...new Set(actus.map(sectionLabel))]
         .sort((s1, s2) => {
           const minDate = (s) => Math.min(...actus
