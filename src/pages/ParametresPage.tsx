@@ -202,7 +202,7 @@ Résultats du diagnostic :
   };
 
   return (
-    <div className="p-6 pb-24 max-w-2xl mx-auto">
+    <div className="py-6 px-1 pb-24 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-rugby-gold mb-6">Paramètres</h1>
 
       {/* Infos utilisateur */}
