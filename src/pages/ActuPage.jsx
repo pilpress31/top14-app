@@ -8,7 +8,7 @@ export default function ActuPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       <ActuHeader championnat={championnat} />
-      <div className="pt-[120px] pb-24 px-3 max-w-lg mx-auto">
+      <div className="pt-[120px] pb-24 px-1 max-w-lg mx-auto">
         {/* ═══ Sélecteur de championnat (une seule ligne, 4 segments égaux) ═══ */}
         <div className="flex w-full rounded-lg shadow-md border border-white/10 overflow-hidden mb-4">
           <button
