@@ -121,6 +121,10 @@ export default function PolitiqueConfidentialitePage() {
                     <td className="border border-gray-200 p-2 font-semibold">Communications</td>
                     <td className="border border-gray-200 p-2">Messages dans le chat communautaire, messages au support</td>
                   </tr>
+                  <tr>
+                    <td className="border border-gray-200 p-2 font-semibold">Assistant IA (chat)</td>
+                    <td className="border border-gray-200 p-2">Questions que vous saisissez librement dans l'assistant conversationnel</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -238,6 +242,27 @@ export default function PolitiqueConfidentialitePage() {
             <p className="bg-green-50 border border-green-300 rounded p-3 text-sm">
               ✅ <strong>Aucune donnée n'est vendue ou louée à des tiers à des fins commerciales.</strong>
             </p>
+
+            <div className="bg-yellow-50 border border-yellow-300 rounded p-4 text-sm space-y-2">
+              <p className="font-semibold text-yellow-900">🤖 À propos de l'assistant IA (chat)</p>
+              <p>
+                Lorsque vous posez une question à l'assistant conversationnel, le texte de votre
+                question est transmis à nos prestataires d'IA (<strong>Google Gemini</strong> et,
+                en secours, <strong>OpenAI</strong>) afin de générer une réponse. Ces prestataires
+                traitent cette donnée aux États-Unis, dans le cadre de clauses contractuelles
+                conformes au RGPD. Votre question est également conservée dans notre base de données
+                (Supabase, Union Européenne) rattachée à votre compte.
+              </p>
+              <p className="font-semibold text-yellow-900">
+                Nous vous recommandons de ne pas saisir d'informations personnelles ou sensibles
+                (nom complet, coordonnées, données de santé, etc.) dans l'assistant.
+              </p>
+              <p>
+                Le contenu que vous y saisissez librement relève de votre responsabilité. Vous
+                pouvez demander la suppression de l'historique de vos questions à tout moment
+                (voir « Vos droits RGPD »).
+              </p>
+            </div>
           </div>
         </article>
 
@@ -268,6 +293,10 @@ export default function PolitiqueConfidentialitePage() {
               <li>
                 <strong>Messages du chat communautaire</strong> : conservés tant que le compte est
                 actif, supprimés avec le compte
+              </li>
+              <li>
+                <strong>Questions posées à l'assistant IA</strong> : conservées tant que le compte
+                est actif, supprimées avec le compte
               </li>
             </ul>
           </div>
