@@ -123,7 +123,7 @@ export default function PolitiqueConfidentialitePage() {
                   </tr>
                   <tr>
                     <td className="border border-gray-200 p-2 font-semibold">Assistant IA (chat)</td>
-                    <td className="border border-gray-200 p-2">Questions que vous saisissez librement dans l'assistant conversationnel</td>
+                    <td className="border border-gray-200 p-2">Compteur d'usage quotidien (nombre de questions/jour) — <em>le contenu des questions n'est pas conservé</em></td>
                   </tr>
                 </tbody>
               </table>
@@ -250,17 +250,19 @@ export default function PolitiqueConfidentialitePage() {
                 question est transmis à nos prestataires d'IA (<strong>Google Gemini</strong> et,
                 en secours, <strong>OpenAI</strong>) afin de générer une réponse. Ces prestataires
                 traitent cette donnée aux États-Unis, dans le cadre de clauses contractuelles
-                conformes au RGPD. Votre question est également conservée dans notre base de données
-                (Supabase, Union Européenne) rattachée à votre compte.
-              </p>
-              <p className="font-semibold text-yellow-900">
-                Nous vous recommandons de ne pas saisir d'informations personnelles ou sensibles
-                (nom complet, coordonnées, données de santé, etc.) dans l'assistant.
+                conformes au RGPD.
               </p>
               <p>
-                Le contenu que vous y saisissez librement relève de votre responsabilité. Vous
-                pouvez demander la suppression de l'historique de vos questions à tout moment
-                (voir « Vos droits RGPD »).
+                Le <strong>contenu de vos questions n'est pas conservé</strong> par l'Application :
+                il sert uniquement à générer la réponse, puis n'est pas stocké. Nous conservons
+                seulement un <strong>compteur d'usage</strong> (nombre de questions par jour, pour
+                gérer la limite quotidienne), rattaché à votre compte et supprimé avec lui.
+              </p>
+              <p className="font-semibold text-yellow-900">
+                Comme votre question transite chez un prestataire tiers, nous vous recommandons de
+                ne pas y saisir d'informations personnelles ou sensibles (nom complet, coordonnées,
+                données de santé, etc.). Le contenu que vous y saisissez librement relève de votre
+                responsabilité.
               </p>
             </div>
           </div>
@@ -295,8 +297,8 @@ export default function PolitiqueConfidentialitePage() {
                 actif, supprimés avec le compte
               </li>
               <li>
-                <strong>Questions posées à l'assistant IA</strong> : conservées tant que le compte
-                est actif, supprimées avec le compte
+                <strong>Compteur d'usage de l'assistant IA</strong> : conservé tant que le compte
+                est actif, supprimé avec le compte (le contenu des questions n'est pas stocké)
               </li>
             </ul>
           </div>
