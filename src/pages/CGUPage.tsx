@@ -92,6 +92,18 @@ export default function CGUPage() {
                 <li><strong>Railway</strong> — backend / API (railway.app)</li>
                 <li><strong>Supabase</strong> — base de données (supabase.com)</li>
               </ul>
+              <p className="mt-3">Sources de données externes :</p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li><strong>AllRugby.com</strong> — calendriers, résultats, effectifs, compositions</li>
+                <li><strong>Wikipédia</strong> — données historiques et internationales</li>
+                <li><strong>LNR</strong> — données officielles Top 14 et Pro D2</li>
+                <li><strong>RapidAPI Rugby Live Data</strong> — scores en temps réel</li>
+                <li><strong>Open-Meteo</strong> — données météorologiques</li>
+              </ul>
+              <p className="text-xs text-gray-500 mt-1">
+                Les données factuelles citées restent la propriété de leurs détenteurs respectifs ;
+                elles sont utilisées avec mention de leur source.
+              </p>
               <p className="text-sm text-gray-500 mt-2">
                 Une distribution via l'App Store et/ou Google Play est envisagée à terme,
                 ce qui pourrait entraîner des conditions spécifiques propres à ces plateformes.
@@ -350,6 +362,13 @@ export default function CGUPage() {
                 textes, logos, code source) sont la <strong>propriété exclusive</strong> de
                 Bernard PILLORE et sont protégés par les lois relatives à la propriété intellectuelle.
               </p>
+              <p className="text-sm text-gray-600">
+                Cette propriété porte sur la structure, l'organisation et le code de l'Application,
+                ainsi que sur les traitements et analyses originaux qui en découlent. Les{' '}
+                <strong>données factuelles brutes</strong> (calendriers, résultats, effectifs, météo)
+                issues de sources tierces restent la propriété de leurs détenteurs respectifs
+                et sont utilisées avec mention de leur source (voir Article 1).
+              </p>
               <p>
                 Toute reproduction, représentation, modification ou exploitation non autorisée
                 est strictement interdite et constitue une contrefaçon sanctionnée par le Code
@@ -399,6 +418,22 @@ export default function CGUPage() {
                   et l'amélioration de l'Application (art. 6.1.f RGPD), pour les données techniques
                 </li>
               </ul>
+
+              <p className="font-medium">Sous-traitants et destinataires des données :</p>
+              <p className="text-sm">
+                Pour fonctionner, l'Application fait appel à des prestataires techniques
+                qui peuvent traiter certaines données pour notre compte, dans le respect du RGPD :
+              </p>
+              <ul className="list-disc list-inside ml-4 space-y-1 text-sm">
+                <li><strong>Supabase, Vercel, Railway</strong> — hébergement de la base et de l'application</li>
+                <li><strong>PayPal</strong> — traitement des paiements</li>
+                <li><strong>Resend</strong> — envoi des e-mails transactionnels</li>
+                <li><strong>Google (Gemini)</strong> et <strong>OpenAI</strong> — génération des actualités et de l'assistant conversationnel</li>
+              </ul>
+              <p className="text-xs text-gray-500">
+                Ces prestataires n'utilisent vos données que pour fournir leur service et ne sont
+                pas autorisés à les exploiter à d'autres fins.
+              </p>
 
               <p>
                 Vos données sont conservées pendant <strong>3 ans</strong> à compter de votre

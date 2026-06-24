@@ -200,6 +200,59 @@ export default function AProposPage() {
           </div>
         </section>
 
+        {/* Sources de données */}
+        <section className="bg-white rounded-xl p-6 shadow-md border border-rugby-gray">
+          <h2 className="text-2xl font-bold text-rugby-gold mb-4 flex items-center gap-3">
+            <Database className="w-7 h-7" />
+            Sources de données
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Les données factuelles utilisées par l'application (calendriers, résultats,
+            effectifs, compositions, météo) proviennent de sources publiques que nous remercions
+            pour la qualité de leur travail :
+          </p>
+          <ul className="space-y-2 text-sm text-gray-800">
+            <li className="flex items-start gap-2">
+              <span className="text-rugby-gold font-bold">•</span>
+              <span>
+                <strong>AllRugby.com</strong> — calendriers, résultats, effectifs et compositions
+                (<a href="https://www.allrugby.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">allrugby.com</a>)
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-rugby-gold font-bold">•</span>
+              <span>
+                <strong>Wikipédia</strong> — données historiques et internationales
+                (<a href="https://fr.wikipedia.org" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">wikipedia.org</a>)
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-rugby-gold font-bold">•</span>
+              <span>
+                <strong>LNR</strong> — Ligue Nationale de Rugby, données officielles Top 14 et Pro D2
+                (<a href="https://www.lnr.fr" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">lnr.fr</a>)
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-rugby-gold font-bold">•</span>
+              <span>
+                <strong>RapidAPI Rugby Live Data</strong> — scores en temps réel (suivi live)
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-rugby-gold font-bold">•</span>
+              <span>
+                <strong>Open-Meteo</strong> — données météorologiques des matchs
+                (<a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">open-meteo.com</a>)
+              </span>
+            </li>
+          </ul>
+          <p className="text-xs text-gray-500 italic mt-4">
+            Les marques et données citées restent la propriété de leurs détenteurs respectifs.
+            TOP 14 PRONOS n'est affilié à aucune de ces sources.
+          </p>
+        </section>
+
         {/* Footer */}
         <section className="text-center text-gray-600 text-sm pt-4 border-t border-gray-200">
           <p>© 2024 TOP 14 PRONOS - Tous droits réservés</p>
