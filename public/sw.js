@@ -3,7 +3,7 @@
 // Cache : assets/images uniquement. API = network-only.
 // ============================================
 
-const APP_VERSION = 'v7';
+const APP_VERSION = 'v8';
 const CACHE_STATIC = `top14-static-${APP_VERSION}`;
 const CACHE_IMAGES = `top14-images-${APP_VERSION}`;
 
@@ -176,7 +176,7 @@ self.addEventListener('push', (event) => {
     title: 'Notification',
     body: 'Vous avez une nouvelle notification'
   };
-  event.waitUntil(
+  const tasks = [
     self.registration.showNotification(data.title, {
       body: data.body || data.message,
       icon: '/icon-192.png',
@@ -185,11 +185,23 @@ self.addEventListener('push', (event) => {
       data: data.data || {},
       actions: data.actions || []
     })
-  );
+  ];
+
+  // Pastille sur l'icone de l'app (point simple, sans chiffre).
+  // Ne s'affiche que si l'app est installee sur l'ecran d'accueil + push autorisees.
+  // Detection de support : sans effet sur les navigateurs/appareils non compatibles.
+  if (self.navigator && 'setAppBadge' in self.navigator) {
+    tasks.push(self.navigator.setAppBadge());
+  }
+
+  event.waitUntil(Promise.all(tasks));
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  if (self.navigator && 'clearAppBadge' in self.navigator) {
+    self.navigator.clearAppBadge().catch(() => {});
+  }
   const url = event.notification.data?.url || 'https://app.top14pronos.fr';
   event.waitUntil(clients.openWindow(url));
 });

@@ -98,6 +98,13 @@ function AppContent() {
   // Déclenché une seule fois après connexion si guide jamais vu
   // Ignoré sur les pages publiques et si déjà sur /guide
   useEffect(() => {
+    // Efface la pastille de l'icone de l'app des que l'utilisateur ouvre l'app.
+    // (point allume par le service worker a la reception d'une push)
+    // Detection de support : sans effet sur navigateurs/appareils non compatibles.
+    if (user && 'clearAppBadge' in navigator) {
+      navigator.clearAppBadge().catch(() => {});
+    }
+
     if (
       user &&
       !localStorage.getItem(GUIDE_STORAGE_KEY) &&
