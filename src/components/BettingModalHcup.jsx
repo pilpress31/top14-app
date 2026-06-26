@@ -18,7 +18,7 @@ import { supabase } from '../lib/supabaseClient';
 import { getTeamData } from '../utils/teams';
 import { getCharte } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 // Couleurs charte HCup — centralisées dans src/constants/chartes.js
 const { bleu: HCUP_BLUE, or: HCUP_GOLD } = getCharte('hcup').base;

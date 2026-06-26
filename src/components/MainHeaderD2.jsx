@@ -3,7 +3,7 @@ import axios from "axios";
 import StatsAlgoModal from "./StatsAlgoModal";
 import { getCharte } from "../constants/chartes";
 
-const API_BASE = "https://top14-api-production.up.railway.app";
+const API_BASE = "https://api.top14pronos.fr";
 const D2C = getCharte("prod2");
 const { navy, silver, blue } = D2C.base;
 

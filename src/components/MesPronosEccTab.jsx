@@ -20,7 +20,7 @@ import ReglementModal from './ReglementModal';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getCharte, texteReprise } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 // Couleurs charte ECC — centralisées dans src/constants/chartes.js
 const { vert: ECC_VERT, bronze: ECC_BRONZE } = getCharte('ecc').base;

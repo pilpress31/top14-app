@@ -16,7 +16,7 @@ import { useLocation } from 'react-router-dom';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { getCharte } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 const { vert: MONDE_GREEN, emeraude: MONDE_ACCENT } = getCharte('monde').base;
 

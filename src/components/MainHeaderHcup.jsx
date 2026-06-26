@@ -15,7 +15,7 @@ import axios from "axios";
 import StatsAlgoModal from "./StatsAlgoModal";
 import { getCharte } from "../constants/chartes";
 
-const API_BASE = "https://top14-api-production.up.railway.app";
+const API_BASE = "https://api.top14pronos.fr";
 const HC = getCharte("hcup");
 const { bleu, or } = HC.base;
 

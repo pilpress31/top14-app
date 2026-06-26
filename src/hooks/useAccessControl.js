@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
-const API_URL = 'https://top14-api-production.up.railway.app'
+const API_URL = 'https://api.top14pronos.fr'
 
 export function useAccessControl() {
   const { user } = useAuth()

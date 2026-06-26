@@ -24,7 +24,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCharte } from "../constants/chartes";
 
-const API_BASE = "https://top14-api-production.up.railway.app";
+const API_BASE = "https://api.top14pronos.fr";
 const M = getCharte("monde");
 const { vert, emeraude } = M.base;
 

@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import { Lock, CheckCircle, Mail, ChevronRight, Loader2, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
-const API_URL = 'https://top14-api-production.up.railway.app'
+const API_URL = 'https://api.top14pronos.fr'
 
 export default function PaywallPage({ tarif, onPaymentSuccess }) {
   const { user, signOut } = useAuth()

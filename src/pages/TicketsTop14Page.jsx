@@ -4,7 +4,7 @@ import { ChevronLeft, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
-const API = 'https://top14-api-production.up.railway.app';
+const API = 'https://api.top14pronos.fr';
 
 // Badge de niveau de confiance
 function badgeConfiance(niveau, pct) {

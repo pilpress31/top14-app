@@ -11,7 +11,7 @@ import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import BarreIndiceFavori, { PulsingInfoButton } from './BarreIndiceFavori';
 import { getCharte, texteReprise } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 export default function AlgoPronosTab({ onMatchClick, isD2 = false }) {
   const [pronos, setPronos] = useState([]);

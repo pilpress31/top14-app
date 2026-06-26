@@ -13,7 +13,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import TeamPopup from './TeamPopup';
 import axios from 'axios';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 const isBettingAllowed = (match) => {
   const matchDate = new Date(match.date_match || match.date);

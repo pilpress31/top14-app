@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://top14-api-production.up.railway.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.top14pronos.fr/api';
 
 // Config
 export async function getConfig() {

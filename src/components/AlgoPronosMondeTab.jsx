@@ -20,7 +20,7 @@ import BarreIndiceFavori from './BarreIndiceFavori';
 import PourquoiCePronostic from './PourquoiCePronostic';
 import TeamPopup from './TeamPopup';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 const { vert: MONDE_GREEN, emeraude: MONDE_EMERAUDE } = getCharte('monde').base;
 const MONDE_SOFT = '#ECFDF5';
 const MONDE_BORDER = '#A7F3D0';

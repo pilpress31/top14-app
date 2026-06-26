@@ -14,7 +14,7 @@ import ReglementModal from './ReglementModal';
 import { useLocation } from 'react-router-dom';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';

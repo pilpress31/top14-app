@@ -4,7 +4,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, User, AlertCircle, CheckCircle, AtSign, Loader2, Ticket } from 'lucide-react'
 import axios from 'axios'
 
-const API_URL = 'https://top14-api-production.up.railway.app'
+const API_URL = 'https://api.top14pronos.fr'
 
 function RegisterPage() {
   const [email, setEmail] = useState('')

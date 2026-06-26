@@ -363,7 +363,7 @@ export default function ChatPage() {
   // ✅ Supprimer un message via backend
   const handleDeleteMessage = async (messageId) => {
     try {
-      const response = await fetch('https://top14-api-production.up.railway.app/api/chat/delete-message', {
+      const response = await fetch('https://api.top14pronos.fr/api/chat/delete-message', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

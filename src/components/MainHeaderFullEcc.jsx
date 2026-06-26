@@ -16,7 +16,7 @@ import axios from "axios";
 import { Trophy, Shield } from "lucide-react";
 import { getCharte } from "../constants/chartes";
 
-const API_BASE = "https://top14-api-production.up.railway.app";
+const API_BASE = "https://api.top14pronos.fr";
 const EC = getCharte("ecc");
 const { vert, bronze } = EC.base;
 

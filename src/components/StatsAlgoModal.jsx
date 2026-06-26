@@ -63,7 +63,7 @@ export default function StatsAlgoModal({
   championnat = "top14",
   theme = getCharte("top14").modal,
   globalStats = { precision: 0, total: 0 },
-  apiBase = "https://top14-api-production.up.railway.app",
+  apiBase = "https://api.top14pronos.fr",
 }) {
   const navigate = useNavigate();
   const meta = CHAMP_META[championnat] || CHAMP_META.top14;

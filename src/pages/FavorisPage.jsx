@@ -10,7 +10,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import { getTeamData } from '../utils/teams';
 import axios from 'axios';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 const CHAMP_LABELS = {
   top14: { label: 'TOP 14', color: '#D4A017', bg: '#FFF8E7' },

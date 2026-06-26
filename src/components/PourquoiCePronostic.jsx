@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import RubriqueHeader, { RUBRIQUE_THEMES } from './RubriqueHeader';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 // Icône lucide-react par clé de facteur (renvoyée par le backend)
 const ICONES_FACTEUR = {

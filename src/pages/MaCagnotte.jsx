@@ -645,8 +645,8 @@ export default function MaCagnotte() {
         if (userStatsData) setUserPoints(userStatsData.total_points || 0);
       }
 
-      const API_BASE_D2 = 'https://top14-api-production.up.railway.app';
-      const API_BASE_HCUP = 'https://top14-api-production.up.railway.app';
+      const API_BASE_D2 = 'https://api.top14pronos.fr';
+      const API_BASE_HCUP = 'https://api.top14pronos.fr';
 
       // ✅ Charger paris Top 14 + Pro D2 + HCup en parallèle
       const [historyResponse, betsD2Response, betsHcupResponse] = await Promise.all([

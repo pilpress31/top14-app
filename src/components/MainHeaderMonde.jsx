@@ -21,7 +21,7 @@ import axios from "axios";
 import { getCharte } from "../constants/chartes";
 import StatsAlgoModal from "./StatsAlgoModal";
 
-const API_BASE = "https://top14-api-production.up.railway.app";
+const API_BASE = "https://api.top14pronos.fr";
 const MC = getCharte("monde");
 const { vert, emeraude } = MC.base;
 

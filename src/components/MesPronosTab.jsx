@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // MES PRONOS - VERSION AVEC SUPPORT PRO D2
 // ============================================
 
@@ -13,7 +13,7 @@ import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 import { getCharte, texteReprise } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 export default function MesPronosTab({ goToMesParis, scrollToMatchId, onScrollDone }) {
   const { isD2 } = useChampionnat();  // ✅ Lecture du championnat actif

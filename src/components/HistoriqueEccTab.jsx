@@ -13,7 +13,7 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { getCharte } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 const { vert: ECC_GREEN, bronze: ECC_ACCENT } = getCharte('ecc').base;
 
 const PHASE_FINALE = (p) => {

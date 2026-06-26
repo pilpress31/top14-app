@@ -17,7 +17,7 @@ import { supabase } from '../lib/supabaseClient';
 import { getTeamData } from '../utils/teams';
 import { getCharte } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 // Couleurs charte ECC — centralisées dans src/constants/chartes.js
 const { vert: ECC_VERT, vertFonce: ECC_VERT_FONCE, bronze: ECC_BRONZE } = getCharte('ecc').base;

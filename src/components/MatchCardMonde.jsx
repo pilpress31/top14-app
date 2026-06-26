@@ -19,7 +19,7 @@ import { getTeamData } from '../utils/teams';
 import { getCharte } from '../constants/chartes';
 import axios from 'axios';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 const _charteMonde = getCharte('monde').base;
 const MONDE_GREEN = _charteMonde.vert;
 const MONDE_EMERAUDE = _charteMonde.emeraude || '#34D399';

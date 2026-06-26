@@ -14,7 +14,7 @@ import { useLocation } from 'react-router-dom';
 import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { useChampionnat } from '../contexts/ChampionnatContext';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 // Niveau d'un pari : 0 = temps réglementaire (FT), 1 = mi-temps (MT).
 const niveauPari = (bt) => (bt === 'MT' || bt === 'WINNER_MT') ? 1 : 0;

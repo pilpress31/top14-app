@@ -26,7 +26,7 @@ import BarreIndiceFavori from './BarreIndiceFavori';
 import TeamPopup from './TeamPopup';
 import { getCharte, texteReprise } from '../constants/chartes';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 const HCUP_BLEU = '#003E7E';
 const HCUP_OR = '#FFC72C';

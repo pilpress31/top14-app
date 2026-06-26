@@ -11,7 +11,7 @@ import { Send, Brain, Zap, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 const STORAGE_KEY = 'rugby_ia_messages';
 const MAX_STORED_MESSAGES = 20;
 

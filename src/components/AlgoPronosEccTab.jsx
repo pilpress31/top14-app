@@ -19,7 +19,7 @@ import BarreIndiceFavori from './BarreIndiceFavori';
 import PourquoiCePronostic from './PourquoiCePronostic';
 import TeamPopup from './TeamPopup';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 const { vert: ECC_GREEN, bronze: ECC_BRONZE } = getCharte('ecc').base;
 const ECC_SOFT = '#EEF7EE';
 const ECC_BORDER = '#BFE3C2';

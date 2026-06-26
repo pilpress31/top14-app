@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ArrowLeft, Copy, Share2, Check, Users, Gift, UserPlus } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
-const API_URL = 'https://top14-api-production.up.railway.app';
+const API_URL = 'https://api.top14pronos.fr';
 
 export default function InviterAmisPage() {
   const navigate = useNavigate();

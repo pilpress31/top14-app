@@ -75,7 +75,7 @@ export default function ActuTab() {
 
   const loadActus = async () => {
     try {
-      const response = await axios.get(`https://top14-api-production.up.railway.app/api/actu?championnat=${championnat}`);
+      const response = await axios.get(`https://api.top14pronos.fr/api/actu?championnat=${championnat}`);
       const data = response.data;
 
       // Nouveau format : { actus: [], journee, disponible, message }

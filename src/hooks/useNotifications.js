@@ -21,7 +21,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 
-const API_URL = 'https://top14-api-production.up.railway.app/api';
+const API_URL = 'https://api.top14pronos.fr/api';
 
 
 export function useNotifications() {

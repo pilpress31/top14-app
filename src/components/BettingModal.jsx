@@ -12,7 +12,7 @@ import axios from 'axios';
 import { getTeamData } from '../utils/teams';
 import { validateBet, validateScoreInput, toInt } from '../utils/validationUtils';
 
-const API_BASE = 'https://top14-api-production.up.railway.app';
+const API_BASE = 'https://api.top14pronos.fr';
 
 export default function BettingModal({ match, existingProno, userCredits, isD2 = false, preselectedWinner = null, onClose, onSuccess }) {
   // 🆕 Mode de pari pour FT — 'score' (saisie scores) ou 'winner' (1/N/2)

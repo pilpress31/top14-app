@@ -7,7 +7,7 @@ import { getTeamData } from "../utils/teams";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { getCharte } from "../constants/chartes";
 
-const API_BASE = "https://top14-api-production.up.railway.app";
+const API_BASE = "https://api.top14pronos.fr";
 
 // Charte Top 14 — couleurs d'identité centralisées dans src/constants/chartes.js
 const { gold: T14_GOLD, goldDark: T14_GOLD_DARK, goldLight: T14_GOLD_LIGHT } = getCharte("top14").base;
