@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { getAcquisitionSource } from '../utils/acquisition';
 
 const API_URL = 'https://api.top14pronos.fr'
 
@@ -24,7 +25,10 @@ export function useAccessControl() {
 
     try {
       const response = await fetch(`${API_URL}/api/user/access-status`, {
-        headers: { 'x-user-id': user.id }
+        headers: {
+          'x-user-id': user.id,
+          'x-acquisition-source': getAcquisitionSource()
+        }
       })
       const data = await response.json()
       setAccessStatus(data)

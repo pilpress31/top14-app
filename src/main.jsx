@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 import './lib/axiosSetup';   // <-- AJOUTER CETTE LIGNE (Étape 1 : intercepteur token)
+import { captureAcquisition } from './utils/acquisition';
+
+// 🌐 Capture la source d'acquisition (?ref / utm_source) dès le 1er chargement
+captureAcquisition();
 
 // ==========================================
 // ENREGISTRER SERVICE WORKER PWA
