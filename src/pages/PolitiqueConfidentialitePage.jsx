@@ -111,7 +111,11 @@ export default function PolitiqueConfidentialitePage() {
                   </tr>
                   <tr className="bg-gray-50">
                     <td className="border border-gray-200 p-2 font-semibold">Données techniques</td>
-                    <td className="border border-gray-200 p-2">Adresse IP (logs serveur), navigateur, type d'appareil</td>
+                    <td className="border border-gray-200 p-2">Adresse IP (logs serveur), navigateur, type d'appareil et système d'exploitation (ex. « iOS · mobile »)</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-200 p-2 font-semibold">Provenance</td>
+                    <td className="border border-gray-200 p-2">Source de votre première visite (ex. lien de redirection, campagne), à des fins de statistiques internes sur l'origine de nos inscrits</td>
                   </tr>
                   <tr>
                     <td className="border border-gray-200 p-2 font-semibold">Paiements (à venir)</td>
