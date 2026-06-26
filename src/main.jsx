@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
+import './lib/axiosSetup';   // <-- AJOUTER CETTE LIGNE (Étape 1 : intercepteur token)
 
 // ==========================================
 // ENREGISTRER SERVICE WORKER PWA
