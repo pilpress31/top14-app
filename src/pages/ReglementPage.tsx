@@ -289,7 +289,7 @@ export default function ReglementPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>✅ Bon vainqueur + 15+ pts écart</span>
-                    <strong className="text-blue-700">1 point</strong>
+                    <strong className="text-blue-700">2 points</strong>
                   </div>
                 </div>
 
@@ -306,7 +306,7 @@ export default function ReglementPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>✅ Bon vainqueur MT</span>
-                      <strong className="text-purple-700">+1 point</strong>
+                      <strong className="text-purple-700">+2 points</strong>
                     </div>
                   </div>
                 </div>

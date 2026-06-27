@@ -808,7 +808,7 @@ export default function ClassementCommunauteTab() {
                     </div>
                     <div className="flex justify-between">
                       <span>✅ Bon vainqueur + 15+ pts écart</span>
-                      <strong className="text-blue-700">1 point</strong>
+                      <strong className="text-blue-700">2 points</strong>
                     </div>
                     <div className="flex justify-between">
                       <span>❌ Mauvais vainqueur</span>
@@ -830,7 +830,7 @@ export default function ClassementCommunauteTab() {
                     </div>
                     <div className="flex justify-between">
                       <span>✅ Bon vainqueur MT</span>
-                      <strong className="text-purple-700">+1 point</strong>
+                      <strong className="text-purple-700">+2 points</strong>
                     </div>
                   </div>
                 </div>

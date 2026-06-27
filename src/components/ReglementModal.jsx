@@ -185,7 +185,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex justify-between">
                     <span>✅ Bon vainqueur + 15+ pts d'écart</span>
-                    <strong className="text-blue-700">1 pt</strong>
+                    <strong className="text-blue-700">2 pts</strong>
                   </div>
                 </div>
               </div>
@@ -203,7 +203,7 @@ export default function ReglementModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex justify-between">
                     <span>✅ Bon vainqueur MT</span>
-                    <strong className="text-purple-700">+1 pt</strong>
+                    <strong className="text-purple-700">+2 pts</strong>
                   </div>
                 </div>
               </div>
