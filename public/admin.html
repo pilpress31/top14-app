@@ -298,6 +298,7 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
   <div class="nav-tabs">
     <button class="tab active" onclick="showTab('push', this)">📣 Push</button>
     <button class="tab" onclick="showTab('classement', this)">🏆 Classement</button>
+    <button class="tab" onclick="showTab('ligues', this)">🏟️ Ligues</button>
     <button class="tab" onclick="showTab('jetons', this)">💰 Jetons</button>
     <button class="tab" onclick="showTab('paris', this)">🎯 Paris</button>
     <button class="tab" onclick="showTab('distribution', this)">📦 Distribution</button>
@@ -909,6 +910,31 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
     </div>
 
     <!-- JETONS -->
+    <div id="panel-ligues" class="panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏟️ Ligues privées</div>
+          <button class="btn" onclick="loadPrivateLeagues()">↻ Actualiser</button>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+          <div class="stat-box"><div class="stat-val" id="liguesTotal">—</div><div class="stat-lbl">Ligues</div></div>
+          <div class="stat-box"><div class="stat-val" id="liguesMembres">—</div><div class="stat-lbl">Membres (cumul)</div></div>
+        </div>
+
+        <div id="liguesResult" style="color:var(--muted);font-size:13px;padding:8px 0;">Cliquez sur Actualiser</div>
+
+        <div class="table-wrap" style="max-height:520px;overflow-y:auto;">
+          <table>
+            <thead>
+              <tr><th>Ligue</th><th>Créateur</th><th>Membres</th><th>Créée le</th></tr>
+            </thead>
+            <tbody id="liguesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div id="panel-jetons" class="panel">
       <div class="card">
         <div class="card-title">💰 Crediter / Debiter des jetons</div>
@@ -1938,6 +1964,9 @@ function showTab(name, el) {
       loadClassement();
       loadAlgoSaisons();  // 🆕 Init des sélecteurs saison/journée pour Notif Algo
       break;
+    case 'ligues':
+      loadPrivateLeagues();
+      break;
     case 'jetons':
       loadSoldes();
       break;
@@ -2785,6 +2814,55 @@ async function sendPush() {
 }
 
 // ── CLASSEMENT ──
+async function loadPrivateLeagues() {
+  const tbody = document.getElementById('liguesBody');
+  const result = document.getElementById('liguesResult');
+  result.textContent = '⏳ Chargement…';
+  tbody.innerHTML = '';
+  try {
+    const data = await api('/api/admin/private-leagues');
+    if (!Array.isArray(data)) {
+      result.textContent = `❌ ${data && data.error ? data.error : 'Erreur de chargement'}`;
+      return;
+    }
+
+    document.getElementById('liguesTotal').textContent = data.length;
+    const cumulMembres = data.reduce((s, l) => s + (l.nb_membres || 0), 0);
+    document.getElementById('liguesMembres').textContent = cumulMembres;
+
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:24px">Aucune ligue privée</td></tr>';
+      result.textContent = '';
+      return;
+    }
+
+    const esc = s => (s || '').toString().replace(/</g, '&lt;');
+    const fmtDate = d => {
+      if (!d) return '—';
+      try { return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+      catch (_) { return d; }
+    };
+
+    tbody.innerHTML = data.map(l => {
+      const membres = (l.membres || []).map(m => esc(m.pseudo)).join(', ') || '—';
+      const code = l.code
+        ? `<div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:2px;">${esc(l.code)}</div>`
+        : '';
+      return `<tr>
+        <td><strong>${esc(l.nom)}</strong>${code}</td>
+        <td>${esc(l.createur_pseudo)}</td>
+        <td><span style="font-weight:600;">${l.nb_membres}</span>
+            <div style="font-size:12px;color:var(--muted2);margin-top:2px;">${membres}</div></td>
+        <td>${fmtDate(l.created_at)}</td>
+      </tr>`;
+    }).join('');
+
+    result.textContent = '';
+  } catch (e) {
+    result.textContent = `❌ ${e.message}`;
+  }
+}
+
 async function loadClassement() {
   const tbody = document.getElementById('classementBody');
   tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">⏳ Chargement...</td></tr>';
