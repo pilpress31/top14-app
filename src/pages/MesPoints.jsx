@@ -44,12 +44,14 @@ const getBadgeForBet = (bet) => {
     if (points === 7) return { icon: Award, color: 'text-amber-600 bg-amber-100', label: 'Parfait écart' };
     if (points === 5) return { icon: CheckCircle2, color: 'text-green-600 bg-green-100', label: 'Bon écart' };
     if (points === 3) return { icon: Clock, color: 'text-blue-600 bg-blue-100', label: 'Bon vainqueur FT' };
+    if (points === 2) return { icon: Clock, color: 'text-gray-600 bg-gray-100', label: 'Bon vainqueur FT' };
     if (points === 1) return { icon: Clock, color: 'text-gray-600 bg-gray-100', label: 'Bon vainqueur FT' };
   }
 
   if (bet.bet_type === 'MT') {
     if (points === 5) return { icon: Trophy, color: 'text-yellow-600 bg-yellow-100', label: 'Score exact MT' };
     if (points === 3) return { icon: CheckCircle2, color: 'text-green-600 bg-green-100', label: 'Bon écart MT' };
+    if (points === 2) return { icon: Clock, color: 'text-purple-600 bg-purple-100', label: 'Bon vainqueur MT' };
     if (points === 1) return { icon: Clock, color: 'text-purple-600 bg-purple-100', label: 'Bon vainqueur MT' };
   }
 
