@@ -27,7 +27,8 @@ export function useAccessControl() {
       const response = await fetch(`${API_URL}/api/user/access-status`, {
         headers: {
           'x-user-id': user.id,
-          'x-acquisition-source': getAcquisitionSource()
+          'x-acquisition-source': getAcquisitionSource(),
+          'x-current-host': window.location.hostname
         }
       })
       const data = await response.json()
