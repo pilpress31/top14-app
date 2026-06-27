@@ -1391,8 +1391,8 @@ select#commChamp, select#commJournee { -moz-appearance: none !important; appeara
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Pseudo</th><th>Nom / Prénom</th><th>Email</th><th>Statut</th><th>Code / Parrain</th><th>Inscription</th><th>Appareil</th><th>Source</th></tr></thead>
-                        <tbody id="usersAccessBody"><tr><td colspan="8" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
+            <thead><tr><th>Pseudo</th><th>Nom / Prénom</th><th>Email</th><th>Statut</th><th>Code / Parrain</th><th>Inscription</th><th>Appareil</th><th>Source</th><th>Vu récemment</th></tr></thead>
+                        <tbody id="usersAccessBody"><tr><td colspan="9" style="color:var(--muted);text-align:center;padding:24px">Cliquez sur Actualiser</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -5046,6 +5046,11 @@ async function loadUsersAccess() {
         <td style="color:var(--muted2);font-size:12px">${u.inscription_at ? new Date(u.inscription_at).toLocaleDateString('fr-FR') : '—'}</td>
         <td style="font-size:12px;color:var(--muted2)">${appareil}</td>
         <td style="font-size:12px;color:var(--muted2)">${source}</td>
+        <td style="font-size:12px;color:var(--muted2)">${
+          u.last_seen_source
+            ? `${u.last_seen_source === '.org' ? '🔁 .org' : (u.last_seen_source === '.fr' ? '🇫🇷 .fr' : u.last_seen_source)}${u.last_seen_at ? ' · ' + new Date(u.last_seen_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) : ''}`
+            : '—'
+        }</td>
       </tr>
     `;
   }).join('');
