@@ -310,6 +310,15 @@ export default function ReglementPage() {
                     </div>
                   </div>
                 </div>
+
+                <div className="mt-3 pt-3 border-t border-green-300">
+                  <p className="font-bold text-green-900 mb-1 text-sm">🎯 Pari Vainqueur seul</p>
+                  <p className="text-[11px] text-gray-600 mb-2">Désigner uniquement le gagnant (ou le nul), sans prédire le score.</p>
+                  <div className="flex justify-between text-xs">
+                    <span>✅ Bon vainqueur (FT ou MT)</span>
+                    <strong className="text-green-700">1 point</strong>
+                  </div>
+                </div>
               </div>
             </div>
 

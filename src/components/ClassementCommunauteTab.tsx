@@ -835,6 +835,15 @@ export default function ClassementCommunauteTab() {
                   </div>
                 </div>
 
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <h4 className="font-bold text-green-900 mb-1">🎯 Pari Vainqueur seul</h4>
+                  <p className="text-xs text-gray-600 mb-3">Désigner uniquement le gagnant (ou le nul), sans prédire le score.</p>
+                  <div className="flex justify-between text-sm">
+                    <span>✅ Bon vainqueur (FT ou MT)</span>
+                    <strong className="text-green-700">1 point</strong>
+                  </div>
+                </div>
+
                 <p className="text-xs text-gray-600 bg-gray-50 rounded p-3">
                   💡 <strong>Astuce :</strong> Plus votre prono est précis, plus vous gagnez de points. Le classement par points récompense la qualité plutôt que la quantité !
                 </p>
