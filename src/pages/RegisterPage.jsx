@@ -198,7 +198,13 @@ function RegisterPage() {
       if (signUpError.message.includes('already registered')) {
         setError('Cette adresse email est déjà utilisée')
       } else if (signUpError.message.toLowerCase().includes('password') || signUpError.message.includes('weak')) {
-        setError('Le mot de passe doit contenir au moins 8 caractères')
+        setError(
+          /at least|caractère|length|short/i.test(signUpError.message)
+            ? 'Mot de passe trop court : au moins 8 caractères.'
+            : /pwned|leaked|compromis|breach/i.test(signUpError.message)
+              ? 'Ce mot de passe est trop courant ou a été divulgué dans une fuite connue. Choisissez-en un autre.'
+              : 'Mot de passe refusé : essayez un mélange de majuscules, minuscules et chiffres, 10+ caractères.'
+        )
       } else {
         setError(`Erreur : ${signUpError.message}`)
       }
