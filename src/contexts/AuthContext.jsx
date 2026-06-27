@@ -92,13 +92,13 @@ export const AuthProvider = ({ children }) => {
   // Supprimer le compte
   const deleteAccount = async () => {
     try {
-      // Récupérer le token de session pour authentifier l'appel API
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
       if (!token) throw new Error('Session expirée')
 
-      // Appeler la route API (envoie les mails puis supprime auth.users)
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/account`, {
+      // API_URL contient déjà '/api' → on n'ajoute QUE '/account'
+      const base = import.meta.env.VITE_API_URL || 'https://api.top14pronos.fr/api'
+      const resp = await fetch(`${base}/account`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -107,7 +107,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || 'Échec de la suppression')
       }
 
-      // Déconnexion après suppression
       await signOut()
       return { error: null }
     } catch (error) {
@@ -115,20 +114,3 @@ export const AuthProvider = ({ children }) => {
       return { error }
     }
   }
-
-  const value = {
-    user,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-    updateProfile,
-    deleteAccount
-  }
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
