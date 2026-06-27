@@ -92,9 +92,21 @@ export const AuthProvider = ({ children }) => {
   // Supprimer le compte
   const deleteAccount = async () => {
     try {
-      // Appeler la fonction SQL delete_user()
-      const { data, error } = await supabase.rpc('delete_user')
-      if (error) throw error
+      // Récupérer le token de session pour authentifier l'appel API
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) throw new Error('Session expirée')
+
+      // Appeler la route API (envoie les mails puis supprime auth.users)
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/account`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}))
+        throw new Error(data.error || 'Échec de la suppression')
+      }
+
       // Déconnexion après suppression
       await signOut()
       return { error: null }
