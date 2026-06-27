@@ -230,7 +230,10 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .stat-val.red { color: var(--red); }
 .stat-lbl { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
 
-.table-wrap { overflow-x: auto; overflow-y: hidden; width: 100%; max-width: 100%; margin-top: 12px; }
+.table-wrap { overflow-x: auto; overflow-y: hidden; width: 100%; max-width: 100%; margin-top: 12px; scrollbar-width: thin; scrollbar-color: var(--gold-dim) var(--dark2); }
+.table-wrap::-webkit-scrollbar { height: 10px; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 5px; }
+.table-wrap::-webkit-scrollbar-track { background: var(--dark2); }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .table-wrap table { min-width: max-content; }
 .table-wrap th, .table-wrap td { white-space: nowrap; }
