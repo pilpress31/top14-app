@@ -157,7 +157,7 @@ body {
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
 
-.content { padding: 32px; max-width: 1000px; margin: 0 auto; }
+.content { padding: 32px; max-width: 1400px; margin: 0 auto; }
 
 .panel { display: none; }
 .panel.active { display: block; }
@@ -5035,8 +5035,12 @@ async function loadUsersAccess() {
     const nomPrenom = [u.prenom, u.nom].filter(Boolean).join(' ') || '—';
     const devIcon = u.device_type === 'mobile' ? '📱' : u.device_type === 'tablette' ? '📲' : u.device_type === 'desktop' ? '💻' : '📟';
     const appareil = u.device_os ? `${devIcon} ${u.device_os}` : '—';
-    const srcLabels = { org: '🔁 .org', direct: '🔗 Direct' };
-    const source = u.acquisition_source ? (srcLabels[u.acquisition_source] || `🔗 ${u.acquisition_source}`) : '—';
+    const srcLabels = { org: '🔁 .org', direct: '🔗 Direct', fr: '🇫🇷 .fr' };
+    const rawSrc = u.acquisition_source;
+    const isToken = rawSrc && /^[0-9a-f]{16,}$/i.test(rawSrc); // token de parrainage → arrivé via lien .fr
+    const source = rawSrc
+      ? (isToken ? '🇫🇷 .fr' : (srcLabels[rawSrc] || `🔗 ${rawSrc}`))
+      : '—';
     return `
       <tr>
         <td style="font-weight:600">${u.pseudo || '—'}</td>
